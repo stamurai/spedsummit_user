@@ -231,41 +231,48 @@ const SESSIONS = [
   { id:6, title:"Understanding & Supporting Communication for Students with AAC", category:"ACCESSIBILITY", instructor:"Dr. Sarah Kim", instructorBio:"AAC specialist with 15+ years supporting students with complex communication needs in inclusive environments.", instructorQuote:"Communication is a human right — AAC makes it possible for everyone.", duration:"48 mins", resources:3, progress:0, status:"not-started", description:"Analyze the product for compliance with accessibility standards to ensure it serves all users regardless of ability.", lessons:[{id:1,title:"What is AAC?",duration:"10:00",status:"available",type:"video"},{id:2,title:"Device Selection",duration:"18:00",status:"locked",type:"video"},{id:"1q",title:"AAC Basics Quiz",questions:7,status:"locked",type:"quiz"},{id:3,title:"Implementation in Class",duration:"20:00",status:"locked",type:"video"}] },
 ];
 
-/* availableFrom/availableTo: dates that control session visibility on user-facing views.
-   When today > availableTo, the session is treated as ARCHIVED and hidden from users. */
+/* availableFrom/availableTo: control session visibility.
+   hasRecording: whether a recording exists for past sessions. */
 const SESSION_AVAILABILITY = {
-  1: { availableFrom:"2025-01-05", availableTo:"2026-12-31" },
-  2: { availableFrom:"2025-01-05", availableTo:"2026-12-31" },
-  3: { availableFrom:"2025-01-06", availableTo:"2026-12-31" },
-  4: { availableFrom:"2025-01-06", availableTo:"2026-12-31" },
-  5: { availableFrom:"2025-01-07", availableTo:"2026-12-31" },
-  6: { availableFrom:"2025-01-07", availableTo:"2026-12-31" },
+  1: { availableFrom:"2026-03-26T09:00", availableTo:"2027-12-31T23:59", hasRecording:true  },
+  2: { availableFrom:"2026-03-26T11:00", availableTo:"2027-12-31T23:59", hasRecording:true  },
+  3: { availableFrom:"2025-01-06T09:00", availableTo:"2025-06-30T23:59", hasRecording:false },
+  4: { availableFrom:"2025-01-07T09:00", availableTo:"2025-06-30T23:59", hasRecording:true  },
+  5: { availableFrom:"2026-03-28T09:00", availableTo:"2027-12-31T23:59", hasRecording:false },
+  6: { availableFrom:"2026-03-28T11:00", availableTo:"2027-12-31T23:59", hasRecording:false },
 };
 
-function isSessionArchived(sessionId) {
+// 'live' | 'upcoming' | 'past' | 'unavailable'
+function getSessionState(sessionId) {
   const avail = SESSION_AVAILABILITY[sessionId];
-  if (!avail || !avail.availableTo) return false;
-  return new Date() > new Date(avail.availableTo);
+  if (!avail || !avail.availableFrom) return "unavailable";
+  const now = new Date();
+  if (avail.availableTo && now > new Date(avail.availableTo)) return "past";
+  if (now < new Date(avail.availableFrom)) return "upcoming";
+  return "live";
 }
 
+function isSessionAvailable(sessionId) { return getSessionState(sessionId) === "live"; }
+function isSessionArchived(sessionId)  { return getSessionState(sessionId) === "past"; }
+
 const SCHEDULE = [
-  { id:1, date:"5th Jan", time:"09:00 AM", type:"OPENING", title:"Mental Health & Teacher Wellness in Special Education", description:"Sarah Habib—Occupational Therapist and founder of The Calm Caterpillar—shares practical, mindfulness-based strategies to support emotional regulation and wellness for both students and educators.", status:"past", cta:"Watch Again", instructor:"Tara Roehl" },
-  { id:2, date:"5th Jan", time:"11:00 AM", type:"KEYNOTE", title:"Accommodations & Inclusion: Integrating Students into Mainstream", description:"Casey Harrison—Certified Dyslexia Specialist—shares practical, research-aligned strategies to support students with dyslexia and language-based learning differences.", status:"past", cta:"Resume Lesson", instructor:"Casey Harrison" },
-  { id:3, date:"6th Jan", time:"09:00 AM", type:"WORKSHOP", title:"Empowering Language and Literacy Skills with DHH Children", description:"Sydney Bassard—Speech-Language Pathologist—shares practical, evidence-informed strategies to build strong language and literacy foundations in children who are Deaf or Hard of Hearing.", status:"upcoming", cta:"Remind Me", instructor:"Jordan Smith" },
-  { id:4, date:"6th Jan", time:"02:00 PM", type:"NETWORKING", title:"Paraeducators & Team Collaboration: Training, Delegation & More", description:"Diana Williams shares practical, leadership-driven strategies for building strong, collaborative partnerships between teachers and paraeducators.", status:"upcoming", cta:"Registered", instructor:"Morgan Lee" },
-  { id:5, date:"7th Jan", time:"09:00 AM", type:"WORKSHOP", title:"AI and Advanced Technologies in SPED", description:"Join Dr. Emily Tran as she guides educators through the process of utilizing data to inform teaching practices and enhance student learning.", status:"upcoming", cta:"Registered", instructor:"Dr. Emily Tran" },
-  { id:6, date:"7th Jan", time:"11:00 AM", type:"PANEL DISCUSSION", title:"Understanding & Supporting Communication for Students with AAC", description:"A panel of AAC specialists discuss implementation strategies, device selection, and how to create truly inclusive communication environments.", status:"upcoming", cta:"Register", instructor:"Dr. Sarah Kim" },
+  { id:1, date:"26th Mar", time:"09:00 AM", type:"OPENING", title:"Mental Health & Teacher Wellness in Special Education", description:"Sarah Habib—Occupational Therapist and founder of The Calm Caterpillar—shares practical, mindfulness-based strategies to support emotional regulation and wellness for both students and educators.", status:"past", cta:"Watch Again", instructor:"Tara Roehl" },
+  { id:2, date:"26th Mar", time:"11:00 AM", type:"KEYNOTE", title:"Accommodations & Inclusion: Integrating Students into Mainstream", description:"Casey Harrison—Certified Dyslexia Specialist—shares practical, research-aligned strategies to support students with dyslexia and language-based learning differences.", status:"past", cta:"Resume Lesson", instructor:"Casey Harrison" },
+  { id:3, date:"6th Jan 2025", time:"09:00 AM", type:"WORKSHOP", title:"Empowering Language and Literacy Skills with DHH Children", description:"Sydney Bassard—Speech-Language Pathologist—shares practical, evidence-informed strategies to build strong language and literacy foundations in children who are Deaf or Hard of Hearing.", status:"past", cta:"Recording Unavailable", instructor:"Jordan Smith" },
+  { id:4, date:"7th Jan 2025", time:"02:00 PM", type:"NETWORKING", title:"Paraeducators & Team Collaboration: Training, Delegation & More", description:"Diana Williams shares practical, leadership-driven strategies for building strong, collaborative partnerships between teachers and paraeducators.", status:"past", cta:"Watch Recording", instructor:"Morgan Lee" },
+  { id:5, date:"28th Mar", time:"09:00 AM", type:"WORKSHOP", title:"AI and Advanced Technologies in SPED", description:"Join Dr. Emily Tran as she guides educators through the process of utilizing data to inform teaching practices and enhance student learning.", status:"upcoming", cta:"Registered", instructor:"Dr. Emily Tran" },
+  { id:6, date:"28th Mar", time:"11:00 AM", type:"PANEL DISCUSSION", title:"Understanding & Supporting Communication for Students with AAC", description:"A panel of AAC specialists discuss implementation strategies, device selection, and how to create truly inclusive communication environments.", status:"upcoming", cta:"Register", instructor:"Dr. Sarah Kim" },
 ];
 
 const SCHEDULE_TYPE_COLORS = { OPENING:{c:"#7c3aed",bg:"#ede9fe"}, KEYNOTE:{c:"#2563eb",bg:"#dbeafe"}, WORKSHOP:{c:"#059669",bg:"#d1fae5"}, NETWORKING:{c:"#d97706",bg:"#fef3c7"}, "PANEL DISCUSSION":{c:"#dc2626",bg:"#fee2e2"} };
 const ADMIN_STATUS_COLORS = { LIVE:{c:"#fff",bg:"#10b981"}, DRAFT:{c:"#92400e",bg:"#fef3c7"}, ARCHIVED:{c:"#6b7280",bg:"#f3f4f6"} };
 
 const ADMIN_SESSIONS_DATA = [
-  { id:1, title:"Mental Health & Teacher Wellness in Special Education", category:"SPED", status:"LIVE", date:"Jan 5, 2025", enrolled:1240, availableFrom:"2025-01-05", availableTo:"2026-12-31" },
-  { id:2, title:"Accommodations & Inclusion: Integrating Students into Mainstream Education", category:"SPED", status:"LIVE", date:"Jan 5, 2025", enrolled:850, availableFrom:"2025-01-05", availableTo:"2026-12-31" },
-  { id:3, title:"Empowering Language and Literacy Skills with DHH Children", category:"SPED", status:"LIVE", date:"Jan 6, 2025", enrolled:620, availableFrom:"2025-01-06", availableTo:"2026-12-31" },
-  { id:4, title:"Paraeducators & Team Collaboration: Training, Delegation & More", category:"SPED", status:"DRAFT", date:"Last edited 2d ago", enrolled:null, availableFrom:"", availableTo:"" },
-  { id:5, title:"Introduction to Accessibility in SPED", category:"SPED", status:"ARCHIVED", date:"Archived Jan 2025", enrolled:320, availableFrom:"2024-01-01", availableTo:"2025-01-31" },
+  { id:1, title:"Mental Health & Teacher Wellness in Special Education", category:"SPED", status:"LIVE", date:"Mar 26, 2026", enrolled:1240, availableFrom:"2026-03-26T09:00", availableTo:"2027-12-31T23:59" },
+  { id:2, title:"Accommodations & Inclusion: Integrating Students into Mainstream Education", category:"SPED", status:"LIVE", date:"Mar 26, 2026", enrolled:850, availableFrom:"2026-03-26T11:00", availableTo:"2027-12-31T23:59" },
+  { id:3, title:"Empowering Language and Literacy Skills with DHH Children", category:"SPED", status:"ARCHIVED", date:"Jan 6, 2025", enrolled:620, availableFrom:"2025-01-06T09:00", availableTo:"2025-06-30T23:59" },
+  { id:4, title:"Paraeducators & Team Collaboration: Training, Delegation & More", category:"SPED", status:"ARCHIVED", date:"Jan 7, 2025", enrolled:410, availableFrom:"2025-01-07T09:00", availableTo:"2025-06-30T23:59" },
+  { id:5, title:"Introduction to Accessibility in SPED", category:"SPED", status:"ARCHIVED", date:"Archived Mar 2026", enrolled:320, availableFrom:"2025-01-01T09:00", availableTo:"2026-03-01T23:59" },
 ];
 
 const COMMUNITY_POSTS_DATA = [
@@ -961,8 +968,9 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
    DASHBOARD
 ───────────────────────────────────────────────────────────────────────────── */
 function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll }) {
-  const enrolledSessions = SESSIONS.filter(s => enrolledIds.has(s.id) && !isSessionArchived(s.id));
-  const discoverSessions = SESSIONS.filter(s => !enrolledIds.has(s.id) && !isSessionArchived(s.id));
+  const enrolledSessions  = SESSIONS.filter(s => enrolledIds.has(s.id) && getSessionState(s.id) === "live");
+  const upcomingEnrolled  = SESSIONS.filter(s => enrolledIds.has(s.id) && getSessionState(s.id) === "upcoming");
+  const discoverSessions  = SESSIONS.filter(s => !enrolledIds.has(s.id) && getSessionState(s.id) === "live");
   const completed = enrolledSessions.filter(s=>s.status==="completed").length;
   const total = enrolledSessions.length;
   const pct = total > 0 ? Math.round((completed/total)*100) : 0;
@@ -1004,7 +1012,7 @@ function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentC
               <Icon name="timer" size={12} color="#92400e"/> WATCHED 4 DAYS AGO
             </div>
             <h1 style={{ margin:"0 0 6px", fontSize:26, fontWeight:900, color:C.gray900 }}>Welcome back, <span style={{ color:C.primary }}>Alex!</span></h1>
-            <p style={{ margin:"0 0 18px", color:C.gray500, fontSize:14, lineHeight:1.6 }}>You've completed <strong style={{ color:C.gray800 }}>{completed} of {enrolledSessions.length}</strong> enrolled sessions. Your next milestone is just one lesson away.</p>
+            <p style={{ margin:"0 0 18px", color:C.gray500, fontSize:14, lineHeight:1.6 }}>You've completed <strong style={{ color:C.gray800 }}>{completed} of {enrolledSessions.length}</strong> live sessions{upcomingEnrolled.length > 0 ? ` · ${upcomingEnrolled.length} upcoming` : ""}. Your next milestone is just one lesson away.</p>
             <Btn onClick={() => onOpenSession(SESSIONS[1])}>
               <Icon name="play" size={14} color="#fff"/> Resume Last Session
             </Btn>
@@ -1030,6 +1038,39 @@ function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentC
             <div style={{ marginTop:10, fontSize:14, color:C.gray500 }}>You haven't enrolled in any sessions yet.</div>
             <div style={{ fontSize:12, color:C.gray400, marginTop:4 }}>Explore sessions below and hit Enroll to get started.</div>
           </div>
+        )}
+
+        {/* Upcoming registered sessions */}
+        {upcomingEnrolled.length > 0 && (
+          <>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+              <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900 }}>
+                Registered — Upcoming
+                <span style={{ fontSize:11, fontWeight:700, color:"#2563eb", background:"#dbeafe", padding:"2px 8px", borderRadius:99, marginLeft:8, letterSpacing:.3 }}>UPCOMING</span>
+              </h2>
+              <Btn variant="ghost" size="sm" onClick={()=>onNavigate("schedules")}>View Schedule <Icon name="caret-right" size={14} color={C.primary}/></Btn>
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:28 }}>
+              {upcomingEnrolled.map(s => {
+                const avail = SESSION_AVAILABILITY[s.id];
+                const releaseLabel = avail?.availableFrom
+                  ? new Date(avail.availableFrom).toLocaleString("en-US", { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" })
+                  : "Date TBD";
+                return (
+                  <div key={s.id} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:14, padding:"14px 16px" }}>
+                    <div style={{ width:48, height:48, borderRadius:10, background:"#eff6ff", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                      <Icon name="calendar" size={22} color="#2563eb"/>
+                    </div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontSize:13, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
+                      <div style={{ fontSize:11, color:"#2563eb", fontWeight:600, marginTop:2 }}>{releaseLabel}</div>
+                    </div>
+                    <span style={{ fontSize:11, fontWeight:700, color:"#059669", background:"#d1fae5", padding:"4px 10px", borderRadius:99, flexShrink:0 }}>Registered</span>
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
 
         {/* Discover More Sessions */}
@@ -1154,34 +1195,138 @@ function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentC
 /* ─────────────────────────────────────────────────────────────────────────────
    SESSIONS PAGE
 ───────────────────────────────────────────────────────────────────────────── */
-function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick }) {
-  const [filter, setFilter] = useState("all");
-  const filters = [
-    { key:"all", label:"All" },
-    { key:"completed", label:"Completed" },
-    { key:"in-progress", label:"In Progress" },
-    { key:"not-started", label:"Not Started" },
-    { key:"locked", label:"Locked" },
-  ];
-  const filtered = filter==="all" ? SESSIONS : SESSIONS.filter(s=>s.status===filter);
+function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set(), onNavigate }) {
+  const liveSessions     = SESSIONS.filter(s => enrolledIds.has(s.id) && getSessionState(s.id) === "live");
+  const upcomingSessions = SESSIONS.filter(s => getSessionState(s.id) === "upcoming");
+  const pastSessions     = SESSIONS.filter(s => getSessionState(s.id) === "past");
+  const hasLive = liveSessions.length > 0;
+
+  function SectionHead({ title, count, badge, badgeColor="#10b981", badgeBg="#d1fae5" }) {
+    return (
+      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
+        <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900 }}>{title}</h2>
+        {count !== undefined && <span style={{ fontSize:12, fontWeight:600, color:C.gray400 }}>{count}</span>}
+        {badge && <span style={{ fontSize:10, fontWeight:700, color:badgeColor, background:badgeBg, padding:"2px 9px", borderRadius:99, letterSpacing:.4 }}>{badge}</span>}
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
-      <div style={{ marginBottom:20 }}>
+      {/* Page header */}
+      <div style={{ marginBottom:24 }}>
         <div style={{ fontSize:10, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>FEATURED SERIES</div>
         <h1 style={{ margin:"0 0 4px", fontSize:24, fontWeight:900, color:C.gray900 }}>Summit Sessions</h1>
-        <p style={{ margin:"0 0 16px", color:C.gray500, fontSize:13, lineHeight:1.5 }}>Access recordings from this season and learn from experts.</p>
-        <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-          {filters.map(f=>(
-            <button key={f.key} onClick={()=>setFilter(f.key)}
-              style={{ padding:"6px 14px", borderRadius:99, border:`1px solid ${filter===f.key?C.primary:C.gray200}`, background:filter===f.key?C.primary:C.white, color:filter===f.key?"#fff":C.gray500, fontSize:12, fontWeight:600, cursor:"pointer" }}>
-              {f.label}
+        <p style={{ margin:0, color:C.gray500, fontSize:13, lineHeight:1.5 }}>All sessions — live, upcoming, and from past seasons.</p>
+      </div>
+
+      {/* No-active-sessions banner */}
+      {!hasLive && (
+        <div style={{ display:"flex", alignItems:"center", gap:14, background:"#fefce8", border:"1px solid #fde68a", borderRadius:14, padding:"16px 20px", marginBottom:24 }}>
+          <div style={{ width:40, height:40, borderRadius:10, background:"#fef3c7", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+            <Icon name="calendar" size={20} color="#d97706"/>
+          </div>
+          <div style={{ flex:1 }}>
+            <div style={{ fontWeight:700, fontSize:14, color:"#92400e", marginBottom:3 }}>No active sessions right now</div>
+            <p style={{ margin:0, fontSize:13, color:"#a16207", lineHeight:1.5 }}>
+              The current season has no live content at this moment. Explore <strong>upcoming sessions</strong> below or revisit <strong>past season recordings</strong>.
+            </p>
+          </div>
+          {onNavigate && (
+            <button onClick={()=>onNavigate("schedules")}
+              style={{ padding:"8px 16px", borderRadius:8, border:"none", background:"#f59e0b", color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, whiteSpace:"nowrap" }}>
+              View Schedule
             </button>
-          ))}
+          )}
         </div>
-      </div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16 }}>
-        {filtered.map(s=><SessionCard key={s.id} session={s} onClick={onOpenSession} quizState={quizStates[s.id]||{}} onAssessmentClick={onAssessmentClick} onCertificateClick={onCertificateClick}/>)}
-      </div>
+      )}
+
+      {/* ── Live sessions ── */}
+      {hasLive && (
+        <div style={{ marginBottom:32 }}>
+          <SectionHead title="Live Now" count={liveSessions.length} badge="● LIVE" badgeColor="#fff" badgeBg="#10b981"/>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16 }}>
+            {liveSessions.map(s => <SessionCard key={s.id} session={s} onClick={onOpenSession} quizState={quizStates[s.id]||{}} onAssessmentClick={onAssessmentClick} onCertificateClick={onCertificateClick}/>)}
+          </div>
+        </div>
+      )}
+
+      {/* ── Upcoming sessions ── */}
+      {upcomingSessions.length > 0 && (
+        <div style={{ marginBottom:32 }}>
+          <SectionHead title="Coming Up" count={upcomingSessions.length} badge="UPCOMING" badgeColor="#2563eb" badgeBg="#dbeafe"/>
+          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+            {upcomingSessions.map(s => {
+              const avail = SESSION_AVAILABILITY[s.id];
+              const releaseLabel = avail?.availableFrom
+                ? new Date(avail.availableFrom).toLocaleString("en-US", { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" })
+                : "Date TBD";
+              return (
+                <div key={s.id} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:16, padding:"16px 20px", overflow:"hidden" }}>
+                  <div style={{ width:96, height:64, borderRadius:8, overflow:"hidden", flexShrink:0 }}>
+                    <SessionThumb id={s.id} height={64}/>
+                  </div>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:10, fontWeight:700, color:"#2563eb", letterSpacing:.5, marginBottom:3, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>UPCOMING · {releaseLabel}</div>
+                    <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
+                    <div style={{ fontSize:12, color:C.gray500, marginTop:2, whiteSpace:"nowrap" }}>{s.instructor} · {s.duration}</div>
+                  </div>
+                  <button onClick={()=>onNavigate?.("schedules")}
+                    style={{ padding:"8px 16px", borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", color:C.primary, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap" }}>
+                    <Icon name="bell" size={13} color={C.primary}/> Register
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Past sessions ── */}
+      {pastSessions.length > 0 && (
+        <div style={{ marginBottom:32 }}>
+          <SectionHead title="Past Seasons" count={pastSessions.length} badge="COMPLETED" badgeColor="#6b7280" badgeBg="#f3f4f6"/>
+          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+            {pastSessions.map(s => {
+              const avail = SESSION_AVAILABILITY[s.id];
+              const hasRec = avail?.hasRecording;
+              const airedDate = avail?.availableFrom
+                ? new Date(avail.availableFrom).toLocaleDateString("en-US", { month:"long", year:"numeric" })
+                : "";
+              return (
+                <div key={s.id} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:16, padding:"16px 20px", overflow:"hidden", opacity:0.82 }}>
+                  <div style={{ position:"relative", width:96, height:64, borderRadius:8, overflow:"hidden", flexShrink:0 }}>
+                    <SessionThumb id={s.id} height={64}/>
+                    <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.38)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      {hasRec
+                        ? <Icon name="play" size={18} color="rgba(255,255,255,0.9)"/>
+                        : <Icon name="warning-circle" size={18} color="rgba(255,255,255,0.7)"/>}
+                    </div>
+                  </div>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:10, fontWeight:700, color:C.gray400, letterSpacing:.5, marginBottom:3, whiteSpace:"nowrap" }}>PAST SEASON · {airedDate}</div>
+                    <div style={{ fontSize:14, fontWeight:700, color:C.gray700, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
+                    <div style={{ fontSize:12, color:C.gray400, marginTop:2, whiteSpace:"nowrap" }}>{s.instructor} · {s.duration}</div>
+                  </div>
+                  {hasRec ? (
+                    <button onClick={()=>onOpenSession(s)}
+                      style={{ padding:"8px 16px", borderRadius:8, border:`1px solid ${C.gray300}`, background:C.white, color:C.gray700, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap" }}>
+                      <Icon name="play" size={13} color={C.gray600}/> Watch Recording
+                    </button>
+                  ) : (
+                    <div style={{ padding:"8px 14px", borderRadius:8, background:C.gray100, fontSize:12, fontWeight:600, color:C.gray400, flexShrink:0, whiteSpace:"nowrap", display:"flex", alignItems:"center", gap:6 }}>
+                      <Icon name="warning-circle" size={13} color={C.gray400}/> Recording unavailable
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ marginTop:10, padding:"10px 14px", background:C.gray100, borderRadius:10, fontSize:12, color:C.gray500, lineHeight:1.5 }}>
+            Past session recordings were available during the live window. Some recordings may not be available for redistribution.
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -2012,7 +2157,11 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange }) {
     reader.readAsDataURL(file);
   }
 
-  function save() { userProfile.name = form.name; onNameChange?.(form.name); toast({ type:"success", title:"Profile saved", message:"Your changes have been updated." }); }
+  function save() {
+    userProfile.name = form.name;
+    onNameChange?.(form.name);
+    toast({ type:"success", title:"Profile saved", message:"Your changes have been updated." });
+  }
 
   const inputSt = { width:"100%", padding:"12px 14px", border:`1.5px solid ${C.gray200}`, borderRadius:12, fontSize:14, color:C.gray900, background:C.gray50, outline:"none", boxSizing:"border-box", fontFamily:"inherit", transition:"border-color .15s" };
 
@@ -2413,7 +2562,7 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast }) {
                   <span style={{ fontSize:11, color:C.gray400 }}>{s.category}</span>
                   {s.availableFrom && s.availableTo && s.status !== "ARCHIVED" && (
                     <span style={{ fontSize:10, color:C.gray400 }}>
-                      {new Date(s.availableFrom).toLocaleDateString("en-US",{month:"short",day:"numeric"})} – {new Date(s.availableTo).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}
+                      {new Date(s.availableFrom).toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})} – {new Date(s.availableTo).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}
                     </span>
                   )}
                 </div>
@@ -3319,11 +3468,11 @@ function AdminCreateSession({ onBack, toast }) {
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:8 }}>
               <div>
                 <div style={{ fontSize:10, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE FROM</div>
-                <input type="date" value={form.availableFrom} onChange={e=>upd("availableFrom",e.target.value)} style={inputSt}/>
+                <input type="datetime-local" value={form.availableFrom} onChange={e=>upd("availableFrom",e.target.value)} style={inputSt}/>
               </div>
               <div>
                 <div style={{ fontSize:10, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE TO</div>
-                <input type="date" value={form.availableTo} onChange={e=>upd("availableTo",e.target.value)} style={inputSt}/>
+                <input type="datetime-local" value={form.availableTo} onChange={e=>upd("availableTo",e.target.value)} style={inputSt}/>
               </div>
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 12px", background:"#f0f9ff", borderRadius:8, border:"1px solid #bae6fd" }}>
@@ -3560,17 +3709,17 @@ function AdminEditSession({ session, onBack, toast }) {
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:8 }}>
               <div>
                 <div style={{ fontSize:10, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE FROM</div>
-                <input type="date" value={form.availableFrom} onChange={e=>upd("availableFrom",e.target.value)} style={inputSt}/>
+                <input type="datetime-local" value={form.availableFrom} onChange={e=>upd("availableFrom",e.target.value)} style={inputSt}/>
               </div>
               <div>
                 <div style={{ fontSize:10, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE TO</div>
-                <input type="date" value={form.availableTo} onChange={e=>upd("availableTo",e.target.value)} style={inputSt}/>
+                <input type="datetime-local" value={form.availableTo} onChange={e=>upd("availableTo",e.target.value)} style={inputSt}/>
               </div>
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 12px", background:"#f0f9ff", borderRadius:8, border:"1px solid #bae6fd" }}>
               <Icon name="info" size={14} color="#0369a1"/>
               <span style={{ fontSize:12, color:"#0369a1", lineHeight:1.5 }}>
-                When the <strong>Available To</strong> date passes, this session automatically moves to <strong>Archive</strong> and disappears from student views. Leave blank for no expiry.
+                The session goes live at the <strong>Available From</strong> date &amp; time and auto-archives after <strong>Available To</strong>. Leave blank for no expiry.
               </span>
             </div>
           </FormSection>
@@ -4605,12 +4754,12 @@ function LegalModal({ type, onClose }) {
 }
 
 function AuthModal({ onClose, onLogin }) {
-  const [mode, setMode] = useState("signup"); // "signup" | "login"
+  const [mode, setMode] = useState("signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [legalModal, setLegalModal] = useState(null); // "terms" | "privacy"
+  const [legalModal, setLegalModal] = useState(null);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -4618,26 +4767,28 @@ function AuthModal({ onClose, onLogin }) {
     onLogin();
   }
 
+  function handleGoogle() {
+    onLogin();
+  }
+
   return (
     <div style={{ position:"fixed", inset:0, zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(75,82,99,0.7)", padding:20 }}>
-      <div style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:480, padding:"36px 40px 28px", position:"relative", boxShadow:"0 24px 64px rgba(0,0,0,0.18)", animation:"fadeIn .2s ease" }}>
-        {/* Close */}
+      <div style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:480, padding:"36px 40px 28px", position:"relative", boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
         <button onClick={onClose} style={{ position:"absolute", top:16, right:16, background:"none", border:"none", cursor:"pointer", color:"#9ca3af", fontSize:18, lineHeight:1, padding:4 }}>✕</button>
 
         <h2 style={{ margin:"0 0 24px", fontSize:20, fontWeight:800, color:"#181c32", textAlign:"center" }}>
           {mode === "signup" ? "Create your account" : "Welcome back"}
         </h2>
 
-        {/* Social buttons */}
-        <button style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:12, padding:"13px 16px", border:"1.5px solid #e4e6ef", borderRadius:12, background:"#fff", fontSize:14, fontWeight:500, color:"#181c32", cursor:"pointer", marginBottom:10, transition:"border-color .15s" }}
+        {/* Google */}
+        <button onClick={handleGoogle}
+          style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:12, padding:"13px 16px", border:"1.5px solid #e4e6ef", borderRadius:12, background:"#fff", fontSize:14, fontWeight:500, color:"#181c32", cursor:"pointer", marginBottom:10, transition:"border-color .15s" }}
           onMouseEnter={e=>e.currentTarget.style.borderColor="#3699ff"}
-          onMouseLeave={e=>e.currentTarget.style.borderColor="#e4e6ef"}
-          onClick={onLogin}>
+          onMouseLeave={e=>e.currentTarget.style.borderColor="#e4e6ef"}>
           <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-3.59-13.46-8.71l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
           Continue with Google
         </button>
 
-        {/* Divider */}
         <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20 }}>
           <div style={{ flex:1, height:1, background:"#e4e6ef" }}/>
           <span style={{ fontSize:12, color:"#a1a5b7", fontWeight:500 }}>or</span>
@@ -4645,16 +4796,15 @@ function AuthModal({ onClose, onLogin }) {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email address" type="email"
+          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email address" type="email" required
             style={{ width:"100%", padding:"13px 16px", border:"1.5px solid #e4e6ef", borderRadius:12, fontSize:14, color:"#181c32", outline:"none", marginBottom:10, boxSizing:"border-box", background:"#fff" }}
             onFocus={e=>e.target.style.borderColor="#3699ff"} onBlur={e=>e.target.style.borderColor="#e4e6ef"}/>
           <div style={{ marginBottom:6 }}>
-            <input value={password} onChange={e=>setPassword(e.target.value)} placeholder={mode==="signup"?"Create password":"Password"} type="password"
+            <input value={password} onChange={e=>setPassword(e.target.value)} placeholder={mode==="signup"?"Create password":"Password"} type="password" required
               style={{ width:"100%", padding:"13px 16px", border:"1.5px solid #e4e6ef", borderRadius:12, fontSize:14, color:"#181c32", outline:"none", boxSizing:"border-box", background:"#fff" }}
               onFocus={e=>e.target.style.borderColor="#3699ff"} onBlur={e=>e.target.style.borderColor="#e4e6ef"}/>
             {mode==="signup" && <div style={{ fontSize:12, color:"#a1a5b7", marginTop:5, marginLeft:4 }}>Password must be at least 6 characters long.</div>}
           </div>
-
           {mode==="signup" && (
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:10 }}>
               <input value={firstName} onChange={e=>setFirstName(e.target.value)} placeholder="First name"
@@ -4665,7 +4815,6 @@ function AuthModal({ onClose, onLogin }) {
                 onFocus={e=>e.target.style.borderColor="#3699ff"} onBlur={e=>e.target.style.borderColor="#e4e6ef"}/>
             </div>
           )}
-
           <button type="submit"
             style={{ width:"100%", padding:"15px", borderRadius:12, border:"none", background:"#50cd89", color:"#fff", fontSize:15, fontWeight:800, cursor:"pointer", marginTop:10, marginBottom:16, transition:"background .15s" }}
             onMouseEnter={e=>e.currentTarget.style.background="#3cb97a"}
@@ -5103,27 +5252,73 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
   );
 }
 
-function LandingSessionCard({ s, imgSrc, onClick }) {
+function LandingSessionCard({ s, imgSrc, onClick, availableFrom, sessionState }) {
   const [hov, setHov] = useState(false);
+  const state = sessionState || "live";
+  const isUpcoming = state === "upcoming";
+  const isPast     = state === "past";
+  const hasRec     = SESSION_AVAILABILITY[s.id]?.hasRecording;
+
+  const availLabel = isUpcoming && availableFrom
+    ? new Date(availableFrom).toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit" })
+    : null;
+
+  const clickable = state === "live" || (isPast && hasRec);
+
   return (
-    <div onClick={onClick}
+    <div onClick={clickable ? onClick : undefined}
       onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
-      style={{ borderRadius:14, overflow:"hidden", cursor:"pointer", boxShadow:"0 2px 12px rgba(0,0,0,0.08)" }}>
+      style={{ borderRadius:14, overflow:"hidden", cursor: clickable ? "pointer" : "default",
+               boxShadow:"0 2px 12px rgba(0,0,0,0.08)",
+               opacity: isPast ? 0.78 : isUpcoming ? 0.9 : 1 }}>
       <div style={{ height:140, position:"relative", overflow:"hidden" }}>
-        <img src={imgSrc} alt={s.title} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}/>
-        <div style={{ position:"absolute", inset:0, background: hov ? "rgba(0,0,0,0.38)" : "rgba(0,0,0,0.18)", transition:"background .2s" }}/>
-        {hov && (
+        <img src={imgSrc} alt={s.title} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block",
+          filter: (isPast || isUpcoming) ? "brightness(0.65) saturate(0.6)" : "none" }}/>
+        <div style={{ position:"absolute", inset:0, background: hov && clickable ? "rgba(0,0,0,0.38)" : "rgba(0,0,0,0.18)", transition:"background .2s" }}/>
+
+        {/* Play button — live sessions on hover */}
+        {state === "live" && hov && (
           <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
             <div style={{ width:44, height:44, borderRadius:"50%", background:"rgba(255,255,255,0.22)", backdropFilter:"blur(4px)", border:"2px solid rgba(255,255,255,0.5)", display:"flex", alignItems:"center", justifyContent:"center" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
             </div>
           </div>
         )}
+
+        {/* Upcoming overlay */}
+        {isUpcoming && (
+          <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:6 }}>
+            <div style={{ width:40, height:40, borderRadius:"50%", background:"rgba(255,255,255,0.18)", backdropFilter:"blur(4px)", border:"2px solid rgba(255,255,255,0.4)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div style={{ background:"rgba(0,0,0,0.6)", backdropFilter:"blur(6px)", borderRadius:20, padding:"4px 10px", fontSize:10, fontWeight:700, color:"#fff", letterSpacing:.3 }}>
+              Available {availLabel}
+            </div>
+          </div>
+        )}
+
+        {/* Past overlay */}
+        {isPast && (
+          <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:6 }}>
+            <div style={{ background:"rgba(0,0,0,0.6)", backdropFilter:"blur(6px)", borderRadius:20, padding:"4px 10px", fontSize:10, fontWeight:700, letterSpacing:.3,
+              color: hasRec ? "#86efac" : "#fca5a5" }}>
+              {hasRec ? "▶ Watch Recording" : "Recording Unavailable"}
+            </div>
+          </div>
+        )}
+
+        {/* Category pill */}
         <div style={{ position:"absolute", top:10, left:10, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(4px)", borderRadius:6, padding:"3px 8px", fontSize:10, fontWeight:700, color:"#fff", letterSpacing:.5 }}>{s.category}</div>
+
+        {/* State badge top-right */}
+        {isPast && (
+          <div style={{ position:"absolute", top:10, right:10, background:"rgba(0,0,0,0.55)", borderRadius:6, padding:"3px 8px", fontSize:9, fontWeight:700, color:"#d1d5db", letterSpacing:.5 }}>PAST SEASON</div>
+        )}
       </div>
+
       <div style={{ background:"#fff", padding:"12px 14px" }}>
         <div style={{ fontSize:13, fontWeight:700, color:"#181c32", lineHeight:1.4, marginBottom:4, overflow:"hidden", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{s.title}</div>
-        <div style={{ fontSize:11, color:"#a1a5b7" }}>{s.instructor} · {s.duration}</div>
+        <div style={{ fontSize:11, color: isPast ? "#c0c4cc" : "#a1a5b7" }}>{s.instructor} · {s.duration}</div>
       </div>
     </div>
   );
@@ -5274,9 +5469,9 @@ function LandingPage({ onGetStarted }) {
             </div>
             <div style={{ display:"flex", gap:10 }}>
               {(() => {
-                const activeSessions = SESSIONS.filter(s => !isSessionArchived(s.id));
+                const allSessions = SESSIONS.filter(s => !isSessionArchived(s.id));
                 return [["chevron-left", () => setFeaturedPage(p => Math.max(0, p-1)), featuredPage === 0],
-                  ["chevron-right", () => setFeaturedPage(p => Math.min(Math.ceil(activeSessions.length/4)-1, p+1)), featuredPage >= Math.ceil(activeSessions.length/4)-1]
+                  ["chevron-right", () => setFeaturedPage(p => Math.min(Math.ceil(allSessions.length/4)-1, p+1)), featuredPage >= Math.ceil(allSessions.length/4)-1]
                 ].map(([icon, onClick, disabled], idx) => (
                   <button key={idx} onClick={onClick} disabled={disabled}
                     style={{ width:48, height:48, borderRadius:"50%", border:"1.5px solid #e8ddd5", background:"#fdf8f4", display:"flex", alignItems:"center", justifyContent:"center", cursor:disabled?"not-allowed":"pointer", opacity:disabled?0.4:1, transition:"border-color .15s, background .15s" }}
@@ -5298,11 +5493,12 @@ function LandingPage({ onGetStarted }) {
                 "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=480&h=260&fit=crop&auto=format",
                 "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=480&h=260&fit=crop&auto=format",
               ];
-              const activeSessions = SESSIONS.filter(s => !isSessionArchived(s.id));
-              return activeSessions.slice(featuredPage*4, featuredPage*4+4).map((s,i)=>{
+              const allSessions = SESSIONS.filter(s => !isSessionArchived(s.id));
+              return allSessions.slice(featuredPage*4, featuredPage*4+4).map((s,i)=>{
                 const imgIdx = featuredPage*4+i;
+                const avail = SESSION_AVAILABILITY[s.id];
                 return (
-                  <LandingSessionCard key={s.id} s={s} imgSrc={sessionImgs[imgIdx % sessionImgs.length]} onClick={()=>setSelectedSession(s)}/>
+                  <LandingSessionCard key={s.id} s={s} imgSrc={sessionImgs[imgIdx % sessionImgs.length]} onClick={()=>setSelectedSession(s)} availableFrom={avail?.availableFrom} sessionState={getSessionState(s.id)}/>
                 );
               });
             })()}
@@ -5457,7 +5653,7 @@ function LandingPage({ onGetStarted }) {
         </button>
       </section>
 
-      {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={onGetStarted}/>}
+      {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={()=>onGetStarted(null)}/>}
     </div>
   );
 }
@@ -5485,9 +5681,9 @@ export default function App() {
   }
 
   /* ── Quiz state: { [sessionId]: { status, score, currentQ, answers } } ── */
-  const [quizStates,      setQuizStates]      = useState({});
-  const [assessmentSession, setAssessmentSession] = useState(null); // session being assessed
-  const [certSession,     setCertSession]     = useState(null);     // session showing cert
+  const [quizStates,        setQuizStates]        = useState({});
+  const [assessmentSession, setAssessmentSession] = useState(null);
+  const [certSession,       setCertSession]       = useState(null);
 
   function updateQuizState(sessionId, updates) {
     setQuizStates(prev => ({ ...prev, [sessionId]: { ...(prev[sessionId] || { status:"not-taken" }), ...updates } }));
@@ -5543,7 +5739,7 @@ export default function App() {
       if (page==="admin-analytics") return <AnalyticsPage onEditSession={openEdit}/>;
     }
     if (page==="dashboard") return <Dashboard onNavigate={nav} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll}/>;
-    if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps}/>;
+    if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav}/>;
     if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
     if (page==="community") return <CommunityPage toast={toast}/>;
@@ -5558,7 +5754,10 @@ export default function App() {
     return (
       <>
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet"/>
-        <LandingPage onGetStarted={(sessionId) => { setIsLoggedIn(true); if (sessionId) setEnrolledIds(prev => new Set([...prev, sessionId])); }}/>
+        <LandingPage onGetStarted={(sessionId) => {
+          setIsLoggedIn(true);
+          if (sessionId) enroll(sessionId);
+        }}/>
       </>
     );
   }
@@ -5572,7 +5771,10 @@ export default function App() {
         toast={toast}
         isDark={isDark}
         onToggleDarkMode={() => setIsDark(v => !v)}
-        onLogout={() => { setIsLoggedIn(false); setPage("dashboard"); setIsAdmin(false); }}
+        onLogout={() => {
+          setIsLoggedIn(false); setPage("dashboard"); setIsAdmin(false);
+          setEnrolledIds(new Set([1,2,3])); setQuizStates({});
+        }}
         onNavigateProfile={() => nav("profile")}
         onOpenSession={openSession}
         onNavigate={nav}
