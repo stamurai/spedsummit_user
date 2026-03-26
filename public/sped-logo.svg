@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 110" fill="none">
+  <!-- SP -->
+  <text x="4" y="58" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="58" fill="#1B9AD6">SP</text>
+
+  <!-- E -->
+  <text x="104" y="58" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="58" fill="#1B9AD6">E</text>
+
+  <!-- D with notch cutout -->
+  <g>
+    <!-- D letter base -->
+    <text x="143" y="58" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="58" fill="#1B9AD6">D</text>
+    <!-- White notch cut from upper-right of D -->
+    <rect x="163" y="4" width="22" height="22" fill="#ffffff"/>
+  </g>
+
+  <!-- SUMMIT -->
+  <text x="4" y="100" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="40" fill="#1B9AD6" letter-spacing="3">SUMMIT</text>
+</svg>
