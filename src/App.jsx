@@ -883,18 +883,29 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
     }
   }
 
-  const cardClickable = !cta.disabled && !showAssessmentCTA;
+  const [cardHov, setCardHov] = useState(false);
+  const cardClickable = !cta.disabled;
 
   return (
     <div
       onClick={() => cardClickable && onClick(session)}
+      onMouseEnter={()=>setCardHov(true)}
+      onMouseLeave={()=>setCardHov(false)}
       style={{ background:C.white, borderRadius:14, overflow:"hidden",
                boxShadow:"0 1px 3px rgba(0,0,0,0.07)", cursor: cta.disabled ? "default" : "pointer",
                border:`1px solid ${C.gray200}`, display:"flex", flexDirection:"column" }}>
 
       {/* Thumbnail */}
       <div style={{ position:"relative", flexShrink:0 }}>
-        <SessionThumb id={session.id} height={152} overlay={session.status==="locked"}/>
+        <SessionThumb id={session.id} height={152} overlay={session.status==="locked"} noPlayHover/>
+        {/* Play overlay on card hover */}
+        {session.status !== "locked" && cardHov && (
+          <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.15)", transition:"opacity .15s", pointerEvents:"none" }}>
+            <div style={{ width:44, height:44, borderRadius:"50%", background:"rgba(255,255,255,0.22)", backdropFilter:"blur(4px)", border:"2px solid rgba(255,255,255,0.5)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+        )}
         {session.status==="completed" && qs !== "passed" && (
           <div style={{ position:"absolute", top:10, right:10, width:24, height:24, borderRadius:"50%",
                         background:C.success, display:"flex", alignItems:"center", justifyContent:"center" }}>
