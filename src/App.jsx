@@ -224,6 +224,91 @@ function AdminThumb({ idx = 0 }) {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
+   CERTIFICATE DOWNLOAD UTILITY
+───────────────────────────────────────────────────────────────────────────── */
+function downloadCertificate({ recipientName = "Alex Johnson", sessionTitle, instructor, duration = "", score = null, quizTitle = null }) {
+  const today   = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
+  const certId  = `SS-${Date.now().toString(36).toUpperCase()}`;
+  const certUrl = `spedsummit.com/cert/${certId.toLowerCase()}`;
+  const title   = quizTitle || sessionTitle;
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Certificate — ${title}</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: 'Segoe UI', Roboto, sans-serif; background:#fff; }
+    @media print {
+      body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      .no-print { display:none !important; }
+    }
+    .cert { width:860px; margin:40px auto; background:#FEF5EC; border:1px solid #e4e6ef; border-radius:16px; padding:48px 56px; }
+    .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:48px; }
+    .logo { font-size:22px; font-weight:900; color:#181c32; letter-spacing:-0.5px; }
+    .logo span { color:#7c3aed; }
+    .meta { text-align:right; font-size:11px; color:#a1a5b7; line-height:2; }
+    .label { font-size:11px; font-weight:700; color:#7e8299; letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+    .course-title { font-size:32px; font-weight:900; color:#181c32; line-height:1.2; margin-bottom:16px; letter-spacing:-0.5px; max-width:560px; }
+    .instructor { font-size:14px; color:#5e6278; margin-bottom:48px; }
+    .instructor strong { color:#181c32; }
+    .divider { height:1px; background:#e4e6ef; margin-bottom:28px; }
+    .footer { display:flex; justify-content:space-between; align-items:flex-end; }
+    .name { font-size:28px; font-weight:900; color:#181c32; letter-spacing:-0.3px; margin-bottom:8px; }
+    .detail { font-size:12px; color:#5e6278; line-height:2; }
+    .detail span { color:#7e8299; margin-right:8px; }
+    .detail strong { color:#181c32; }
+    .seal { width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg,#7c3aed,#a855f7); display:flex; align-items:center; justify-content:center; }
+    .seal-inner { text-align:center; }
+    .seal-text { font-size:11px; font-weight:700; color:#a1a5b7; letter-spacing:0.5px; margin-top:6px; }
+    .btn { display:block; margin:24px auto 0; padding:12px 36px; background:#7c3aed; color:#fff; border:none; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <div class="cert">
+    <div class="header">
+      <div class="logo">SPED <span>Summit</span></div>
+      <div class="meta">
+        <div>Certificate no: ${certId}</div>
+        <div>Certificate url: ${certUrl}</div>
+        <div>Date issued: ${today}</div>
+      </div>
+    </div>
+    <div class="label">Certificate of Completion</div>
+    <div class="course-title">${title}</div>
+    <div class="instructor">
+      Instructor &nbsp;<strong>${instructor}</strong>${duration ? `&nbsp;·&nbsp;${duration}` : ""}
+    </div>
+    <div class="divider"></div>
+    <div class="footer">
+      <div>
+        <div class="name">${recipientName}</div>
+        <div class="detail"><span>Date</span><strong>${today}</strong></div>
+        ${score !== null ? `<div class="detail"><span>Score</span><strong>${score}%</strong></div>` : ""}
+      </div>
+      <div class="seal-inner">
+        <div class="seal" style="display:flex;align-items:center;justify-content:center;">
+          <svg width="32" height="32" viewBox="0 0 256 256" fill="white"><path d="M128,8a120,120,0,1,0,120,120A120.14,120.14,0,0,0,128,8Zm53.92,91.07-58.54,56a8,8,0,0,1-11.12-.38l-29.46-32a8,8,0,1,1,11.78-10.84l23.61,25.63,52.73-50.43a8,8,0,0,1,11,11.6Z"/></svg>
+        </div>
+        <div class="seal-text">VERIFIED</div>
+      </div>
+    </div>
+  </div>
+  <div class="no-print" style="text-align:center;margin-top:16px;">
+    <button class="btn" onclick="window.print()">Save as PDF</button>
+  </div>
+  <script>setTimeout(()=>window.print(), 600);<\/script>
+</body>
+</html>`;
+
+  const win = window.open("", "_blank", "width=960,height=700");
+  if (!win) { alert("Please allow pop-ups to download your certificate."); return; }
+  win.document.write(html);
+  win.document.close();
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
    DATA
 ───────────────────────────────────────────────────────────────────────────── */
 const SESSIONS = [
@@ -2436,7 +2521,7 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    REWARDS
 ───────────────────────────────────────────────────────────────────────────── */
-function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertificateClick }) {
+function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertificateClick, userName = "Alex Johnson" }) {
   const [activeSeason,  setActiveSeason]  = useState(null);
   const [activeSession, setActiveSession] = useState(null);
 
@@ -2493,7 +2578,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
                       <div style={{ fontSize:12, color:C.gray400 }}>{l.questions} questions</div>
                     </div>
                     {l.status === "completed" ? (
-                      <button onClick={()=>alert("Certificate download will trigger here in production!")}
+                      <button onClick={()=>downloadCertificate({ recipientName:userName, sessionTitle:session.title, instructor:session.instructor, quizTitle:l.title })}
                         style={{ padding:"7px 14px", borderRadius:8, border:"none", background:C.primary, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
                         <Icon name="download" size={13} color="#fff"/> Download Certificate
                       </button>
@@ -2527,7 +2612,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
                     style={{ padding:"8px 14px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray600, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
                     <Icon name="certificate" size={13} color={C.gray500}/> View
                   </button>
-                  <button onClick={()=>alert("Certificate download will trigger here in production!")}
+                  <button onClick={()=>downloadCertificate({ recipientName:userName, sessionTitle:session.title, instructor:session.instructor, duration:session.duration, score:qs?.score })}
                     style={{ padding:"8px 14px", borderRadius:8, border:"none", background:C.primary, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
                     <Icon name="download" size={13} color="#fff"/> Download
                   </button>
@@ -4584,7 +4669,7 @@ function CertificateModal({ session, quizState, onClose }) {
         {/* Actions */}
         <div style={{ display:"flex", gap:10, padding:"16px 20px", justifyContent:"flex-end" }}>
           <Btn variant="outline" onClick={onClose}>Close</Btn>
-          <Btn onClick={() => { alert("Certificate download would trigger here in production!"); onClose(); }}>
+          <Btn onClick={() => { downloadCertificate({ sessionTitle: session.title, instructor: session.instructor, duration: session.duration, score }); }}>
             <Icon name="download" size={14} color="#fff"/> Download PDF
           </Btn>
         </div>
@@ -6219,7 +6304,7 @@ export default function App() {
     if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
     if (page==="community") return <CommunityPage toast={toast}/>;
-    if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick}/>;
+    if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick} userName={userName}/>;
     if (page==="profile")   return <ProfilePage toast={toast} userName={userName} onNameChange={setUserName}/>;
     return null;
   }
