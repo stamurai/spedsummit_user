@@ -268,7 +268,7 @@ function downloadCertificate({ recipientName = "Alex Johnson", sessionTitle, ins
 <body>
   <div class="cert">
     <div class="header">
-      <div class="logo">SPED <span>Summit</span></div>
+      <img src="${window.location.origin}/Container.png" alt="SPED Summit" style="height:40px;width:auto;" onerror="this.style.display='none';this.nextSibling.style.display='block'"/><div class="logo" style="display:none">SPED <span>Summit</span></div>
       <div class="meta">
         <div>Certificate no: ${certId}</div>
         <div>Certificate url: ${certUrl}</div>
@@ -298,14 +298,20 @@ function downloadCertificate({ recipientName = "Alex Johnson", sessionTitle, ins
   <div class="no-print" style="text-align:center;margin-top:16px;">
     <button class="btn" onclick="window.print()">Save as PDF</button>
   </div>
-  <script>setTimeout(()=>window.print(), 600);<\/script>
 </body>
 </html>`;
 
-  const win = window.open("", "_blank", "width=960,height=700");
-  if (!win) { alert("Please allow pop-ups to download your certificate."); return; }
-  win.document.write(html);
-  win.document.close();
+  const iframe = document.createElement("iframe");
+  iframe.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;";
+  document.body.appendChild(iframe);
+  iframe.contentWindow.document.open();
+  iframe.contentWindow.document.write(html);
+  iframe.contentWindow.document.close();
+  setTimeout(() => {
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+    setTimeout(() => document.body.removeChild(iframe), 2000);
+  }, 600);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
