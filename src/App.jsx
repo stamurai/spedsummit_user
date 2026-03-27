@@ -1435,7 +1435,7 @@ function SchedulePage({ onOpenSession, toast }) {
               {/* CTA */}
               <div style={{ flexShrink:0, display:"flex", flexDirection:"column", alignItems:"flex-end", gap:6 }}>
                 {cta === "Recording Unavailable" ? (
-                  <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, color:C.gray400 }}>
+                  <div style={{ padding:"8px 14px", borderRadius:8, background:C.gray100, fontSize:12, fontWeight:600, color:C.gray400, flexShrink:0, whiteSpace:"nowrap", display:"flex", alignItems:"center", gap:6 }}>
                     <Icon name="warning-circle" size={13} color={C.gray400}/>
                     Recording unavailable
                   </div>
