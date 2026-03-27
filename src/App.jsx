@@ -1016,7 +1016,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 /* ─────────────────────────────────────────────────────────────────────────────
    DASHBOARD
 ───────────────────────────────────────────────────────────────────────────── */
-function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{} }) {
+function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{} }) {
   const enrolledSessions  = SESSIONS.filter(s => enrolledIds.has(s.id) && getSessionState(s.id) === "live");
   const upcomingSessions  = SESSIONS.filter(s => getSessionState(s.id) === "upcoming");
   const pastSessions      = SESSIONS.filter(s => getSessionState(s.id) === "past");
@@ -1080,7 +1080,15 @@ function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentC
           <>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
               <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900 }}>My Sessions <span style={{ fontSize:12, fontWeight:600, color:C.gray400, marginLeft:6 }}>{enrolledSessions.length} enrolled</span></h2>
-              <Btn variant="ghost" size="sm" onClick={() => onNavigate("sessions")}>View All <Icon name="caret-right" size={14} color={C.primary}/></Btn>
+              <Btn variant="ghost" size="sm" onClick={() => {
+                const primarySeason = SEASONS.reduce((best, s) => {
+                  const n = s.sessionIds.filter(id => enrolledIds.has(id)).length;
+                  const bestN = best ? best.sessionIds.filter(id => enrolledIds.has(id)).length : 0;
+                  return n > bestN ? s : best;
+                }, null);
+                if (primarySeason && onNavigateToSeason) onNavigateToSeason(primarySeason.id);
+                else onNavigate("sessions");
+              }}>View All <Icon name="caret-right" size={14} color={C.primary}/></Btn>
             </div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16, marginBottom:28 }}>
               {enrolledSessions.map(s => <SessionCard key={s.id} session={s} onClick={onOpenSession} quizState={quizStates[s.id]||{}} onAssessmentClick={onAssessmentClick} onCertificateClick={onCertificateClick}/>)}
@@ -1296,8 +1304,8 @@ function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentC
 /* ─────────────────────────────────────────────────────────────────────────────
    SESSIONS PAGE
 ───────────────────────────────────────────────────────────────────────────── */
-function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set(), onNavigate, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{} }) {
-  const [activeSeason, setActiveSeason] = useState(null);
+function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set(), onNavigate, initialSeason = null, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{} }) {
+  const [activeSeason, setActiveSeason] = useState(initialSeason);
 
   /* ── Season Detail View ── */
   if (activeSeason) {
@@ -5929,6 +5937,7 @@ export default function App() {
   const [enrolledIds, setEnrolledIds] = useState(new Set([1, 2, 3]));
   const [userName, setUserName] = useState("Alex Johnson");
   const [scheduleRegistrations, setScheduleRegistrations] = useState({});
+  const [sessionsDeepLink, setSessionsDeepLink] = useState(null);
 
   function enroll(sessionId) {
     setEnrolledIds(prev => new Set([...prev, sessionId]));
@@ -5961,6 +5970,7 @@ export default function App() {
   }
 
   function nav(p) { setPage(p); setActiveSession(null); setEditingSession(null); }
+  function navToSeason(seasonId) { setSessionsDeepLink(seasonId); setPage("sessions"); setActiveSession(null); }
 
   function openEdit(s) { setEditingSession(s); setPage("admin-edit"); }
 
@@ -5993,8 +6003,8 @@ export default function App() {
       if (page==="admin-edit" && editingSession) return <AdminEditSession session={editingSession} onBack={()=>nav("admin-sessions")} toast={toast}/>;
       if (page==="admin-analytics") return <AnalyticsPage onEditSession={openEdit}/>;
     }
-    if (page==="dashboard") return <Dashboard onNavigate={nav} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
-    if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
+    if (page==="dashboard") return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
+    if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
     if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
     if (page==="community") return <CommunityPage toast={toast}/>;
