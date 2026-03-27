@@ -1456,11 +1456,15 @@ function SchedulePage({ onOpenSession, toast, scheduleRegistrations = {}, setSch
                     title="Registered">
                     <Icon name="bell" size={15} color={C.primary}/>
                   </div>
+                ) : cta==="Register" ? (
+                  <button onClick={()=>handleCta(item)}
+                    style={{ padding:"8px 16px", borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", color:C.primary, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap" }}>
+                    <Icon name="bell" size={13} color={C.primary}/> Register
+                  </button>
                 ) : (
                 <Btn variant={ctaVariant(cta)} onClick={()=>handleCta(item)} size="sm">
                   {(cta==="Remind Me"||cta==="Reminded ✓") && <Icon name="bell" size={13} color={cta==="Reminded ✓"?C.success:"#fff"}/>}
                   {(cta==="Watch Again"||cta==="Resume Lesson"||cta==="Watch Recording") && <Icon name="play" size={13} color={C.gray600}/>}
-                  {cta==="Register" && <Icon name="bell" size={13} color={C.primary}/>}
                   {cta}
                 </Btn>
                 )}
