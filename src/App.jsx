@@ -239,7 +239,7 @@ async function downloadCertificate({ recipientName = "Alex Johnson", sessionTitl
   el.style.cssText = `position:fixed;left:-9999px;top:-9999px;width:${W}px;height:${H}px;overflow:hidden;`;
   el.innerHTML = `
     <div style="position:relative;width:${W}px;height:${H}px;background:#FEF5EC;font-family:'Segoe UI',Roboto,sans-serif;box-sizing:border-box;padding:64px 80px;display:flex;flex-direction:column;justify-content:space-between;">
-      <div style="position:absolute;inset:0;background-image:url(${window.location.origin}/cert-texture.svg);background-size:400px 400px;opacity:0.35;pointer-events:none;"></div>
+      <div style="position:absolute;inset:0;background-image:repeating-linear-gradient(135deg,transparent,transparent 18px,rgba(0,0,0,0.06) 18px,rgba(0,0,0,0.06) 19px);pointer-events:none;"></div>
       <div style="position:relative;z-index:1;display:flex;flex-direction:column;justify-content:space-between;height:100%;">
 
       <!-- Header -->
@@ -4745,8 +4745,8 @@ function CertificateModal({ session, quizState, onClose }) {
         <div style={{ margin:"20px 20px 0", background:"#f7f7f7", borderRadius:12, overflow:"hidden", border:`1px solid ${C.gray200}` }}>
 
           <div style={{ padding:"32px 36px 36px", background:"#FEF5EC", position:"relative" }}>
-            {/* Texture overlay */}
-            <div style={{ position:"absolute", inset:0, backgroundImage:"url(/cert-texture.svg)", backgroundSize:"400px 400px", opacity:0.35, pointerEvents:"none" }}/>
+            {/* Texture overlay — diagonal wavy lines via repeating gradient */}
+            <div style={{ position:"absolute", inset:0, backgroundImage:"repeating-linear-gradient(135deg, transparent, transparent 18px, rgba(0,0,0,0.06) 18px, rgba(0,0,0,0.06) 19px)", pointerEvents:"none" }}/>
             <div style={{ position:"relative", zIndex:1 }}>
 
               {/* Header row: logo left, cert meta right */}
