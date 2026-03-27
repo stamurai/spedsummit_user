@@ -1346,43 +1346,6 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
           </div>
         )}
 
-        {/* Upcoming */}
-        {upcomingSessions.length > 0 && (
-          <div style={{ marginBottom:28 }}>
-            <div style={{ fontSize:14, fontWeight:800, color:C.gray900, marginBottom:14 }}>Upcoming</div>
-            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-              {upcomingSessions.map(s => {
-                const avail = SESSION_AVAILABILITY[s.id];
-                const releaseLabel = avail?.availableFrom
-                  ? new Date(avail.availableFrom).toLocaleString("en-US", { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" })
-                  : "Date TBD";
-                return (
-                  <div key={s.id} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:16, padding:"16px 20px" }}>
-                    <div style={{ width:96, height:64, borderRadius:8, overflow:"hidden", flexShrink:0 }}>
-                      <SessionThumb id={s.id} height={64}/>
-                    </div>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontSize:12, fontWeight:700, color:"#2563eb", letterSpacing:.5, marginBottom:3 }}>UPCOMING · {releaseLabel}</div>
-                      <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
-                      <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{s.instructor} · {s.duration}</div>
-                    </div>
-                    {scheduleRegistrations[s.id] ? (
-                      <div style={{ width:34, height:34, borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", display:"flex", alignItems:"center", justifyContent:"center" }} title="Registered">
-                        <Icon name="bell" size={15} color={C.primary}/>
-                      </div>
-                    ) : (
-                      <button onClick={()=>{ setScheduleRegistrations(r=>({...r,[s.id]:true})); toast({ type:"success", title:"Registered! 🎉", message:`Added "${s.title.slice(0,40)}…" to your schedule.` }); }}
-                        style={{ padding:"8px 16px", borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", color:C.primary, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap" }}>
-                        <Icon name="bell" size={13} color={C.primary}/> Register
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
         {/* Past */}
         {pastSessions.length > 0 && (
           <div style={{ marginBottom:28 }}>
@@ -1662,7 +1625,7 @@ const SESSION_RESOURCES = {
 /* ─────────────────────────────────────────────────────────────────────────────
    SESSION DETAIL (VIDEO EXPERIENCE)
 ───────────────────────────────────────────────────────────────────────────── */
-function SessionDetail({ session, onBack, toast, onAssessmentClick }) {
+function SessionDetail({ session, onBack, backLabel, toast, onAssessmentClick }) {
   const [playing, setPlaying] = useState(false);
   const [activeLesson, setActiveLesson] = useState(() => session.lessons.findIndex(l=>l.status==="active" && l.type!=="quiz")||0);
   const [progress, setProgress] = useState(28);
@@ -1771,7 +1734,7 @@ function SessionDetail({ session, onBack, toast, onAssessmentClick }) {
 
         {/* Back */}
         <button onClick={onBack} style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", color:C.gray500, cursor:"pointer", fontSize:14, marginBottom:14, padding:"4px 0" }}>
-          <Icon name="arrow-left" size={16} color={C.gray500}/> Back
+          <Icon name="arrow-left" size={16} color={C.gray500}/> {backLabel || "Back"}
         </button>
 
 
@@ -5930,6 +5893,7 @@ export default function App() {
   const [isDark, setIsDark] = useState(false);
   const [activeSession,   setActiveSession]   = useState(null);
   const [sessionSource,   setSessionSource]   = useState("sessions");
+  const [sessionBackLabel, setSessionBackLabel] = useState(null);
   const [editingSession,  setEditingSession]  = useState(null);
   const { toasts, toast, remove } = useToast();
 
@@ -5977,6 +5941,8 @@ export default function App() {
   function openSession(s, source) {
     setActiveSession(s);
     setSessionSource(source || page);
+    const season = SEASONS.find(season => season.sessionIds.includes(s.id));
+    setSessionBackLabel(season ? season.name : null);
     setPage("session-detail");
   }
 
@@ -5995,7 +5961,7 @@ export default function App() {
 
   function renderPage() {
     if (page==="session-detail" && activeSession)
-      return <SessionDetail session={activeSession} onBack={()=>nav(isAdmin?"admin-sessions":sessionSource)} toast={toast} onAssessmentClick={handleAssessmentClick}/>;
+      return <SessionDetail session={activeSession} onBack={()=>nav(isAdmin?"admin-sessions":sessionSource)} backLabel={sessionBackLabel} toast={toast} onAssessmentClick={handleAssessmentClick}/>;
     if (isAdmin) {
       if (page==="admin-overview") return <AdminOverview onNavigate={nav} onEditSession={openEdit} toast={toast}/>;
       if (page==="admin-sessions") return <AdminSessionsPage onNavigate={nav} onEditSession={openEdit} toast={toast}/>;
