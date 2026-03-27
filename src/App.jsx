@@ -1341,35 +1341,8 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
         {pastSessions.length > 0 && (
           <div style={{ marginBottom:28 }}>
             <div style={{ fontSize:14, fontWeight:800, color:C.gray900, marginBottom:14 }}>{season.name}</div>
-            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-              {pastSessions.map(s => {
-                const avail = SESSION_AVAILABILITY[s.id];
-                const hasRec = avail?.hasRecording;
-                return (
-                  <div key={s.id} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:16, padding:"16px 20px", opacity:0.85 }}>
-                    <div style={{ position:"relative", width:96, height:64, borderRadius:8, overflow:"hidden", flexShrink:0 }}>
-                      <SessionThumb id={s.id} height={64}/>
-                      <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.35)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                        <Icon name={hasRec?"play":"warning-circle"} size={18} color="rgba(255,255,255,0.85)"/>
-                      </div>
-                    </div>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontSize:14, fontWeight:700, color:C.gray700, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
-                      <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{s.instructor} · {s.duration}</div>
-                    </div>
-                    {hasRec ? (
-                      <button onClick={()=>onOpenSession(s)}
-                        style={{ padding:"8px 16px", borderRadius:8, border:`1px solid ${C.gray300}`, background:C.white, color:C.gray700, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap" }}>
-                        <Icon name="play" size={13} color={C.gray600}/> Watch Recording
-                      </button>
-                    ) : (
-                      <div style={{ padding:"8px 14px", borderRadius:8, background:C.gray100, fontSize:12, fontWeight:600, color:C.gray400, flexShrink:0, display:"flex", alignItems:"center", gap:6 }}>
-                        <Icon name="warning-circle" size={13} color={C.gray400}/> Recording unavailable
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16 }}>
+              {pastSessions.map(s => <SessionCard key={s.id} session={s} onClick={onOpenSession} quizState={quizStates[s.id]||{}} onAssessmentClick={onAssessmentClick} onCertificateClick={onCertificateClick}/>)}
             </div>
           </div>
         )}
