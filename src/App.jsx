@@ -4225,6 +4225,100 @@ function SessionQuizModal({ session, quizState = {}, onClose, onSaveProgress, on
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
+   REVIEW MODAL
+───────────────────────────────────────────────────────────────────────────── */
+function ReviewModal({ session, passed, score, onClose, onSubmit }) {
+  const [rating, setRating]   = useState(0);
+  const [hovered, setHovered] = useState(0);
+  const [review, setReview]   = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  function handleSubmit() {
+    if (rating === 0) return;
+    onSubmit({ sessionId: session.id, rating, review: review.trim() });
+    setSubmitted(true);
+    setTimeout(onClose, 1800);
+  }
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000, padding:20 }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background:C.white, borderRadius:20, width:"100%", maxWidth:440, padding:"36px 32px 28px", position:"relative", boxShadow:"0 24px 64px rgba(0,0,0,0.18)", animation:"fadeIn .2s ease" }}>
+
+        {!submitted ? (<>
+          {/* Header */}
+          <div style={{ textAlign:"center", marginBottom:24 }}>
+            <div style={{ fontSize:36, marginBottom:10 }}>{passed ? "🏆" : "📚"}</div>
+            <h2 style={{ margin:"0 0 6px", fontSize:20, fontWeight:800, color:C.gray900 }}>
+              {passed ? "Assessment Passed!" : "Assessment Complete"}
+            </h2>
+            <p style={{ margin:0, fontSize:14, color:C.gray500 }}>
+              You scored <strong style={{ color: passed ? C.success : C.warning }}>{score}%</strong>
+              {passed ? " — great work!" : ". Keep going, you'll get it!"}
+            </p>
+          </div>
+
+          {/* Divider */}
+          <div style={{ borderTop:`1px solid ${C.gray100}`, margin:"0 0 22px" }}/>
+
+          {/* Rate */}
+          <div style={{ textAlign:"center", marginBottom:20 }}>
+            <div style={{ fontSize:14, fontWeight:700, color:C.gray700, marginBottom:12 }}>How would you rate this session?</div>
+            <div style={{ display:"flex", justifyContent:"center", gap:8 }}>
+              {[1,2,3,4,5].map(n => (
+                <button key={n}
+                  onClick={() => setRating(n)}
+                  onMouseEnter={() => setHovered(n)}
+                  onMouseLeave={() => setHovered(0)}
+                  style={{ background:"none", border:"none", cursor:"pointer", padding:4, fontSize:32, lineHeight:1, transition:"transform .1s",
+                           transform: (hovered || rating) >= n ? "scale(1.15)" : "scale(1)",
+                           filter: (hovered || rating) >= n ? "none" : "grayscale(1) opacity(0.35)" }}>
+                  ★
+                </button>
+              ))}
+            </div>
+            {rating > 0 && (
+              <div style={{ fontSize:12, color:C.gray400, marginTop:6 }}>
+                {["","Poor","Fair","Good","Great","Excellent"][rating]}
+              </div>
+            )}
+          </div>
+
+          {/* Text review */}
+          <textarea
+            value={review}
+            onChange={e => setReview(e.target.value)}
+            placeholder="Share your thoughts (optional)..."
+            rows={3}
+            style={{ width:"100%", boxSizing:"border-box", border:`1px solid ${C.gray200}`, borderRadius:10, padding:"10px 14px", fontSize:14, color:C.gray700, resize:"none", outline:"none", fontFamily:"inherit", lineHeight:1.5 }}
+            onFocus={e => e.target.style.borderColor = C.primary}
+            onBlur={e => e.target.style.borderColor = C.gray200}
+          />
+
+          {/* Actions */}
+          <div style={{ display:"flex", gap:10, marginTop:18 }}>
+            <button onClick={onClose}
+              style={{ flex:1, padding:"11px 0", borderRadius:10, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray500, fontSize:14, fontWeight:600, cursor:"pointer" }}>
+              Skip
+            </button>
+            <button onClick={handleSubmit} disabled={rating === 0}
+              style={{ flex:2, padding:"11px 0", borderRadius:10, border:"none", background: rating === 0 ? C.gray200 : C.primary, color: rating === 0 ? C.gray400 : "#fff", fontSize:14, fontWeight:700, cursor: rating === 0 ? "default" : "pointer", transition:"background .15s" }}>
+              Submit Review
+            </button>
+          </div>
+        </>) : (
+          <div style={{ textAlign:"center", padding:"16px 0 8px" }}>
+            <div style={{ fontSize:40, marginBottom:12 }}>🎉</div>
+            <div style={{ fontSize:16, fontWeight:700, color:C.gray900 }}>Thanks for your review!</div>
+            <div style={{ fontSize:13, color:C.gray400, marginTop:6 }}>Your feedback helps us improve.</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
    CERTIFICATE MODAL
 ───────────────────────────────────────────────────────────────────────────── */
 function CertificateModal({ session, quizState, onClose }) {
@@ -5883,6 +5977,8 @@ export default function App() {
   const [quizStates,        setQuizStates]        = useState({});
   const [assessmentSession, setAssessmentSession] = useState(null);
   const [certSession,       setCertSession]       = useState(null);
+  const [reviewSession,     setReviewSession]     = useState(null);
+  const [reviews,           setReviews]           = useState({});
 
   function updateQuizState(sessionId, updates) {
     setQuizStates(prev => ({ ...prev, [sessionId]: { ...(prev[sessionId] || { status:"not-taken" }), ...updates } }));
@@ -5897,6 +5993,8 @@ export default function App() {
 
   function handleAssessmentFinish(sessionId, score, passed) {
     updateQuizState(sessionId, { status: passed ? "passed" : "failed", score, currentQ: 0, answers: {} });
+    const session = SESSIONS.find(s => s.id === sessionId);
+    if (session) setReviewSession({ session, score, passed });
     if (passed) {
       toast({ type:"success", title:"🏆 Assessment Passed!", message:`You scored ${score}% — your certificate is ready!` });
     } else {
@@ -5994,6 +6092,18 @@ export default function App() {
           onClose={() => setAssessmentSession(null)}
           onSaveProgress={handleSaveProgress}
           onFinish={handleAssessmentFinish}
+        />
+      )}
+      {/* Review Modal */}
+      {reviewSession && (
+        <ReviewModal
+          session={reviewSession.session}
+          passed={reviewSession.passed}
+          score={reviewSession.score}
+          onClose={() => setReviewSession(null)}
+          onSubmit={({ sessionId, rating, review }) => {
+            setReviews(r => ({ ...r, [sessionId]: { rating, review, date: new Date().toISOString() } }));
+          }}
         />
       )}
       {/* Certificate Modal */}
