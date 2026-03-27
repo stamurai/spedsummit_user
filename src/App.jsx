@@ -1304,8 +1304,9 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
 /* ─────────────────────────────────────────────────────────────────────────────
    SESSIONS PAGE
 ───────────────────────────────────────────────────────────────────────────── */
-function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set(), onNavigate, initialSeason = null, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{} }) {
+function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set(), onNavigate, initialSeason = null, onSeasonChange, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{} }) {
   const [activeSeason, setActiveSeason] = useState(initialSeason);
+  function changeSeason(id) { setActiveSeason(id); onSeasonChange?.(id); }
 
   /* ── Season Detail View ── */
   if (activeSeason) {
@@ -1318,7 +1319,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
     return (
       <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
         {/* Back + header */}
-        <button onClick={()=>setActiveSeason(null)}
+        <button onClick={()=>changeSeason(null)}
           style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", color:C.primary, fontSize:13, fontWeight:600, cursor:"pointer", marginBottom:20, padding:0 }}>
           <Icon name="arrow-left" size={15} color={C.primary}/> Sessions
         </button>
@@ -1402,7 +1403,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
 
           return (
             <div key={season.id}
-              onClick={()=>setActiveSeason(season.id)}
+              onClick={()=>changeSeason(season.id)}
               style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, overflow:"hidden", cursor:"pointer", transition:"box-shadow .15s, transform .15s" }}
               onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 8px 28px rgba(0,0,0,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; }}
               onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform=""; }}>
@@ -5960,7 +5961,7 @@ export default function App() {
       if (page==="admin-analytics") return <AnalyticsPage onEditSession={openEdit}/>;
     }
     if (page==="dashboard") return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
-    if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
+    if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
     if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
     if (page==="community") return <CommunityPage toast={toast}/>;
