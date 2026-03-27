@@ -90,6 +90,10 @@ const ICON_MAP = {
   "warning":            PhosphorIcons.Warning,
   "wifi-slash":         PhosphorIcons.WifiSlash,
   "shield-check":       PhosphorIcons.ShieldCheck,
+  clock:                PhosphorIcons.Clock,
+  trophy:               PhosphorIcons.Trophy,
+  "chat-circle-dots":   PhosphorIcons.ChatCircleDots,
+  megaphone:            PhosphorIcons.Megaphone,
 };
 
 const Icon = ({ name, size = 20, color = "currentColor", style: s = {} }) => {
@@ -2500,24 +2504,24 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
         <div onClick={() => setShowEngagement(false)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", zIndex:900, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
           <div onClick={e => e.stopPropagation()} style={{ background:C.white, borderRadius:20, width:"100%", maxWidth:520, maxHeight:"90vh", boxShadow:"0 20px 60px rgba(0,0,0,0.18)", overflow:"hidden", display:"flex", flexDirection:"column" }}>
             {/* Header */}
-            <div style={{ background:"linear-gradient(135deg,#1e3a8a,#2563eb)", padding:"24px 28px 20px", color:"#fff" }}>
+            <div style={{ background:"#f0f4ff", borderBottom:`1px solid #dde5ff`, padding:"24px 28px 20px" }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                 <div>
-                  <div style={{ fontSize:12, fontWeight:700, letterSpacing:1, opacity:.7, marginBottom:4 }}>INSTRUCTOR RESOURCE</div>
-                  <h2 style={{ margin:0, fontSize:20, fontWeight:900 }}>Engagement Guide</h2>
-                  <p style={{ margin:"6px 0 0", fontSize:14, opacity:.8 }}>Proven tactics to boost attendance and completion rates.</p>
+                  <div style={{ fontSize:11, fontWeight:700, letterSpacing:1, color:"#6366f1", marginBottom:4 }}>INSTRUCTOR RESOURCE</div>
+                  <h2 style={{ margin:0, fontSize:20, fontWeight:900, color:"#1e1b4b" }}>Engagement Guide</h2>
+                  <p style={{ margin:"6px 0 0", fontSize:13, color:"#4b5563" }}>Proven tactics to boost attendance and completion rates.</p>
                 </div>
-                <button onClick={() => setShowEngagement(false)} style={{ background:"rgba(255,255,255,0.15)", border:"none", color:"#fff", width:30, height:30, borderRadius:8, cursor:"pointer", fontSize:16, display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
+                <button onClick={() => setShowEngagement(false)} style={{ background:"#fff", border:`1px solid #dde5ff`, color:"#6b7280", width:32, height:32, borderRadius:8, cursor:"pointer", fontSize:16, display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
               </div>
             </div>
             {/* Tips */}
             <div style={{ padding:"20px 28px 28px", display:"flex", flexDirection:"column", gap:14, overflowY:"auto" }}>
               {[
-                { icon:"clock", color:"#f59e0b", title:"Optimal Scheduling", body:"Sessions at 10 AM–2 PM EST see 40% higher live attendance. Avoid Friday afternoons and weekends for new releases." },
-                { icon:"bell", color:C.primary, title:"Pre-Session Reminders", body:"Send reminders 24h and 1h before. Learners who receive both show 2× higher show-up rates." },
-                { icon:"chat-circle-dots", color:"#10b981", title:"Live Interaction", body:"Ask a poll or question in the first 5 minutes. Sessions with early interaction have 60% lower drop-off." },
-                { icon:"trophy", color:"#8b5cf6", title:"Certificates & Rewards", body:"Offering a certificate increases completion by 35%. Highlight it in your session description." },
-                { icon:"share-network", color:"#ef4444", title:"Promote Before Going Live", body:"Share a teaser post 3 days before. Learners who see a preview are 50% more likely to register." },
+                { icon:"clock",            color:"#f59e0b", title:"Optimal Scheduling",       body:"Sessions at 10 AM–2 PM EST see 40% higher live attendance. Avoid Friday afternoons and weekends for new releases." },
+                { icon:"bell",             color:"#3b82f6", title:"Pre-Session Reminders",    body:"Send reminders 24h and 1h before. Learners who receive both show 2× higher show-up rates." },
+                { icon:"chat-circle-dots", color:"#10b981", title:"Live Interaction",          body:"Ask a poll or question in the first 5 minutes. Sessions with early interaction have 60% lower drop-off." },
+                { icon:"trophy",           color:"#8b5cf6", title:"Certificates & Rewards",   body:"Offering a certificate increases completion by 35%. Highlight it in your session description." },
+                { icon:"megaphone",        color:"#ef4444", title:"Promote Before Going Live", body:"Share a teaser post 3 days before. Learners who see a preview are 50% more likely to register." },
               ].map((tip, i) => (
                 <div key={i} style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
                   <div style={{ width:34, height:34, borderRadius:10, background:`${tip.color}18`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
