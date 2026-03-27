@@ -2440,7 +2440,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
       </div>
 
       {/* Recent activity + growth */}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"3fr 2fr", gap:14, marginBottom:14 }}>
         {/* Recent sessions snapshot */}
         <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:20 }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
@@ -2498,7 +2498,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
       {/* Engagement Guide Modal */}
       {showEngagement && (
         <div onClick={() => setShowEngagement(false)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", zIndex:900, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-          <div onClick={e => e.stopPropagation()} style={{ background:C.white, borderRadius:20, width:"100%", maxWidth:520, boxShadow:"0 20px 60px rgba(0,0,0,0.18)", overflow:"hidden" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background:C.white, borderRadius:20, width:"100%", maxWidth:520, maxHeight:"90vh", boxShadow:"0 20px 60px rgba(0,0,0,0.18)", overflow:"hidden", display:"flex", flexDirection:"column" }}>
             {/* Header */}
             <div style={{ background:"linear-gradient(135deg,#1e3a8a,#2563eb)", padding:"24px 28px 20px", color:"#fff" }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
@@ -2511,7 +2511,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
               </div>
             </div>
             {/* Tips */}
-            <div style={{ padding:"20px 28px 28px", display:"flex", flexDirection:"column", gap:14 }}>
+            <div style={{ padding:"20px 28px 28px", display:"flex", flexDirection:"column", gap:14, overflowY:"auto" }}>
               {[
                 { icon:"clock", color:"#f59e0b", title:"Optimal Scheduling", body:"Sessions at 10 AM–2 PM EST see 40% higher live attendance. Avoid Friday afternoons and weekends for new releases." },
                 { icon:"bell", color:C.primary, title:"Pre-Session Reminders", body:"Send reminders 24h and 1h before. Learners who receive both show 2× higher show-up rates." },
