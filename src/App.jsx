@@ -163,8 +163,8 @@ function ToastContainer({ toasts, onRemove }) {
               <Icon name={icons[t.type]||"info"} size={15} color="#fff"/>
             </div>
             <div style={{ flex:1, minWidth:0 }}>
-              {t.title && <div style={{ fontWeight:700, fontSize:13, color:C.gray900, marginBottom:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{t.title}</div>}
-              <div style={{ fontSize:13, color: t.title ? C.gray500 : C.gray800, lineHeight:1.4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace: t.title ? "nowrap" : "normal" }}>{t.message}</div>
+              {t.title && <div style={{ fontWeight:700, fontSize:14, color:C.gray900, marginBottom:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{t.title}</div>}
+              <div style={{ fontSize:14, color: t.title ? C.gray500 : C.gray800, lineHeight:1.4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace: t.title ? "nowrap" : "normal" }}>{t.message}</div>
             </div>
             <div style={{ width:20, height:20, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:C.gray400 }}>
               <Icon name="x" size={12} color={C.gray400}/>
@@ -317,7 +317,7 @@ function Btn({ children, onClick, variant="primary", size="md", disabled=false, 
   };
   return (
     <button onClick={disabled ? undefined : onClick} disabled={disabled}
-      style={{ padding:sizes[size], borderRadius:8, fontSize:13, fontWeight:600, cursor:disabled?"not-allowed":"pointer",
+      style={{ padding:sizes[size], borderRadius:8, fontSize:14, fontWeight:600, cursor:disabled?"not-allowed":"pointer",
         display:"inline-flex", alignItems:"center", justifyContent:"center", gap:6, lineHeight:1,
         transition:"all .15s", ...variants[variant], ...s }}
       onMouseEnter={e=>{ if(!disabled){ e.currentTarget.style.opacity=".85"; e.currentTarget.style.transform="translateY(-1px)"; }}}
@@ -341,7 +341,7 @@ function DropdownMenu({ items, onClose }) {
     <div ref={ref} style={{ position:"absolute", right:0, top:"110%", background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, boxShadow:"0 8px 24px rgba(0,0,0,0.12)", minWidth:170, zIndex:200, overflow:"hidden", animation:"fadeIn .15s ease" }}>
       {items.map((item, i) => (
         <button key={i} onClick={() => { item.action(); onClose(); }}
-          style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"10px 16px", background:"transparent", border:"none", fontSize:13, fontWeight:500, color:item.danger?C.error:C.gray700, cursor:"pointer", borderBottom:i<items.length-1?`1px solid ${C.gray100}`:"none", textAlign:"left" }}
+          style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"10px 16px", background:"transparent", border:"none", fontSize:14, fontWeight:500, color:item.danger?C.error:C.gray700, cursor:"pointer", borderBottom:i<items.length-1?`1px solid ${C.gray100}`:"none", textAlign:"left" }}
           onMouseEnter={e=>e.currentTarget.style.background=C.gray50}
           onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
           {item.icon && <Icon name={item.icon} size={16} color={item.danger?C.error:C.gray500}/>}
@@ -387,8 +387,8 @@ function UploadZone({ accept, label, hint, icon, preview, onFile, aspect="16/9",
       ) : (
         <>
           <Icon name={icon||"cloud-arrow-up"} size={28} color={dragging?C.primary:C.gray400}/>
-          <span style={{ fontSize:13, color:C.gray600, fontWeight:600, marginTop:8 }}>{label||"Click or drag to upload"}</span>
-          {hint && <span style={{ fontSize:11, color:C.gray400, marginTop:4 }}>{hint}</span>}
+          <span style={{ fontSize:14, color:C.gray600, fontWeight:600, marginTop:8 }}>{label||"Click or drag to upload"}</span>
+          {hint && <span style={{ fontSize:12, color:C.gray400, marginTop:4 }}>{hint}</span>}
         </>
       )}
       <input ref={inputRef} type="file" accept={accept||"*/*"} style={{ display:"none" }} onChange={e => handleFile(e.target.files[0])}/>
@@ -432,9 +432,9 @@ function NotificationPopover({ onClose }) {
       {/* Header */}
       <div style={{ padding:"14px 16px 12px", borderBottom:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-          <span style={{ fontWeight:800, fontSize:15, color:C.gray900 }}>Notifications</span>
+          <span style={{ fontWeight:800, fontSize:16, color:C.gray900 }}>Notifications</span>
           {unreadCount > 0 && (
-            <span style={{ background:C.error, color:"#fff", fontSize:10, fontWeight:800, padding:"1px 7px", borderRadius:99 }}>{unreadCount}</span>
+            <span style={{ background:C.error, color:"#fff", fontSize:12, fontWeight:800, padding:"1px 7px", borderRadius:99 }}>{unreadCount}</span>
           )}
         </div>
         {unreadCount > 0 && (
@@ -474,8 +474,8 @@ function NotificationPopover({ onClose }) {
             {/* Content */}
             <div style={{ flex:1, minWidth:0 }}>
               <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:6 }}>
-                <span style={{ fontSize:13, fontWeight: n.read ? 500 : 700, color:C.gray900, lineHeight:1.3 }}>{n.title}</span>
-                <span style={{ fontSize:11, color:C.gray400, whiteSpace:"nowrap", flexShrink:0 }}>{n.time}</span>
+                <span style={{ fontSize:14, fontWeight: n.read ? 500 : 700, color:C.gray900, lineHeight:1.3 }}>{n.title}</span>
+                <span style={{ fontSize:12, color:C.gray400, whiteSpace:"nowrap", flexShrink:0 }}>{n.time}</span>
               </div>
               <p style={{ margin:"3px 0 0", fontSize:12, color:C.gray500, lineHeight:1.5, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{n.body}</p>
             </div>
@@ -583,7 +583,7 @@ function SearchBar({ onOpenSession, onNavigate }) {
         onChange={e => { setQuery(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
         placeholder="Search sessions, topics, instructors…"
-        style={{ width:"100%", padding:"8px 12px 8px 34px", border:`1px solid ${open ? C.primary : C.gray200}`, borderRadius:9, fontSize:13, color:C.gray700, background:C.gray50, outline:"none", boxSizing:"border-box", transition:"border-color .15s" }}
+        style={{ width:"100%", padding:"8px 12px 8px 34px", border:`1px solid ${open ? C.primary : C.gray200}`, borderRadius:9, fontSize:14, color:C.gray700, background:C.gray50, outline:"none", boxSizing:"border-box", transition:"border-color .15s" }}
       />
       {query.length > 0 && (
         <button onClick={() => { setQuery(""); setOpen(false); }}
@@ -596,14 +596,14 @@ function SearchBar({ onOpenSession, onNavigate }) {
         <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, right:0, background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, boxShadow:"0 8px 32px rgba(0,0,0,0.12)", zIndex:999, overflow:"hidden", maxHeight:400, overflowY:"auto" }}>
 
           {showEmpty && (
-            <div style={{ padding:"24px 16px", textAlign:"center", color:C.gray400, fontSize:13 }}>
+            <div style={{ padding:"24px 16px", textAlign:"center", color:C.gray400, fontSize:14 }}>
               No results for "<strong style={{color:C.gray600}}>{query}</strong>"
             </div>
           )}
 
           {pageResults.length > 0 && (
             <div>
-              <div style={{ padding:"8px 14px 4px", fontSize:10, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase" }}>Pages</div>
+              <div style={{ padding:"8px 14px 4px", fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase" }}>Pages</div>
               {pageResults.map(p => (
                 <button key={p.id} onClick={() => pick(() => onNavigate(p.id))}
                   style={{ width:"100%", display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:"none", border:"none", cursor:"pointer", textAlign:"left" }}
@@ -612,7 +612,7 @@ function SearchBar({ onOpenSession, onNavigate }) {
                   <div style={{ width:28, height:28, borderRadius:8, background:C.primaryLight, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                     <Icon name={p.icon} size={14} color={C.primary}/>
                   </div>
-                  <span style={{ fontSize:13, fontWeight:600, color:C.gray800 }}>{p.label}</span>
+                  <span style={{ fontSize:14, fontWeight:600, color:C.gray800 }}>{p.label}</span>
                 </button>
               ))}
             </div>
@@ -620,7 +620,7 @@ function SearchBar({ onOpenSession, onNavigate }) {
 
           {instructorResults.length > 0 && (
             <div>
-              <div style={{ padding:"8px 14px 4px", fontSize:10, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase" }}>Instructors</div>
+              <div style={{ padding:"8px 14px 4px", fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase" }}>Instructors</div>
               {instructorResults.map(s => (
                 <button key={s.instructor} onClick={() => pick(() => onOpenSession(s))}
                   style={{ width:"100%", display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:"none", border:"none", cursor:"pointer", textAlign:"left" }}
@@ -628,8 +628,8 @@ function SearchBar({ onOpenSession, onNavigate }) {
                   onMouseLeave={e => e.currentTarget.style.background = "none"}>
                   <Avatar name={s.instructor} size={28}/>
                   <div>
-                    <div style={{ fontSize:13, fontWeight:600, color:C.gray800 }}>{s.instructor}</div>
-                    <div style={{ fontSize:11, color:C.gray400 }}>{s.category}</div>
+                    <div style={{ fontSize:14, fontWeight:600, color:C.gray800 }}>{s.instructor}</div>
+                    <div style={{ fontSize:12, color:C.gray400 }}>{s.category}</div>
                   </div>
                 </button>
               ))}
@@ -638,7 +638,7 @@ function SearchBar({ onOpenSession, onNavigate }) {
 
           {sessionResults.length > 0 && (
             <div>
-              <div style={{ padding:"8px 14px 4px", fontSize:10, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase" }}>Sessions</div>
+              <div style={{ padding:"8px 14px 4px", fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase" }}>Sessions</div>
               {sessionResults.map(s => (
                 <button key={s.id} onClick={() => pick(() => onOpenSession(s))}
                   style={{ width:"100%", display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:"none", border:"none", cursor:"pointer", textAlign:"left" }}
@@ -648,8 +648,8 @@ function SearchBar({ onOpenSession, onNavigate }) {
                     <Icon name="play-circle" size={14} color={C.primary}/>
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontSize:13, fontWeight:600, color:C.gray800, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
-                    <div style={{ fontSize:11, color:C.gray400 }}>{s.instructor} · {s.category}</div>
+                    <div style={{ fontSize:14, fontWeight:600, color:C.gray800, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
+                    <div style={{ fontSize:12, color:C.gray400 }}>{s.instructor} · {s.category}</div>
                   </div>
                 </button>
               ))}
@@ -658,14 +658,14 @@ function SearchBar({ onOpenSession, onNavigate }) {
 
           {q.length === 0 && (
             <div style={{ padding:"12px 14px 8px" }}>
-              <div style={{ fontSize:10, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:8 }}>Quick Links</div>
+              <div style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:8 }}>Quick Links</div>
               {SEARCH_PAGES.map(p => (
                 <button key={p.id} onClick={() => pick(() => onNavigate(p.id))}
                   style={{ width:"100%", display:"flex", alignItems:"center", gap:10, padding:"9px 4px", background:"none", border:"none", cursor:"pointer", textAlign:"left" }}
                   onMouseEnter={e => e.currentTarget.style.background = C.gray50}
                   onMouseLeave={e => e.currentTarget.style.background = "none"}>
                   <Icon name={p.icon} size={14} color={C.gray400}/>
-                  <span style={{ fontSize:13, color:C.gray600 }}>{p.label}</span>
+                  <span style={{ fontSize:14, color:C.gray600 }}>{p.label}</span>
                 </button>
               ))}
             </div>
@@ -797,7 +797,7 @@ function Sidebar({ active, onChange, isAdmin }) {
             </button>
             {/* Tooltip */}
             {isHov && (
-              <div style={{ position:"absolute", left:"calc(100% + 10px)", top:"50%", transform:"translateY(-50%)", background:"#181c32", color:"#fff", fontSize:11, fontWeight:600, padding:"5px 9px", borderRadius:7, whiteSpace:"nowrap", pointerEvents:"none", zIndex:999, boxShadow:"0 2px 8px rgba(0,0,0,0.18)" }}>
+              <div style={{ position:"absolute", left:"calc(100% + 10px)", top:"50%", transform:"translateY(-50%)", background:"#181c32", color:"#fff", fontSize:12, fontWeight:600, padding:"5px 9px", borderRadius:7, whiteSpace:"nowrap", pointerEvents:"none", zIndex:999, boxShadow:"0 2px 8px rgba(0,0,0,0.18)" }}>
                 {item.label}
                 <div style={{ position:"absolute", right:"100%", top:"50%", transform:"translateY(-50%)", borderWidth:"4px 5px 4px 0", borderStyle:"solid", borderColor:"transparent #181c32 transparent transparent" }}/>
               </div>
@@ -835,7 +835,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
     } else if (qs === "in-progress") {
       assessBtn = {
         label: "Resume Assessment",
-        icon: "play-circle",
+        icon: "article",
         bg: C.primary, color: "#fff", border: "none",
         action: e => { e.stopPropagation(); onAssessmentClick && onAssessmentClick(session); },
       };
@@ -879,7 +879,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
                         gap:4, background:"rgba(16,185,129,0.92)", backdropFilter:"blur(4px)",
                         padding:"4px 9px", borderRadius:99 }}>
             <Icon name="medal" size={12} color="#fff"/>
-            <span style={{ fontSize:10, fontWeight:700, color:"#fff" }}>CERTIFIED</span>
+            <span style={{ fontSize:12, fontWeight:700, color:"#fff" }}>CERTIFIED</span>
           </div>
         )}
         {session.status==="locked" && (
@@ -892,9 +892,9 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
       {/* Card body */}
       <div style={{ padding:"14px 16px 16px", flex:1, display:"flex", flexDirection:"column" }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
-          <Badge label={session.category} color={cc.c} bg={cc.bg} size={9}/>
-          {session.status==="in-progress" && <span style={{ fontSize:11, color:C.gray400 }}>45m Left</span>}
-          {qs === "failed" && <span style={{ fontSize:10, fontWeight:700, color:C.error }}>Assessment Failed</span>}
+          <Badge label={session.category} color={cc.c} bg={cc.bg} size={12}/>
+          {session.status==="in-progress" && <span style={{ fontSize:12, color:C.gray400 }}>45m Left</span>}
+          {qs === "failed" && <span style={{ fontSize:12, fontWeight:700, color:C.error }}>Assessment Failed</span>}
         </div>
         <div style={{ fontWeight:700, fontSize:14, color:C.gray900, marginBottom:4, lineHeight:1.4,
                       display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
@@ -903,29 +903,40 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
         <div style={{ fontSize:12, color:C.gray500, marginBottom:10 }}>by {session.instructor}</div>
 
         <div style={{ marginTop:"auto" }}>
-          {session.progress > 0 && (
-            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
-              <span style={{ fontSize:11, color:C.gray500, fontWeight:600 }}>
-                {session.status==="completed" ? "COMPLETED" : "IN PROGRESS"}
-              </span>
-              <span style={{ fontSize:11, color:C.gray500 }}>{session.progress}%</span>
+          {/* When assessment is in-progress, it replaces the video progress section */}
+          {qs === "in-progress" ? (
+            <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, color:C.gray600, fontWeight:600 }}>
+                  <Icon name="timer" size={13} color={C.gray500}/>
+                  Assessment in progress
+                </div>
+                <span style={{ fontSize:12, color:C.gray400 }}>
+                  Q{(quizState.currentQ||0)+1}/{SESSION_QUIZZES[session.id]?.length||5}
+                </span>
+              </div>
+              <ProgressBar value={Math.round(((quizState.currentQ||0) / (SESSION_QUIZZES[session.id]?.length||5)) * 100)} color={C.warning}/>
             </div>
+          ) : (
+            <>
+              {session.progress > 0 && (
+                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
+                  <span style={{ fontSize:12, color:C.gray500, fontWeight:600 }}>
+                    {session.status==="completed" ? "COMPLETED" : "IN PROGRESS"}
+                  </span>
+                  <span style={{ fontSize:12, color:C.gray500 }}>{session.progress}%</span>
+                </div>
+              )}
+              <ProgressBar value={session.progress}/>
+            </>
           )}
-          <ProgressBar value={session.progress}/>
 
-          {/* Assessment score mini-badge */}
+          {/* Assessment passed score */}
           {qs === "passed" && quizState.score !== undefined && (
             <div style={{ marginTop:8, display:"flex", alignItems:"center", gap:6,
                           fontSize:12, color:C.success, fontWeight:700 }}>
               <Icon name="check-circle" size={13} color={C.success}/>
               Assessment score: {quizState.score}%
-            </div>
-          )}
-          {qs === "in-progress" && (
-            <div style={{ marginTop:8, display:"flex", alignItems:"center", gap:6,
-                          fontSize:12, color:C.warning, fontWeight:600 }}>
-              <Icon name="timer" size={13} color={C.warning}/>
-              Assessment in progress — Q{(quizState.currentQ||0)+1}/{SESSION_QUIZZES[session.id]?.length||5}
             </div>
           )}
 
@@ -935,7 +946,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
               style={{ width:"100%", marginTop:10, padding:"9px 0", borderRadius:8,
                        border: assessBtn.border,
                        background: assessBtn.bg, color: assessBtn.color,
-                       fontSize:13, fontWeight:600, cursor:"pointer",
+                       fontSize:14, fontWeight:600, cursor:"pointer",
                        display:"flex", alignItems:"center", justifyContent:"center", gap:7,
                        transition:"opacity .15s" }}
               onMouseEnter={e=>e.currentTarget.style.opacity=".88"}
@@ -949,7 +960,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
                        border:cta.label==="Watch Again"?`1px solid ${C.gray300}`:"none",
                        background:cta.disabled?C.gray100:cta.label==="Watch Again"?C.white:C.primary,
                        color:cta.disabled?C.gray400:cta.label==="Watch Again"?C.gray700:"#fff",
-                       fontSize:13, fontWeight:600, cursor:cta.disabled?"not-allowed":"pointer",
+                       fontSize:14, fontWeight:600, cursor:cta.disabled?"not-allowed":"pointer",
                        display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
               {cta.disabled && <Icon name="lock" size={14} color={C.gray400}/>}
               {cta.label==="Watch Again"    && <Icon name="play" size={14} color={C.gray600}/>}
@@ -1008,7 +1019,7 @@ function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentC
         {/* Welcome */}
         <div style={{ background:"var(--hero-bg)", border:`1px solid ${C.primaryBorder}`, borderRadius:16, padding:"24px 28px", marginBottom:24, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
           <div>
-            <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:C.warningLight, color:"#92400e", fontSize:11, fontWeight:700, padding:"3px 10px", borderRadius:99, marginBottom:12 }}>
+            <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:C.warningLight, color:"#92400e", fontSize:12, fontWeight:700, padding:"3px 10px", borderRadius:99, marginBottom:12 }}>
               <Icon name="timer" size={12} color="#92400e"/> WATCHED 4 DAYS AGO
             </div>
             <h1 style={{ margin:"0 0 6px", fontSize:26, fontWeight:900, color:C.gray900 }}>Welcome back, <span style={{ color:C.primary }}>Alex!</span></h1>
@@ -1019,7 +1030,7 @@ function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentC
           </div>
           <div style={{ width:88, height:88, borderRadius:"50%", border:`6px solid ${C.primaryBorder}`, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:C.white, flexShrink:0 }}>
             <span style={{ fontSize:18, fontWeight:900, color:C.gray900 }}>{pct}%</span>
-            <span style={{ fontSize:9, color:C.gray400, letterSpacing:.5, marginTop:1 }}>PROGRESS</span>
+            <span style={{ fontSize:12, color:C.gray400, letterSpacing:.5, marginTop:1 }}>PROGRESS</span>
           </div>
         </div>
 
@@ -1046,7 +1057,7 @@ function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentC
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
               <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900 }}>
                 Registered — Upcoming
-                <span style={{ fontSize:11, fontWeight:700, color:"#2563eb", background:"#dbeafe", padding:"2px 8px", borderRadius:99, marginLeft:8, letterSpacing:.3 }}>UPCOMING</span>
+                <span style={{ fontSize:12, fontWeight:700, color:"#2563eb", background:"#dbeafe", padding:"2px 8px", borderRadius:99, marginLeft:8, letterSpacing:.3 }}>UPCOMING</span>
               </h2>
               <Btn variant="ghost" size="sm" onClick={()=>onNavigate("schedules")}>View Schedule <Icon name="caret-right" size={14} color={C.primary}/></Btn>
             </div>
@@ -1062,10 +1073,10 @@ function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentC
                       <Icon name="calendar" size={22} color="#2563eb"/>
                     </div>
                     <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontSize:13, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
-                      <div style={{ fontSize:11, color:"#2563eb", fontWeight:600, marginTop:2 }}>{releaseLabel}</div>
+                      <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
+                      <div style={{ fontSize:12, color:"#2563eb", fontWeight:600, marginTop:2 }}>{releaseLabel}</div>
                     </div>
-                    <span style={{ fontSize:11, fontWeight:700, color:"#059669", background:"#d1fae5", padding:"4px 10px", borderRadius:99, flexShrink:0 }}>Registered</span>
+                    <span style={{ fontSize:12, fontWeight:700, color:"#059669", background:"#d1fae5", padding:"4px 10px", borderRadius:99, flexShrink:0 }}>Registered</span>
                   </div>
                 );
               })}
@@ -1097,7 +1108,7 @@ function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentC
                     {/* Info */}
                     <div style={{ flex:1, minWidth:0 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4 }}>
-                        <span style={{ fontSize:10, fontWeight:700, color:cc.c, background:cc.bg, padding:"2px 7px", borderRadius:99 }}>{s.category}</span>
+                        <span style={{ fontSize:12, fontWeight:700, color:cc.c, background:cc.bg, padding:"2px 7px", borderRadius:99 }}>{s.category}</span>
                       </div>
                       <div style={{ fontSize:14, fontWeight:700, color:C.gray900, lineHeight:1.3, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
                       <div style={{ fontSize:12, color:C.gray500, marginTop:3 }}>{s.instructor} · {s.duration}</div>
@@ -1138,7 +1149,7 @@ function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentC
 
         {/* Your Progress */}
         <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"18px 16px" }}>
-          <div style={{ fontWeight:800, fontSize:15, color:C.gray900, marginBottom:14 }}>Your Progress</div>
+          <div style={{ fontWeight:800, fontSize:16, color:C.gray900, marginBottom:14 }}>Your Progress</div>
           {[
             { icon:"article", label:"Sessions Completed", sub:"THIS SEASON", value:`${completed}/${enrolledSessions.length}` },
             { icon:"timer",   label:"Total Time",         sub:"TOTAL HOURS",  value:"42.5h" },
@@ -1149,7 +1160,7 @@ function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentC
               </div>
               <div style={{ flex:1, minWidth:0 }}>
                 <div style={{ fontSize:14, fontWeight:600, color:C.gray700, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", display:"block" }}>{row.label}</div>
-                <div style={{ fontSize:10, color:C.gray400, fontWeight:600, letterSpacing:.5, marginTop:1 }}>{row.sub}</div>
+                <div style={{ fontSize:12, color:C.gray400, fontWeight:600, letterSpacing:.5, marginTop:1 }}>{row.sub}</div>
               </div>
               <div style={{ fontSize:18, fontWeight:900, color:C.primary }}>{row.value}</div>
             </div>
@@ -1158,29 +1169,29 @@ function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentC
 
         {/* Stats */}
         <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"18px 16px" }}>
-          <div style={{ fontWeight:800, fontSize:15, color:C.gray900, marginBottom:14 }}>Summit Stats</div>
+          <div style={{ fontWeight:800, fontSize:16, color:C.gray900, marginBottom:14 }}>Summit Stats</div>
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:18 }}>
             <div style={{ background:C.successLight, borderRadius:10, padding:"14px 12px", textAlign:"left" }}>
               <Icon name="fire" size={18} color={C.success}/>
               <div style={{ fontSize:24, fontWeight:900, color:C.gray900, margin:"6px 0 3px" }}>12</div>
-              <div style={{ fontSize:10, color:C.success, fontWeight:700, letterSpacing:.6 }}>Day Streak</div>
+              <div style={{ fontSize:12, color:C.success, fontWeight:700, letterSpacing:.6 }}>Day Streak</div>
             </div>
             <div style={{ background:C.primaryLight, borderRadius:10, padding:"14px 12px", textAlign:"left" }}>
               <Icon name="star" size={18} color={C.primary}/>
               <div style={{ fontSize:24, fontWeight:900, color:C.gray900, margin:"6px 0 3px" }}>320</div>
-              <div style={{ fontSize:10, color:C.primary, fontWeight:700, letterSpacing:.6 }}>Exp Points</div>
+              <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:.6 }}>Exp Points</div>
             </div>
           </div>
-          <div style={{ fontSize:11, fontWeight:700, color:C.gray400, letterSpacing:.8, marginBottom:12, textTransform:"uppercase" }}>Upcoming Sessions</div>
+          <div style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.8, marginBottom:12, textTransform:"uppercase" }}>Upcoming Sessions</div>
           {[{date:"OCT 14",title:"Q&A with Founders",time:"10:00 AM EST"},{date:"OCT 16",title:"Workshop: IEP Planning",time:"02:00 PM EST"}].map((s,i)=>(
             <div key={i} style={{ display:"flex", gap:12, marginBottom:12, alignItems:"center" }}>
               <div style={{ background:C.primary, color:"#fff", borderRadius:8, padding:"5px 8px", textAlign:"center", flexShrink:0, minWidth:38 }}>
-                <div style={{ fontSize:8, fontWeight:700, opacity:.85, letterSpacing:.5 }}>{s.date.split(" ")[0]}</div>
-                <div style={{ fontSize:15, fontWeight:900, lineHeight:1.1 }}>{s.date.split(" ")[1]}</div>
+                <div style={{ fontSize:12, fontWeight:700, opacity:.85, letterSpacing:.5 }}>{s.date.split(" ")[0]}</div>
+                <div style={{ fontSize:16, fontWeight:900, lineHeight:1.1 }}>{s.date.split(" ")[1]}</div>
               </div>
               <div>
                 <div style={{ fontSize:12, fontWeight:700, color:C.gray800, lineHeight:1.4 }}>{s.title}</div>
-                <div style={{ fontSize:11, color:C.gray500, marginTop:1 }}>{s.time}</div>
+                <div style={{ fontSize:12, color:C.gray500, marginTop:1 }}>{s.time}</div>
               </div>
             </div>
           ))}
@@ -1206,7 +1217,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
       <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
         <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900 }}>{title}</h2>
         {count !== undefined && <span style={{ fontSize:12, fontWeight:600, color:C.gray400 }}>{count}</span>}
-        {badge && <span style={{ fontSize:10, fontWeight:700, color:badgeColor, background:badgeBg, padding:"2px 9px", borderRadius:99, letterSpacing:.4 }}>{badge}</span>}
+        {badge && <span style={{ fontSize:12, fontWeight:700, color:badgeColor, background:badgeBg, padding:"2px 9px", borderRadius:99, letterSpacing:.4 }}>{badge}</span>}
       </div>
     );
   }
@@ -1215,9 +1226,9 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
     <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
       {/* Page header */}
       <div style={{ marginBottom:24 }}>
-        <div style={{ fontSize:10, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>FEATURED SERIES</div>
+        <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>FEATURED SERIES</div>
         <h1 style={{ margin:"0 0 4px", fontSize:24, fontWeight:900, color:C.gray900 }}>Summit Sessions</h1>
-        <p style={{ margin:0, color:C.gray500, fontSize:13, lineHeight:1.5 }}>All sessions — live, upcoming, and from past seasons.</p>
+        <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>All sessions — live, upcoming, and from past seasons.</p>
       </div>
 
       {/* No-active-sessions banner */}
@@ -1228,7 +1239,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
           </div>
           <div style={{ flex:1 }}>
             <div style={{ fontWeight:700, fontSize:14, color:"#92400e", marginBottom:3 }}>No active sessions right now</div>
-            <p style={{ margin:0, fontSize:13, color:"#a16207", lineHeight:1.5 }}>
+            <p style={{ margin:0, fontSize:14, color:"#a16207", lineHeight:1.5 }}>
               The current season has no live content at this moment. Explore <strong>upcoming sessions</strong> below or revisit <strong>past season recordings</strong>.
             </p>
           </div>
@@ -1267,7 +1278,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
                     <SessionThumb id={s.id} height={64}/>
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontSize:10, fontWeight:700, color:"#2563eb", letterSpacing:.5, marginBottom:3, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>UPCOMING · {releaseLabel}</div>
+                    <div style={{ fontSize:12, fontWeight:700, color:"#2563eb", letterSpacing:.5, marginBottom:3, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>UPCOMING · {releaseLabel}</div>
                     <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
                     <div style={{ fontSize:12, color:C.gray500, marginTop:2, whiteSpace:"nowrap" }}>{s.instructor} · {s.duration}</div>
                   </div>
@@ -1304,7 +1315,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
                     </div>
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontSize:10, fontWeight:700, color:C.gray400, letterSpacing:.5, marginBottom:3, whiteSpace:"nowrap" }}>PAST SEASON · {airedDate}</div>
+                    <div style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.5, marginBottom:3, whiteSpace:"nowrap" }}>PAST SEASON · {airedDate}</div>
                     <div style={{ fontSize:14, fontWeight:700, color:C.gray700, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
                     <div style={{ fontSize:12, color:C.gray400, marginTop:2, whiteSpace:"nowrap" }}>{s.instructor} · {s.duration}</div>
                   </div>
@@ -1364,14 +1375,14 @@ function SchedulePage({ onOpenSession, toast }) {
     <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:28 }}>
         <div>
-          <div style={{ fontSize:10, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>EVENT PROGRAMMING</div>
+          <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>EVENT PROGRAMMING</div>
           <h1 style={{ margin:"0 0 6px", fontSize:24, fontWeight:900, color:C.gray900 }}>Spread Summit Schedule</h1>
-          <p style={{ margin:0, color:C.gray500, fontSize:13, lineHeight:1.5 }}>Explore the full lineup of sessions, workshops, and keynote events.</p>
+          <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>Explore the full lineup of sessions, workshops, and keynote events.</p>
         </div>
         <div style={{ display:"flex", gap:24 }}>
           {[{label:"TOTAL SESSIONS",val:"42"},{label:"SPEAKERS",val:"18"}].map(s=>(
             <div key={s.label} style={{ textAlign:"right" }}>
-              <div style={{ fontSize:10, color:C.gray400, fontWeight:600 }}>{s.label}</div>
+              <div style={{ fontSize:12, color:C.gray400, fontWeight:600 }}>{s.label}</div>
               <div style={{ fontSize:28, fontWeight:900, color:C.gray900 }}>{s.val}</div>
             </div>
           ))}
@@ -1381,43 +1392,65 @@ function SchedulePage({ onOpenSession, toast }) {
         {SCHEDULE.map(item => {
           const tc = SCHEDULE_TYPE_COLORS[item.type] || {c:C.gray500,bg:C.gray100};
           const cta = getCta(item);
+          const isPast = item.status === "past";
+          // Parse date label into parts e.g. "26th Mar" → month "MAR", day "26"
+          const dateParts = item.date.match(/(\d+)\w*\s+(\w+)/);
+          const dayNum  = dateParts ? dateParts[1] : item.date;
+          const monthAb = dateParts ? dateParts[2].toUpperCase().slice(0,3) : "";
           return (
             <div key={item.id}
-              style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:"20px 24px", display:"flex", gap:24, transition:"box-shadow .15s" }}
-              onMouseEnter={e=>e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.07)"}
+              style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:16, padding:"18px 20px", display:"flex", alignItems:"center", gap:16, transition:"box-shadow .15s", opacity: isPast ? 0.82 : 1 }}
+              onMouseEnter={e=>e.currentTarget.style.boxShadow="0 4px 20px rgba(0,0,0,0.08)"}
               onMouseLeave={e=>e.currentTarget.style.boxShadow="none"}>
-              <div style={{ width:76, flexShrink:0 }}>
-                <div style={{ fontWeight:700, fontSize:13, color:C.gray900 }}>{item.date}</div>
-                <div style={{ fontSize:12, color:C.gray400 }}>{item.time}</div>
-                {item.status==="upcoming" && <Badge label="UPCOMING" color={C.gray600} bg={C.gray100} size={9}/>}
-                {item.status==="past" && <Badge label="PAST" color={C.success} bg={C.successLight} size={9}/>}
+
+              {/* Date block */}
+              <div style={{ flexShrink:0, width:52, background: isPast ? C.gray100 : C.primaryLight, borderRadius:12, padding:"8px 0", display:"flex", flexDirection:"column", alignItems:"center", border:`1px solid ${isPast ? C.gray200 : C.primaryBorder}` }}>
+                <span style={{ fontSize:12, fontWeight:700, color: isPast ? C.gray400 : C.primary, letterSpacing:.5 }}>{monthAb}</span>
+                <span style={{ fontSize:22, fontWeight:900, color: isPast ? C.gray600 : C.gray900, lineHeight:1.1 }}>{dayNum}</span>
+                <span style={{ fontSize:12, color: isPast ? C.gray400 : C.gray500, marginTop:1 }}>{item.time.split(" ")[0]}</span>
               </div>
+
+              {/* Thumbnail */}
+              <div style={{ width:100, height:64, borderRadius:10, overflow:"hidden", flexShrink:0 }}>
+                <SessionThumb id={item.id} height={64}/>
+              </div>
+
+              {/* Content */}
               <div style={{ flex:1, minWidth:0 }}>
-                <Badge label={item.type} color={tc.c} bg={tc.bg} size={9}/>
-                <h3 style={{ margin:"8px 0 6px", fontSize:15, fontWeight:800, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{item.title}</h3>
-                <p style={{ margin:"0 0 14px", fontSize:13, color:C.gray500, lineHeight:1.6, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{item.description}</p>
-                <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-                  <Btn variant={ctaVariant(cta)} onClick={()=>handleCta(item)}>
-                    {(cta==="Remind Me"||cta==="Reminded ✓") && <Icon name="bell" size={14} color={cta==="Reminded ✓"?C.success:"#fff"}/>}
-                    {(cta==="Watch Again"||cta==="Resume Lesson") && <Icon name="play" size={14} color={C.gray600}/>}
-                    {(cta==="Register"||cta==="Registered") && <Icon name="check-circle" size={14} color={cta==="Registered"?"#fff":C.primary}/>}
-                    {cta}
-                  </Btn>
-                  {(cta==="Remind Me"||cta==="Reminded ✓") && (
-                    <button onClick={()=>toast({type:"success",title:"Added to calendar 📅",message:`"${item.title.slice(0,40)}…" saved to your calendar.`})}
-                      style={{ width:36, height:36, borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                      <Icon name="calendar" size={16} color={C.gray500}/>
-                    </button>
-                  )}
-                  {cta==="Registered" && (
-                    <span style={{ fontSize:12, color:C.gray400, display:"flex", alignItems:"center", gap:4 }}>
-                      <Icon name="check" size={12} color={C.success}/>Registered ·
-                      <span style={{ color:C.error, cursor:"pointer", textDecoration:"underline" }} onClick={()=>handleCta(item)}>Cancel</span>
-                    </span>
-                  )}
+                <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:5 }}>
+                  <Badge label={item.type} color={tc.c} bg={tc.bg} size={12}/>
+                  {isPast && <Badge label="PAST" color={C.gray500} bg={C.gray100} size={12}/>}
+                  {!isPast && <Badge label="UPCOMING" color={C.primary} bg={C.primaryLight} size={12}/>}
+                </div>
+                <div style={{ fontSize:14, fontWeight:700, color: isPast ? C.gray600 : C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", marginBottom:3 }}>{item.title}</div>
+                <div style={{ fontSize:12, color:C.gray400, display:"flex", alignItems:"center", gap:6 }}>
+                  <Avatar name={item.instructor} size={18}/>
+                  <span>{item.instructor}</span>
+                  <span style={{ color:C.gray200 }}>·</span>
+                  <Icon name="clock" size={12} color={C.gray400}/>
+                  <span>{item.time}</span>
                 </div>
               </div>
-              <Avatar name={item.instructor} size={42}/>
+
+              {/* CTA */}
+              <div style={{ flexShrink:0, display:"flex", flexDirection:"column", alignItems:"flex-end", gap:6 }}>
+                <Btn variant={ctaVariant(cta)} onClick={()=>handleCta(item)} size="sm">
+                  {(cta==="Remind Me"||cta==="Reminded ✓") && <Icon name="bell" size={13} color={cta==="Reminded ✓"?C.success:"#fff"}/>}
+                  {(cta==="Watch Again"||cta==="Resume Lesson"||cta==="Watch Recording") && <Icon name="play" size={13} color={C.gray600}/>}
+                  {(cta==="Register"||cta==="Registered") && <Icon name="check-circle" size={13} color={cta==="Registered"?"#fff":C.primary}/>}
+                  {cta==="Recording Unavailable" && <Icon name="warning-circle" size={13} color={C.gray400}/>}
+                  {cta}
+                </Btn>
+                {(cta==="Remind Me"||cta==="Reminded ✓") && (
+                  <button onClick={()=>toast({type:"success",title:"Added to calendar 📅",message:`"${item.title.slice(0,40)}…" saved to your calendar.`})}
+                    style={{ width:30, height:30, borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <Icon name="calendar" size={14} color={C.gray500}/>
+                  </button>
+                )}
+                {cta==="Registered" && (
+                  <span style={{ fontSize:12, color:C.error, cursor:"pointer" }} onClick={()=>handleCta(item)}>Cancel</span>
+                )}
+              </div>
             </div>
           );
         })}
@@ -1528,14 +1561,14 @@ function SessionDetail({ session, onBack, toast, onAssessmentClick }) {
           <span style={{ display:"flex", gap:4, alignItems:"center" }}><Icon name="article" size={13} color={C.gray400}/>{session.resources} Resources</span>
         </div>
         {/* Description */}
-        <p style={{ margin:0, fontSize:13, color:C.gray500, lineHeight:1.65 }}>{session.description}</p>
+        <p style={{ margin:0, fontSize:14, color:C.gray500, lineHeight:1.65 }}>{session.description}</p>
       </div>
       {/* Instructor row — like YouTube channel info */}
       <div style={{ padding:"12px 18px 14px", borderTop:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", gap:12 }}>
         <Avatar name={session.instructor} size={40}/>
         <div style={{ flex:1, minWidth:0 }}>
-          <div style={{ fontWeight:700, fontSize:13, color:C.gray900, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{session.instructor}</div>
-          <div style={{ fontSize:11, color:C.gray400, marginTop:1 }}>Special Ed Instructor</div>
+          <div style={{ fontWeight:700, fontSize:14, color:C.gray900, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{session.instructor}</div>
+          <div style={{ fontSize:12, color:C.gray400, marginTop:1 }}>Special Ed Instructor</div>
         </div>
         <div style={{ display:"flex", gap:8, flexShrink:0 }}>
           <Btn
@@ -1562,7 +1595,7 @@ function SessionDetail({ session, onBack, toast, onAssessmentClick }) {
       <div style={{ flex:1, overflowY:"auto", padding: narrow ? 14 : 20, minWidth:0 }}>
 
         {/* Back */}
-        <button onClick={onBack} style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", color:C.gray500, cursor:"pointer", fontSize:13, marginBottom:14, padding:"4px 0" }}>
+        <button onClick={onBack} style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", color:C.gray500, cursor:"pointer", fontSize:14, marginBottom:14, padding:"4px 0" }}>
           <Icon name="arrow-left" size={16} color={C.gray500}/> Back
         </button>
 
@@ -1612,7 +1645,7 @@ function SessionDetail({ session, onBack, toast, onAssessmentClick }) {
                 <button key={tab.key} onClick={() => setBottomTab(tab.key)}
                   style={{ padding:"14px 20px", border:"none", background:"none", cursor:"pointer", fontSize:14, fontWeight: isActive ? 700 : 500, color: isActive ? C.gray900 : C.gray500, borderBottom: isActive ? `2px solid ${C.gray900}` : "2px solid transparent", marginBottom:-1, whiteSpace:"nowrap", transition:"color .15s", display:"flex", alignItems:"center", gap:6 }}>
                   {tab.label}
-                  {tab.count > 0 && <span style={{ fontSize:11, fontWeight:700, color: isActive ? C.primary : C.gray400, background: isActive ? C.primaryLight : C.gray100, borderRadius:99, padding:"1px 7px" }}>{tab.count}</span>}
+                  {tab.count > 0 && <span style={{ fontSize:12, fontWeight:700, color: isActive ? C.primary : C.gray400, background: isActive ? C.primaryLight : C.gray100, borderRadius:99, padding:"1px 7px" }}>{tab.count}</span>}
                 </button>
               );
             })}
@@ -1652,7 +1685,7 @@ function SessionDetail({ session, onBack, toast, onAssessmentClick }) {
                 <Avatar name={session.instructor} size={68}/>
                 <div>
                   <div style={{ fontWeight:800, fontSize:18, color:C.gray900, marginBottom:2 }}>{session.instructor}</div>
-                  <div style={{ fontSize:13, color:C.gray500, marginBottom:10 }}>Special Education Instructor · SPED Summit Faculty</div>
+                  <div style={{ fontSize:14, color:C.gray500, marginBottom:10 }}>Special Education Instructor · SPED Summit Faculty</div>
                   <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
                     {[
                       { label:"Twitter", color:"#000",
@@ -1679,7 +1712,7 @@ function SessionDetail({ session, onBack, toast, onAssessmentClick }) {
                 ].map((s,i) => (
                   <div key={s.label} style={{ flex:1, textAlign:"center", borderLeft: i > 0 ? `1px solid ${C.gray100}` : "none", padding:"4px 0" }}>
                     <div style={{ fontWeight:800, fontSize:16, color:C.gray900 }}>{s.val}</div>
-                    <div style={{ fontSize:11, color:C.gray400, marginTop:2 }}>{s.label}</div>
+                    <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{s.label}</div>
                   </div>
                 ))}
               </div>
@@ -1702,7 +1735,7 @@ function SessionDetail({ session, onBack, toast, onAssessmentClick }) {
                     toast({ type:"success", message:"Posted!" });
                   }}}
                   placeholder="Share something with the community…"
-                  style={{ flex:1, padding:"8px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:13, outline:"none", color:C.gray700, background:C.white }}/>
+                  style={{ flex:1, padding:"8px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:14, outline:"none", color:C.gray700, background:C.white }}/>
                 <Btn size="sm" onClick={() => {
                   if (!communityNewPost.trim()) return;
                   setCommunityPosts(ps=>[{id:Date.now(),author:"You",role:"USER",time:"just now",title:communityNewPost.slice(0,80),body:"",tags:[],likes:0,replies:0,type:"post",liked:false,saved:false},...ps]);
@@ -1719,11 +1752,11 @@ function SessionDetail({ session, onBack, toast, onAssessmentClick }) {
                       <Avatar name={post.author} size={36}/>
                       <div>
                         <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"wrap" }}>
-                          <span style={{ fontWeight:700, fontSize:13, color:C.gray900 }}>{post.author}</span>
-                          {post.role==="MENTOR" && <Badge label="MENTOR" color={C.success} bg={C.successLight} size={9}/>}
-                          {post.type==="question" && <Badge label="QUESTION" color={C.primary} bg={C.primaryLight} size={9}/>}
+                          <span style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{post.author}</span>
+                          {post.role==="MENTOR" && <Badge label="MENTOR" color={C.success} bg={C.successLight} size={12}/>}
+                          {post.type==="question" && <Badge label="QUESTION" color={C.primary} bg={C.primaryLight} size={12}/>}
                         </div>
-                        <div style={{ fontSize:11, color:C.gray400 }}>{post.time}</div>
+                        <div style={{ fontSize:12, color:C.gray400 }}>{post.time}</div>
                       </div>
                     </div>
                     <div style={{ position:"relative" }}>
@@ -1746,8 +1779,8 @@ function SessionDetail({ session, onBack, toast, onAssessmentClick }) {
                     </div>
                   </div>
                   <div style={{ fontSize:14, fontWeight:700, color:C.gray900, marginBottom:5, lineHeight:1.4 }}>{post.title}</div>
-                  {post.body && <p style={{ margin:"0 0 8px", fontSize:13, color:C.gray600, lineHeight:1.6, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{post.body}</p>}
-                  {post.tags.length>0 && <div style={{ display:"flex", gap:6, marginBottom:8 }}>{post.tags.map(t=><span key={t} style={{ fontSize:11, background:C.gray100, color:C.gray600, padding:"2px 8px", borderRadius:99 }}>{t}</span>)}</div>}
+                  {post.body && <p style={{ margin:"0 0 8px", fontSize:14, color:C.gray600, lineHeight:1.6, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{post.body}</p>}
+                  {post.tags.length>0 && <div style={{ display:"flex", gap:6, marginBottom:8 }}>{post.tags.map(t=><span key={t} style={{ fontSize:12, background:C.gray100, color:C.gray600, padding:"2px 8px", borderRadius:99 }}>{t}</span>)}</div>}
                   <div style={{ display:"flex", gap:2, paddingTop:10, borderTop:`1px solid ${C.gray100}` }}>
                     <button onClick={()=>setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,liked:!p.liked,likes:p.liked?p.likes-1:p.likes+1}:p))}
                       style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", borderRadius:8, border:"none", background:post.liked?C.errorLight:"transparent", color:post.liked?C.error:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
@@ -1801,8 +1834,8 @@ function SessionDetail({ session, onBack, toast, onAssessmentClick }) {
         flexShrink: 0,
       }}>
         <div style={{ padding:"14px 16px 12px", borderBottom:`1px solid ${C.gray100}`, flexShrink:0 }}>
-          <div style={{ fontWeight:700, fontSize:13, color:C.gray900 }}>Course Content</div>
-          <div style={{ fontSize:11, color:C.gray400, marginTop:2 }}>{session.lessons.length} lessons · {session.duration}</div>
+          <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>Course Content</div>
+          <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{session.lessons.length} lessons · {session.duration}</div>
         </div>
         <div style={{ flex:1, overflowY:"auto" }}>
           {(() => {
@@ -1836,7 +1869,7 @@ function SessionDetail({ session, onBack, toast, onAssessmentClick }) {
                       <div style={{ fontSize:12, fontWeight:700, color:C.gray900 }}>
                         {si === 0 ? "" : `${si}. `}{sec.title}
                       </div>
-                      <div style={{ fontSize:11, color:C.gray400, marginTop:1 }}>
+                      <div style={{ fontSize:12, color:C.gray400, marginTop:1 }}>
                         {sec.lessons.length} lesson{sec.lessons.length!==1?"s":""}{completedCount>0 ? ` · ${completedCount} done` : ""}
                       </div>
                     </div>
@@ -1867,13 +1900,13 @@ function SessionDetail({ session, onBack, toast, onAssessmentClick }) {
                             <div style={{ marginTop:1, flexShrink:0 }}>
                               {l.status === "completed" || quizDone
                                 ? <div style={{ width:18, height:18, borderRadius:"50%", background:C.success, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                                    <Icon name="check" size={10} color="#fff"/>
+                                    <Icon name="check" size={12} color="#fff"/>
                                   </div>
                                 : locked
                                   ? <Icon name="lock" size={14} color={C.gray300}/>
                                   : isActive
                                     ? <div style={{ width:18, height:18, borderRadius:"50%", background:C.primary, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                                        <Icon name="play" size={9} color="#fff"/>
+                                        <Icon name="play" size={12} color="#fff"/>
                                       </div>
                                     : <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${C.gray300}` }}/>
                               }
@@ -1882,11 +1915,11 @@ function SessionDetail({ session, onBack, toast, onAssessmentClick }) {
                             {/* Content */}
                             <div style={{ flex:1, minWidth:0 }}>
                               <div style={{ fontSize:12, fontWeight: isActive ? 700 : 400, color: locked ? C.gray400 : isQuiz ? "#7c3aed" : C.gray900, lineHeight:1.4 }}>{l.title}</div>
-                              <div style={{ fontSize:11, color: isQuiz ? "#a855f7" : C.gray400, marginTop:2 }}>
+                              <div style={{ fontSize:12, color: isQuiz ? "#a855f7" : C.gray400, marginTop:2 }}>
                                 {isQuiz ? `${l.questions} question${l.questions!==1?"s":""}` : l.duration}
                               </div>
                               {isPreview && !locked && !isActive && (
-                                <span style={{ display:"inline-block", fontSize:10, fontWeight:600, color:C.gray500, background:C.gray100, borderRadius:4, padding:"1px 6px", marginTop:3 }}>Preview</span>
+                                <span style={{ display:"inline-block", fontSize:12, fontWeight:600, color:C.gray500, background:C.gray100, borderRadius:4, padding:"1px 6px", marginTop:3 }}>Preview</span>
                               )}
                             </div>
                           </div>
@@ -1903,13 +1936,13 @@ function SessionDetail({ session, onBack, toast, onAssessmentClick }) {
                             onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                             {/* File icon chip */}
                             <div style={{ marginTop:1, width:18, height:18, borderRadius:4, background:typeColor.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                              <Icon name="paperclip" size={10} color={typeColor.color}/>
+                              <Icon name="paperclip" size={12} color={typeColor.color}/>
                             </div>
                             <div style={{ flex:1, minWidth:0 }}>
                               <div style={{ fontSize:12, fontWeight:400, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{r.title}</div>
                               <div style={{ display:"flex", gap:5, alignItems:"center", marginTop:2 }}>
-                                <span style={{ fontSize:10, fontWeight:700, color:typeColor.color, background:typeColor.bg, borderRadius:4, padding:"1px 5px" }}>{r.type}</span>
-                                <span style={{ fontSize:11, color:C.gray400 }}>{r.size}</span>
+                                <span style={{ fontSize:12, fontWeight:700, color:typeColor.color, background:typeColor.bg, borderRadius:4, padding:"1px 5px" }}>{r.type}</span>
+                                <span style={{ fontSize:12, color:C.gray400 }}>{r.size}</span>
                               </div>
                             </div>
                             <button onClick={() => { setDownloaded(d=>({...d,[r.id]:true})); toast({ type:"success", message:`Downloading ${r.title}` }); }}
@@ -1971,17 +2004,17 @@ function CommunityPage({ toast }) {
     <div style={{ display:"flex", gap:20, padding:24, background:C.gray50, minHeight:"100%" }}>
       <div style={{ flex:1, minWidth:0 }}>
         <div style={{ marginBottom:20 }}>
-          <div style={{ fontSize:10, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>COLLABORATIVE HUB</div>
+          <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>COLLABORATIVE HUB</div>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
             <h1 style={{ margin:0, fontSize:24, fontWeight:900, color:C.gray900 }}>Join the <span style={{ color:C.primary }}>conversation.</span></h1>
             <Btn onClick={addPost}><Icon name="plus" size={14} color="#fff"/> Start a Discussion</Btn>
           </div>
-          <p style={{ margin:"6px 0 0", color:C.gray500, fontSize:13, lineHeight:1.5 }}>A dedicated space to share insights and solve roadblocks at Spread Summit.</p>
+          <p style={{ margin:"6px 0 0", color:C.gray500, fontSize:14, lineHeight:1.5 }}>A dedicated space to share insights and solve roadblocks at Spread Summit.</p>
         </div>
         {/* Quick post */}
         <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"14px 16px", marginBottom:16, display:"flex", gap:12 }}>
           <Avatar name={userProfile.name} size={34}/>
-          <input value={newPost} onChange={e=>setNewPost(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addPost()} placeholder="Share something with the community…" style={{ flex:1, padding:"8px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:13, outline:"none", color:C.gray700, background:C.white }}/>
+          <input value={newPost} onChange={e=>setNewPost(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addPost()} placeholder="Share something with the community…" style={{ flex:1, padding:"8px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:14, outline:"none", color:C.gray700, background:C.white }}/>
           <Btn size="sm" onClick={addPost}>Post</Btn>
         </div>
         {/* Posts */}
@@ -1993,10 +2026,10 @@ function CommunityPage({ toast }) {
                 <div>
                   <div style={{ display:"flex", gap:6, alignItems:"center" }}>
                     <span style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{post.author}</span>
-                    {post.role==="MENTOR" && <Badge label="MENTOR" color={C.success} bg={C.successLight} size={9}/>}
-                    {post.type==="question" && <Badge label="QUESTION" color={C.primary} bg={C.primaryLight} size={9}/>}
+                    {post.role==="MENTOR" && <Badge label="MENTOR" color={C.success} bg={C.successLight} size={12}/>}
+                    {post.type==="question" && <Badge label="QUESTION" color={C.primary} bg={C.primaryLight} size={12}/>}
                   </div>
-                  <div style={{ fontSize:11, color:C.gray400 }}>{post.time}</div>
+                  <div style={{ fontSize:12, color:C.gray400 }}>{post.time}</div>
                 </div>
               </div>
               <div style={{ position:"relative" }}>
@@ -2019,7 +2052,7 @@ function CommunityPage({ toast }) {
               </div>
             </div>
             <div style={{ fontSize:14, fontWeight:700, color:C.gray900, marginBottom:6, lineHeight:1.4, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{post.title}</div>
-            {post.body && <p style={{ margin:"0 0 10px", fontSize:13, color:C.gray600, lineHeight:1.6, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{post.body}</p>}
+            {post.body && <p style={{ margin:"0 0 10px", fontSize:14, color:C.gray600, lineHeight:1.6, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{post.body}</p>}
             {post.tags.length>0 && <div style={{ display:"flex", gap:6, marginBottom:10 }}>{post.tags.map(t=><span key={t} style={{ fontSize:12, background:C.gray100, color:C.gray600, padding:"3px 10px", borderRadius:99 }}>{t}</span>)}</div>}
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", paddingTop:10, borderTop:`1px solid ${C.gray100}` }}>
               <div style={{ display:"flex", gap:4 }}>
@@ -2061,14 +2094,14 @@ function CommunityPage({ toast }) {
         <div style={{ background:"linear-gradient(135deg,#d97706,#b45309)", borderRadius:14, padding:16, color:"#fff", marginBottom:14 }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
             <Icon name="lightning" size={20} color="#fff"/>
-            <Badge label="WEEKLY GOAL" color="#fff" bg="rgba(255,255,255,0.2)" size={9}/>
+            <Badge label="WEEKLY GOAL" color="#fff" bg="rgba(255,255,255,0.2)" size={12}/>
           </div>
-          <div style={{ fontWeight:800, fontSize:15, marginBottom:4 }}>Community Momentum</div>
+          <div style={{ fontWeight:800, fontSize:16, marginBottom:4 }}>Community Momentum</div>
           <div style={{ fontSize:12, opacity:.9, marginBottom:12, lineHeight:1.5 }}>You're in the top 5% of active contributors this week!</div>
           <ProgressBar value={72} color="#fff" height={5}/>
         </div>
         <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:16, marginBottom:14 }}>
-          <div style={{ fontSize:10, fontWeight:700, color:C.gray400, letterSpacing:.5, marginBottom:12 }}>TOP MENTORS</div>
+          <div style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.5, marginBottom:12 }}>TOP MENTORS</div>
           {["Marcus Chen","Sydney Bassard","Amanda Schaumburg"].map(name=>(
             <div key={name} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
               <div style={{ position:"relative" }}>
@@ -2077,23 +2110,23 @@ function CommunityPage({ toast }) {
               </div>
               <div style={{ flex:1, minWidth:0 }}>
                 <div style={{ fontSize:12, fontWeight:600, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{name}</div>
-                <div style={{ fontSize:11, color:C.gray400 }}>Special Ed Ins…</div>
+                <div style={{ fontSize:12, color:C.gray400 }}>Special Ed Ins…</div>
               </div>
               <button onClick={()=>toggleFollow(name)}
-                style={{ padding:"4px 10px", background:followed[name]?C.successLight:"none", border:`1px solid ${followed[name]?C.successBorder:C.gray300}`, borderRadius:6, fontSize:11, fontWeight:600, cursor:"pointer", color:followed[name]?C.success:C.gray600, display:"flex", alignItems:"center", gap:4 }}>
-                {followed[name] && <Icon name="check" size={10} color={C.success}/>}
+                style={{ padding:"4px 10px", background:followed[name]?C.successLight:"none", border:`1px solid ${followed[name]?C.successBorder:C.gray300}`, borderRadius:6, fontSize:12, fontWeight:600, cursor:"pointer", color:followed[name]?C.success:C.gray600, display:"flex", alignItems:"center", gap:4 }}>
+                {followed[name] && <Icon name="check" size={12} color={C.success}/>}
                 {followed[name]?"Following":"Follow"}
               </button>
             </div>
           ))}
         </div>
         <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:16 }}>
-          <div style={{ fontSize:10, fontWeight:700, color:C.gray400, letterSpacing:.5, marginBottom:10 }}>RISING STARS</div>
+          <div style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.5, marginBottom:10 }}>RISING STARS</div>
           <div style={{ display:"flex", alignItems:"center", gap:4 }}>
             {["Sarah K","Luis M","Emma T"].map((n,i)=>(
-              <div key={n} style={{ width:32,height:32,borderRadius:"50%",background:["#f97316","#10b981","#6366f1"][i],border:"2px solid #fff",marginLeft:i>0?-8:0,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:700,fontSize:11 }}>{n[0]}</div>
+              <div key={n} style={{ width:32,height:32,borderRadius:"50%",background:["#f97316","#10b981","#6366f1"][i],border:"2px solid #fff",marginLeft:i>0?-8:0,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:700,fontSize:12 }}>{n[0]}</div>
             ))}
-            <span style={{ marginLeft:8, fontWeight:700, color:C.gray700, fontSize:13 }}>+2.4k</span>
+            <span style={{ marginLeft:8, fontWeight:700, color:C.gray700, fontSize:14 }}>+2.4k</span>
           </div>
         </div>
       </div>
@@ -2129,7 +2162,7 @@ function ProfileSection({ icon, label, children }) {
 function ProfileField({ label, children }) {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-      <label style={{ fontSize:11, fontWeight:700, color:C.gray500, letterSpacing:.8, textTransform:"uppercase" }}>{label}</label>
+      <label style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.8, textTransform:"uppercase" }}>{label}</label>
       {children}
     </div>
   );
@@ -2171,9 +2204,9 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange }) {
 
         {/* Page header */}
         <div style={{ marginBottom:28 }}>
-          <div style={{ fontSize:10, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>ACCOUNT</div>
+          <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>ACCOUNT</div>
           <h1 style={{ margin:"0 0 4px", fontSize:24, fontWeight:900, color:C.gray900 }}>Your Profile</h1>
-          <p style={{ margin:0, fontSize:13, color:C.gray500, lineHeight:1.5 }}>Manage your personal information, security, and preferences.</p>
+          <p style={{ margin:0, fontSize:14, color:C.gray500, lineHeight:1.5 }}>Manage your personal information, security, and preferences.</p>
         </div>
 
         {/* ── Photo ── */}
@@ -2191,8 +2224,8 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange }) {
             </button>
           </div>
           <div style={{ flex:1, minWidth:180 }}>
-            <div style={{ fontWeight:800, fontSize:15, color:C.gray900, marginBottom:4 }}>Profile Photo</div>
-            <div style={{ fontSize:13, color:C.gray500, marginBottom:14 }}>PNG or JPG, max 5MB. Used across your profile and certificates.</div>
+            <div style={{ fontWeight:800, fontSize:16, color:C.gray900, marginBottom:4 }}>Profile Photo</div>
+            <div style={{ fontSize:14, color:C.gray500, marginBottom:14 }}>PNG or JPG, max 5MB. Used across your profile and certificates.</div>
             <div style={{ display:"flex", gap:10 }}>
               <button onClick={() => photoInputRef.current?.click()}
                 style={{ padding:"8px 18px", background:C.primary, color:"#fff", border:"none", borderRadius:99, fontSize:12, fontWeight:700, cursor:"pointer" }}>
@@ -2293,10 +2326,10 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange }) {
           <div style={{ background:C.errorLight, border:`1px solid ${C.errorBorder}`, borderRadius:20, padding:"24px 28px", display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:16 }}>
             <div>
               <div style={{ fontWeight:800, fontSize:16, color:C.error, marginBottom:4 }}>Deactivate Account</div>
-              <div style={{ fontSize:13, color:C.gray500 }}>Permanently remove your profile and all learning progress. This cannot be undone.</div>
+              <div style={{ fontSize:14, color:C.gray500 }}>Permanently remove your profile and all learning progress. This cannot be undone.</div>
             </div>
             <button onClick={()=>toast({type:"error",title:"Are you sure?",message:"This action is permanent."})}
-              style={{ padding:"10px 22px", background:C.white, color:C.error, border:`1px solid ${C.errorBorder}`, borderRadius:99, fontSize:13, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:8 }}>
+              style={{ padding:"10px 22px", background:C.white, color:C.error, border:`1px solid ${C.errorBorder}`, borderRadius:99, fontSize:14, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:8 }}>
               <Icon name="trash" size={14} color={C.error}/> Deactivate Account
             </button>
           </div>
@@ -2325,7 +2358,7 @@ function RewardsPage({ toast }) {
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:22 }}>
         <div>
           <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900, display:"flex", alignItems:"center", gap:8 }}><Icon name="gift" size={22} color={C.primary}/>Your Rewards</h1>
-          <p style={{ margin:0, color:C.gray500, fontSize:13, lineHeight:1.5 }}>Track achievements and redeem your points.</p>
+          <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>Track achievements and redeem your points.</p>
         </div>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(180px, 1fr))", gap:14, marginBottom:28 }}>
@@ -2336,7 +2369,7 @@ function RewardsPage({ toast }) {
             </div>
             <div>
               <div style={{ fontSize:24, fontWeight:900, color:s.color }}>{s.val}</div>
-              <div style={{ fontSize:11, color:C.gray400 }}>{s.label}</div>
+              <div style={{ fontSize:12, color:C.gray400 }}>{s.label}</div>
             </div>
           </div>
         ))}
@@ -2348,9 +2381,9 @@ function RewardsPage({ toast }) {
             style={{ background:C.white, borderRadius:14, border:`1px solid ${b.earned?C.primaryBorder:C.gray200}`, padding:"18px 16px", textAlign:"left", opacity:b.earned?1:.55, cursor:b.earned?"default":"pointer", transition:"all .2s" }}
             onMouseEnter={e=>{ if(!b.earned) e.currentTarget.style.opacity="0.7"; }} onMouseLeave={e=>{ if(!b.earned) e.currentTarget.style.opacity="0.55"; }}>
             <div style={{ fontSize:36, marginBottom:8 }}>{emojiMap[b.icon]}</div>
-            <div style={{ fontWeight:700, fontSize:13, color:C.gray900, marginBottom:4 }}>{b.name}</div>
-            <div style={{ fontSize:11, color:C.gray400, lineHeight:1.4 }}>{b.desc}</div>
-            {b.earned && <div style={{ marginTop:10, display:"flex", alignItems:"center", justifyContent:"center", gap:4, fontSize:11, color:C.success, fontWeight:700 }}><Icon name="check-circle" size={12} color={C.success}/>Earned</div>}
+            <div style={{ fontWeight:700, fontSize:14, color:C.gray900, marginBottom:4 }}>{b.name}</div>
+            <div style={{ fontSize:12, color:C.gray400, lineHeight:1.4 }}>{b.desc}</div>
+            {b.earned && <div style={{ marginTop:10, display:"flex", alignItems:"center", justifyContent:"center", gap:4, fontSize:12, color:C.success, fontWeight:700 }}><Icon name="check-circle" size={12} color={C.success}/>Earned</div>}
           </div>
         ))}
       </div>
@@ -2366,9 +2399,9 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
   return (
     <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
       <div style={{ marginBottom:22 }}>
-        <div style={{ fontSize:10, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>ADMIN PANEL</div>
+        <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>ADMIN PANEL</div>
         <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900 }}>Overview</h1>
-        <p style={{ margin:0, color:C.gray500, fontSize:13, lineHeight:1.5 }}>Your teaching performance at a glance.</p>
+        <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>Your teaching performance at a glance.</p>
       </div>
 
       {/* Metrics */}
@@ -2382,7 +2415,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
           <div key={m.label} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"18px 20px" }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
               <Icon name={m.icon} size={16} color={m.color}/>
-              <span style={{ fontSize:10, fontWeight:700, color:C.gray400, letterSpacing:.5 }}>{m.label}</span>
+              <span style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.5 }}>{m.label}</span>
             </div>
             <div style={{ fontSize:30, fontWeight:900, color:m.color, marginBottom:4 }}>{m.val}</div>
             <div style={{ fontSize:12, color:C.success, fontWeight:600 }}>{m.delta}</div>
@@ -2395,7 +2428,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
         {/* Recent sessions snapshot */}
         <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:20 }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
-            <h2 style={{ margin:0, fontSize:15, fontWeight:800, color:C.gray900 }}>Recent Sessions</h2>
+            <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900 }}>Recent Sessions</h2>
             <button onClick={()=>onNavigate("admin-sessions")} style={{ background:"none", border:"none", color:C.primary, fontSize:12, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:4 }}>
               View all <Icon name="caret-right" size={13} color={C.primary}/>
             </button>
@@ -2406,10 +2439,10 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
               <div key={s.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 0", borderBottom:i<arr.length-1?`1px solid ${C.gray100}`:"none" }}>
                 <AdminThumb idx={i}/>
                 <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontWeight:600, fontSize:13, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
+                  <div style={{ fontWeight:600, fontSize:14, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
                   <div style={{ display:"flex", alignItems:"center", gap:6, marginTop:3 }}>
-                    <Badge label={s.status} color={sc.c} bg={sc.bg} size={9}/>
-                    <span style={{ fontSize:11, color:C.gray400 }}>{s.date}</span>
+                    <Badge label={s.status} color={sc.c} bg={sc.bg} size={12}/>
+                    <span style={{ fontSize:12, color:C.gray400 }}>{s.date}</span>
                   </div>
                 </div>
                 <button onClick={() => onEditSession?.(s)}
@@ -2430,7 +2463,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
               <span style={{ fontWeight:800, fontSize:14 }}>Instructor Growth Program</span>
             </div>
             <p style={{ margin:"0 0 12px", fontSize:12, opacity:.85, lineHeight:1.6 }}>You're almost at "Gold Level" — get 15% off fees and priority placement.</p>
-            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5, fontSize:11, fontWeight:600 }}><span>Reach Gold</span><span>70%</span></div>
+            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5, fontSize:12, fontWeight:600 }}><span>Reach Gold</span><span>70%</span></div>
             <ProgressBar value={70} color="#fbbf24" height={5}/>
           </div>
           <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:18 }}>
@@ -2438,7 +2471,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
               <div style={{ width:32,height:32,borderRadius:9,background:C.primaryLight,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
                 <Icon name="lightning" size={18} color={C.primary}/>
               </div>
-              <div style={{ fontWeight:700, fontSize:13, color:C.gray900, alignSelf:"center" }}>Teaching Tip</div>
+              <div style={{ fontWeight:700, fontSize:14, color:C.gray900, alignSelf:"center" }}>Teaching Tip</div>
             </div>
             <p style={{ margin:"0 0 10px", fontSize:12, color:C.gray600, lineHeight:1.6, fontStyle:"italic" }}>"Sessions between 10 AM–2 PM EST see 40% higher live attendance."</p>
             <Btn variant="outline" size="sm" onClick={() => setShowEngagement(true)} style={{ width:"100%", justifyContent:"center" }}>View engagement guide</Btn>
@@ -2454,9 +2487,9 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
             <div style={{ background:"linear-gradient(135deg,#1e3a8a,#2563eb)", padding:"24px 28px 20px", color:"#fff" }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                 <div>
-                  <div style={{ fontSize:11, fontWeight:700, letterSpacing:1, opacity:.7, marginBottom:4 }}>INSTRUCTOR RESOURCE</div>
+                  <div style={{ fontSize:12, fontWeight:700, letterSpacing:1, opacity:.7, marginBottom:4 }}>INSTRUCTOR RESOURCE</div>
                   <h2 style={{ margin:0, fontSize:20, fontWeight:900 }}>Engagement Guide</h2>
-                  <p style={{ margin:"6px 0 0", fontSize:13, opacity:.8 }}>Proven tactics to boost attendance and completion rates.</p>
+                  <p style={{ margin:"6px 0 0", fontSize:14, opacity:.8 }}>Proven tactics to boost attendance and completion rates.</p>
                 </div>
                 <button onClick={() => setShowEngagement(false)} style={{ background:"rgba(255,255,255,0.15)", border:"none", color:"#fff", width:30, height:30, borderRadius:8, cursor:"pointer", fontSize:16, display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
               </div>
@@ -2475,7 +2508,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
                     <Icon name={tip.icon} size={16} color={tip.color}/>
                   </div>
                   <div>
-                    <div style={{ fontWeight:700, fontSize:13, color:C.gray900, marginBottom:2 }}>{tip.title}</div>
+                    <div style={{ fontWeight:700, fontSize:14, color:C.gray900, marginBottom:2 }}>{tip.title}</div>
                     <div style={{ fontSize:12, color:C.gray500, lineHeight:1.6 }}>{tip.body}</div>
                   </div>
                 </div>
@@ -2502,9 +2535,9 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast }) {
     <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:22 }}>
         <div>
-          <div style={{ fontSize:10, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>ADMIN PANEL</div>
+          <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>ADMIN PANEL</div>
           <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900 }}>My Sessions</h1>
-          <p style={{ margin:0, color:C.gray500, fontSize:13, lineHeight:1.5 }}>Manage, publish and track all your content.</p>
+          <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>Manage, publish and track all your content.</p>
         </div>
         <Btn onClick={()=>onNavigate("admin-create")}><Icon name="plus" size={14} color="#fff"/>New Session</Btn>
       </div>
@@ -2519,7 +2552,7 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast }) {
         ].map(s=>(
           <div key={s.label} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"18px 20px" }}>
             <div style={{ fontSize:30, fontWeight:900, color:s.color, marginBottom:4 }}>{s.val}</div>
-            <div style={{ fontSize:10, fontWeight:700, color:C.gray400, letterSpacing:.5, textTransform:"uppercase" }}>{s.label}</div>
+            <div style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.5, textTransform:"uppercase" }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -2547,7 +2580,7 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast }) {
       {/* Sessions list */}
       <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, overflow:"hidden" }}>
         {filtered.length === 0 && (
-          <div style={{ padding:"48px 20px", color:C.gray400, fontSize:13 }}>No sessions match this filter.</div>
+          <div style={{ padding:"48px 20px", color:C.gray400, fontSize:14 }}>No sessions match this filter.</div>
         )}
         {filtered.map((s,i)=>{
           const sc = ADMIN_STATUS_COLORS[s.status] || ADMIN_STATUS_COLORS.DRAFT;
@@ -2558,19 +2591,19 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast }) {
               <AdminThumb idx={i}/>
               <div style={{ flex:1, minWidth:0 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4 }}>
-                  <Badge label={s.status} color={sc.c} bg={sc.bg} size={9}/>
-                  <span style={{ fontSize:11, color:C.gray400 }}>{s.category}</span>
+                  <Badge label={s.status} color={sc.c} bg={sc.bg} size={12}/>
+                  <span style={{ fontSize:12, color:C.gray400 }}>{s.category}</span>
                   {s.availableFrom && s.availableTo && s.status !== "ARCHIVED" && (
-                    <span style={{ fontSize:10, color:C.gray400 }}>
+                    <span style={{ fontSize:12, color:C.gray400 }}>
                       {new Date(s.availableFrom).toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})} – {new Date(s.availableTo).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}
                     </span>
                   )}
                 </div>
                 <div style={{ fontWeight:600, fontSize:14, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
-                <div style={{ fontSize:11, color:C.gray400, marginTop:3, display:"flex", gap:12 }}>
-                  {s.enrolled && <span style={{ display:"flex",alignItems:"center",gap:3 }}><Icon name="users" size={11} color={C.gray400}/>{s.enrolled.toLocaleString()} Enrolled</span>}
-                  {s.rating   && <span style={{ display:"flex",alignItems:"center",gap:3 }}><Icon name="star"  size={11} color={C.warning}/>{s.rating} Stars</span>}
-                  <span style={{ display:"flex",alignItems:"center",gap:3 }}><Icon name="calendar" size={11} color={C.gray400}/>{s.date}</span>
+                <div style={{ fontSize:12, color:C.gray400, marginTop:3, display:"flex", gap:12 }}>
+                  {s.enrolled && <span style={{ display:"flex",alignItems:"center",gap:3 }}><Icon name="users" size={12} color={C.gray400}/>{s.enrolled.toLocaleString()} Enrolled</span>}
+                  {s.rating   && <span style={{ display:"flex",alignItems:"center",gap:3 }}><Icon name="star"  size={12} color={C.warning}/>{s.rating} Stars</span>}
+                  <span style={{ display:"flex",alignItems:"center",gap:3 }}><Icon name="calendar" size={12} color={C.gray400}/>{s.date}</span>
                 </div>
               </div>
               <div style={{ display:"flex", gap:6, flexShrink:0 }}>
@@ -2597,7 +2630,7 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast }) {
 
 function LineAreaChart({ data, color = C.primary }) {
   const [hov, setHov] = useState(null);
-  const W = 700, H = 200, pL = 44, pR = 16, pT = 16, pB = 34;
+  const W = 1000, H = 200, pL = 40, pR = 16, pT = 16, pB = 32;
   const iW = W - pL - pR, iH = H - pT - pB;
   const maxV = Math.max(...data.map(d => d.v), 1);
   const xOf  = i => pL + (i / (data.length - 1)) * iW;
@@ -2648,7 +2681,7 @@ function LineAreaChart({ data, color = C.primary }) {
             <g key={pct}>
               <line x1={pL} y1={y} x2={W - pR} y2={y}
                 stroke="var(--c-gray200)" strokeWidth="1" strokeDasharray="5,4"/>
-              <text x={pL - 8} y={y + 4} textAnchor="end" fontSize="10" fill="var(--c-gray400)" fontFamily="inherit">
+              <text x={pL - 6} y={y + 4} textAnchor="end" fontSize="12" fill="var(--c-gray400)" fontFamily="inherit">
                 {label}
               </text>
             </g>
@@ -2666,8 +2699,8 @@ function LineAreaChart({ data, color = C.primary }) {
         {data.map((d, i) => {
           if (i % step !== 0 && i !== data.length - 1) return null;
           return (
-            <text key={i} x={xOf(i)} y={H - 6} textAnchor="middle"
-              fontSize="10" fill="var(--c-gray400)" fontFamily="inherit">
+            <text key={i} x={xOf(i)} y={H - 5} textAnchor="middle"
+              fontSize="12" fill="var(--c-gray400)" fontFamily="inherit">
               {d.label}
             </text>
           );
@@ -2702,9 +2735,9 @@ function LineAreaChart({ data, color = C.primary }) {
             background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12,
             padding:"10px 16px", boxShadow:"0 8px 28px rgba(0,0,0,0.12)",
             pointerEvents:"none", whiteSpace:"nowrap", zIndex:30 }}>
-            <div style={{ fontSize:11, color:C.gray400, marginBottom:2 }}>{d.label}</div>
+            <div style={{ fontSize:12, color:C.gray400, marginBottom:2 }}>{d.label}</div>
             <div style={{ fontSize:22, fontWeight:900, color:C.gray900, lineHeight:1.15 }}>{d.v.toLocaleString()}</div>
-            <div style={{ fontSize:11, color:C.gray500, marginTop:1 }}>views</div>
+            <div style={{ fontSize:12, color:C.gray500, marginTop:1 }}>views</div>
           </div>
         );
       })()}
@@ -2787,9 +2820,9 @@ function AnalyticsPage({ onEditSession }) {
       {/* Header */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:22 }}>
         <div>
-          <div style={{ fontSize:10, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>ADMIN PANEL</div>
+          <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>ADMIN PANEL</div>
           <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900 }}>Analytics</h1>
-          <p style={{ margin:0, color:C.gray500, fontSize:13, lineHeight:1.5 }}>Track engagement, performance and learner outcomes.</p>
+          <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>Track engagement, performance and learner outcomes.</p>
         </div>
         {/* Date range picker */}
         <div style={{ position:"relative" }}>
@@ -2798,10 +2831,10 @@ function AnalyticsPage({ onEditSession }) {
               background:C.white, border:`1px solid ${C.gray200}`, borderRadius:10,
               padding:"10px 14px", cursor:"pointer" }}>
             <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-              <span style={{ fontSize:11, color:C.gray500 }}>{activeRange.dates}</span>
-              <Icon name="caret-right" size={11} color={C.gray500} style={{ transform:"rotate(90deg)" }}/>
+              <span style={{ fontSize:12, color:C.gray500 }}>{activeRange.dates}</span>
+              <Icon name="caret-right" size={12} color={C.gray500} style={{ transform:"rotate(90deg)" }}/>
             </div>
-            <span style={{ fontSize:13, fontWeight:700, color:C.gray900 }}>{activeRange.label}</span>
+            <span style={{ fontSize:14, fontWeight:700, color:C.gray900 }}>{activeRange.label}</span>
           </button>
           {showRange && (
             <div style={{ position:"absolute", right:0, top:"calc(100% + 4px)", background:C.white,
@@ -2811,7 +2844,7 @@ function AnalyticsPage({ onEditSession }) {
                 <button key={r.key} onClick={() => { setRange(r.key); setShowRange(false); }}
                   style={{ display:"block", width:"100%", padding:"10px 16px",
                     background:range===r.key ? C.gray50 : "none", border:"none", cursor:"pointer",
-                    fontSize:13, color:range===r.key ? C.gray900 : C.gray600,
+                    fontSize:14, color:range===r.key ? C.gray900 : C.gray600,
                     fontWeight:range===r.key ? 700 : 400, textAlign:"left" }}>
                   {r.label}
                 </button>
@@ -2832,7 +2865,7 @@ function AnalyticsPage({ onEditSession }) {
           <div key={m.label} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"18px 20px" }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
               <Icon name={m.icon} size={16} color={m.color}/>
-              <span style={{ fontSize:10, fontWeight:700, color:C.gray400, letterSpacing:.5 }}>{m.label}</span>
+              <span style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.5 }}>{m.label}</span>
             </div>
             <div style={{ fontSize:30, fontWeight:900, color:m.color, marginBottom:4 }}>{m.val}</div>
             <div style={{ fontSize:12, color:C.success, fontWeight:600 }}>{m.delta}</div>
@@ -2843,7 +2876,7 @@ function AnalyticsPage({ onEditSession }) {
       {/* Views over time — linear gradient chart */}
       <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"20px 24px", marginBottom:14 }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
-          <h2 style={{ margin:0, fontSize:15, fontWeight:800, color:C.gray900 }}>Views over time</h2>
+          <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900 }}>Views over time</h2>
           <span style={{ fontSize:12, color:C.gray400 }}>{activeRange.dates}</span>
         </div>
         <LineAreaChart data={trend} color={C.primary}/>
@@ -2854,13 +2887,13 @@ function AnalyticsPage({ onEditSession }) {
 
         {/* Top sessions */}
         <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:20 }}>
-          <h2 style={{ margin:"0 0 14px", fontSize:15, fontWeight:800, color:C.gray900 }}>Top Sessions</h2>
+          <h2 style={{ margin:"0 0 14px", fontSize:16, fontWeight:800, color:C.gray900 }}>Top Sessions</h2>
           {/* Header */}
           <div style={{ display:"grid", gridTemplateColumns:"16px 56px 1fr 72px 44px", gap:"0 10px",
             padding:"4px 0 8px", borderBottom:`1px solid ${C.gray100}`, marginBottom:2 }}>
-            <span style={{ gridColumn:"1 / 4", fontSize:11, color:C.gray400, fontWeight:700, letterSpacing:.3 }}>Content</span>
-            <span style={{ fontSize:11, color:C.gray400, fontWeight:700, letterSpacing:.3 }}>Duration</span>
-            <span style={{ fontSize:11, color:C.gray400, fontWeight:700, letterSpacing:.3 }}>Views</span>
+            <span style={{ gridColumn:"1 / 4", fontSize:12, color:C.gray400, fontWeight:700, letterSpacing:.3 }}>Content</span>
+            <span style={{ fontSize:12, color:C.gray400, fontWeight:700, letterSpacing:.3 }}>Duration</span>
+            <span style={{ fontSize:12, color:C.gray400, fontWeight:700, letterSpacing:.3 }}>Views</span>
           </div>
           {TOP_SESSIONS.map((s,i) => {
             const grads = ["linear-gradient(135deg,#1e3a5f,#3699ff)","linear-gradient(135deg,#4c1d95,#a855f7)","linear-gradient(135deg,#166534,#50cd89)","linear-gradient(135deg,#7c2d12,#f97316)"];
@@ -2880,10 +2913,10 @@ function AnalyticsPage({ onEditSession }) {
                 {/* Title — constrained width */}
                 <div style={{ minWidth:0 }}>
                   <div style={{ fontSize:12, fontWeight:600, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:160 }}>{s.title}</div>
-                  <div style={{ fontSize:11, color:C.gray400, marginTop:2 }}>{s.avgPct} completed</div>
+                  <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{s.avgPct} completed</div>
                 </div>
                 <span style={{ fontSize:12, color:C.gray600 }}>{s.avgDuration}</span>
-                <span style={{ fontSize:13, fontWeight:700, color:C.gray900 }}>{s.views}</span>
+                <span style={{ fontSize:14, fontWeight:700, color:C.gray900 }}>{s.views}</span>
               </div>
             );
           })}
@@ -2891,7 +2924,7 @@ function AnalyticsPage({ onEditSession }) {
 
         {/* Smart Insights */}
         <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:20 }}>
-          <h2 style={{ margin:"0 0 20px", fontSize:15, fontWeight:800, color:C.gray900 }}>Smart Insights</h2>
+          <h2 style={{ margin:"0 0 20px", fontSize:16, fontWeight:800, color:C.gray900 }}>Smart Insights</h2>
           {INSIGHTS.map((ins,i) => (
             <div key={i} style={{ display:"flex", gap:10, marginBottom:14,
               paddingBottom:14, borderBottom:i<INSIGHTS.length-1?`1px solid ${C.gray100}`:"none" }}>
@@ -2900,7 +2933,7 @@ function AnalyticsPage({ onEditSession }) {
                 <Icon name={ins.icon} size={15} color={C.primary}/>
               </div>
               <div>
-                <div style={{ fontSize:13, fontWeight:700, color:C.gray900, lineHeight:1.4, marginBottom:3 }}>{ins.title}</div>
+                <div style={{ fontSize:14, fontWeight:700, color:C.gray900, lineHeight:1.4, marginBottom:3 }}>{ins.title}</div>
                 <div style={{ fontSize:12, color:C.gray500, lineHeight:1.55 }}>{ins.body}</div>
               </div>
             </div>
@@ -2920,7 +2953,7 @@ function FormSection({ icon, title, subtitle, children }) {
     <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:24, marginBottom:16 }}>
       <div style={{ display:"flex", gap:12, marginBottom:20, alignItems:"flex-start" }}>
         <div style={{ width:36,height:36,borderRadius:10,background:C.primaryLight,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}><Icon name={icon} size={18} color={C.primary}/></div>
-        <div><div style={{ fontWeight:800, fontSize:15, color:C.gray900 }}>{title}</div><div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{subtitle}</div></div>
+        <div><div style={{ fontWeight:800, fontSize:16, color:C.gray900 }}>{title}</div><div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{subtitle}</div></div>
       </div>
       {children}
     </div>
@@ -2928,10 +2961,10 @@ function FormSection({ icon, title, subtitle, children }) {
 }
 
 function Label({ children, required }) {
-  return <div style={{ fontSize:10, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:5, display:"flex", gap:4 }}>{children}{required&&<span style={{ color:C.error }}>*</span>}</div>;
+  return <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:5, display:"flex", gap:4 }}>{children}{required&&<span style={{ color:C.error }}>*</span>}</div>;
 }
 
-const inputSt = { width:"100%", padding:"9px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:13, color:C.gray700, outline:"none", background:C.gray50, boxSizing:"border-box", fontFamily:"inherit" };
+const inputSt = { width:"100%", padding:"9px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:14, color:C.gray700, outline:"none", background:C.gray50, boxSizing:"border-box", fontFamily:"inherit" };
 
 /* ─────────────────────────────────────────────────────────────────────────────
    CURRICULUM BUILDER
@@ -3108,7 +3141,7 @@ function CurriculumBuilder({ toast }) {
                   style={{ flex:1, fontSize:14, fontWeight:700, border:`1px solid ${C.primary}`, borderRadius:7, padding:"4px 10px", outline:"none", color:C.gray900, background:C.white }}/>
               : <div style={{ flex:1, fontSize:14, fontWeight:700, color:C.gray900, cursor:"text" }} onClick={()=>setEditingSectionId(sec.id)}>
                   {si===0?"":si+". "}{sec.title}
-                  <span style={{ fontSize:11, color:C.gray400, fontWeight:400, marginLeft:8 }}>{sec.lessons.length} item{sec.lessons.length!==1?"s":""}</span>
+                  <span style={{ fontSize:12, color:C.gray400, fontWeight:400, marginLeft:8 }}>{sec.lessons.length} item{sec.lessons.length!==1?"s":""}</span>
                 </div>
             }
             <div style={{ display:"flex", gap:4 }}>
@@ -3155,11 +3188,11 @@ function CurriculumBuilder({ toast }) {
                     {editingLessonId===l.id
                       ? <input autoFocus value={l.title} onChange={e=>patchLesson(sec.id,l.id,{title:e.target.value})}
                           onBlur={()=>setEditingLessonId(null)} onKeyDown={e=>e.key==="Enter"&&setEditingLessonId(null)}
-                          style={{ flex:1, fontSize:13, border:`1px solid ${C.primary}`, borderRadius:7, padding:"4px 10px", outline:"none", color:C.gray900, background:C.white }}/>
+                          style={{ flex:1, fontSize:14, border:`1px solid ${C.primary}`, borderRadius:7, padding:"4px 10px", outline:"none", color:C.gray900, background:C.white }}/>
                       : <div style={{ flex:1, minWidth:0, display:"flex", alignItems:"center", gap:6, cursor:"text" }} onClick={()=>setEditingLessonId(l.id)}>
                           <div style={{ minWidth:0 }}>
-                            <div style={{ fontSize:13, fontWeight:500, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{l.title}</div>
-                            {l.duration && <div style={{ fontSize:11, color:C.gray400, marginTop:1 }}>{l.duration}</div>}
+                            <div style={{ fontSize:14, fontWeight:500, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{l.title}</div>
+                            {l.duration && <div style={{ fontSize:12, color:C.gray400, marginTop:1 }}>{l.duration}</div>}
                           </div>
                           {l.type==="quiz" && (
                             <button onClick={e=>{ e.stopPropagation(); patchLesson(sec.id,l.id,{quizExpanded:!l.quizExpanded}); }}
@@ -3171,7 +3204,7 @@ function CurriculumBuilder({ toast }) {
                     }
 
                     {/* Type badge */}
-                    <span style={{ fontSize:11, fontWeight:700, padding:"2px 8px", borderRadius:99,
+                    <span style={{ fontSize:12, fontWeight:700, padding:"2px 8px", borderRadius:99,
                       background: l.type==="quiz"?"#ede9fe": l.type==="material"?"#ecfdf5":C.primaryLight,
                       color:      l.type==="quiz"?"#7c3aed": l.type==="material"?"#059669":C.primary,
                       flexShrink:0 }}>
@@ -3181,7 +3214,7 @@ function CurriculumBuilder({ toast }) {
                     {/* Material upload button */}
                     {l.type==="material" && (
                       <button onClick={()=>{ setUploadingMaterialId({secId:sec.id,lesId:l.id}); setTimeout(()=>materialInputRef.current?.click(),0); }}
-                        style={{ fontSize:11, fontWeight:600, color: l.materialFile?C.success:C.primary, background:"none", border:`1px solid ${l.materialFile?C.success:C.gray200}`, borderRadius:7, padding:"4px 10px", cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:4 }}>
+                        style={{ fontSize:12, fontWeight:600, color: l.materialFile?C.success:C.primary, background:"none", border:`1px solid ${l.materialFile?C.success:C.gray200}`, borderRadius:7, padding:"4px 10px", cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:4 }}>
                         <Icon name={l.materialFile?"check":"paperclip"} size={12} color={l.materialFile?C.success:C.primary}/>
                         {l.materialFile ? l.materialFile.name.slice(0,16)+"…" : "Upload File"}
                       </button>
@@ -3199,19 +3232,19 @@ function CurriculumBuilder({ toast }) {
                               onKeyDown={e=>{ if(e.key==="Enter"){ patchLesson(sec.id,l.id,{vimeoUrl:vimeoInputVal}); setVimeoLinkId(null); toast({type:"success",message:"Vimeo link saved."}); } if(e.key==="Escape") setVimeoLinkId(null); }}
                               onBlur={()=>{ patchLesson(sec.id,l.id,{vimeoUrl:vimeoInputVal}); setVimeoLinkId(null); if(vimeoInputVal) toast({type:"success",message:"Vimeo link saved."}); }}
                               placeholder="https://vimeo.com/…"
-                              style={{ width:180, fontSize:11, border:`1px solid ${C.primary}`, borderRadius:7, padding:"4px 8px", outline:"none", color:C.gray900, background:C.white }}/>
+                              style={{ width:180, fontSize:12, border:`1px solid ${C.primary}`, borderRadius:7, padding:"4px 8px", outline:"none", color:C.gray900, background:C.white }}/>
                           </div>
                         );
                       }
                       return l.vimeoUrl ? (
                         <button onClick={()=>{ setVimeoLinkId({secId:sec.id,lesId:l.id}); setVimeoInputVal(l.vimeoUrl); }}
-                          style={{ fontSize:11, fontWeight:600, color:C.success, background:"none", border:`1px solid ${C.success}`, borderRadius:7, padding:"4px 10px", cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:4 }}>
+                          style={{ fontSize:12, fontWeight:600, color:C.success, background:"none", border:`1px solid ${C.success}`, borderRadius:7, padding:"4px 10px", cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:4 }}>
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="#50cd89"><path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm5.568 8.16c-.169 1.858-1.387 3.915-3.653 6.173-2.347 2.355-4.332 3.532-5.956 3.532-.999 0-1.847-.926-2.541-2.778L4.56 11.605C4.04 9.753 3.483 8.826 2.888 8.826c-.132 0-.593.278-1.384.832L.72 8.544c.871-.765 1.729-1.53 2.573-2.297C4.527 5.138 5.55 4.63 6.18 4.564c1.557-.149 2.514.917 2.87 3.196.386 2.456.655 3.985.806 4.588.447 2.039.938 3.058 1.473 3.058.416 0 1.043-.659 1.881-1.977.837-1.317 1.286-2.318 1.347-3.004.12-1.138-.328-1.708-1.347-1.708-.479 0-.974.111-1.481.333.984-3.225 2.864-4.79 5.641-4.696 2.058.063 3.029 1.39 2.918 3.798l-.02.008z"/></svg>
                           Linked ✓
                         </button>
                       ) : (
                         <button onClick={()=>{ setVimeoLinkId({secId:sec.id,lesId:l.id}); setVimeoInputVal(""); }}
-                          style={{ fontSize:11, fontWeight:600, color:C.primary, background:"none", border:`1px solid ${C.gray200}`, borderRadius:7, padding:"4px 10px", cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:4 }}>
+                          style={{ fontSize:12, fontWeight:600, color:C.primary, background:"none", border:`1px solid ${C.gray200}`, borderRadius:7, padding:"4px 10px", cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:4 }}>
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="#3699ff"><path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm5.568 8.16c-.169 1.858-1.387 3.915-3.653 6.173-2.347 2.355-4.332 3.532-5.956 3.532-.999 0-1.847-.926-2.541-2.778L4.56 11.605C4.04 9.753 3.483 8.826 2.888 8.826c-.132 0-.593.278-1.384.832L.72 8.544c.871-.765 1.729-1.53 2.573-2.297C4.527 5.138 5.55 4.63 6.18 4.564c1.557-.149 2.514.917 2.87 3.196.386 2.456.655 3.985.806 4.588.447 2.039.938 3.058 1.473 3.058.416 0 1.043-.659 1.881-1.977.837-1.317 1.286-2.318 1.347-3.004.12-1.138-.328-1.708-1.347-1.708-.479 0-.974.111-1.481.333.984-3.225 2.864-4.79 5.641-4.696 2.058.063 3.029 1.39 2.918 3.798l-.02.008z"/></svg>
                           Link Vimeo
                         </button>
@@ -3227,7 +3260,7 @@ function CurriculumBuilder({ toast }) {
                   {l.type==="quiz" && l.quizExpanded && (
                     <div style={{ background:C.gray50, borderBottom:`1px solid ${C.gray100}`, padding:"16px 18px" }}>
                       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-                        <div style={{ fontSize:13, fontWeight:700, color:"#7c3aed" }}>
+                        <div style={{ fontSize:14, fontWeight:700, color:"#7c3aed" }}>
                           Questions · {l.questions.length} total
                         </div>
                         <button onClick={()=>addQuestion(sec.id,l.id)}
@@ -3237,7 +3270,7 @@ function CurriculumBuilder({ toast }) {
                       </div>
 
                       {l.questions.length===0 && (
-                        <div style={{ textAlign:"center", padding:"20px 0", color:C.gray400, fontSize:13 }}>
+                        <div style={{ textAlign:"center", padding:"20px 0", color:C.gray400, fontSize:14 }}>
                           No questions yet. Click "Add Question" to get started.
                         </div>
                       )}
@@ -3247,10 +3280,10 @@ function CurriculumBuilder({ toast }) {
                           <div style={{ padding:"14px 16px" }}>
                             {/* Q header */}
                             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
-                              <span style={{ fontSize:11, fontWeight:700, color:C.gray400, letterSpacing:.3 }}>QUESTION {qi+1}</span>
+                              <span style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.3 }}>QUESTION {qi+1}</span>
                               <div style={{ display:"flex", gap:6 }}>
                                 <select value={q.type} onChange={e=>patchQuestion(sec.id,l.id,q.id,{type:e.target.value,correct:0,options:["","","",""]})}
-                                  style={{ fontSize:11, border:`1px solid ${C.gray200}`, borderRadius:6, padding:"4px 28px 4px 10px", outline:"none", color:C.gray700, background:C.white, cursor:"pointer", appearance:"auto" }}>
+                                  style={{ fontSize:12, border:`1px solid ${C.gray200}`, borderRadius:6, padding:"4px 28px 4px 10px", outline:"none", color:C.gray700, background:C.white, cursor:"pointer", appearance:"auto" }}>
                                   {CB_Q_TYPES.map(t=><option key={t.key} value={t.key}>{t.label}</option>)}
                                 </select>
                                 <button onClick={()=>deleteQuestion(sec.id,l.id,q.id)}
@@ -3262,7 +3295,7 @@ function CurriculumBuilder({ toast }) {
                             {/* Question text */}
                             <input value={q.text} onChange={e=>patchQuestion(sec.id,l.id,q.id,{text:e.target.value})}
                               placeholder="Enter your question…"
-                              style={{ width:"100%", padding:"8px 10px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:13, color:C.gray900, outline:"none", background:C.gray50, boxSizing:"border-box", marginBottom:10, fontFamily:"inherit" }}/>
+                              style={{ width:"100%", padding:"8px 10px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:14, color:C.gray900, outline:"none", background:C.gray50, boxSizing:"border-box", marginBottom:10, fontFamily:"inherit" }}/>
                             {/* Options */}
                             {(q.type==="multiple-choice"||q.type==="checkboxes"||q.type==="dropdown") && q.options.map((opt,oi)=>(
                               <div key={oi} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
@@ -3273,7 +3306,7 @@ function CurriculumBuilder({ toast }) {
                                 <input value={opt} onChange={e=>{ const opts=[...q.options]; opts[oi]=e.target.value; patchQuestion(sec.id,l.id,q.id,{options:opts}); }}
                                   placeholder={`Option ${oi+1}`}
                                   style={{ flex:1, padding:"6px 10px", border:`1px solid ${C.gray200}`, borderRadius:7, fontSize:12, color:C.gray700, outline:"none", background: q.correct===oi&&q.type!=="dropdown"?"#faf5ff":C.white, fontFamily:"inherit" }}/>
-                                {q.correct===oi && q.type!=="dropdown" && <span style={{ fontSize:10, fontWeight:700, color:"#7c3aed", background:"#ede9fe", borderRadius:99, padding:"2px 8px" }}>Correct</span>}
+                                {q.correct===oi && q.type!=="dropdown" && <span style={{ fontSize:12, fontWeight:700, color:"#7c3aed", background:"#ede9fe", borderRadius:99, padding:"2px 8px" }}>Correct</span>}
                               </div>
                             ))}
                             {(q.type==="short-answer") && (
@@ -3283,7 +3316,7 @@ function CurriculumBuilder({ toast }) {
                               <textarea placeholder="Student writes a longer response here…" disabled rows={3} style={{ width:"100%", padding:"7px 10px", border:`1.5px dashed ${C.gray200}`, borderRadius:8, fontSize:12, color:C.gray400, background:C.gray50, boxSizing:"border-box", resize:"none", fontFamily:"inherit" }}/>
                             )}
                             {q.type==="dropdown" && (
-                              <div style={{ fontSize:11, color:C.gray400, marginTop:4 }}>Students will pick from the options above in a dropdown menu.</div>
+                              <div style={{ fontSize:12, color:C.gray400, marginTop:4 }}>Students will pick from the options above in a dropdown menu.</div>
                             )}
                           </div>
                         </div>
@@ -3313,8 +3346,8 @@ function CurriculumBuilder({ toast }) {
                 <div style={{ margin:"0 18px 12px", borderRadius:10, border:`1px solid ${C.gray200}`, overflow:"hidden" }}>
                   <div style={{ padding:"8px 14px", background:C.gray50, borderBottom:`1px solid ${C.gray200}`, fontSize:12, fontWeight:700, color:C.gray500, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                     <span>Resources</span>
-                    <button onClick={()=>triggerResourceUpload(sec.id)} style={{ fontSize:11, fontWeight:600, color:C.primary, background:"none", border:`1px solid ${C.gray200}`, borderRadius:6, padding:"3px 8px", cursor:"pointer", display:"flex", alignItems:"center", gap:4 }}>
-                      <Icon name="plus" size={11} color={C.primary}/> Add
+                    <button onClick={()=>triggerResourceUpload(sec.id)} style={{ fontSize:12, fontWeight:600, color:C.primary, background:"none", border:`1px solid ${C.gray200}`, borderRadius:6, padding:"3px 8px", cursor:"pointer", display:"flex", alignItems:"center", gap:4 }}>
+                      <Icon name="plus" size={12} color={C.primary}/> Add
                     </button>
                   </div>
                   {sec.resources.map((r, ri) => (
@@ -3323,12 +3356,12 @@ function CurriculumBuilder({ toast }) {
                       <div style={{ flex:1, minWidth:0 }}>
                         <div style={{ fontSize:12, fontWeight:500, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{r.title}</div>
                         <div style={{ display:"flex", gap:6, alignItems:"center", marginTop:2 }}>
-                          <span style={{ fontSize:10, fontWeight:700, color:C.primary, background:C.primaryLight, borderRadius:4, padding:"1px 5px" }}>{r.type}</span>
-                          <span style={{ fontSize:11, color:C.gray400 }}>{r.size}</span>
+                          <span style={{ fontSize:12, fontWeight:700, color:C.primary, background:C.primaryLight, borderRadius:4, padding:"1px 5px" }}>{r.type}</span>
+                          <span style={{ fontSize:12, color:C.gray400 }}>{r.size}</span>
                         </div>
                       </div>
                       <button onClick={()=>removeResource(sec.id, r.id)} style={{ width:24, height:24, borderRadius:6, border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                        <Icon name="x" size={11} color={C.gray400}/>
+                        <Icon name="x" size={12} color={C.gray400}/>
                       </button>
                     </div>
                   ))}
@@ -3342,7 +3375,7 @@ function CurriculumBuilder({ toast }) {
 
       {/* Add Section */}
       <button onClick={addSection}
-        style={{ width:"100%", padding:"13px", border:`2px dashed ${C.gray200}`, borderRadius:14, background:"transparent", fontSize:13, fontWeight:700, color:C.primary, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+        style={{ width:"100%", padding:"13px", border:`2px dashed ${C.gray200}`, borderRadius:14, background:"transparent", fontSize:14, fontWeight:700, color:C.primary, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
         <Icon name="plus" size={15} color={C.primary}/> Add Section
       </button>
     </div>
@@ -3420,8 +3453,8 @@ function AdminCreateSession({ onBack, toast }) {
             <Icon name="arrow-left" size={16} color={C.gray600}/>
           </button>
           <div>
-            <div style={{ fontSize:10, color:C.primary, fontWeight:700, letterSpacing:1 }}>ADMIN PANEL</div>
-            <h2 style={{ margin:0, fontSize:17, fontWeight:800, color:C.gray900, lineHeight:1.3 }}>Create New Session</h2>
+            <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1 }}>ADMIN PANEL</div>
+            <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900, lineHeight:1.3 }}>Create New Session</h2>
           </div>
         </div>
         <div style={{ display:"flex", gap:8 }}>
@@ -3439,7 +3472,7 @@ function AdminCreateSession({ onBack, toast }) {
             <button key={t.key} onClick={()=>setTab(t.key)}
               style={{ padding:"14px 20px", background:"none", border:"none",
                 borderBottom: active ? `2px solid ${C.primary}` : "2px solid transparent",
-                cursor:"pointer", fontSize:13, fontWeight: active ? 700 : 500,
+                cursor:"pointer", fontSize:14, fontWeight: active ? 700 : 500,
                 color: active ? C.primary : C.gray500, marginBottom:-1 }}>
               {t.label}
             </button>
@@ -3467,11 +3500,11 @@ function AdminCreateSession({ onBack, toast }) {
           <FormSection icon="calendar" title="Availability" subtitle="Set the access window. The session goes live on the start date and auto-archives after the end date.">
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:8 }}>
               <div>
-                <div style={{ fontSize:10, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE FROM</div>
+                <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE FROM</div>
                 <input type="datetime-local" value={form.availableFrom} onChange={e=>upd("availableFrom",e.target.value)} style={inputSt}/>
               </div>
               <div>
-                <div style={{ fontSize:10, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE TO</div>
+                <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE TO</div>
                 <input type="datetime-local" value={form.availableTo} onChange={e=>upd("availableTo",e.target.value)} style={inputSt}/>
               </div>
             </div>
@@ -3510,8 +3543,8 @@ function AdminCreateSession({ onBack, toast }) {
               <div key={item.key} style={{ display:"flex", justifyContent:"space-between", alignItems:"center",
                 padding:"14px 0", borderBottom:`1px solid ${C.gray100}` }}>
                 <div>
-                  <div style={{ fontWeight:600, fontSize:13, color:C.gray900 }}>{item.label}</div>
-                  <div style={{ fontSize:11, color:C.gray400, marginTop:2 }}>{item.desc}</div>
+                  <div style={{ fontWeight:600, fontSize:14, color:C.gray900 }}>{item.label}</div>
+                  <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{item.desc}</div>
                 </div>
                 <Toggle fieldKey={item.key}/>
               </div>
@@ -3644,8 +3677,8 @@ function AdminEditSession({ session, onBack, toast }) {
             <Icon name="arrow-left" size={16} color={C.gray600}/>
           </button>
           <div>
-            <div style={{ fontSize:10, color:C.primary, fontWeight:700, letterSpacing:1 }}>EDITING SESSION</div>
-            <h2 style={{ margin:0, fontSize:17, fontWeight:800, color:C.gray900, lineHeight:1.3,
+            <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1 }}>EDITING SESSION</div>
+            <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900, lineHeight:1.3,
               maxWidth:480, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
               {session.title}
             </h2>
@@ -3666,7 +3699,7 @@ function AdminEditSession({ session, onBack, toast }) {
             <button key={t.key} onClick={()=>setTab(t.key)}
               style={{ padding:"14px 20px", background:"none", border:"none",
                 borderBottom: active ? `2px solid ${C.primary}` : "2px solid transparent",
-                cursor:"pointer", fontSize:13, fontWeight: active ? 700 : 500,
+                cursor:"pointer", fontSize:14, fontWeight: active ? 700 : 500,
                 color: active ? C.primary : C.gray500, marginBottom:-1 }}>
               {t.label}
             </button>
@@ -3708,11 +3741,11 @@ function AdminEditSession({ session, onBack, toast }) {
           <FormSection icon="calendar" title="Availability" subtitle="Set the access window. The session goes live on the start date and auto-archives after the end date.">
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:8 }}>
               <div>
-                <div style={{ fontSize:10, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE FROM</div>
+                <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE FROM</div>
                 <input type="datetime-local" value={form.availableFrom} onChange={e=>upd("availableFrom",e.target.value)} style={inputSt}/>
               </div>
               <div>
-                <div style={{ fontSize:10, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE TO</div>
+                <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE TO</div>
                 <input type="datetime-local" value={form.availableTo} onChange={e=>upd("availableTo",e.target.value)} style={inputSt}/>
               </div>
             </div>
@@ -3759,8 +3792,8 @@ function AdminEditSession({ session, onBack, toast }) {
                 borderBottom:`1px solid ${C.gray100}` }}>
                 <div style={{ display:"flex", gap:12, alignItems:"center" }}>
                   <div>
-                    <div style={{ fontWeight:600, fontSize:13, color:C.gray900 }}>{item.label}</div>
-                    <div style={{ fontSize:11, color:C.gray400, marginTop:2 }}>{item.desc}</div>
+                    <div style={{ fontWeight:600, fontSize:14, color:C.gray900 }}>{item.label}</div>
+                    <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{item.desc}</div>
                   </div>
                 </div>
                 <Toggle fieldKey={item.key}/>
@@ -3974,7 +4007,7 @@ function SessionQuizModal({ session, quizState = {}, onClose, onSaveProgress, on
                       display:"flex", justifyContent:"space-between", alignItems:"flex-start",
                       position:"sticky", top:0, background:C.white, zIndex:1, borderRadius:"20px 20px 0 0" }}>
           <div>
-            <div style={{ fontSize:10, fontWeight:700, letterSpacing:1.5, color:C.primary, marginBottom:3 }}>
+            <div style={{ fontSize:12, fontWeight:700, letterSpacing:1.5, color:C.primary, marginBottom:3 }}>
               SESSION ASSESSMENT
             </div>
             <div style={{ fontWeight:700, fontSize:14, color:C.gray900, lineHeight:1.3, maxWidth:380 }}>
@@ -4027,13 +4060,13 @@ function SessionQuizModal({ session, quizState = {}, onClose, onSaveProgress, on
                 return (
                   <button key={i} onClick={() => choose(i)}
                     style={{ padding:"13px 16px", borderRadius:12, border:`2px solid ${border}`,
-                             background:bg, color, fontSize:13, fontWeight:500,
+                             background:bg, color, fontSize:14, fontWeight:500,
                              textAlign:"left", cursor:answered?"default":"pointer",
                              transition:"border-color .15s, background .15s",
                              display:"flex", alignItems:"center", gap:12 }}>
                     <span style={{ width:28, height:28, borderRadius:"50%", border:`2px solid ${border}`,
                                    display:"flex", alignItems:"center", justifyContent:"center",
-                                   fontSize:11, fontWeight:700, flexShrink:0, color }}>
+                                   fontSize:12, fontWeight:700, flexShrink:0, color }}>
                       {String.fromCharCode(65 + i)}
                     </span>
                     {opt}
@@ -4135,14 +4168,14 @@ function CertificateModal({ session, quizState, onClose }) {
                 <img src="/Container.png" alt="SPED Summit" style={{ height:36, width:"auto" }}/>
                 {/* Cert meta */}
                 <div style={{ textAlign:"right" }}>
-                  <div style={{ fontSize:10, color:"#a1a5b7", lineHeight:1.8 }}>Certificate no: {certId}</div>
-                  <div style={{ fontSize:10, color:"#a1a5b7", lineHeight:1.8 }}>Certificate url: {certUrl}</div>
-                  <div style={{ fontSize:10, color:"#a1a5b7", lineHeight:1.8 }}>Reference Number: 0001</div>
+                  <div style={{ fontSize:12, color:"#a1a5b7", lineHeight:1.8 }}>Certificate no: {certId}</div>
+                  <div style={{ fontSize:12, color:"#a1a5b7", lineHeight:1.8 }}>Certificate url: {certUrl}</div>
+                  <div style={{ fontSize:12, color:"#a1a5b7", lineHeight:1.8 }}>Reference Number: 0001</div>
                 </div>
               </div>
 
               {/* Certificate label */}
-              <div style={{ fontSize:11, fontWeight:700, color:"#7e8299", letterSpacing:2, textTransform:"uppercase", marginBottom:10 }}>
+              <div style={{ fontSize:12, fontWeight:700, color:"#7e8299", letterSpacing:2, textTransform:"uppercase", marginBottom:10 }}>
                 Certificate of Completion
               </div>
 
@@ -4152,7 +4185,7 @@ function CertificateModal({ session, quizState, onClose }) {
               </div>
 
               {/* Instructor */}
-              <div style={{ fontSize:13, color:"#5e6278", marginBottom:48 }}>
+              <div style={{ fontSize:14, color:"#5e6278", marginBottom:48 }}>
                 Instructor&nbsp;&nbsp;<strong style={{ color:"#181c32" }}>{session.instructor}</strong>
                 &nbsp;&nbsp;·&nbsp;&nbsp;{session.duration}
               </div>
@@ -4178,7 +4211,7 @@ function CertificateModal({ session, quizState, onClose }) {
                   <div style={{ width:64, height:64, borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#a855f7)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 6px" }}>
                     <Icon name="medal" size={28} color="#fff"/>
                   </div>
-                  <div style={{ fontSize:9, fontWeight:700, color:"#a1a5b7", letterSpacing:1 }}>VERIFIED</div>
+                  <div style={{ fontSize:12, fontWeight:700, color:"#a1a5b7", letterSpacing:1 }}>VERIFIED</div>
                 </div>
               </div>
 
@@ -4268,7 +4301,7 @@ function QuizModal({ quiz, onClose, onFinish }) {
         <div style={{ padding:"18px 24px", borderBottom:`1px solid ${C.gray100}`,
                       display:"flex", justifyContent:"space-between", alignItems:"center" }}>
           <div>
-            <div style={{ fontSize:10, fontWeight:700, letterSpacing:1.5, color:C.primary, marginBottom:3 }}>QUIZ</div>
+            <div style={{ fontSize:12, fontWeight:700, letterSpacing:1.5, color:C.primary, marginBottom:3 }}>QUIZ</div>
             <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{quiz.title}</div>
           </div>
           <button onClick={onClose}
@@ -4302,12 +4335,12 @@ function QuizModal({ quiz, onClose, onFinish }) {
                 return (
                   <button key={i} onClick={() => selectAnswer(i)}
                     style={{ padding:"13px 16px", borderRadius:12, border:`2px solid ${border}`,
-                             background:bg, color:textColor, fontSize:13, fontWeight:500,
+                             background:bg, color:textColor, fontSize:14, fontWeight:500,
                              textAlign:"left", cursor:answered?"default":"pointer",
                              transition:"all .15s", display:"flex", alignItems:"center", gap:10 }}>
                     <span style={{ width:26, height:26, borderRadius:"50%", border:`2px solid ${border}`,
                                    display:"flex", alignItems:"center", justifyContent:"center",
-                                   fontSize:11, fontWeight:700, flexShrink:0, color:textColor }}>
+                                   fontSize:12, fontWeight:700, flexShrink:0, color:textColor }}>
                       {String.fromCharCode(65 + i)}
                     </span>
                     {opt}
@@ -4429,7 +4462,7 @@ function QuizzesPage({ toast }) {
                         display:"flex", alignItems:"center", justifyContent:"center" }}>
             <Icon name={quiz.icon} size={20} color={cc.c}/>
           </div>
-          <Badge label={sc.label} color={sc.c} bg={sc.bg} size={9}/>
+          <Badge label={sc.label} color={sc.c} bg={sc.bg} size={12}/>
         </div>
 
         {/* Text */}
@@ -4451,7 +4484,7 @@ function QuizzesPage({ toast }) {
         {/* Footer */}
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center",
                       borderTop:`1px solid ${C.gray100}`, paddingTop:12, marginTop:"auto" }}>
-          <span style={{ fontSize:11, color:C.gray400, display:"flex", alignItems:"center", gap:4 }}>
+          <span style={{ fontSize:12, color:C.gray400, display:"flex", alignItems:"center", gap:4 }}>
             <Icon name="timer" size={12} color={C.gray400}/>
             {quiz.questions} Questions • {quiz.minutes}m
           </span>
@@ -4477,7 +4510,7 @@ function QuizzesPage({ toast }) {
         {/* ── Hero Header ── */}
         <div style={{ display:"flex", gap:20, marginBottom:28, flexWrap:"wrap", alignItems:"flex-start" }}>
           <div style={{ flex:1, minWidth:260 }}>
-            <div style={{ fontSize:10, fontWeight:700, letterSpacing:2, color:C.primary, marginBottom:6 }}>
+            <div style={{ fontSize:12, fontWeight:700, letterSpacing:2, color:C.primary, marginBottom:6 }}>
               SPED SUMMIT 2024
             </div>
             <h1 style={{ margin:"0 0 10px", fontSize:26, fontWeight:900, color:C.gray900 }}>
@@ -4494,7 +4527,7 @@ function QuizzesPage({ toast }) {
                         padding:"20px 24px", flexShrink:0, minWidth:270,
                         boxShadow:"0 1px 3px rgba(0,0,0,0.06)" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:10 }}>
-              <span style={{ fontSize:13, fontWeight:700, color:C.gray900 }}>Overall Progress</span>
+              <span style={{ fontSize:14, fontWeight:700, color:C.gray900 }}>Overall Progress</span>
               <span style={{ fontSize:22, fontWeight:900, color:C.primary }}>{pct}%</span>
             </div>
             <ProgressBar value={pct} height={8}/>
@@ -4524,7 +4557,7 @@ function QuizzesPage({ toast }) {
                 <div style={{ position:"relative", zIndex:1, maxWidth:460 }}>
                   <div style={{ display:"inline-flex", alignItems:"center", gap:6,
                                 background:"rgba(255,255,255,0.18)", backdropFilter:"blur(8px)",
-                                padding:"4px 14px", borderRadius:99, fontSize:10,
+                                padding:"4px 14px", borderRadius:99, fontSize:12,
                                 fontWeight:700, color:"#fff", marginBottom:16, letterSpacing:1 }}>
                     RECENTLY WORKING ON
                   </div>
@@ -4532,16 +4565,16 @@ function QuizzesPage({ toast }) {
                     {heroQuiz.title}
                   </h2>
                   <p style={{ margin:"0 0 20px", color:"rgba(255,255,255,0.75)",
-                               fontSize:13, lineHeight:1.5 }}>
+                               fontSize:14, lineHeight:1.5 }}>
                     {heroQuiz.description}
                   </p>
                   <div style={{ display:"flex", gap:22, marginBottom:22 }}>
                     <span style={{ display:"flex", alignItems:"center", gap:6,
-                                   color:"rgba(255,255,255,0.9)", fontSize:13 }}>
+                                   color:"rgba(255,255,255,0.9)", fontSize:14 }}>
                       <Icon name="timer" size={16} color="rgba(255,255,255,0.9)"/> 15 min left
                     </span>
                     <span style={{ display:"flex", alignItems:"center", gap:6,
-                                   color:"rgba(255,255,255,0.9)", fontSize:13 }}>
+                                   color:"rgba(255,255,255,0.9)", fontSize:14 }}>
                       <Icon name="question" size={16} color="rgba(255,255,255,0.9)"/>
                       {heroQuiz.currentQ || 10}/{heroQuiz.questions} questions
                     </span>
@@ -4591,7 +4624,7 @@ function QuizzesPage({ toast }) {
             {/* Performance Detail */}
             <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`,
                           padding:"20px", boxShadow:"0 1px 3px rgba(0,0,0,0.06)" }}>
-              <h3 style={{ margin:"0 0 16px", fontSize:15, fontWeight:800, color:C.gray900 }}>
+              <h3 style={{ margin:"0 0 16px", fontSize:16, fontWeight:800, color:C.gray900 }}>
                 Performance Detail
               </h3>
               {[
@@ -4610,7 +4643,7 @@ function QuizzesPage({ toast }) {
               ))}
               <div style={{ marginTop:16, padding:"12px 14px", background:C.gray50,
                             borderRadius:10, border:`1px solid ${C.gray100}` }}>
-                <div style={{ fontSize:10, fontWeight:700, color:C.gray400,
+                <div style={{ fontSize:12, fontWeight:700, color:C.gray400,
                               letterSpacing:1, marginBottom:6 }}>MENTOR TIP</div>
                 <p style={{ margin:0, fontSize:12, color:C.gray500, lineHeight:1.5, fontStyle:"italic" }}>
                   "Focus on 'Product Strategy'—your quiz accuracy is slightly below your average in that area."
@@ -4623,7 +4656,7 @@ function QuizzesPage({ toast }) {
                           padding:"20px" }}>
               <div style={{ display:"flex", justifyContent:"space-between",
                             alignItems:"center", marginBottom:16 }}>
-                <h3 style={{ margin:0, fontSize:15, fontWeight:800, color:C.gray900 }}>Leaderboard</h3>
+                <h3 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900 }}>Leaderboard</h3>
                 <button style={{ fontSize:12, fontWeight:600, color:C.primary,
                                  background:"none", border:"none", cursor:"pointer" }}>
                   View All
@@ -4646,7 +4679,7 @@ function QuizzesPage({ toast }) {
                                     overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
                         {u.name}
                       </div>
-                      <div style={{ fontSize:11, color:C.gray400 }}>
+                      <div style={{ fontSize:12, color:C.gray400 }}>
                         {u.xp.toLocaleString()} XP
                       </div>
                     </div>
@@ -4663,7 +4696,7 @@ function QuizzesPage({ toast }) {
                           boxShadow:"0 6px 20px rgba(245,158,11,0.28)" }}>
               <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
                 <Icon name="star" size={18} color="#fff"/>
-                <span style={{ fontSize:13, fontWeight:700, color:"#fff" }}>New Milestone Near</span>
+                <span style={{ fontSize:14, fontWeight:700, color:"#fff" }}>New Milestone Near</span>
               </div>
               <p style={{ margin:"0 0 18px", fontSize:12, color:"rgba(255,255,255,0.9)", lineHeight:1.5 }}>
                 Complete 3 more quizzes with 90%+ score to unlock the 'Elite Architect' badge.
@@ -4744,7 +4777,7 @@ function LegalModal({ type, onClose }) {
           {content.sections.map((s,i) => (
             <div key={i} style={{ marginBottom:18 }}>
               <div style={{ fontWeight:700, fontSize:14, color:"#111827", marginBottom:6 }}>{s.heading}</div>
-              <p style={{ fontSize:13, color:"#4b5563", lineHeight:1.7, margin:0 }}>{s.body}</p>
+              <p style={{ fontSize:14, color:"#4b5563", lineHeight:1.7, margin:0 }}>{s.body}</p>
             </div>
           ))}
         </div>
@@ -4816,7 +4849,7 @@ function AuthModal({ onClose, onLogin }) {
             </div>
           )}
           <button type="submit"
-            style={{ width:"100%", padding:"15px", borderRadius:12, border:"none", background:"#50cd89", color:"#fff", fontSize:15, fontWeight:800, cursor:"pointer", marginTop:10, marginBottom:16, transition:"background .15s" }}
+            style={{ width:"100%", padding:"15px", borderRadius:12, border:"none", background:"#50cd89", color:"#fff", fontSize:16, fontWeight:800, cursor:"pointer", marginTop:10, marginBottom:16, transition:"background .15s" }}
             onMouseEnter={e=>e.currentTarget.style.background="#3cb97a"}
             onMouseLeave={e=>e.currentTarget.style.background="#50cd89"}>
             {mode==="signup" ? "Sign Up" : "Sign In"}
@@ -4906,14 +4939,14 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                 <div style={{ position:"relative", zIndex:1, width:64, height:64, borderRadius:"50%", background:"rgba(255,255,255,0.15)", border:"2px solid rgba(255,255,255,0.4)", display:"flex", alignItems:"center", justifyContent:"center" }}>
                   <Icon name="play" size={28} color="#fff"/>
                 </div>
-                <div style={{ position:"relative", zIndex:1, marginTop:14, fontSize:13, color:"rgba(255,255,255,0.7)" }}>{firstLesson?.duration}</div>
+                <div style={{ position:"relative", zIndex:1, marginTop:14, fontSize:14, color:"rgba(255,255,255,0.7)" }}>{firstLesson?.duration}</div>
               </div>
 
               {/* Register CTA */}
               <div style={{ marginTop:20, padding:"20px 24px", background:"rgba(255,255,255,0.06)", borderRadius:12, border:"1px solid rgba(255,255,255,0.12)", display:"flex", alignItems:"center", justifyContent:"space-between", gap:16 }}>
                 <div>
-                  <div style={{ fontSize:15, fontWeight:700, color:"#fff", marginBottom:4 }}>Enjoying the preview?</div>
-                  <div style={{ fontSize:13, color:"rgba(255,255,255,0.6)" }}>Register to unlock all {session.lessons?.length} lessons in this course.</div>
+                  <div style={{ fontSize:16, fontWeight:700, color:"#fff", marginBottom:4 }}>Enjoying the preview?</div>
+                  <div style={{ fontSize:14, color:"rgba(255,255,255,0.6)" }}>Register to unlock all {session.lessons?.length} lessons in this course.</div>
                 </div>
                 <button onClick={() => { setPreviewOpen(false); onRegister(); }}
                   style={{ flexShrink:0, background:"linear-gradient(135deg,#3699ff,#a855f7)", border:"none", borderRadius:10, padding:"12px 24px", fontSize:14, fontWeight:700, color:"#fff", cursor:"pointer", whiteSpace:"nowrap" }}>
@@ -4932,7 +4965,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
             <img src="/Container.png" alt="SPED Summit" style={{ height:28, width:"auto", display:"block" }}/>
           </div>
           <button onClick={onRegister}
-            style={{ padding:"9px 22px", background:"#181c32", color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:700, cursor:"pointer" }}
+            style={{ padding:"9px 22px", background:"#181c32", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer" }}
             onMouseEnter={e=>e.currentTarget.style.background="#3699ff"} onMouseLeave={e=>e.currentTarget.style.background="#181c32"}>
             Register for Free →
           </button>
@@ -4950,20 +4983,20 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
             ].map((crumb, i, arr) => (
               <div key={i} style={{ display:"flex", alignItems:"center", gap:6, minWidth:0, flexShrink: i===arr.length-1?1:0 }}>
                 {crumb.onClick
-                  ? <button onClick={crumb.onClick} style={{ background:"none", border:"none", cursor:"pointer", fontSize:13, fontWeight:600, color:"rgba(255,255,255,0.85)", padding:0, whiteSpace:"nowrap" }}
+                  ? <button onClick={crumb.onClick} style={{ background:"none", border:"none", cursor:"pointer", fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.85)", padding:0, whiteSpace:"nowrap" }}
                       onMouseEnter={e=>e.currentTarget.style.color="#fff"} onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.85)"}>
                       {crumb.label}
                     </button>
-                  : <span style={{ fontSize:13, fontWeight: crumb.current ? 700 : 400, color: crumb.current ? "#fff" : "rgba(255,255,255,0.7)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                  : <span style={{ fontSize:14, fontWeight: crumb.current ? 700 : 400, color: crumb.current ? "#fff" : "rgba(255,255,255,0.7)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
                       {crumb.label}
                     </span>
                 }
-                {i < arr.length-1 && <Icon name="caret-right" size={11} color="rgba(255,255,255,0.4)"/>}
+                {i < arr.length-1 && <Icon name="caret-right" size={12} color="rgba(255,255,255,0.4)"/>}
               </div>
             ))}
           </div>
 
-          <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"rgba(255,255,255,0.18)", borderRadius:99, padding:"4px 12px", fontSize:11, fontWeight:700, color:"#fff", letterSpacing:.5, marginBottom:16 }}>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"rgba(255,255,255,0.18)", borderRadius:99, padding:"4px 12px", fontSize:12, fontWeight:700, color:"#fff", letterSpacing:.5, marginBottom:16 }}>
             {session.category}
           </div>
           <h1 style={{ margin:"0 0 14px", fontSize:34, fontWeight:900, color:"#fff", lineHeight:1.2, maxWidth:680 }}>{session.title}</h1>
@@ -4979,7 +5012,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                 <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:20, fontWeight:900, color:s.accent, lineHeight:1 }}>
                   {s.value}{s.suffix && <span style={{ marginLeft:2 }}>{s.suffix}</span>}
                 </div>
-                <div style={{ fontSize:11, color:"rgba(255,255,255,0.6)", marginTop:3 }}>{s.sub}</div>
+                <div style={{ fontSize:12, color:"rgba(255,255,255,0.6)", marginTop:3 }}>{s.sub}</div>
               </div>
             ))}
           </div>
@@ -4991,7 +5024,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
               </span>
             </div>
             <div>
-              <div style={{ fontSize:11, color:"rgba(255,255,255,0.6)", marginBottom:2 }}>Instructor</div>
+              <div style={{ fontSize:12, color:"rgba(255,255,255,0.6)", marginBottom:2 }}>Instructor</div>
               <div style={{ fontSize:14, fontWeight:700, color:"#fff" }}>{session.instructor}</div>
             </div>
           </div>
@@ -5005,7 +5038,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
         <div>
           {/* About instructor */}
           <div style={{ marginBottom:40 }}>
-            <div style={{ fontSize:11, fontWeight:700, color:"#9a9bb0", letterSpacing:1, marginBottom:18 }}>ABOUT THE INSTRUCTOR</div>
+            <div style={{ fontSize:12, fontWeight:700, color:"#9a9bb0", letterSpacing:1, marginBottom:18 }}>ABOUT THE INSTRUCTOR</div>
             {/* Instructor header row */}
             <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:16 }}>
               <div style={{ width:44, height:44, borderRadius:"50%", background:"linear-gradient(135deg,#3699ff,#a855f7)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
@@ -5014,7 +5047,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                 </span>
               </div>
               <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ fontWeight:800, fontSize:17, color:"#181c32", lineHeight:1.2 }}>{session.instructor}</div>
+                <div style={{ fontWeight:800, fontSize:16, color:"#181c32", lineHeight:1.2 }}>{session.instructor}</div>
                 <div style={{ fontSize:12, color:"#9a9bb0", marginTop:2 }}>Special Education Specialist</div>
               </div>
               {/* Social handles */}
@@ -5028,7 +5061,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                     svg:<svg width="11" height="11" viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm87.63,96H175.8c-1.42-28.1-10.6-54.2-25.8-74.11A88.17,88.17,0,0,1,215.63,120ZM128,216c-19.27,0-37.07-28.68-39.73-72h79.46C165.07,187.32,147.27,216,128,216Zm-39.73-88C90.93,84.68,108.73,56,128,56s37.07,28.68,39.73,72ZM105.93,45.89C90.73,65.8,81.55,91.9,80.13,120H40.37A88.17,88.17,0,0,1,105.93,45.89ZM40.37,136H80.13c1.42,28.1,10.6,54.2,25.8,74.11A88.17,88.17,0,0,1,40.37,136Zm109.77,74.11c15.2-19.91,24.38-46,25.8-74.11h39.76A88.17,88.17,0,0,1,150.14,210.11Z"/></svg> },
                 ].map(s => (
                   <button key={s.label}
-                    style={{ display:"flex", alignItems:"center", gap:4, fontSize:11, fontWeight:600, color:s.color, background:"none", border:`1px solid ${s.color}33`, borderRadius:20, padding:"3px 10px", cursor:"pointer" }}>
+                    style={{ display:"flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, color:s.color, background:"none", border:`1px solid ${s.color}33`, borderRadius:20, padding:"3px 10px", cursor:"pointer" }}>
                     <span style={{ color:s.color, display:"flex", alignItems:"center" }}>{s.svg}</span>{s.label}
                   </button>
                 ))}
@@ -5043,8 +5076,8 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
           </div>
 
           {/* Curriculum */}
-          <div style={{ fontSize:11, fontWeight:700, color:"#181c32", letterSpacing:.5, marginBottom:16 }}>COURSE CURRICULUM</div>
-          <div style={{ fontSize:13, color:"#5e6278", marginBottom:20 }}>
+          <div style={{ fontSize:12, fontWeight:700, color:"#181c32", letterSpacing:.5, marginBottom:16 }}>COURSE CURRICULUM</div>
+          <div style={{ fontSize:14, color:"#5e6278", marginBottom:20 }}>
             {sections.length} sections · {session.lessons.length} lessons · {session.duration} total
           </div>
           <div style={{ border:"1px solid #e4e6ef", borderRadius:14, overflow:"hidden" }}>
@@ -5079,14 +5112,14 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                               <Icon name={isQuiz ? "article" : "play-circle"} size={20} color={isQuiz ? "#a855f7" : "#9ca3af"}/>
                             </div>
                             <div style={{ flex:1, minWidth:0 }}>
-                              <div style={{ fontSize:13, color:"#181c32", lineHeight:1.4 }}>{l.title}</div>
-                              <div style={{ fontSize:11, color: isQuiz?"#a855f7":"#9ca3af", marginTop:2 }}>
+                              <div style={{ fontSize:14, color:"#181c32", lineHeight:1.4 }}>{l.title}</div>
+                              <div style={{ fontSize:12, color: isQuiz?"#a855f7":"#9ca3af", marginTop:2 }}>
                                 {isQuiz ? `${l.questions} question${l.questions!==1?"s":""}` : l.duration}
                               </div>
                             </div>
                             {isFree && (
                               <span onClick={() => setPreviewOpen(true)}
-                                style={{ fontSize:11, fontWeight:600, color:"#3699ff", background:"#e1f0ff", borderRadius:6, padding:"2px 8px", flexShrink:0, cursor:"pointer" }}>
+                                style={{ fontSize:12, fontWeight:600, color:"#3699ff", background:"#e1f0ff", borderRadius:6, padding:"2px 8px", flexShrink:0, cursor:"pointer" }}>
                                 Preview
                               </span>
                             )}
@@ -5103,10 +5136,10 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                               <Icon name={rIcon} size={18} color={tc.c}/>
                             </div>
                             <div style={{ flex:1, minWidth:0 }}>
-                              <div style={{ fontSize:13, color:"#181c32" }}>{r.title}</div>
+                              <div style={{ fontSize:14, color:"#181c32" }}>{r.title}</div>
                               <div style={{ display:"flex", gap:6, alignItems:"center", marginTop:2 }}>
-                                <span style={{ fontSize:10, fontWeight:700, color:tc.c, background:tc.b, borderRadius:4, padding:"1px 5px" }}>{r.type}</span>
-                                <span style={{ fontSize:11, color:"#9ca3af" }}>{r.size}</span>
+                                <span style={{ fontSize:12, fontWeight:700, color:tc.c, background:tc.b, borderRadius:4, padding:"1px 5px" }}>{r.type}</span>
+                                <span style={{ fontSize:12, color:"#9ca3af" }}>{r.size}</span>
                               </div>
                             </div>
                             <Icon name="lock" size={13} color="#d1d5db"/>
@@ -5135,7 +5168,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                     <Icon key={i} name="star" size={14} color={i<=4?"#f59e0b":"#e4e6ef"}/>
                   ))}
                 </div>
-                <div style={{ fontSize:11, color:"#9ca3af", marginTop:4 }}>3,148 ratings</div>
+                <div style={{ fontSize:12, color:"#9ca3af", marginTop:4 }}>3,148 ratings</div>
               </div>
 
               {/* Bars */}
@@ -5168,7 +5201,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
               <div key={i} style={{ padding:"20px 0", borderBottom: i < 3 ? "1px solid #f3f4f6" : "none" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
                   <div style={{ width:40, height:40, borderRadius:"50%", background:`hsl(${i*67},60%,55%)`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                    <span style={{ fontSize:15, fontWeight:800, color:"#fff" }}>{r.name[0]}</span>
+                    <span style={{ fontSize:16, fontWeight:800, color:"#fff" }}>{r.name[0]}</span>
                   </div>
                   <div>
                     <div style={{ fontSize:14, fontWeight:700, color:"#181c32" }}>{r.name}</div>
@@ -5183,7 +5216,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                   </div>
                   <span style={{ fontSize:12, color:"#9ca3af" }}>{r.date}</span>
                 </div>
-                <div style={{ fontSize:13, color:"#374151", lineHeight:1.65 }}>{r.text}</div>
+                <div style={{ fontSize:14, color:"#374151", lineHeight:1.65 }}>{r.text}</div>
                 <div style={{ display:"flex", gap:16, marginTop:10 }}>
                   {["Helpful","Report"].map(action => (
                     <button key={action} style={{ background:"none", border:"none", fontSize:12, color:"#5e6278", cursor:"pointer", fontWeight:500, padding:0, display:"flex", alignItems:"center", gap:4 }}
@@ -5207,19 +5240,19 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
               <div style={{ width:50, height:50, borderRadius:"50%", background:"rgba(255,255,255,0.25)", display:"flex", alignItems:"center", justifyContent:"center", border:"2px solid rgba(255,255,255,0.5)" }}>
                 <Icon name="play" size={20} color="#fff"/>
               </div>
-              <div style={{ position:"absolute", bottom:10, left:0, right:0, textAlign:"center", fontSize:11, color:"rgba(255,255,255,0.75)", fontWeight:500 }}>Preview this session</div>
+              <div style={{ position:"absolute", bottom:10, left:0, right:0, textAlign:"center", fontSize:12, color:"rgba(255,255,255,0.75)", fontWeight:500 }}>Preview this session</div>
             </div>
             <div style={{ padding:20 }}>
               {/* Stats */}
               <div style={{ display:"flex", gap:0, marginBottom:18, borderRadius:10, border:"1px solid #f0e8df", overflow:"hidden" }}>
                 {[
-                  { val:"4.8", icon:<Icon name="star" size={11} color="#f59e0b"/>, sub:"ratings", valColor:"#b45309" },
+                  { val:"4.8", icon:<Icon name="star" size={12} color="#f59e0b"/>, sub:"ratings", valColor:"#b45309" },
                   { val:"1,240", sub:"Students", valColor:"#181c32" },
                   { val:session.duration, sub:"Total", valColor:"#181c32" },
                 ].map((s,i) => (
                   <div key={i} style={{ flex:1, textAlign:"center", padding:"10px 4px", borderRight: i<2?"1px solid #f0e8df":"none" }}>
-                    <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:3, fontSize:15, fontWeight:800, color:s.valColor }}>{s.val}{s.icon}</div>
-                    <div style={{ fontSize:10, color:"#9ca3af", marginTop:2 }}>{s.sub}</div>
+                    <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:3, fontSize:16, fontWeight:800, color:s.valColor }}>{s.val}{s.icon}</div>
+                    <div style={{ fontSize:12, color:"#9ca3af", marginTop:2 }}>{s.sub}</div>
                   </div>
                 ))}
               </div>
@@ -5228,7 +5261,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                 onMouseEnter={e=>e.currentTarget.style.background="#3699ff"} onMouseLeave={e=>e.currentTarget.style.background="#181c32"}>
                 {registerLabel || "Register for Free"}
               </button>
-              {!registerLabel && <div style={{ fontSize:11, textAlign:"center", color:"#9ca3af", marginBottom:18 }}>No credit card required</div>}
+              {!registerLabel && <div style={{ fontSize:12, textAlign:"center", color:"#9ca3af", marginBottom:18 }}>No credit card required</div>}
               <div style={{ fontSize:12, fontWeight:700, color:"#181c32", marginBottom:10 }}>This session includes:</div>
               <div style={{ display:"flex", flexDirection:"column", gap:9 }}>
                 {[
@@ -5291,7 +5324,7 @@ function LandingSessionCard({ s, imgSrc, onClick, availableFrom, sessionState })
             <div style={{ width:40, height:40, borderRadius:"50%", background:"rgba(255,255,255,0.18)", backdropFilter:"blur(4px)", border:"2px solid rgba(255,255,255,0.4)", display:"flex", alignItems:"center", justifyContent:"center" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </div>
-            <div style={{ background:"rgba(0,0,0,0.6)", backdropFilter:"blur(6px)", borderRadius:20, padding:"4px 10px", fontSize:10, fontWeight:700, color:"#fff", letterSpacing:.3 }}>
+            <div style={{ background:"rgba(0,0,0,0.6)", backdropFilter:"blur(6px)", borderRadius:20, padding:"4px 10px", fontSize:12, fontWeight:700, color:"#fff", letterSpacing:.3 }}>
               Available {availLabel}
             </div>
           </div>
@@ -5300,7 +5333,7 @@ function LandingSessionCard({ s, imgSrc, onClick, availableFrom, sessionState })
         {/* Past overlay */}
         {isPast && (
           <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:6 }}>
-            <div style={{ background:"rgba(0,0,0,0.6)", backdropFilter:"blur(6px)", borderRadius:20, padding:"4px 10px", fontSize:10, fontWeight:700, letterSpacing:.3,
+            <div style={{ background:"rgba(0,0,0,0.6)", backdropFilter:"blur(6px)", borderRadius:20, padding:"4px 10px", fontSize:12, fontWeight:700, letterSpacing:.3,
               color: hasRec ? "#86efac" : "#fca5a5" }}>
               {hasRec ? "▶ Watch Recording" : "Recording Unavailable"}
             </div>
@@ -5308,17 +5341,17 @@ function LandingSessionCard({ s, imgSrc, onClick, availableFrom, sessionState })
         )}
 
         {/* Category pill */}
-        <div style={{ position:"absolute", top:10, left:10, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(4px)", borderRadius:6, padding:"3px 8px", fontSize:10, fontWeight:700, color:"#fff", letterSpacing:.5 }}>{s.category}</div>
+        <div style={{ position:"absolute", top:10, left:10, background:"rgba(0,0,0,0.45)", backdropFilter:"blur(4px)", borderRadius:6, padding:"3px 8px", fontSize:12, fontWeight:700, color:"#fff", letterSpacing:.5 }}>{s.category}</div>
 
         {/* State badge top-right */}
         {isPast && (
-          <div style={{ position:"absolute", top:10, right:10, background:"rgba(0,0,0,0.55)", borderRadius:6, padding:"3px 8px", fontSize:9, fontWeight:700, color:"#d1d5db", letterSpacing:.5 }}>PAST SEASON</div>
+          <div style={{ position:"absolute", top:10, right:10, background:"rgba(0,0,0,0.55)", borderRadius:6, padding:"3px 8px", fontSize:12, fontWeight:700, color:"#d1d5db", letterSpacing:.5 }}>PAST SEASON</div>
         )}
       </div>
 
       <div style={{ background:"#fff", padding:"12px 14px" }}>
-        <div style={{ fontSize:13, fontWeight:700, color:"#181c32", lineHeight:1.4, marginBottom:4, overflow:"hidden", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{s.title}</div>
-        <div style={{ fontSize:11, color: isPast ? "#c0c4cc" : "#a1a5b7" }}>{s.instructor} · {s.duration}</div>
+        <div style={{ fontSize:14, fontWeight:700, color:"#181c32", lineHeight:1.4, marginBottom:4, overflow:"hidden", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{s.title}</div>
+        <div style={{ fontSize:12, color: isPast ? "#c0c4cc" : "#a1a5b7" }}>{s.instructor} · {s.duration}</div>
       </div>
     </div>
   );
@@ -5395,7 +5428,7 @@ function LandingPage({ onGetStarted }) {
             onMouseLeave={e=>e.currentTarget.style.color="#5e6278"}>{l}</button>
         ))}
         <button onClick={()=>setShowAuth(true)}
-          style={{ marginLeft:16, padding:"9px 22px", background:"#3699ff", color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:700, cursor:"pointer", transition:"background .15s" }}
+          style={{ marginLeft:16, padding:"9px 22px", background:"#3699ff", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer", transition:"background .15s" }}
           onMouseEnter={e=>e.currentTarget.style.background="#187de4"}
           onMouseLeave={e=>e.currentTarget.style.background="#3699ff"}>
           Go to Dashboard →
@@ -5416,13 +5449,13 @@ function LandingPage({ onGetStarted }) {
           </p>
           <div style={{ display:"flex", gap:12, flexWrap:"wrap" }}>
             <button onClick={()=>setShowAuth(true)}
-              style={{ padding:"14px 28px", background:"#3699ff", color:"#fff", border:"none", borderRadius:12, fontSize:15, fontWeight:700, cursor:"pointer", transition:"background .15s" }}
+              style={{ padding:"14px 28px", background:"#3699ff", color:"#fff", border:"none", borderRadius:12, fontSize:16, fontWeight:700, cursor:"pointer", transition:"background .15s" }}
               onMouseEnter={e=>e.currentTarget.style.background="#187de4"}
               onMouseLeave={e=>e.currentTarget.style.background="#3699ff"}>
               Continue Learning →
             </button>
             <button onClick={()=>setShowAuth(true)}
-              style={{ padding:"14px 28px", background:"transparent", color:"#5e6278", border:"1.5px solid #e4e6ef", borderRadius:12, fontSize:15, fontWeight:600, cursor:"pointer" }}>
+              style={{ padding:"14px 28px", background:"transparent", color:"#5e6278", border:"1.5px solid #e4e6ef", borderRadius:12, fontSize:16, fontWeight:600, cursor:"pointer" }}>
               Explore Sessions
             </button>
           </div>
@@ -5438,7 +5471,7 @@ function LandingPage({ onGetStarted }) {
                 <img key={i} src={src} alt="" style={{ width:28, height:28, borderRadius:"50%", objectFit:"cover", border:"2px solid #fffaf6", marginLeft:i?-8:0, display:"block" }}/>
               ))}
             </div>
-            <span style={{ fontSize:13, color:"#7e8299" }}>Join <strong style={{ color:"#181c32" }}>4,200+</strong> educators already learning</span>
+            <span style={{ fontSize:14, color:"#7e8299" }}>Join <strong style={{ color:"#181c32" }}>4,200+</strong> educators already learning</span>
           </div>
         </div>
         {/* Hero visual */}
@@ -5451,7 +5484,7 @@ function LandingPage({ onGetStarted }) {
               </div>
               <div>
                 <div style={{ fontSize:12, fontWeight:700, color:"#181c32" }}>Certificate Earned!</div>
-                <div style={{ fontSize:11, color:"#7e8299" }}>Mindfulness in SPED · Session 1</div>
+                <div style={{ fontSize:12, color:"#7e8299" }}>Mindfulness in SPED · Session 1</div>
               </div>
             </div>
           </div>
@@ -5464,7 +5497,7 @@ function LandingPage({ onGetStarted }) {
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
           <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:28 }}>
             <div>
-              <div style={{ fontSize:11, color:"#3699ff", fontWeight:700, letterSpacing:1, marginBottom:8 }}>FEATURED SESSIONS</div>
+              <div style={{ fontSize:12, color:"#3699ff", fontWeight:700, letterSpacing:1, marginBottom:8 }}>FEATURED SESSIONS</div>
               <h2 style={{ margin:0, fontSize:32, fontWeight:900, color:"#181c32" }}>Start watching today</h2>
             </div>
             <div style={{ display:"flex", gap:10 }}>
@@ -5508,7 +5541,7 @@ function LandingPage({ onGetStarted }) {
 
       {/* ── Experts ── */}
       <section id="instructors" style={{ padding:"64px 48px", maxWidth:1100, margin:"0 auto" }}>
-        <div style={{ fontSize:11, color:"#3699ff", fontWeight:700, letterSpacing:1, marginBottom:8 }}>WORLD-CLASS INSTRUCTORS</div>
+        <div style={{ fontSize:12, color:"#3699ff", fontWeight:700, letterSpacing:1, marginBottom:8 }}>WORLD-CLASS INSTRUCTORS</div>
         <h2 style={{ margin:"0 0 36px", fontSize:32, fontWeight:900, color:"#181c32" }}>9 Experts. Real strategies.</h2>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:16 }}>
           {experts.map((e,i)=>(
@@ -5532,7 +5565,7 @@ function LandingPage({ onGetStarted }) {
       <section style={{ padding:"80px 48px", background:"#fff", borderTop:"1px solid #f0f0f0", borderBottom:"1px solid #f0f0f0" }}>
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
           <h2 style={{ margin:"0 0 12px", fontSize:32, fontWeight:900, color:"#1a2e2a", textAlign:"center" }}>How it works</h2>
-          <p style={{ margin:"0 0 64px", fontSize:15, color:"#6b7280", textAlign:"center" }}>From sign-up to certificate in four simple steps.</p>
+          <p style={{ margin:"0 0 64px", fontSize:16, color:"#6b7280", textAlign:"center" }}>From sign-up to certificate in four simple steps.</p>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:40 }}>
             {[
               { n:"01", title:"Create account",  desc:"Sign up for free in seconds. No credit card required." },
@@ -5542,7 +5575,7 @@ function LandingPage({ onGetStarted }) {
             ].map((s,i)=>(
               <div key={i}>
                 <div style={{ fontSize:72, fontWeight:900, color:"#d1dbd9", lineHeight:1, marginBottom:20, letterSpacing:-2 }}>{s.n}</div>
-                <div style={{ fontWeight:800, fontSize:17, color:"#1a2e2a", marginBottom:10 }}>{s.title}</div>
+                <div style={{ fontWeight:800, fontSize:16, color:"#1a2e2a", marginBottom:10 }}>{s.title}</div>
                 <div style={{ fontSize:14, color:"#6b7280", lineHeight:1.65 }}>{s.desc}</div>
               </div>
             ))}
@@ -5554,7 +5587,7 @@ function LandingPage({ onGetStarted }) {
       <section style={{ padding:"64px 48px", maxWidth:1100, margin:"0 auto" }}>
         <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:36 }}>
           <div>
-            <div style={{ fontSize:11, color:"#3699ff", fontWeight:700, letterSpacing:1, marginBottom:8 }}>LOVED BY EDUCATORS</div>
+            <div style={{ fontSize:12, color:"#3699ff", fontWeight:700, letterSpacing:1, marginBottom:8 }}>LOVED BY EDUCATORS</div>
             <h2 style={{ margin:0, fontSize:32, fontWeight:900, color:"#181c32" }}>What Educators Are Saying</h2>
           </div>
           <div style={{ display:"flex", gap:10 }}>
@@ -5580,7 +5613,7 @@ function LandingPage({ onGetStarted }) {
               <div style={{ display:"flex", alignItems:"center", gap:12 }}>
                 <img src={t.img} alt={t.name} style={{ width:36, height:36, borderRadius:"50%", objectFit:"cover", flexShrink:0 }}/>
                 <div>
-                  <div style={{ fontWeight:700, fontSize:13, color:"#181c32" }}>{t.name}</div>
+                  <div style={{ fontWeight:700, fontSize:14, color:"#181c32" }}>{t.name}</div>
                   <div style={{ fontSize:12, color:"#a1a5b7" }}>{t.role}</div>
                 </div>
               </div>
@@ -5592,14 +5625,14 @@ function LandingPage({ onGetStarted }) {
       {/* ── Social Community ── */}
       <section style={{ padding:"72px 48px", background:"#fff", textAlign:"center" }}>
         <div style={{ maxWidth:680, margin:"0 auto" }}>
-          <div style={{ fontSize:11, color:"#3699ff", fontWeight:700, letterSpacing:1.5, marginBottom:14 }}>COMMUNITY</div>
+          <div style={{ fontSize:12, color:"#3699ff", fontWeight:700, letterSpacing:1.5, marginBottom:14 }}>COMMUNITY</div>
           <h2 style={{ margin:"0 0 16px", fontSize:36, fontWeight:900, color:"#181c32", lineHeight:1.15 }}>Connect with other educators on social media</h2>
-          <p style={{ margin:"0 0 40px", fontSize:15, color:"#7e8299", lineHeight:1.65 }}>
+          <p style={{ margin:"0 0 40px", fontSize:16, color:"#7e8299", lineHeight:1.65 }}>
             Stay in the loop! Follow us for updates, announcements, and<br/>community highlights.
           </p>
           <div style={{ display:"flex", gap:16, justifyContent:"center", flexWrap:"wrap" }}>
             {/* Facebook */}
-            <button style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 28px", background:"#1877f2", color:"#fff", border:"none", borderRadius:40, fontSize:15, fontWeight:700, cursor:"pointer", transition:"opacity .15s" }}
+            <button style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 28px", background:"#1877f2", color:"#fff", border:"none", borderRadius:40, fontSize:16, fontWeight:700, cursor:"pointer", transition:"opacity .15s" }}
               onMouseEnter={e=>e.currentTarget.style.opacity="0.88"}
               onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
               Join the Facebook Group
@@ -5608,7 +5641,7 @@ function LandingPage({ onGetStarted }) {
               </svg>
             </button>
             {/* Instagram */}
-            <button style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 28px", background:"linear-gradient(135deg,#e1306c,#f77737)", color:"#fff", border:"none", borderRadius:40, fontSize:15, fontWeight:700, cursor:"pointer", transition:"opacity .15s" }}
+            <button style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 28px", background:"linear-gradient(135deg,#e1306c,#f77737)", color:"#fff", border:"none", borderRadius:40, fontSize:16, fontWeight:700, cursor:"pointer", transition:"opacity .15s" }}
               onMouseEnter={e=>e.currentTarget.style.opacity="0.88"}
               onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
               Follow on Instagram
@@ -5632,10 +5665,102 @@ function LandingPage({ onGetStarted }) {
                 <span style={{ fontSize:18, color:"#a1a5b7", transform: faqOpen===i?"rotate(45deg)":"none", transition:"transform .2s", flexShrink:0 }}>+</span>
               </button>
               {faqOpen===i && (
-                <div style={{ fontSize:13, color:"#7e8299", lineHeight:1.7, paddingBottom:18 }}>{f.a}</div>
+                <div style={{ fontSize:14, color:"#7e8299", lineHeight:1.7, paddingBottom:18 }}>{f.a}</div>
               )}
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── Giveaways ── */}
+      <section style={{ padding:"72px 48px", background:"#fdf8f4", borderTop:"1px solid #f0e8df" }}>
+        <div style={{ maxWidth:1100, margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 1fr", gap:64, alignItems:"center" }}>
+          {/* Left */}
+          <div>
+            <div style={{ fontSize:12, color:"#3699ff", fontWeight:700, letterSpacing:1, marginBottom:12 }}>PRIZES & GIVEAWAYS</div>
+            <h2 style={{ margin:"0 0 16px", fontSize:36, fontWeight:900, color:"#181c32", lineHeight:1.2 }}>
+              Starbucks Gift Cards, TpT Resources, AbleSpace Subscriptions, <span style={{ color:"#3699ff" }}>and much more…</span>
+            </h2>
+            <p style={{ margin:"0 0 28px", fontSize:16, color:"#7e8299", lineHeight:1.7 }}>
+              We have multiple giveaways lined up for you during the entire conference. Raffles, quizzes, and surprise gifts. Get ready to learn and get ready to win!
+            </p>
+            <button onClick={()=>setShowAuth(true)}
+              style={{ padding:"14px 30px", background:"#3699ff", color:"#fff", border:"none", borderRadius:12, fontSize:14, fontWeight:700, cursor:"pointer", display:"inline-flex", alignItems:"center", gap:8, transition:"background .15s" }}
+              onMouseEnter={e=>e.currentTarget.style.background="#187de4"}
+              onMouseLeave={e=>e.currentTarget.style.background="#3699ff"}>
+              Register for Free →
+            </button>
+          </div>
+
+          {/* Right — prize visual */}
+          <div style={{ position:"relative", height:320 }}>
+            {/* Center "$10,000+" badge */}
+            <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", textAlign:"center", zIndex:2 }}>
+              <div style={{ fontSize:48, fontWeight:900, color:"#181c32", lineHeight:1 }}>$10,000<span style={{ color:"#3699ff" }}>+</span></div>
+              <div style={{ fontSize:14, fontWeight:600, color:"#7e8299", marginTop:4, letterSpacing:.5 }}>in Prizes & Giveaways</div>
+            </div>
+
+            {/* Floating prize bubbles */}
+            {[
+              { label:"Starbucks", emoji:"☕", bg:"#00704a", color:"#fff", top:"4%",  left:"56%", size:72 },
+              { label:"TpT",       emoji:"📚", bg:"#ff6d00", color:"#fff", top:"62%", left:"68%", size:60 },
+              { label:"AbleSpace", emoji:"🎯", bg:"#3699ff", color:"#fff", top:"70%", left:"8%",  size:64 },
+              { label:"Gift Card", emoji:"🎁", bg:"#7c3aed", color:"#fff", top:"8%",  left:"10%", size:58 },
+              { label:"Cash",      emoji:"💵", bg:"#059669", color:"#fff", top:"38%", left:"78%", size:54 },
+            ].map((b,i) => (
+              <div key={i} style={{ position:"absolute", top:b.top, left:b.left, width:b.size, height:b.size, borderRadius:"50%", background:b.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", boxShadow:"0 8px 24px rgba(0,0,0,0.14)", zIndex:1 }}>
+                <span style={{ fontSize:b.size*0.36, lineHeight:1 }}>{b.emoji}</span>
+              </div>
+            ))}
+
+            {/* Decorative floating squares */}
+            {[
+              { top:"2%",  left:"42%", size:12, bg:"#ffc700", opacity:.8 },
+              { top:"78%", left:"40%", size:10, bg:"#3699ff", opacity:.5 },
+              { top:"22%", left:"72%", size:8,  bg:"#f1416c", opacity:.6 },
+            ].map((s,i) => (
+              <div key={i} style={{ position:"absolute", top:s.top, left:s.left, width:s.size, height:s.size, borderRadius:3, background:s.bg, opacity:s.opacity, transform:"rotate(20deg)" }}/>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Sponsor: AbleSpace ── */}
+      <section style={{ padding:"64px 48px", background:"#fff", borderTop:"1px solid #f0e8df" }}>
+        <div style={{ maxWidth:700, margin:"0 auto" }}>
+          {/* Sponsor label */}
+          <div style={{ textAlign:"center", marginBottom:28 }}>
+            <span style={{ fontSize:12, fontWeight:700, color:"#7e8299", letterSpacing:1.2, textTransform:"uppercase", background:"#f5f8fa", padding:"4px 14px", borderRadius:99, border:"1px solid #e4e6ef" }}>
+              Proud Sponsor
+            </span>
+          </div>
+
+          <div style={{ background:"linear-gradient(135deg,#eef6ff,#f0f9ff)", borderRadius:24, padding:"44px 48px", border:"1px solid #bae6fd", textAlign:"center", position:"relative", overflow:"hidden" }}>
+            {/* Decorative blobs */}
+            <div style={{ position:"absolute", top:-40, right:-40, width:160, height:160, borderRadius:"50%", background:"rgba(54,153,255,0.08)" }}/>
+            <div style={{ position:"absolute", bottom:-30, left:-30, width:120, height:120, borderRadius:"50%", background:"rgba(54,153,255,0.06)" }}/>
+
+            {/* Logo row */}
+            <div style={{ display:"inline-flex", alignItems:"center", gap:12, marginBottom:20, background:"#fff", padding:"10px 20px", borderRadius:14, boxShadow:"0 2px 12px rgba(0,0,0,0.07)" }}>
+              <div style={{ width:32, height:32, borderRadius:8, background:"#3699ff", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+              </div>
+              <span style={{ fontSize:16, fontWeight:900, color:"#181c32", letterSpacing:.3 }}>AbleSpace</span>
+            </div>
+
+            <h2 style={{ margin:"0 0 12px", fontSize:26, fontWeight:900, color:"#181c32" }}>Sponsored by AbleSpace</h2>
+            <p style={{ margin:"0 0 28px", fontSize:14, color:"#5e6278", lineHeight:1.7, maxWidth:480, marginLeft:"auto", marginRight:"auto" }}>
+              An IEP Goal Tracking app built for special education professionals. Spend less time on paperwork and more time with your students using AbleSpace.
+            </p>
+
+            <a href="https://ablespace.io" target="_blank" rel="noopener noreferrer"
+              style={{ display:"inline-flex", alignItems:"center", gap:10, padding:"14px 32px", background:"#3699ff", color:"#fff", border:"none", borderRadius:12, fontSize:14, fontWeight:700, cursor:"pointer", textDecoration:"none", transition:"background .15s, transform .15s", boxShadow:"0 4px 16px rgba(54,153,255,0.35)" }}
+              onMouseEnter={e=>{ e.currentTarget.style.background="#187de4"; e.currentTarget.style.transform="translateY(-1px)"; }}
+              onMouseLeave={e=>{ e.currentTarget.style.background="#3699ff"; e.currentTarget.style.transform="none"; }}>
+              Start Using AbleSpace for FREE
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
         </div>
       </section>
 
@@ -5644,7 +5769,7 @@ function LandingPage({ onGetStarted }) {
         <h2 style={{ margin:"0 0 12px", fontSize:36, fontWeight:900, color:"#fff", letterSpacing:-.5 }}>
           Ready to level up your <span style={{ color:"#3699ff" }}>SPED practice</span>?
         </h2>
-        <p style={{ margin:"0 0 32px", fontSize:15, color:"#a1a5b7", lineHeight:1.6 }}>Join thousands of educators already transforming their classrooms.</p>
+        <p style={{ margin:"0 0 32px", fontSize:16, color:"#a1a5b7", lineHeight:1.6 }}>Join thousands of educators already transforming their classrooms.</p>
         <button onClick={()=>setShowAuth(true)}
           style={{ padding:"16px 40px", background:"#3699ff", color:"#fff", border:"none", borderRadius:14, fontSize:16, fontWeight:800, cursor:"pointer", transition:"background .15s" }}
           onMouseEnter={e=>e.currentTarget.style.background="#187de4"}
@@ -5842,6 +5967,10 @@ export default function App() {
         ::-webkit-scrollbar-thumb:hover { background: #b5b5c3; }
         input, textarea, select { font-family: inherit; }
         button { font-family: inherit; }
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator { cursor: pointer; filter: brightness(0) saturate(100%) opacity(0.45); }
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover { filter: brightness(0) saturate(100%) opacity(0.8); }
+        [data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: brightness(0) invert(1) opacity(0.45); }
+        [data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover { filter: brightness(0) invert(1) opacity(0.85); }
         [data-theme="dark"] #spedLogoSvg { filter: brightness(0) invert(1); }
       `}</style>
     </div>
