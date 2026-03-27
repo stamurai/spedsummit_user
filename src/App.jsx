@@ -238,7 +238,9 @@ async function downloadCertificate({ recipientName = "Alex Johnson", sessionTitl
   const el = document.createElement("div");
   el.style.cssText = `position:fixed;left:-9999px;top:-9999px;width:${W}px;height:${H}px;overflow:hidden;`;
   el.innerHTML = `
-    <div style="width:${W}px;height:${H}px;background:#FEF5EC;font-family:'Segoe UI',Roboto,sans-serif;box-sizing:border-box;padding:64px 80px;display:flex;flex-direction:column;justify-content:space-between;">
+    <div style="position:relative;width:${W}px;height:${H}px;background:#FEF5EC;font-family:'Segoe UI',Roboto,sans-serif;box-sizing:border-box;padding:64px 80px;display:flex;flex-direction:column;justify-content:space-between;">
+      <div style="position:absolute;inset:0;background-image:url(${window.location.origin}/cert-texture.svg);background-size:400px 400px;opacity:0.35;pointer-events:none;"></div>
+      <div style="position:relative;z-index:1;display:flex;flex-direction:column;justify-content:space-between;height:100%;">
 
       <!-- Header -->
       <div style="display:flex;justify-content:space-between;align-items:flex-start;">
@@ -277,6 +279,7 @@ async function downloadCertificate({ recipientName = "Alex Johnson", sessionTitl
           </div>
           <div style="font-size:11px;font-weight:700;color:#a1a5b7;letter-spacing:0.5px;">VERIFIED</div>
         </div>
+      </div>
       </div>
     </div>`;
 
@@ -4741,7 +4744,10 @@ function CertificateModal({ session, quizState, onClose }) {
         {/* ── Certificate Document ── */}
         <div style={{ margin:"20px 20px 0", background:"#f7f7f7", borderRadius:12, overflow:"hidden", border:`1px solid ${C.gray200}` }}>
 
-          <div style={{ padding:"32px 36px 36px", background:"#FEF5EC" }}>
+          <div style={{ padding:"32px 36px 36px", background:"#FEF5EC", position:"relative" }}>
+            {/* Texture overlay */}
+            <div style={{ position:"absolute", inset:0, backgroundImage:"url(/cert-texture.svg)", backgroundSize:"400px 400px", opacity:0.35, pointerEvents:"none" }}/>
+            <div style={{ position:"relative", zIndex:1 }}>
 
               {/* Header row: logo left, cert meta right */}
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:40 }}>
@@ -4796,6 +4802,7 @@ function CertificateModal({ session, quizState, onClose }) {
                 </div>
               </div>
 
+          </div>{/* end relative wrapper */}
           </div>
         </div>
 
