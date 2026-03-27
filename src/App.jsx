@@ -1316,6 +1316,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
 ───────────────────────────────────────────────────────────────────────────── */
 function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set(), onNavigate, initialSeason = null, onSeasonChange, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{} }) {
   const [activeSeason, setActiveSeason] = useState(initialSeason);
+  const [hoveredSeason, setHoveredSeason] = useState(null);
   function changeSeason(id) { setActiveSeason(id); onSeasonChange?.(id); }
 
   /* ── Season Detail View ── */
@@ -1384,12 +1385,13 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
                               : { label:"PAST SEASON", color:"#6b7280", bg:"#f3f4f6" };
           const firstSession  = sessions[0];
 
+          const hov = hoveredSeason === season.id;
           return (
             <div key={season.id}
               onClick={()=>changeSeason(season.id)}
-              style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, overflow:"hidden", cursor:"pointer", transition:"box-shadow .15s, transform .15s" }}
-              onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 8px 28px rgba(0,0,0,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; }}
-              onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform=""; }}>
+              onMouseEnter={()=>setHoveredSeason(season.id)}
+              onMouseLeave={()=>setHoveredSeason(null)}
+              style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, overflow:"hidden", cursor:"pointer" }}>
 
               {/* ── Stacked playlist thumbnail ── */}
               <div style={{ position:"relative", width:"100%", paddingBottom:"56.25%", background:"#1f2937" }}>
@@ -1429,7 +1431,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
                   {pastCount > 0     && <span>{pastCount} recorded</span>}
                   {liveCount === 0 && upcomingCount === 0 && pastCount === 0 && <span>No sessions yet</span>}
                 </div>
-                <div style={{ display:"flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, color:C.primary }}>
+                <div style={{ display:"flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, color:C.primary, padding:"5px 10px", borderRadius:8, background: hov ? C.primaryLight : "transparent", transition:"background .15s" }}>
                   View all <Icon name="caret-right" size={13} color={C.primary}/>
                 </div>
               </div>
