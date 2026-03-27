@@ -5761,8 +5761,8 @@ function LandingPage({ onGetStarted }) {
             <div style={{ position:"absolute", bottom:-30, left:-30, width:120, height:120, borderRadius:"50%", background:"rgba(54,153,255,0.06)" }}/>
 
             {/* Logo row */}
-            <div style={{ display:"inline-flex", alignItems:"center", marginBottom:20, background:"#fff", padding:"10px 20px", borderRadius:14, boxShadow:"0 2px 12px rgba(0,0,0,0.07)" }}>
-              <img src="/ablespace.svg" alt="AbleSpace" style={{ height:36, display:"block" }}/>
+            <div style={{ marginBottom:20 }}>
+              <img src="/ablespace.svg" alt="AbleSpace" style={{ height:48, display:"block", margin:"0 auto" }}/>
             </div>
 
             <h2 style={{ margin:"0 0 12px", fontSize:26, fontWeight:900, color:"#181c32" }}>Sponsored by AbleSpace</h2>
