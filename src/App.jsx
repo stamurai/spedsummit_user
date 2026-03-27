@@ -2437,11 +2437,99 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange }) {
    REWARDS
 ───────────────────────────────────────────────────────────────────────────── */
 function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertificateClick }) {
-  const [activeSeason, setActiveSeason] = useState(null);
+  const [activeSeason,  setActiveSeason]  = useState(null);
+  const [activeSession, setActiveSession] = useState(null);
 
   const totalEarned = SEASONS.reduce((acc, season) => {
     return acc + season.sessionIds.filter(id => quizStates[id]?.status === "passed").length;
   }, 0);
+
+  /* ── Session Detail (lesson quizzes + final assessment) ── */
+  if (activeSeason && activeSession) {
+    const season  = SEASONS.find(s => s.id === activeSeason);
+    const session = SESSIONS.find(s => s.id === activeSession);
+    const lessonQuizzes = (session.lessons || []).filter(l => l.type === "quiz");
+    const qs = quizStates[session.id];
+    const finalPassed = qs?.status === "passed";
+    const hasFinal = !!SESSION_QUIZZES[session.id];
+
+    function lessonQuizStatus(l) {
+      if (l.status === "completed") return { label:"Completed", color:C.success, bg:C.successLight };
+      if (l.status === "active")    return { label:"In Progress", color:C.warning, bg:"#fffbeb" };
+      return { label:"Locked", color:C.gray400, bg:C.gray100 };
+    }
+
+    return (
+      <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
+        <button onClick={()=>setActiveSession(null)}
+          style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", color:C.gray500, fontSize:14, cursor:"pointer", marginBottom:20, padding:"4px 0" }}>
+          <Icon name="arrow-left" size={16} color={C.gray500}/> {season.name}
+        </button>
+
+        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:22 }}>
+          <div style={{ width:52, height:36, borderRadius:8, overflow:"hidden", flexShrink:0 }}>
+            <SessionThumb id={session.id} height={36} noPlayHover/>
+          </div>
+          <div>
+            <div style={{ fontSize:15, fontWeight:800, color:C.gray900, lineHeight:1.3 }}>{session.title}</div>
+            <div style={{ fontSize:12, color:C.gray400 }}>{session.instructor}</div>
+          </div>
+        </div>
+
+        {/* Lesson quizzes */}
+        {lessonQuizzes.length > 0 && (
+          <>
+            <div style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.8, marginBottom:10, textTransform:"uppercase" }}>Knowledge Checks</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:20 }}>
+              {lessonQuizzes.map((l, i) => {
+                const st = lessonQuizStatus(l);
+                return (
+                  <div key={l.id} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:12, padding:"12px 16px" }}>
+                    <div style={{ width:32, height:32, borderRadius:8, background: st.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                      <Icon name={l.status==="completed" ? "check-circle" : l.status==="active" ? "pencil" : "lock"} size={15} color={st.color}/>
+                    </div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontSize:13, fontWeight:600, color:C.gray800, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{l.title}</div>
+                      <div style={{ fontSize:12, color:C.gray400 }}>{l.questions} questions</div>
+                    </div>
+                    <span style={{ fontSize:11, fontWeight:700, color:st.color, background:st.bg, padding:"3px 9px", borderRadius:99, whiteSpace:"nowrap" }}>{st.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {/* Final assessment / certificate */}
+        {hasFinal && (
+          <>
+            <div style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.8, marginBottom:10, textTransform:"uppercase" }}>Final Certificate</div>
+            <div style={{ background:C.white, borderRadius:12, border:`1px solid ${finalPassed ? C.primaryBorder : C.gray200}`, display:"flex", alignItems:"center", gap:12, padding:"14px 16px" }}>
+              <div style={{ width:38, height:38, borderRadius:10, background: finalPassed ? C.successLight : C.gray100, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <Icon name="certificate" size={19} color={finalPassed ? C.success : C.gray400}/>
+              </div>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.gray900 }}>Course Certificate</div>
+                <div style={{ fontSize:12, color:C.gray400, marginTop:1 }}>
+                  {finalPassed ? `Score: ${qs.score}% — Passed` : "Pass the final assessment to earn this"}
+                </div>
+              </div>
+              {finalPassed ? (
+                <button onClick={()=>onCertificateClick && onCertificateClick(session)}
+                  style={{ padding:"8px 16px", borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", color:C.primary, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
+                  <Icon name="certificate" size={13} color={C.primary}/> View
+                </button>
+              ) : (
+                <span style={{ fontSize:11, fontWeight:600, color:C.gray400, background:C.gray100, padding:"4px 10px", borderRadius:99, whiteSpace:"nowrap" }}>
+                  {qs?.status === "in-progress" || qs?.status === "failed" ? "In Progress" : "Not available yet"}
+                </span>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
 
   /* ── Season Detail ── */
   if (activeSeason) {
@@ -2463,30 +2551,12 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
             const passed  = qs?.status === "passed";
             const inProg  = qs?.status === "in-progress" || qs?.status === "failed";
             const hasQuiz = !!SESSION_QUIZZES[s.id];
-
-            let statusEl;
-            if (passed) {
-              statusEl = (
-                <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                  <span style={{ fontSize:11, fontWeight:700, color:C.success, background:C.successLight, padding:"3px 9px", borderRadius:99, whiteSpace:"nowrap" }}>
-                    <Icon name="check-circle" size={11} color={C.success}/> Earned
-                  </span>
-                  <button onClick={()=>onCertificateClick && onCertificateClick(s)}
-                    style={{ padding:"7px 14px", borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", color:C.primary, fontSize:12, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap", display:"flex", alignItems:"center", gap:5 }}>
-                    <Icon name="certificate" size={13} color={C.primary}/> View
-                  </button>
-                </div>
-              );
-            } else if (inProg) {
-              statusEl = <span style={{ fontSize:12, fontWeight:600, color:C.warning, background:"#fffbeb", padding:"5px 11px", borderRadius:99, border:`1px solid #fde68a`, whiteSpace:"nowrap" }}>In Progress</span>;
-            } else if (!hasQuiz) {
-              statusEl = <span style={{ fontSize:12, color:C.gray400 }}>No assessment</span>;
-            } else {
-              statusEl = <span style={{ fontSize:12, fontWeight:600, color:C.gray400, background:C.gray100, padding:"5px 11px", borderRadius:99, whiteSpace:"nowrap" }}>Not available yet</span>;
-            }
+            const lessonQuizCount = (s.lessons || []).filter(l => l.type === "quiz").length;
+            const lessonDoneCount = (s.lessons || []).filter(l => l.type === "quiz" && l.status === "completed").length;
 
             return (
-              <div key={s.id} style={{ background:C.white, borderRadius:14, border:`1px solid ${passed ? C.primaryBorder : C.gray200}`, display:"flex", alignItems:"center", gap:14, padding:"14px 18px" }}>
+              <div key={s.id} onClick={()=>setActiveSession(s.id)}
+                style={{ background:C.white, borderRadius:14, border:`1px solid ${passed ? C.primaryBorder : C.gray200}`, display:"flex", alignItems:"center", gap:14, padding:"14px 18px", cursor:"pointer" }}>
                 <div style={{ position:"relative", width:72, height:50, borderRadius:8, overflow:"hidden", flexShrink:0 }}>
                   <SessionThumb id={s.id} height={50} noPlayHover/>
                   {passed && (
@@ -2498,8 +2568,11 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
                   <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{s.instructor}</div>
+                  {lessonQuizCount > 0 && (
+                    <div style={{ fontSize:11, color:C.gray400, marginTop:3 }}>{lessonDoneCount}/{lessonQuizCount} knowledge checks · {passed ? "Certificate earned" : hasQuiz ? "Final assessment pending" : "No final assessment"}</div>
+                  )}
                 </div>
-                {statusEl}
+                <Icon name="caret-right" size={16} color={C.gray300}/>
               </div>
             );
           })}
