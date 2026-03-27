@@ -2453,7 +2453,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
               View all <Icon name="caret-right" size={13} color={C.primary}/>
             </button>
           </div>
-          {ADMIN_SESSIONS_DATA.filter(s=>s.status!=="ARCHIVED").map((s,i,arr)=>{
+          {ADMIN_SESSIONS_DATA.map((s,i,arr)=>{
             const sc = ADMIN_STATUS_COLORS[s.status] || ADMIN_STATUS_COLORS.DRAFT;
             return (
               <div key={s.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 0", borderBottom:i<arr.length-1?`1px solid ${C.gray100}`:"none" }}>
