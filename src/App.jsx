@@ -1724,7 +1724,7 @@ function SessionDetail({ session, onBack, backLabel, toast, onAssessmentClick })
 
         {/* Back */}
         <button onClick={onBack} style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", color:C.gray500, cursor:"pointer", fontSize:14, marginBottom:14, padding:"4px 0" }}>
-          <Icon name="arrow-left" size={16} color={C.gray500}/> {backLabel || "Back"}
+          <Icon name="arrow-left" size={16} color={C.gray500}/> Back
         </button>
 
 
