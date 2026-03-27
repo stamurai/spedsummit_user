@@ -1636,20 +1636,6 @@ function SessionDetail({ session, onBack, toast, onAssessmentClick }) {
               <Icon name={playing ? "pause" : "play"} size={22} color="#fff"/>
             </button>
           </div>
-          {/* Controls */}
-          <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"10px 14px", background:"linear-gradient(transparent,rgba(0,0,0,0.8))" }}>
-
-            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-              <button onClick={() => setPlaying(p=>!p)} style={{ background:"none",border:"none",color:"#fff",cursor:"pointer",display:"flex" }}><Icon name={playing?"pause":"play"} size={16} color="#fff"/></button>
-              <button style={{ background:"none",border:"none",color:"#fff",cursor:"pointer",display:"flex" }}><Icon name="speaker-high" size={16} color="#fff"/></button>
-              <span style={{ fontSize:12, color:"rgba(255,255,255,0.8)", marginLeft:4 }}>12:45 / {lesson.duration}</span>
-              <div style={{ marginLeft:"auto", display:"flex", gap:8 }}>
-                {!narrow && <button style={{ background:"none",border:"none",color:"#fff",cursor:"pointer",display:"flex" }}><Icon name="closed-caption" size={16} color="#fff"/></button>}
-                <button style={{ background:"none",border:"none",color:"#fff",cursor:"pointer",display:"flex" }}><Icon name="gear" size={16} color="#fff"/></button>
-                <button style={{ background:"none",border:"none",color:"#fff",cursor:"pointer",display:"flex" }}><Icon name="arrows-out" size={16} color="#fff"/></button>
-              </div>
-            </div>
-          </div>
           </div>
         </div>
 
