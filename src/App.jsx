@@ -1434,13 +1434,19 @@ function SchedulePage({ onOpenSession, toast }) {
 
               {/* CTA */}
               <div style={{ flexShrink:0, display:"flex", flexDirection:"column", alignItems:"flex-end", gap:6 }}>
+                {cta === "Recording Unavailable" ? (
+                  <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, color:C.gray400 }}>
+                    <Icon name="warning-circle" size={13} color={C.gray400}/>
+                    Recording unavailable
+                  </div>
+                ) : (
                 <Btn variant={ctaVariant(cta)} onClick={()=>handleCta(item)} size="sm">
                   {(cta==="Remind Me"||cta==="Reminded ✓") && <Icon name="bell" size={13} color={cta==="Reminded ✓"?C.success:"#fff"}/>}
                   {(cta==="Watch Again"||cta==="Resume Lesson"||cta==="Watch Recording") && <Icon name="play" size={13} color={C.gray600}/>}
                   {(cta==="Register"||cta==="Registered") && <Icon name="check-circle" size={13} color={cta==="Registered"?"#fff":C.primary}/>}
-                  {cta==="Recording Unavailable" && <Icon name="warning-circle" size={13} color={C.gray400}/>}
                   {cta}
                 </Btn>
+                )}
                 {(cta==="Remind Me"||cta==="Reminded ✓") && (
                   <button onClick={()=>toast({type:"success",title:"Added to calendar 📅",message:`"${item.title.slice(0,40)}…" saved to your calendar.`})}
                     style={{ width:30, height:30, borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
