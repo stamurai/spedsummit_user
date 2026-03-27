@@ -1625,8 +1625,9 @@ function SessionDetail({ session, onBack, toast, onAssessmentClick }) {
 
 
         {/* ── Video Player ── */}
-        <div style={{ borderRadius:16, overflow:"hidden", marginBottom:18, position:"relative", background:"#0f172a", boxShadow:"0 4px 24px rgba(0,0,0,0.15)" }}>
-          <SessionThumb id={session.id} height={narrow ? 220 : 320} overlay={!playing}/>
+        <div style={{ borderRadius:16, overflow:"hidden", marginBottom:18, position:"relative", background:"#0f172a", boxShadow:"0 4px 24px rgba(0,0,0,0.15)", paddingBottom:"56.25%", height:0 }}>
+          <div style={{ position:"absolute", inset:0 }}>
+          <SessionThumb id={session.id} height="100%" overlay={!playing}/>
           <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
             <button onClick={() => setPlaying(p => !p)}
               style={{ width:58, height:58, borderRadius:"50%", background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", border:"2px solid rgba(255,255,255,0.45)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"transform .2s" }}
@@ -1652,6 +1653,7 @@ function SessionDetail({ session, onBack, toast, onAssessmentClick }) {
                 <button style={{ background:"none",border:"none",color:"#fff",cursor:"pointer",display:"flex" }}><Icon name="arrows-out" size={16} color="#fff"/></button>
               </div>
             </div>
+          </div>
           </div>
         </div>
 
