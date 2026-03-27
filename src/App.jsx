@@ -235,6 +235,29 @@ const SESSIONS = [
   { id:6, title:"Understanding & Supporting Communication for Students with AAC", category:"ACCESSIBILITY", instructor:"Dr. Sarah Kim", instructorBio:"AAC specialist with 15+ years supporting students with complex communication needs in inclusive environments.", instructorQuote:"Communication is a human right — AAC makes it possible for everyone.", duration:"48 mins", resources:3, progress:0, status:"not-started", description:"Analyze the product for compliance with accessibility standards to ensure it serves all users regardless of ability.", lessons:[{id:1,title:"What is AAC?",duration:"10:00",status:"available",type:"video"},{id:2,title:"Device Selection",duration:"18:00",status:"locked",type:"video"},{id:"1q",title:"AAC Basics Quiz",questions:7,status:"locked",type:"quiz"},{id:3,title:"Implementation in Class",duration:"20:00",status:"locked",type:"video"}] },
 ];
 
+const SEASONS = [
+  {
+    id: "spring-2026",
+    name: "Spring 2026",
+    tagline: "Live & Upcoming",
+    description: "Current live sessions and upcoming content for the Spring 2026 SPED Summit.",
+    sessionIds: [1, 2, 5, 6],
+    color: "#2563eb",
+    bg: "#dbeafe",
+    icon: "🌸",
+  },
+  {
+    id: "winter-2025",
+    name: "Winter 2025",
+    tagline: "Past Season",
+    description: "Recorded sessions from the Winter 2025 SPED Summit. Available recordings included.",
+    sessionIds: [3, 4],
+    color: "#6b7280",
+    bg: "#f3f4f6",
+    icon: "❄️",
+  },
+];
+
 /* availableFrom/availableTo: control session visibility.
    hasRecording: whether a recording exists for past sessions. */
 const SESSION_AVAILABILITY = {
@@ -1211,144 +1234,187 @@ function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentC
    SESSIONS PAGE
 ───────────────────────────────────────────────────────────────────────────── */
 function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set(), onNavigate, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{} }) {
-  const liveSessions     = SESSIONS.filter(s => enrolledIds.has(s.id) && getSessionState(s.id) === "live");
-  const upcomingSessions = SESSIONS.filter(s => getSessionState(s.id) === "upcoming");
-  const pastSessions     = SESSIONS.filter(s => getSessionState(s.id) === "past");
-  const hasLive = liveSessions.length > 0;
+  const [activeSeason, setActiveSeason] = useState(null);
 
-  function SectionHead({ title, count, badge, badgeColor="#10b981", badgeBg="#d1fae5" }) {
+  /* ── Season Detail View ── */
+  if (activeSeason) {
+    const season = SEASONS.find(s => s.id === activeSeason);
+    const sessions = SESSIONS.filter(s => season.sessionIds.includes(s.id));
+    const liveSessions     = sessions.filter(s => enrolledIds.has(s.id) && getSessionState(s.id) === "live");
+    const upcomingSessions = sessions.filter(s => getSessionState(s.id) === "upcoming");
+    const pastSessions     = sessions.filter(s => getSessionState(s.id) === "past");
+
     return (
-      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
-        <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900 }}>{title}</h2>
-        {count !== undefined && <span style={{ fontSize:12, fontWeight:600, color:C.gray400 }}>{count}</span>}
-        {badge && <span style={{ fontSize:12, fontWeight:700, color:badgeColor, background:badgeBg, padding:"2px 9px", borderRadius:99, letterSpacing:.4 }}>{badge}</span>}
+      <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
+        {/* Back + header */}
+        <button onClick={()=>setActiveSeason(null)}
+          style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", color:C.primary, fontSize:13, fontWeight:600, cursor:"pointer", marginBottom:20, padding:0 }}>
+          <Icon name="arrow-left" size={15} color={C.primary}/> All Seasons
+        </button>
+        <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:28 }}>
+          <div style={{ width:52, height:52, borderRadius:14, background:season.bg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, flexShrink:0 }}>
+            {season.icon}
+          </div>
+          <div>
+            <div style={{ fontSize:11, fontWeight:700, color:season.color, letterSpacing:1, marginBottom:2 }}>{season.tagline.toUpperCase()}</div>
+            <h1 style={{ margin:"0 0 2px", fontSize:22, fontWeight:900, color:C.gray900 }}>{season.name}</h1>
+            <p style={{ margin:0, fontSize:13, color:C.gray500 }}>{season.description}</p>
+          </div>
+        </div>
+
+        {/* Live */}
+        {liveSessions.length > 0 && (
+          <div style={{ marginBottom:28 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
+              <span style={{ fontSize:14, fontWeight:800, color:C.gray900 }}>Live Now</span>
+              <span style={{ fontSize:11, fontWeight:700, color:"#fff", background:"#10b981", padding:"2px 8px", borderRadius:99 }}>● LIVE</span>
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16 }}>
+              {liveSessions.map(s => <SessionCard key={s.id} session={s} onClick={onOpenSession} quizState={quizStates[s.id]||{}} onAssessmentClick={onAssessmentClick} onCertificateClick={onCertificateClick}/>)}
+            </div>
+          </div>
+        )}
+
+        {/* Upcoming */}
+        {upcomingSessions.length > 0 && (
+          <div style={{ marginBottom:28 }}>
+            <div style={{ fontSize:14, fontWeight:800, color:C.gray900, marginBottom:14 }}>Upcoming</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              {upcomingSessions.map(s => {
+                const avail = SESSION_AVAILABILITY[s.id];
+                const releaseLabel = avail?.availableFrom
+                  ? new Date(avail.availableFrom).toLocaleString("en-US", { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" })
+                  : "Date TBD";
+                return (
+                  <div key={s.id} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:16, padding:"16px 20px" }}>
+                    <div style={{ width:96, height:64, borderRadius:8, overflow:"hidden", flexShrink:0 }}>
+                      <SessionThumb id={s.id} height={64}/>
+                    </div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontSize:12, fontWeight:700, color:"#2563eb", letterSpacing:.5, marginBottom:3 }}>UPCOMING · {releaseLabel}</div>
+                      <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
+                      <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{s.instructor} · {s.duration}</div>
+                    </div>
+                    {scheduleRegistrations[s.id] ? (
+                      <div style={{ width:34, height:34, borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", display:"flex", alignItems:"center", justifyContent:"center" }} title="Registered">
+                        <Icon name="bell" size={15} color={C.primary}/>
+                      </div>
+                    ) : (
+                      <button onClick={()=>{ setScheduleRegistrations(r=>({...r,[s.id]:true})); toast({ type:"success", title:"Registered! 🎉", message:`Added "${s.title.slice(0,40)}…" to your schedule.` }); }}
+                        style={{ padding:"8px 16px", borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", color:C.primary, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap" }}>
+                        <Icon name="bell" size={13} color={C.primary}/> Register
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Past */}
+        {pastSessions.length > 0 && (
+          <div style={{ marginBottom:28 }}>
+            <div style={{ fontSize:14, fontWeight:800, color:C.gray900, marginBottom:14 }}>Sessions</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              {pastSessions.map(s => {
+                const avail = SESSION_AVAILABILITY[s.id];
+                const hasRec = avail?.hasRecording;
+                return (
+                  <div key={s.id} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:16, padding:"16px 20px", opacity:0.85 }}>
+                    <div style={{ position:"relative", width:96, height:64, borderRadius:8, overflow:"hidden", flexShrink:0 }}>
+                      <SessionThumb id={s.id} height={64}/>
+                      <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.35)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        <Icon name={hasRec?"play":"warning-circle"} size={18} color="rgba(255,255,255,0.85)"/>
+                      </div>
+                    </div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontSize:14, fontWeight:700, color:C.gray700, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
+                      <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{s.instructor} · {s.duration}</div>
+                    </div>
+                    {hasRec ? (
+                      <button onClick={()=>onOpenSession(s)}
+                        style={{ padding:"8px 16px", borderRadius:8, border:`1px solid ${C.gray300}`, background:C.white, color:C.gray700, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap" }}>
+                        <Icon name="play" size={13} color={C.gray600}/> Watch Recording
+                      </button>
+                    ) : (
+                      <div style={{ padding:"8px 14px", borderRadius:8, background:C.gray100, fontSize:12, fontWeight:600, color:C.gray400, flexShrink:0, display:"flex", alignItems:"center", gap:6 }}>
+                        <Icon name="warning-circle" size={13} color={C.gray400}/> Recording unavailable
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {liveSessions.length === 0 && upcomingSessions.length === 0 && pastSessions.length === 0 && (
+          <div style={{ textAlign:"center", padding:"48px 0", color:C.gray400, fontSize:14 }}>No sessions in this season yet.</div>
+        )}
       </div>
     );
   }
 
+  /* ── Seasons Overview ── */
   return (
     <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
-      {/* Page header */}
-      <div style={{ marginBottom:24 }}>
+      <div style={{ marginBottom:28 }}>
         <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>FEATURED SERIES</div>
         <h1 style={{ margin:"0 0 4px", fontSize:24, fontWeight:900, color:C.gray900 }}>Summit Sessions</h1>
-        <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>All sessions — live, upcoming, and from past seasons.</p>
+        <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>Browse sessions by season. Each season is a curated collection of expert-led content.</p>
       </div>
 
-      {/* No-active-sessions banner */}
-      {!hasLive && (
-        <div style={{ display:"flex", alignItems:"center", gap:14, background:"#fefce8", border:"1px solid #fde68a", borderRadius:14, padding:"16px 20px", marginBottom:24 }}>
-          <div style={{ width:40, height:40, borderRadius:10, background:"#fef3c7", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-            <Icon name="calendar" size={20} color="#d97706"/>
-          </div>
-          <div style={{ flex:1 }}>
-            <div style={{ fontWeight:700, fontSize:14, color:"#92400e", marginBottom:3 }}>No active sessions right now</div>
-            <p style={{ margin:0, fontSize:14, color:"#a16207", lineHeight:1.5 }}>
-              The current season has no live content at this moment. Explore <strong>upcoming sessions</strong> below or revisit <strong>past season recordings</strong>.
-            </p>
-          </div>
-          {onNavigate && (
-            <button onClick={()=>onNavigate("schedules")}
-              style={{ padding:"8px 16px", borderRadius:8, border:"none", background:"#f59e0b", color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, whiteSpace:"nowrap" }}>
-              View Schedule
-            </button>
-          )}
-        </div>
-      )}
+      <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+        {SEASONS.map(season => {
+          const sessions = SESSIONS.filter(s => season.sessionIds.includes(s.id));
+          const liveCount     = sessions.filter(s => getSessionState(s.id) === "live").length;
+          const upcomingCount = sessions.filter(s => getSessionState(s.id) === "upcoming").length;
+          const pastCount     = sessions.filter(s => getSessionState(s.id) === "past").length;
+          const statusLabel   = liveCount > 0 ? { label:"● LIVE NOW", color:"#fff", bg:"#10b981" }
+                              : upcomingCount > 0 ? { label:"UPCOMING", color:"#2563eb", bg:"#dbeafe" }
+                              : { label:"PAST SEASON", color:"#6b7280", bg:"#f3f4f6" };
+          return (
+            <div key={season.id}
+              onClick={()=>setActiveSeason(season.id)}
+              style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"20px 24px", cursor:"pointer", display:"flex", alignItems:"center", gap:20, transition:"box-shadow .15s, transform .15s" }}
+              onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 4px 20px rgba(0,0,0,0.08)"; e.currentTarget.style.transform="translateY(-1px)"; }}
+              onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform=""; }}>
 
-      {/* ── Live sessions ── */}
-      {hasLive && (
-        <div style={{ marginBottom:32 }}>
-          <SectionHead title="Live Now" count={liveSessions.length} badge="● LIVE" badgeColor="#fff" badgeBg="#10b981"/>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16 }}>
-            {liveSessions.map(s => <SessionCard key={s.id} session={s} onClick={onOpenSession} quizState={quizStates[s.id]||{}} onAssessmentClick={onAssessmentClick} onCertificateClick={onCertificateClick}/>)}
-          </div>
-        </div>
-      )}
+              {/* Season icon */}
+              <div style={{ width:56, height:56, borderRadius:14, background:season.bg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:28, flexShrink:0 }}>
+                {season.icon}
+              </div>
 
-      {/* ── Upcoming sessions ── */}
-      {upcomingSessions.length > 0 && (
-        <div style={{ marginBottom:32 }}>
-          <SectionHead title="Coming Up" count={upcomingSessions.length} badge="UPCOMING" badgeColor="#2563eb" badgeBg="#dbeafe"/>
-          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-            {upcomingSessions.map(s => {
-              const avail = SESSION_AVAILABILITY[s.id];
-              const releaseLabel = avail?.availableFrom
-                ? new Date(avail.availableFrom).toLocaleString("en-US", { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" })
-                : "Date TBD";
-              return (
-                <div key={s.id} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:16, padding:"16px 20px", overflow:"hidden" }}>
-                  <div style={{ width:96, height:64, borderRadius:8, overflow:"hidden", flexShrink:0 }}>
-                    <SessionThumb id={s.id} height={64}/>
+              {/* Thumbnail strip */}
+              <div style={{ display:"flex", gap:4, flexShrink:0 }}>
+                {sessions.slice(0,3).map((s,i) => (
+                  <div key={s.id} style={{ width:60, height:42, borderRadius:7, overflow:"hidden", opacity: i===2 && sessions.length>3 ? 0.5 : 1 }}>
+                    <SessionThumb id={s.id} height={42} noPlayHover/>
                   </div>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontSize:12, fontWeight:700, color:"#2563eb", letterSpacing:.5, marginBottom:3, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>UPCOMING · {releaseLabel}</div>
-                    <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
-                    <div style={{ fontSize:12, color:C.gray500, marginTop:2, whiteSpace:"nowrap" }}>{s.instructor} · {s.duration}</div>
-                  </div>
-                  {scheduleRegistrations[s.id] ? (
-                    <div style={{ width:34, height:34, borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", display:"flex", alignItems:"center", justifyContent:"center" }}
-                      title="Registered">
-                      <Icon name="bell" size={15} color={C.primary}/>
-                    </div>
-                  ) : (
-                    <button onClick={()=>{ setScheduleRegistrations(r=>({...r,[s.id]:true})); toast({ type:"success", title:"Registered! 🎉", message:`Added "${s.title.slice(0,40)}…" to your schedule.` }); }}
-                      style={{ padding:"8px 16px", borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", color:C.primary, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap" }}>
-                      <Icon name="bell" size={13} color={C.primary}/> Register
-                    </button>
-                  )}
+                ))}
+              </div>
+
+              {/* Info */}
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+                  <span style={{ fontSize:16, fontWeight:800, color:C.gray900 }}>{season.name}</span>
+                  <span style={{ fontSize:11, fontWeight:700, color:statusLabel.color, background:statusLabel.bg, padding:"2px 8px", borderRadius:99 }}>{statusLabel.label}</span>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* ── Past sessions ── */}
-      {pastSessions.length > 0 && (
-        <div style={{ marginBottom:32 }}>
-          <SectionHead title="Past Seasons" count={pastSessions.length} badge="COMPLETED" badgeColor="#6b7280" badgeBg="#f3f4f6"/>
-          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-            {pastSessions.map(s => {
-              const avail = SESSION_AVAILABILITY[s.id];
-              const hasRec = avail?.hasRecording;
-              const airedDate = avail?.availableFrom
-                ? new Date(avail.availableFrom).toLocaleDateString("en-US", { month:"long", year:"numeric" })
-                : "";
-              return (
-                <div key={s.id} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:16, padding:"16px 20px", overflow:"hidden", opacity:0.82 }}>
-                  <div style={{ position:"relative", width:96, height:64, borderRadius:8, overflow:"hidden", flexShrink:0 }}>
-                    <SessionThumb id={s.id} height={64}/>
-                    <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.38)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                      {hasRec
-                        ? <Icon name="play" size={18} color="rgba(255,255,255,0.9)"/>
-                        : <Icon name="warning-circle" size={18} color="rgba(255,255,255,0.7)"/>}
-                    </div>
-                  </div>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.5, marginBottom:3, whiteSpace:"nowrap" }}>PAST SEASON · {airedDate}</div>
-                    <div style={{ fontSize:14, fontWeight:700, color:C.gray700, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
-                    <div style={{ fontSize:12, color:C.gray400, marginTop:2, whiteSpace:"nowrap" }}>{s.instructor} · {s.duration}</div>
-                  </div>
-                  {hasRec ? (
-                    <button onClick={()=>onOpenSession(s)}
-                      style={{ padding:"8px 16px", borderRadius:8, border:`1px solid ${C.gray300}`, background:C.white, color:C.gray700, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap" }}>
-                      <Icon name="play" size={13} color={C.gray600}/> Watch Recording
-                    </button>
-                  ) : (
-                    <div style={{ padding:"8px 14px", borderRadius:8, background:C.gray100, fontSize:12, fontWeight:600, color:C.gray400, flexShrink:0, whiteSpace:"nowrap", display:"flex", alignItems:"center", gap:6 }}>
-                      <Icon name="warning-circle" size={13} color={C.gray400}/> Recording unavailable
-                    </div>
-                  )}
+                <p style={{ margin:"0 0 6px", fontSize:13, color:C.gray500, lineHeight:1.5, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{season.description}</p>
+                <div style={{ display:"flex", gap:14, fontSize:12, color:C.gray400 }}>
+                  <span>{sessions.length} session{sessions.length!==1?"s":""}</span>
+                  {liveCount > 0 && <span style={{ color:"#10b981", fontWeight:600 }}>{liveCount} live</span>}
+                  {upcomingCount > 0 && <span style={{ color:"#2563eb", fontWeight:600 }}>{upcomingCount} upcoming</span>}
+                  {pastCount > 0 && <span>{pastCount} recorded</span>}
                 </div>
-              );
-            })}
-          </div>
-          <div style={{ marginTop:10, padding:"10px 14px", background:C.gray100, borderRadius:10, fontSize:12, color:C.gray500, lineHeight:1.5 }}>
-            Past session recordings were available during the live window. Some recordings may not be available for redistribution.
-          </div>
-        </div>
-      )}
+              </div>
+
+              <Icon name="caret-right" size={18} color={C.gray400}/>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
