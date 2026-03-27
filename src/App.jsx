@@ -1320,18 +1320,8 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
         {/* Back + header */}
         <button onClick={()=>setActiveSeason(null)}
           style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", color:C.primary, fontSize:13, fontWeight:600, cursor:"pointer", marginBottom:20, padding:0 }}>
-          <Icon name="arrow-left" size={15} color={C.primary}/> All Seasons
+          <Icon name="arrow-left" size={15} color={C.primary}/> Sessions
         </button>
-        <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:28 }}>
-          <div style={{ width:52, height:52, borderRadius:14, background:season.bg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, flexShrink:0 }}>
-            {season.icon}
-          </div>
-          <div>
-            <div style={{ fontSize:11, fontWeight:700, color:season.color, letterSpacing:1, marginBottom:2 }}>{season.tagline.toUpperCase()}</div>
-            <h1 style={{ margin:"0 0 2px", fontSize:22, fontWeight:900, color:C.gray900 }}>{season.name}</h1>
-            <p style={{ margin:0, fontSize:13, color:C.gray500 }}>{season.description}</p>
-          </div>
-        </div>
 
         {/* Live */}
         {liveSessions.length > 0 && (
