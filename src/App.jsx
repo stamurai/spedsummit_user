@@ -1019,10 +1019,13 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{} }) {
   const enrolledSessions  = SESSIONS.filter(s => enrolledIds.has(s.id) && getSessionState(s.id) === "live");
   const upcomingSessions  = SESSIONS.filter(s => getSessionState(s.id) === "upcoming");
+  const pastSessions      = SESSIONS.filter(s => getSessionState(s.id) === "past");
   const discoverSessions  = SESSIONS.filter(s => !enrolledIds.has(s.id) && getSessionState(s.id) === "live");
   const completed = enrolledSessions.filter(s=>s.status==="completed").length;
   const total = enrolledSessions.length;
   const pct = total > 0 ? Math.round((completed/total)*100) : 0;
+  // First-time user: no enrolled sessions with any progress
+  const hasStarted = enrolledSessions.some(s => s.progress > 0 || s.status === "completed" || s.status === "in-progress");
   const [spinning, setSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [previewSession, setPreviewSession] = useState(null);
@@ -1072,21 +1075,59 @@ function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentC
           </div>
         </div>
 
-        {/* My Enrolled Sessions */}
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
-          <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900 }}>My Sessions <span style={{ fontSize:12, fontWeight:600, color:C.gray400, marginLeft:6 }}>{enrolledSessions.length} enrolled</span></h2>
-          <Btn variant="ghost" size="sm" onClick={() => onNavigate("sessions")}>View All <Icon name="caret-right" size={14} color={C.primary}/></Btn>
-        </div>
-        {enrolledSessions.length > 0 ? (
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16, marginBottom:28 }}>
-            {enrolledSessions.map(s => <SessionCard key={s.id} session={s} onClick={onOpenSession} quizState={quizStates[s.id]||{}} onAssessmentClick={onAssessmentClick} onCertificateClick={onCertificateClick}/>)}
-          </div>
-        ) : (
-          <div style={{ background:C.white, border:`1px dashed ${C.gray200}`, borderRadius:14, padding:"32px 24px", textAlign:"center", marginBottom:28 }}>
-            <Icon name="play-circle" size={32} color={C.gray300}/>
-            <div style={{ marginTop:10, fontSize:14, color:C.gray500 }}>You haven't enrolled in any sessions yet.</div>
-            <div style={{ fontSize:12, color:C.gray400, marginTop:4 }}>Explore sessions below and hit Enroll to get started.</div>
-          </div>
+        {/* My Enrolled Sessions — only show when user has started something */}
+        {hasStarted && (
+          <>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
+              <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900 }}>My Sessions <span style={{ fontSize:12, fontWeight:600, color:C.gray400, marginLeft:6 }}>{enrolledSessions.length} enrolled</span></h2>
+              <Btn variant="ghost" size="sm" onClick={() => onNavigate("sessions")}>View All <Icon name="caret-right" size={14} color={C.primary}/></Btn>
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16, marginBottom:28 }}>
+              {enrolledSessions.map(s => <SessionCard key={s.id} session={s} onClick={onOpenSession} quizState={quizStates[s.id]||{}} onAssessmentClick={onAssessmentClick} onCertificateClick={onCertificateClick}/>)}
+            </div>
+          </>
+        )}
+
+        {/* First-time user: past season recordings */}
+        {!hasStarted && pastSessions.length > 0 && (
+          <>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+              <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900 }}>
+                Past Sessions
+                <span style={{ fontSize:12, fontWeight:700, color:C.gray500, background:C.gray100, padding:"2px 8px", borderRadius:99, marginLeft:8 }}>RECORDINGS</span>
+              </h2>
+              <Btn variant="ghost" size="sm" onClick={() => onNavigate("sessions")}>Browse All <Icon name="caret-right" size={14} color={C.primary}/></Btn>
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:28 }}>
+              {pastSessions.map(s => {
+                const hasRec = SESSION_AVAILABILITY[s.id]?.hasRecording;
+                return (
+                  <div key={s.id} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:14, padding:"14px 16px", opacity: hasRec ? 1 : 0.7 }}>
+                    <div style={{ position:"relative", width:80, height:52, borderRadius:8, overflow:"hidden", flexShrink:0 }}>
+                      <SessionThumb id={s.id} height={52} noPlayHover/>
+                      <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.32)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        <Icon name={hasRec?"play":"warning-circle"} size={16} color="rgba(255,255,255,0.85)"/>
+                      </div>
+                    </div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
+                      <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{s.instructor} · {s.duration}</div>
+                    </div>
+                    {hasRec ? (
+                      <button onClick={()=>onOpenSession(s)}
+                        style={{ padding:"8px 14px", borderRadius:8, border:`1px solid ${C.gray300}`, background:C.white, color:C.gray700, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap" }}>
+                        <Icon name="play" size={13} color={C.gray600}/> Watch
+                      </button>
+                    ) : (
+                      <div style={{ padding:"7px 12px", borderRadius:8, background:C.gray100, fontSize:12, fontWeight:600, color:C.gray400, flexShrink:0, display:"flex", alignItems:"center", gap:5 }}>
+                        <Icon name="warning-circle" size={13} color={C.gray400}/> Unavailable
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
 
         {/* Upcoming sessions */}
@@ -1169,8 +1210,8 @@ function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentC
           </>
         )}
 
-        {/* Knowledge Checks */}
-        <h2 style={{ margin:"0 0 12px", fontSize:16, fontWeight:800, color:C.gray900 }}>Knowledge Checks</h2>
+        {/* Knowledge Checks — only show when user has started something */}
+        {hasStarted && <><h2 style={{ margin:"0 0 12px", fontSize:16, fontWeight:800, color:C.gray900 }}>Knowledge Checks</h2>
         <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, overflow:"hidden" }}>
           {[
             { session: SESSIONS.find(s=>s.id===1), title:"AI and Advanced Tech in SPED Quiz", instructor:"Tara Roehl", questions:15 },
@@ -1190,6 +1231,7 @@ function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentC
             </div>
           ))}
         </div>
+        </>}
       </div>
 
       {/* Right sidebar */}
