@@ -5581,6 +5581,54 @@ function LandingPage({ onGetStarted }) {
         </div>
       </section>
 
+      {/* ── Giveaways ── */}
+      <section style={{ padding:"72px 48px", background:"#fff", borderTop:"1px solid #f0f0f0" }}>
+        <div style={{ maxWidth:1100, margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 1fr", gap:64, alignItems:"center" }}>
+          {/* Left */}
+          <div>
+            <div style={{ fontSize:12, color:"#3699ff", fontWeight:700, letterSpacing:1, marginBottom:12 }}>PRIZES & GIVEAWAYS</div>
+            <h2 style={{ margin:"0 0 16px", fontSize:36, fontWeight:900, color:"#181c32", lineHeight:1.2 }}>
+              Starbucks Gift Cards, TpT Resources, AbleSpace Subscriptions, <span style={{ color:"#3699ff" }}>and much more…</span>
+            </h2>
+            <p style={{ margin:"0 0 28px", fontSize:16, color:"#7e8299", lineHeight:1.7 }}>
+              We have multiple giveaways lined up for you during the entire conference. Raffles, quizzes, and surprise gifts. Get ready to learn and get ready to win!
+            </p>
+            <button onClick={()=>setShowAuth(true)}
+              style={{ padding:"14px 30px", background:"#3699ff", color:"#fff", border:"none", borderRadius:12, fontSize:14, fontWeight:700, cursor:"pointer", display:"inline-flex", alignItems:"center", gap:8, transition:"background .15s" }}
+              onMouseEnter={e=>e.currentTarget.style.background="#187de4"}
+              onMouseLeave={e=>e.currentTarget.style.background="#3699ff"}>
+              Register for Free →
+            </button>
+          </div>
+
+          {/* Right — prize visual */}
+          <div style={{ position:"relative", height:320 }}>
+            <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", textAlign:"center", zIndex:2 }}>
+              <div style={{ fontSize:48, fontWeight:900, color:"#181c32", lineHeight:1 }}>$10,000<span style={{ color:"#3699ff" }}>+</span></div>
+              <div style={{ fontSize:14, fontWeight:600, color:"#7e8299", marginTop:4, letterSpacing:.5 }}>in Prizes & Giveaways</div>
+            </div>
+            {[
+              { label:"Starbucks", emoji:"☕", bg:"#00704a", color:"#fff", top:"4%",  left:"56%", size:72 },
+              { label:"TpT",       emoji:"📚", bg:"#ff6d00", color:"#fff", top:"62%", left:"68%", size:60 },
+              { label:"AbleSpace", emoji:"🎯", bg:"#3699ff", color:"#fff", top:"70%", left:"8%",  size:64 },
+              { label:"Gift Card", emoji:"🎁", bg:"#7c3aed", color:"#fff", top:"8%",  left:"10%", size:58 },
+              { label:"Cash",      emoji:"💵", bg:"#059669", color:"#fff", top:"38%", left:"78%", size:54 },
+            ].map((b,i) => (
+              <div key={i} style={{ position:"absolute", top:b.top, left:b.left, width:b.size, height:b.size, borderRadius:"50%", background:b.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", boxShadow:"0 8px 24px rgba(0,0,0,0.14)", zIndex:1 }}>
+                <span style={{ fontSize:b.size*0.36, lineHeight:1 }}>{b.emoji}</span>
+              </div>
+            ))}
+            {[
+              { top:"2%",  left:"42%", size:12, bg:"#ffc700", opacity:.8 },
+              { top:"78%", left:"40%", size:10, bg:"#3699ff", opacity:.5 },
+              { top:"22%", left:"72%", size:8,  bg:"#f1416c", opacity:.6 },
+            ].map((s,i) => (
+              <div key={i} style={{ position:"absolute", top:s.top, left:s.left, width:s.size, height:s.size, borderRadius:3, background:s.bg, opacity:s.opacity, transform:"rotate(20deg)" }}/>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── How It Works ── */}
       <section style={{ padding:"80px 48px", background:"#fff", borderTop:"1px solid #f0f0f0", borderBottom:"1px solid #f0f0f0" }}>
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
@@ -5711,59 +5759,6 @@ function LandingPage({ onGetStarted }) {
               )}
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* ── Giveaways ── */}
-      <section style={{ padding:"72px 48px", background:"#fff", borderTop:"1px solid #f0f0f0" }}>
-        <div style={{ maxWidth:1100, margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 1fr", gap:64, alignItems:"center" }}>
-          {/* Left */}
-          <div>
-            <div style={{ fontSize:12, color:"#3699ff", fontWeight:700, letterSpacing:1, marginBottom:12 }}>PRIZES & GIVEAWAYS</div>
-            <h2 style={{ margin:"0 0 16px", fontSize:36, fontWeight:900, color:"#181c32", lineHeight:1.2 }}>
-              Starbucks Gift Cards, TpT Resources, AbleSpace Subscriptions, <span style={{ color:"#3699ff" }}>and much more…</span>
-            </h2>
-            <p style={{ margin:"0 0 28px", fontSize:16, color:"#7e8299", lineHeight:1.7 }}>
-              We have multiple giveaways lined up for you during the entire conference. Raffles, quizzes, and surprise gifts. Get ready to learn and get ready to win!
-            </p>
-            <button onClick={()=>setShowAuth(true)}
-              style={{ padding:"14px 30px", background:"#3699ff", color:"#fff", border:"none", borderRadius:12, fontSize:14, fontWeight:700, cursor:"pointer", display:"inline-flex", alignItems:"center", gap:8, transition:"background .15s" }}
-              onMouseEnter={e=>e.currentTarget.style.background="#187de4"}
-              onMouseLeave={e=>e.currentTarget.style.background="#3699ff"}>
-              Register for Free →
-            </button>
-          </div>
-
-          {/* Right — prize visual */}
-          <div style={{ position:"relative", height:320 }}>
-            {/* Center "$10,000+" badge */}
-            <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", textAlign:"center", zIndex:2 }}>
-              <div style={{ fontSize:48, fontWeight:900, color:"#181c32", lineHeight:1 }}>$10,000<span style={{ color:"#3699ff" }}>+</span></div>
-              <div style={{ fontSize:14, fontWeight:600, color:"#7e8299", marginTop:4, letterSpacing:.5 }}>in Prizes & Giveaways</div>
-            </div>
-
-            {/* Floating prize bubbles */}
-            {[
-              { label:"Starbucks", emoji:"☕", bg:"#00704a", color:"#fff", top:"4%",  left:"56%", size:72 },
-              { label:"TpT",       emoji:"📚", bg:"#ff6d00", color:"#fff", top:"62%", left:"68%", size:60 },
-              { label:"AbleSpace", emoji:"🎯", bg:"#3699ff", color:"#fff", top:"70%", left:"8%",  size:64 },
-              { label:"Gift Card", emoji:"🎁", bg:"#7c3aed", color:"#fff", top:"8%",  left:"10%", size:58 },
-              { label:"Cash",      emoji:"💵", bg:"#059669", color:"#fff", top:"38%", left:"78%", size:54 },
-            ].map((b,i) => (
-              <div key={i} style={{ position:"absolute", top:b.top, left:b.left, width:b.size, height:b.size, borderRadius:"50%", background:b.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", boxShadow:"0 8px 24px rgba(0,0,0,0.14)", zIndex:1 }}>
-                <span style={{ fontSize:b.size*0.36, lineHeight:1 }}>{b.emoji}</span>
-              </div>
-            ))}
-
-            {/* Decorative floating squares */}
-            {[
-              { top:"2%",  left:"42%", size:12, bg:"#ffc700", opacity:.8 },
-              { top:"78%", left:"40%", size:10, bg:"#3699ff", opacity:.5 },
-              { top:"22%", left:"72%", size:8,  bg:"#f1416c", opacity:.6 },
-            ].map((s,i) => (
-              <div key={i} style={{ position:"absolute", top:s.top, left:s.left, width:s.size, height:s.size, borderRadius:3, background:s.bg, opacity:s.opacity, transform:"rotate(20deg)" }}/>
-            ))}
-          </div>
         </div>
       </section>
 
