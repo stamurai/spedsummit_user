@@ -1206,7 +1206,7 @@ function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentC
 /* ─────────────────────────────────────────────────────────────────────────────
    SESSIONS PAGE
 ───────────────────────────────────────────────────────────────────────────── */
-function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set(), onNavigate }) {
+function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set(), onNavigate, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{} }) {
   const liveSessions     = SESSIONS.filter(s => enrolledIds.has(s.id) && getSessionState(s.id) === "live");
   const upcomingSessions = SESSIONS.filter(s => getSessionState(s.id) === "upcoming");
   const pastSessions     = SESSIONS.filter(s => getSessionState(s.id) === "past");
@@ -1282,10 +1282,17 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
                     <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
                     <div style={{ fontSize:12, color:C.gray500, marginTop:2, whiteSpace:"nowrap" }}>{s.instructor} · {s.duration}</div>
                   </div>
-                  <button onClick={()=>onNavigate?.("schedules")}
-                    style={{ padding:"8px 16px", borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", color:C.primary, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap" }}>
-                    <Icon name="bell" size={13} color={C.primary}/> Register
-                  </button>
+                  {scheduleRegistrations[s.id] ? (
+                    <div style={{ width:34, height:34, borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", display:"flex", alignItems:"center", justifyContent:"center" }}
+                      title="Registered">
+                      <Icon name="bell" size={15} color={C.primary}/>
+                    </div>
+                  ) : (
+                    <button onClick={()=>{ setScheduleRegistrations(r=>({...r,[s.id]:true})); toast({ type:"success", title:"Registered! 🎉", message:`Added "${s.title.slice(0,40)}…" to your schedule.` }); }}
+                      style={{ padding:"8px 16px", borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", color:C.primary, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap" }}>
+                      <Icon name="bell" size={13} color={C.primary}/> Register
+                    </button>
+                  )}
                 </div>
               );
             })}
@@ -1345,10 +1352,13 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
 /* ─────────────────────────────────────────────────────────────────────────────
    SCHEDULE PAGE
 ───────────────────────────────────────────────────────────────────────────── */
-function SchedulePage({ onOpenSession, toast }) {
+function SchedulePage({ onOpenSession, toast, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{} }) {
   const [btnStates, setBtnStates] = useState({});
 
-  function getCta(item) { return btnStates[item.id] || item.cta; }
+  function getCta(item) {
+    if (scheduleRegistrations[item.id]) return "Registered";
+    return btnStates[item.id] || item.cta;
+  }
 
   function handleCta(item) {
     const cta = getCta(item);
@@ -1358,14 +1368,12 @@ function SchedulePage({ onOpenSession, toast }) {
       else toast({ type:"info", title:"Opening session…", message:item.title.slice(0,50) });
       return;
     }
-    if (cta==="Register") { setBtnStates(b=>({...b,[item.id]:"Registered"})); toast({ type:"success", title:"Registered! 🎉", message:`Added "${item.title.slice(0,40)}…" to your schedule.` }); return; }
-    if (cta==="Registered") { setBtnStates(b=>({...b,[item.id]:"Register"})); toast({ type:"warning", title:"Registration cancelled", message:"You've been removed from this session." }); return; }
+    if (cta==="Register") { setScheduleRegistrations(r=>({...r,[item.id]:true})); toast({ type:"success", title:"Registered! 🎉", message:`Added "${item.title.slice(0,40)}…" to your schedule.` }); return; }
     if (cta==="Remind Me") { setBtnStates(b=>({...b,[item.id]:"Reminded ✓"})); toast({ type:"success", title:"Reminder set! 🔔", message:`We'll notify you before "${item.title.slice(0,40)}…" starts.` }); return; }
     if (cta==="Reminded ✓") { setBtnStates(b=>({...b,[item.id]:"Remind Me"})); toast({ type:"info", message:"Reminder removed." }); return; }
   }
 
   function ctaVariant(cta) {
-    if (cta==="Registered") return "primary";
     if (cta==="Reminded ✓") return "success";
     if (cta==="Remind Me"||cta==="Register") return "primary";
     return "outline";
@@ -1439,11 +1447,16 @@ function SchedulePage({ onOpenSession, toast }) {
                     <Icon name="warning-circle" size={13} color={C.gray400}/>
                     Recording unavailable
                   </div>
+                ) : cta==="Registered" ? (
+                  <div style={{ width:34, height:34, borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", display:"flex", alignItems:"center", justifyContent:"center" }}
+                    title="Registered">
+                    <Icon name="bell" size={15} color={C.primary}/>
+                  </div>
                 ) : (
                 <Btn variant={ctaVariant(cta)} onClick={()=>handleCta(item)} size="sm">
                   {(cta==="Remind Me"||cta==="Reminded ✓") && <Icon name="bell" size={13} color={cta==="Reminded ✓"?C.success:"#fff"}/>}
                   {(cta==="Watch Again"||cta==="Resume Lesson"||cta==="Watch Recording") && <Icon name="play" size={13} color={C.gray600}/>}
-                  {(cta==="Register"||cta==="Registered") && <Icon name="check-circle" size={13} color={cta==="Registered"?"#fff":C.primary}/>}
+                  {cta==="Register" && <Icon name="bell" size={13} color={C.primary}/>}
                   {cta}
                 </Btn>
                 )}
@@ -1452,9 +1465,6 @@ function SchedulePage({ onOpenSession, toast }) {
                     style={{ width:30, height:30, borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
                     <Icon name="calendar" size={14} color={C.gray500}/>
                   </button>
-                )}
-                {cta==="Registered" && (
-                  <span style={{ fontSize:12, color:C.error, cursor:"pointer" }} onClick={()=>handleCta(item)}>Cancel</span>
                 )}
               </div>
             </div>
@@ -5805,6 +5815,7 @@ export default function App() {
   /* ── Enrolled sessions (pre-seeded with sessions that have progress) ── */
   const [enrolledIds, setEnrolledIds] = useState(new Set([1, 2, 3]));
   const [userName, setUserName] = useState("Alex Johnson");
+  const [scheduleRegistrations, setScheduleRegistrations] = useState({});
 
   function enroll(sessionId) {
     setEnrolledIds(prev => new Set([...prev, sessionId]));
@@ -5870,8 +5881,8 @@ export default function App() {
       if (page==="admin-analytics") return <AnalyticsPage onEditSession={openEdit}/>;
     }
     if (page==="dashboard") return <Dashboard onNavigate={nav} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll}/>;
-    if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav}/>;
-    if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast}/>;
+    if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
+    if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
     if (page==="community") return <CommunityPage toast={toast}/>;
     if (page==="rewards")   return <RewardsPage toast={toast}/>;
