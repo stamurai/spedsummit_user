@@ -5795,7 +5795,7 @@ function LandingPage({ onGetStarted }) {
           </p>
           <div style={{ display:"flex", gap:16, justifyContent:"center", flexWrap:"wrap" }}>
             {/* Facebook */}
-            <button style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 28px", background:"#1877f2", color:"#fff", border:"none", borderRadius:40, fontSize:16, fontWeight:700, cursor:"pointer", transition:"opacity .15s" }}
+            <button style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 28px", background:"#1877f2", color:"#fff", border:"none", borderRadius:14, fontSize:16, fontWeight:700, cursor:"pointer", transition:"opacity .15s" }}
               onMouseEnter={e=>e.currentTarget.style.opacity="0.88"}
               onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
               Join the Facebook Group
@@ -5804,7 +5804,7 @@ function LandingPage({ onGetStarted }) {
               </svg>
             </button>
             {/* Instagram */}
-            <button style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 28px", background:"linear-gradient(135deg,#e1306c,#f77737)", color:"#fff", border:"none", borderRadius:40, fontSize:16, fontWeight:700, cursor:"pointer", transition:"opacity .15s" }}
+            <button style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 28px", background:"linear-gradient(135deg,#e1306c,#f77737)", color:"#fff", border:"none", borderRadius:14, fontSize:16, fontWeight:700, cursor:"pointer", transition:"opacity .15s" }}
               onMouseEnter={e=>e.currentTarget.style.opacity="0.88"}
               onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
               Follow on Instagram
