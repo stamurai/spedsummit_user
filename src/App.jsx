@@ -1327,7 +1327,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
         {liveSessions.length > 0 && (
           <div style={{ marginBottom:28 }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
-              <span style={{ fontSize:14, fontWeight:800, color:C.gray900 }}>Live Now</span>
+              <span style={{ fontSize:14, fontWeight:800, color:C.gray900 }}>{season.name}</span>
               <span style={{ fontSize:11, fontWeight:700, color:"#fff", background:"#10b981", padding:"2px 8px", borderRadius:99 }}>● LIVE</span>
             </div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16 }}>
@@ -1339,7 +1339,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
         {/* Past */}
         {pastSessions.length > 0 && (
           <div style={{ marginBottom:28 }}>
-            <div style={{ fontSize:14, fontWeight:800, color:C.gray900, marginBottom:14 }}>Sessions</div>
+            <div style={{ fontSize:14, fontWeight:800, color:C.gray900, marginBottom:14 }}>{season.name}</div>
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
               {pastSessions.map(s => {
                 const avail = SESSION_AVAILABILITY[s.id];
