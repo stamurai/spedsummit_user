@@ -189,7 +189,7 @@ const THUMB_PHOTOS = [
   "photo-1544027993-37dbfe43562a", // communication/AAC
 ];
 
-function SessionThumb({ id = 1, height = 160, overlay = false }) {
+function SessionThumb({ id = 1, height = 160, overlay = false, noPlayHover = false }) {
   const photo = THUMB_PHOTOS[(id - 1) % THUMB_PHOTOS.length];
   const src = `https://images.unsplash.com/${photo}?w=640&h=360&fit=crop&auto=format`;
   const [hov, setHov] = useState(false);
@@ -198,7 +198,7 @@ function SessionThumb({ id = 1, height = 160, overlay = false }) {
       style={{ width:"100%", height, position:"relative", overflow:"hidden", background:"#e5e7eb" }}>
       <img src={src} alt="" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}/>
       {overlay && <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.32)", backdropFilter:"blur(1px)" }}/>}
-      {!overlay && hov && (
+      {!overlay && !noPlayHover && hov && (
         <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.15)", transition:"opacity .15s" }}>
           <div style={{ width:44, height:44, borderRadius:"50%", background:"rgba(255,255,255,0.22)", backdropFilter:"blur(4px)", border:"2px solid rgba(255,255,255,0.5)", display:"flex", alignItems:"center", justifyContent:"center" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
@@ -1412,7 +1412,7 @@ function SchedulePage({ onOpenSession, toast }) {
 
               {/* Thumbnail */}
               <div style={{ width:100, height:64, borderRadius:10, overflow:"hidden", flexShrink:0 }}>
-                <SessionThumb id={item.id} height={64}/>
+                <SessionThumb id={item.id} height={64} noPlayHover/>
               </div>
 
               {/* Content */}
