@@ -886,9 +886,18 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
   const [cardHov, setCardHov] = useState(false);
   const cardClickable = !cta.disabled;
 
+  function handleCardClick() {
+    if (showAssessmentCTA && assessBtn) {
+      if (qs === "passed") onCertificateClick && onCertificateClick(session);
+      else onAssessmentClick && onAssessmentClick(session);
+    } else if (cardClickable) {
+      onClick(session);
+    }
+  }
+
   return (
     <div
-      onClick={() => cardClickable && onClick(session)}
+      onClick={handleCardClick}
       onMouseEnter={()=>setCardHov(true)}
       onMouseLeave={()=>setCardHov(false)}
       style={{ background:C.white, borderRadius:14, overflow:"hidden",
