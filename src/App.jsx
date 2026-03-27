@@ -2492,7 +2492,14 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
                       <div style={{ fontSize:13, fontWeight:600, color:C.gray800, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{l.title}</div>
                       <div style={{ fontSize:12, color:C.gray400 }}>{l.questions} questions</div>
                     </div>
-                    <span style={{ fontSize:11, fontWeight:700, color:st.color, background:st.bg, padding:"3px 9px", borderRadius:99, whiteSpace:"nowrap" }}>{st.label}</span>
+                    {l.status === "completed" ? (
+                      <button onClick={()=>alert("Certificate download will trigger here in production!")}
+                        style={{ padding:"7px 14px", borderRadius:8, border:"none", background:C.primary, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
+                        <Icon name="download" size={13} color="#fff"/> Download Certificate
+                      </button>
+                    ) : (
+                      <span style={{ fontSize:11, fontWeight:600, color:st.color, background:st.bg, padding:"4px 10px", borderRadius:99, whiteSpace:"nowrap" }}>{st.label}</span>
+                    )}
                   </div>
                 );
               })}
