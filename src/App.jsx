@@ -562,7 +562,7 @@ function SpedLogo({ height = 34 }) {
 const SEARCH_PAGES = [
   { id:"dashboard",        label:"Dashboard",    icon:"house",       type:"page" },
   { id:"schedules",        label:"Schedules",    icon:"calendar",    type:"page" },
-  { id:"rewards",          label:"Rewards",      icon:"gift",        type:"page" },
+  { id:"certifications",   label:"Certifications", icon:"certificate", type:"page" },
   { id:"profile",          label:"My Profile",   icon:"user-circle", type:"page" },
 ];
 
@@ -795,7 +795,7 @@ function Sidebar({ active, onChange, isAdmin }) {
     { id:"dashboard", icon:"house",        label:"Dashboard" },
     { id:"sessions",  icon:"play-circle",  label:"Sessions"  },
     { id:"schedules", icon:"calendar",     label:"Schedules" },
-    { id:"rewards",   icon:"gift",         label:"Rewards"   },
+    { id:"certifications", icon:"certificate", label:"Certifications" },
   ];
   const adminNav = [
     { id:"admin-overview",  icon:"house",       label:"Overview"    },
@@ -2436,49 +2436,139 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    REWARDS
 ───────────────────────────────────────────────────────────────────────────── */
-function RewardsPage({ toast }) {
-  const badges = [
-    {icon:"star",name:"First Session",earned:true,desc:"Complete your first session"},
-    {icon:"fire",name:"7-Day Streak",earned:true,desc:"Log in 7 days in a row"},
-    {icon:"article",name:"Knowledge Seeker",earned:true,desc:"Complete 3 quizzes"},
-    {icon:"heart",name:"Top Contributor",earned:false,desc:"Get 50 community likes"},
-    {icon:"medal",name:"Summit Champion",earned:false,desc:"Complete all sessions"},
-    {icon:"student",name:"Mentor",earned:false,desc:"Answer 10 community questions"},
-  ];
-  const emojiMap = {star:"⭐",fire:"🔥",article:"📚",heart:"❤️",medal:"🏆",student:"🎓"};
-  return (
-    <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:22 }}>
-        <div>
-          <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900, display:"flex", alignItems:"center", gap:8 }}><Icon name="gift" size={22} color={C.primary}/>Your Rewards</h1>
-          <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>Track achievements and redeem your points.</p>
+function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertificateClick }) {
+  const [activeSeason, setActiveSeason] = useState(null);
+
+  const totalEarned = SEASONS.reduce((acc, season) => {
+    return acc + season.sessionIds.filter(id => quizStates[id]?.status === "passed").length;
+  }, 0);
+
+  /* ── Season Detail ── */
+  if (activeSeason) {
+    const season = SEASONS.find(s => s.id === activeSeason);
+    const sessions = SESSIONS.filter(s => season.sessionIds.includes(s.id));
+
+    return (
+      <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
+        <button onClick={()=>setActiveSeason(null)}
+          style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", color:C.gray500, fontSize:14, cursor:"pointer", marginBottom:20, padding:"4px 0" }}>
+          <Icon name="arrow-left" size={16} color={C.gray500}/> Certifications
+        </button>
+
+        <h2 style={{ margin:"0 0 18px", fontSize:18, fontWeight:800, color:C.gray900 }}>{season.name}</h2>
+
+        <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+          {sessions.map(s => {
+            const qs = quizStates[s.id];
+            const passed  = qs?.status === "passed";
+            const inProg  = qs?.status === "in-progress" || qs?.status === "failed";
+            const hasQuiz = !!SESSION_QUIZZES[s.id];
+
+            let statusEl;
+            if (passed) {
+              statusEl = (
+                <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                  <span style={{ fontSize:11, fontWeight:700, color:C.success, background:C.successLight, padding:"3px 9px", borderRadius:99, whiteSpace:"nowrap" }}>
+                    <Icon name="check-circle" size={11} color={C.success}/> Earned
+                  </span>
+                  <button onClick={()=>onCertificateClick && onCertificateClick(s)}
+                    style={{ padding:"7px 14px", borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", color:C.primary, fontSize:12, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap", display:"flex", alignItems:"center", gap:5 }}>
+                    <Icon name="certificate" size={13} color={C.primary}/> View
+                  </button>
+                </div>
+              );
+            } else if (inProg) {
+              statusEl = <span style={{ fontSize:12, fontWeight:600, color:C.warning, background:"#fffbeb", padding:"5px 11px", borderRadius:99, border:`1px solid #fde68a`, whiteSpace:"nowrap" }}>In Progress</span>;
+            } else if (!hasQuiz) {
+              statusEl = <span style={{ fontSize:12, color:C.gray400 }}>No assessment</span>;
+            } else {
+              statusEl = <span style={{ fontSize:12, fontWeight:600, color:C.gray400, background:C.gray100, padding:"5px 11px", borderRadius:99, whiteSpace:"nowrap" }}>Not started</span>;
+            }
+
+            return (
+              <div key={s.id} style={{ background:C.white, borderRadius:14, border:`1px solid ${passed ? C.primaryBorder : C.gray200}`, display:"flex", alignItems:"center", gap:14, padding:"14px 18px" }}>
+                <div style={{ position:"relative", width:72, height:50, borderRadius:8, overflow:"hidden", flexShrink:0 }}>
+                  <SessionThumb id={s.id} height={50} noPlayHover/>
+                  {passed && (
+                    <div style={{ position:"absolute", inset:0, background:"rgba(16,185,129,0.18)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      <Icon name="medal" size={18} color={C.success}/>
+                    </div>
+                  )}
+                </div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
+                  <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{s.instructor}</div>
+                </div>
+                {statusEl}
+              </div>
+            );
+          })}
         </div>
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(180px, 1fr))", gap:14, marginBottom:28 }}>
-        {[{label:"Total Points",val:"320",icon:"star",color:C.primary},{label:"Day Streak",val:"12",icon:"fire",color:C.error},{label:"Badges Earned",val:"3/6",icon:"medal",color:C.warning}].map(s=>(
-          <div key={s.label} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"18px 20px", display:"flex", alignItems:"center", gap:14 }}>
-            <div style={{ width:46,height:46,borderRadius:12,background:s.color+"18",display:"flex",alignItems:"center",justifyContent:"center" }}>
-              <Icon name={s.icon} size={22} color={s.color}/>
-            </div>
-            <div>
-              <div style={{ fontSize:24, fontWeight:900, color:s.color }}>{s.val}</div>
-              <div style={{ fontSize:12, color:C.gray400 }}>{s.label}</div>
-            </div>
-          </div>
-        ))}
+    );
+  }
+
+  /* ── Season Overview ── */
+  return (
+    <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
+      <div style={{ marginBottom:24 }}>
+        <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>YOUR ACHIEVEMENTS</div>
+        <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900 }}>Certifications</h1>
+        <p style={{ margin:0, color:C.gray500, fontSize:14 }}>
+          {totalEarned > 0
+            ? `You've earned ${totalEarned} certificate${totalEarned > 1 ? "s" : ""} so far. Keep going!`
+            : "Complete sessions and pass assessments to earn certificates."}
+        </p>
       </div>
-      <h2 style={{ margin:"0 0 16px", fontSize:16, fontWeight:800, color:C.gray900 }}>Badges</h2>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(160px, 1fr))", gap:12 }}>
-        {badges.map(b=>(
-          <div key={b.name} onClick={()=>!b.earned&&toast({type:"info",message:`Complete requirements to earn "${b.name}"`})}
-            style={{ background:C.white, borderRadius:14, border:`1px solid ${b.earned?C.primaryBorder:C.gray200}`, padding:"18px 16px", textAlign:"left", opacity:b.earned?1:.55, cursor:b.earned?"default":"pointer", transition:"all .2s" }}
-            onMouseEnter={e=>{ if(!b.earned) e.currentTarget.style.opacity="0.7"; }} onMouseLeave={e=>{ if(!b.earned) e.currentTarget.style.opacity="0.55"; }}>
-            <div style={{ fontSize:36, marginBottom:8 }}>{emojiMap[b.icon]}</div>
-            <div style={{ fontWeight:700, fontSize:14, color:C.gray900, marginBottom:4 }}>{b.name}</div>
-            <div style={{ fontSize:12, color:C.gray400, lineHeight:1.4 }}>{b.desc}</div>
-            {b.earned && <div style={{ marginTop:10, display:"flex", alignItems:"center", justifyContent:"center", gap:4, fontSize:12, color:C.success, fontWeight:700 }}><Icon name="check-circle" size={12} color={C.success}/>Earned</div>}
-          </div>
-        ))}
+
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))", gap:20 }}>
+        {SEASONS.map(season => {
+          const sessions   = SESSIONS.filter(s => season.sessionIds.includes(s.id));
+          const withQuiz   = sessions.filter(s => !!SESSION_QUIZZES[s.id]);
+          const earned     = withQuiz.filter(s => quizStates[s.id]?.status === "passed").length;
+          const total      = withQuiz.length;
+          const pct        = total > 0 ? Math.round((earned / total) * 100) : 0;
+          const allEarned  = total > 0 && earned === total;
+          const firstSession = sessions[0];
+
+          return (
+            <div key={season.id} onClick={()=>setActiveSeason(season.id)}
+              style={{ background:C.white, borderRadius:16, border:`1px solid ${allEarned ? C.primaryBorder : C.gray200}`, overflow:"hidden", cursor:"pointer" }}>
+
+              {/* Thumbnail */}
+              <div style={{ position:"relative", width:"100%", paddingBottom:"52%", background:"#1f2937" }}>
+                {firstSession && (
+                  <div style={{ position:"absolute", inset:0 }}>
+                    <SessionThumb id={firstSession.id} height="100%" noPlayHover/>
+                    <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.1) 60%, transparent 100%)" }}/>
+                  </div>
+                )}
+                {allEarned && (
+                  <div style={{ position:"absolute", top:10, left:10, background:"rgba(16,185,129,0.92)", backdropFilter:"blur(4px)", borderRadius:99, padding:"3px 10px", display:"flex", alignItems:"center", gap:5 }}>
+                    <Icon name="medal" size={12} color="#fff"/>
+                    <span style={{ fontSize:11, fontWeight:700, color:"#fff" }}>ALL EARNED</span>
+                  </div>
+                )}
+                <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"12px 14px" }}>
+                  <div style={{ fontSize:17, fontWeight:900, color:"#fff", letterSpacing:-.2 }}>{season.name}</div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div style={{ padding:"14px 16px" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+                  <span style={{ fontSize:13, fontWeight:600, color: earned > 0 ? C.success : C.gray400 }}>
+                    {earned}/{total} certificate{total !== 1 ? "s" : ""} earned
+                  </span>
+                  <span style={{ fontSize:12, fontWeight:700, color: allEarned ? C.success : C.primary }}>{pct}%</span>
+                </div>
+                <div style={{ background:C.gray100, borderRadius:99, height:6, overflow:"hidden" }}>
+                  <div style={{ width:`${pct}%`, background: allEarned ? C.success : C.primary, height:"100%", borderRadius:99, transition:"width 0.5s ease" }}/>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -6043,7 +6133,7 @@ export default function App() {
     if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
     if (page==="community") return <CommunityPage toast={toast}/>;
-    if (page==="rewards")   return <RewardsPage toast={toast}/>;
+    if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick}/>;
     if (page==="profile")   return <ProfilePage toast={toast} userName={userName} onNameChange={setUserName}/>;
     return null;
   }
