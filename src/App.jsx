@@ -2512,6 +2512,7 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange }) {
 function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertificateClick, userName = "Alex Johnson" }) {
   const [activeSeason,  setActiveSeason]  = useState(null);
   const [activeSession, setActiveSession] = useState(null);
+  const [shareCert, setShareCert] = useState(null); // { certUrl, sessionTitle }
 
   const totalEarned = SEASONS.reduce((acc, season) => {
     return acc + season.sessionIds.filter(id => quizStates[id]?.status === "passed").length;
@@ -2533,6 +2534,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
     }
 
     return (
+      <>
       <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
         <button onClick={()=>setActiveSession(null)}
           style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", color:C.gray500, fontSize:14, cursor:"pointer", marginBottom:20, padding:"4px 0" }}>
@@ -2566,10 +2568,16 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
                       <div style={{ fontSize:12, color:C.gray400 }}>{l.questions} questions</div>
                     </div>
                     {l.status === "completed" ? (
-                      <button onClick={()=>downloadCertificate({ recipientName:userName, sessionTitle:session.title, instructor:session.instructor, quizTitle:l.title })}
-                        style={{ padding:"7px 14px", borderRadius:8, border:"none", background:C.primary, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
-                        <Icon name="download" size={13} color="#fff"/> Download Certificate
-                      </button>
+                      <div style={{ display:"flex", gap:6, flexShrink:0 }}>
+                        <button onClick={() => { const certId = `SS-${session.id}-${l.id}`; setShareCert({ certUrl:`spedsummit.com/cert/${certId}`, sessionTitle:l.title }); }}
+                          style={{ padding:"7px 12px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray600, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
+                          <Icon name="share" size={13} color={C.gray500}/> Share
+                        </button>
+                        <button onClick={()=>downloadCertificate({ recipientName:userName, sessionTitle:session.title, instructor:session.instructor, quizTitle:l.title })}
+                          style={{ padding:"7px 12px", borderRadius:8, border:"none", background:C.primary, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
+                          <Icon name="download" size={13} color="#fff"/> Download
+                        </button>
+                      </div>
                     ) : (
                       <span style={{ fontSize:11, fontWeight:600, color:st.color, background:st.bg, padding:"4px 10px", borderRadius:99, whiteSpace:"nowrap" }}>{st.label}</span>
                     )}
@@ -2600,6 +2608,10 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
                     style={{ padding:"8px 14px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray600, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
                     <Icon name="certificate" size={13} color={C.gray500}/> View
                   </button>
+                  <button onClick={() => { const certId = `SS-${session.id}${qs?.score}-2024`; setShareCert({ certUrl:`spedsummit.com/cert/${certId.toLowerCase()}`, sessionTitle:session.title }); }}
+                    style={{ padding:"8px 14px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray600, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
+                    <Icon name="share" size={13} color={C.gray500}/> Share
+                  </button>
                   <button onClick={()=>downloadCertificate({ recipientName:userName, sessionTitle:session.title, instructor:session.instructor, duration:session.duration, score:qs?.score })}
                     style={{ padding:"8px 14px", borderRadius:8, border:"none", background:C.primary, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
                     <Icon name="download" size={13} color="#fff"/> Download
@@ -2614,6 +2626,15 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
           </>
         )}
       </div>
+
+      {shareCert && (
+        <ShareCertificateModal
+          certUrl={shareCert.certUrl}
+          sessionTitle={shareCert.sessionTitle}
+          onClose={() => setShareCert(null)}
+        />
+      )}
+    </>
     );
   }
 
