@@ -2477,14 +2477,14 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
 
         {/* Quick stats */}
         <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-          <div style={{ background:"linear-gradient(135deg,#1e3a8a,#1e40af)", borderRadius:14, padding:20, color:"#fff", flex:1 }}>
+          <div style={{ background:"linear-gradient(135deg,#eef2ff,#e0e7ff)", borderRadius:14, padding:20, border:"1px solid #c7d2fe", flex:1 }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
-              <Icon name="medal" size={18} color="#fbbf24"/>
-              <span style={{ fontWeight:800, fontSize:14 }}>Instructor Growth Program</span>
+              <Icon name="medal" size={18} color="#f59e0b"/>
+              <span style={{ fontWeight:800, fontSize:14, color:"#1e1b4b" }}>Instructor Growth Program</span>
             </div>
-            <p style={{ margin:"0 0 12px", fontSize:12, opacity:.85, lineHeight:1.6 }}>You're almost at "Gold Level" — get 15% off fees and priority placement.</p>
-            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5, fontSize:12, fontWeight:600 }}><span>Reach Gold</span><span>70%</span></div>
-            <ProgressBar value={70} color="#fbbf24" height={5}/>
+            <p style={{ margin:"0 0 12px", fontSize:12, color:"#4b5563", lineHeight:1.6 }}>You're almost at "Gold Level" — get 15% off fees and priority placement.</p>
+            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5, fontSize:12, fontWeight:600, color:"#374151" }}><span>Reach Gold</span><span>70%</span></div>
+            <ProgressBar value={70} color="#f59e0b" height={5}/>
           </div>
           <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:18 }}>
             <div style={{ display:"flex", gap:10, marginBottom:8 }}>
