@@ -5761,11 +5761,8 @@ function LandingPage({ onGetStarted }) {
             <div style={{ position:"absolute", bottom:-30, left:-30, width:120, height:120, borderRadius:"50%", background:"rgba(54,153,255,0.06)" }}/>
 
             {/* Logo row */}
-            <div style={{ display:"inline-flex", alignItems:"center", gap:12, marginBottom:20, background:"#fff", padding:"10px 20px", borderRadius:14, boxShadow:"0 2px 12px rgba(0,0,0,0.07)" }}>
-              <div style={{ width:32, height:32, borderRadius:8, background:"#3699ff", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-              </div>
-              <span style={{ fontSize:16, fontWeight:900, color:"#181c32", letterSpacing:.3 }}>AbleSpace</span>
+            <div style={{ display:"inline-flex", alignItems:"center", marginBottom:20, background:"#fff", padding:"10px 20px", borderRadius:14, boxShadow:"0 2px 12px rgba(0,0,0,0.07)" }}>
+              <img src="/ablespace.svg" alt="AbleSpace" style={{ height:36, display:"block" }}/>
             </div>
 
             <h2 style={{ margin:"0 0 12px", fontSize:26, fontWeight:900, color:"#181c32" }}>Sponsored by AbleSpace</h2>
