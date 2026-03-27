@@ -302,8 +302,8 @@ function Avatar({ name, size=36 }) {
   return <div style={{ width:size, height:size, borderRadius:"50%", background:c, display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", fontWeight:700, fontSize:size*0.36, flexShrink:0, letterSpacing:0.5 }}>{initials}</div>;
 }
 
-function ProgressBar({ value, color=C.primary, height=4 }) {
-  return <div style={{ background:C.gray200, borderRadius:99, height, overflow:"hidden" }}><div style={{ width:`${value}%`, background:color, height:"100%", borderRadius:99, transition:"width 0.5s ease" }}/></div>;
+function ProgressBar({ value, color=C.primary, height=4, trackColor=C.gray200 }) {
+  return <div style={{ background:trackColor, borderRadius:99, height, overflow:"hidden" }}><div style={{ width:`${value}%`, background:color, height:"100%", borderRadius:99, transition:"width 0.5s ease" }}/></div>;
 }
 
 function Badge({ label, color, bg, size=10 }) {
@@ -2484,7 +2484,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
             </div>
             <p style={{ margin:"0 0 12px", fontSize:12, color:"#4b5563", lineHeight:1.6 }}>You're almost at "Gold Level" — get 15% off fees and priority placement.</p>
             <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5, fontSize:12, fontWeight:600, color:"#374151" }}><span>Reach Gold</span><span>70%</span></div>
-            <ProgressBar value={70} color="#f59e0b" height={5}/>
+            <ProgressBar value={70} color={C.primary} height={5} trackColor="#fff"/>
           </div>
           <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:18 }}>
             <div style={{ display:"flex", gap:10, marginBottom:8 }}>
