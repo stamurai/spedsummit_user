@@ -5693,7 +5693,7 @@ function LandingPage({ onGetStarted }) {
       </section>
 
       {/* ── Giveaways ── */}
-      <section style={{ padding:"72px 48px", background:"#fdf8f4", borderTop:"1px solid #f0e8df" }}>
+      <section style={{ padding:"72px 48px", background:"#fff", borderTop:"1px solid #f0f0f0" }}>
         <div style={{ maxWidth:1100, margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 1fr", gap:64, alignItems:"center" }}>
           {/* Left */}
           <div>
