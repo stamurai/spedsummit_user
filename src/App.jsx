@@ -2477,7 +2477,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
 
         {/* Quick stats */}
         <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-          <div style={{ background:"linear-gradient(135deg,#eef2ff,#e0e7ff)", borderRadius:14, padding:20, border:"1px solid #c7d2fe", flex:1 }}>
+          <div style={{ background:"linear-gradient(135deg,#eef2ff,#e0e7ff)", borderRadius:14, padding:20, border:"1px solid #c7d2fe" }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
               <Icon name="medal" size={18} color="#f59e0b"/>
               <span style={{ fontWeight:800, fontSize:14, color:"#1e1b4b" }}>Instructor Growth Program</span>
