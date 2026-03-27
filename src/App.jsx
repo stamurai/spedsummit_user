@@ -1016,9 +1016,9 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 /* ─────────────────────────────────────────────────────────────────────────────
    DASHBOARD
 ───────────────────────────────────────────────────────────────────────────── */
-function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll }) {
+function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{} }) {
   const enrolledSessions  = SESSIONS.filter(s => enrolledIds.has(s.id) && getSessionState(s.id) === "live");
-  const upcomingEnrolled  = SESSIONS.filter(s => enrolledIds.has(s.id) && getSessionState(s.id) === "upcoming");
+  const upcomingSessions  = SESSIONS.filter(s => getSessionState(s.id) === "upcoming");
   const discoverSessions  = SESSIONS.filter(s => !enrolledIds.has(s.id) && getSessionState(s.id) === "live");
   const completed = enrolledSessions.filter(s=>s.status==="completed").length;
   const total = enrolledSessions.length;
@@ -1061,7 +1061,7 @@ function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentC
               <Icon name="timer" size={12} color="#92400e"/> WATCHED 4 DAYS AGO
             </div>
             <h1 style={{ margin:"0 0 6px", fontSize:26, fontWeight:900, color:C.gray900 }}>Welcome back, <span style={{ color:C.primary }}>Alex!</span></h1>
-            <p style={{ margin:"0 0 18px", color:C.gray500, fontSize:14, lineHeight:1.6 }}>You've completed <strong style={{ color:C.gray800 }}>{completed} of {enrolledSessions.length}</strong> live sessions{upcomingEnrolled.length > 0 ? ` · ${upcomingEnrolled.length} upcoming` : ""}. Your next milestone is just one lesson away.</p>
+            <p style={{ margin:"0 0 18px", color:C.gray500, fontSize:14, lineHeight:1.6 }}>You've completed <strong style={{ color:C.gray800 }}>{completed} of {enrolledSessions.length}</strong> live sessions{upcomingSessions.length > 0 ? ` · ${upcomingSessions.length} upcoming` : ""}. Your next milestone is just one lesson away.</p>
             <Btn onClick={() => onOpenSession(SESSIONS[1])}>
               <Icon name="play" size={14} color="#fff"/> Resume Last Session
             </Btn>
@@ -1089,32 +1089,42 @@ function Dashboard({ onNavigate, onOpenSession, toast, quizStates, onAssessmentC
           </div>
         )}
 
-        {/* Upcoming registered sessions */}
-        {upcomingEnrolled.length > 0 && (
+        {/* Upcoming sessions */}
+        {upcomingSessions.length > 0 && (
           <>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
               <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900 }}>
-                Registered — Upcoming
+                Coming Up
                 <span style={{ fontSize:12, fontWeight:700, color:"#2563eb", background:"#dbeafe", padding:"2px 8px", borderRadius:99, marginLeft:8, letterSpacing:.3 }}>UPCOMING</span>
               </h2>
               <Btn variant="ghost" size="sm" onClick={()=>onNavigate("schedules")}>View Schedule <Icon name="caret-right" size={14} color={C.primary}/></Btn>
             </div>
             <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:28 }}>
-              {upcomingEnrolled.map(s => {
+              {upcomingSessions.map(s => {
                 const avail = SESSION_AVAILABILITY[s.id];
                 const releaseLabel = avail?.availableFrom
                   ? new Date(avail.availableFrom).toLocaleString("en-US", { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" })
                   : "Date TBD";
+                const registered = !!scheduleRegistrations[s.id];
                 return (
                   <div key={s.id} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:14, padding:"14px 16px" }}>
-                    <div style={{ width:48, height:48, borderRadius:10, background:"#eff6ff", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                      <Icon name="calendar" size={22} color="#2563eb"/>
+                    <div style={{ width:80, height:52, borderRadius:8, overflow:"hidden", flexShrink:0 }}>
+                      <SessionThumb id={s.id} height={52} noPlayHover/>
                     </div>
                     <div style={{ flex:1, minWidth:0 }}>
                       <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
                       <div style={{ fontSize:12, color:"#2563eb", fontWeight:600, marginTop:2 }}>{releaseLabel}</div>
                     </div>
-                    <span style={{ fontSize:12, fontWeight:700, color:"#059669", background:"#d1fae5", padding:"4px 10px", borderRadius:99, flexShrink:0 }}>Registered</span>
+                    {registered ? (
+                      <div style={{ width:34, height:34, borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }} title="Registered">
+                        <Icon name="bell" size={15} color={C.primary}/>
+                      </div>
+                    ) : (
+                      <button onClick={()=>{ setScheduleRegistrations(r=>({...r,[s.id]:true})); toast({ type:"success", title:"Registered! 🎉", message:`Added "${s.title.slice(0,40)}…" to your schedule.` }); }}
+                        style={{ padding:"8px 14px", borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", color:C.primary, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap" }}>
+                        <Icon name="bell" size={13} color={C.primary}/> Register
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -5941,7 +5951,7 @@ export default function App() {
       if (page==="admin-edit" && editingSession) return <AdminEditSession session={editingSession} onBack={()=>nav("admin-sessions")} toast={toast}/>;
       if (page==="admin-analytics") return <AnalyticsPage onEditSession={openEdit}/>;
     }
-    if (page==="dashboard") return <Dashboard onNavigate={nav} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll}/>;
+    if (page==="dashboard") return <Dashboard onNavigate={nav} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
     if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
     if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
