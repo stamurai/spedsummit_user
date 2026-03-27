@@ -1362,55 +1362,69 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
       <div style={{ marginBottom:28 }}>
         <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>FEATURED SERIES</div>
         <h1 style={{ margin:"0 0 4px", fontSize:24, fontWeight:900, color:C.gray900 }}>Summit Sessions</h1>
-        <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>Browse sessions by season. Each season is a curated collection of expert-led content.</p>
+        <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>Browse sessions by season — each season is a curated collection of expert-led content.</p>
       </div>
 
-      <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))", gap:20 }}>
         {SEASONS.map(season => {
-          const sessions = SESSIONS.filter(s => season.sessionIds.includes(s.id));
+          const sessions     = SESSIONS.filter(s => season.sessionIds.includes(s.id));
           const liveCount     = sessions.filter(s => getSessionState(s.id) === "live").length;
           const upcomingCount = sessions.filter(s => getSessionState(s.id) === "upcoming").length;
           const pastCount     = sessions.filter(s => getSessionState(s.id) === "past").length;
-          const statusLabel   = liveCount > 0 ? { label:"● LIVE NOW", color:"#fff", bg:"#10b981" }
-                              : upcomingCount > 0 ? { label:"UPCOMING", color:"#2563eb", bg:"#dbeafe" }
+          const statusLabel   = liveCount > 0     ? { label:"● LIVE NOW", color:"#fff",    bg:"#10b981" }
+                              : upcomingCount > 0 ? { label:"UPCOMING",   color:"#2563eb", bg:"#dbeafe" }
                               : { label:"PAST SEASON", color:"#6b7280", bg:"#f3f4f6" };
+          const firstSession  = sessions[0];
+
           return (
             <div key={season.id}
               onClick={()=>setActiveSeason(season.id)}
-              style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"20px 24px", cursor:"pointer", display:"flex", alignItems:"center", gap:20, transition:"box-shadow .15s, transform .15s" }}
-              onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 4px 20px rgba(0,0,0,0.08)"; e.currentTarget.style.transform="translateY(-1px)"; }}
+              style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, overflow:"hidden", cursor:"pointer", transition:"box-shadow .15s, transform .15s" }}
+              onMouseEnter={e=>{ e.currentTarget.style.boxShadow="0 8px 28px rgba(0,0,0,0.10)"; e.currentTarget.style.transform="translateY(-2px)"; }}
               onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform=""; }}>
 
-              {/* Season icon */}
-              <div style={{ width:56, height:56, borderRadius:14, background:season.bg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:28, flexShrink:0 }}>
-                {season.icon}
-              </div>
-
-              {/* Thumbnail strip */}
-              <div style={{ display:"flex", gap:4, flexShrink:0 }}>
-                {sessions.slice(0,3).map((s,i) => (
-                  <div key={s.id} style={{ width:60, height:42, borderRadius:7, overflow:"hidden", opacity: i===2 && sessions.length>3 ? 0.5 : 1 }}>
-                    <SessionThumb id={s.id} height={42} noPlayHover/>
+              {/* ── Stacked playlist thumbnail ── */}
+              <div style={{ position:"relative", width:"100%", paddingBottom:"56.25%", background:"#1f2937" }}>
+                {/* Back stack layers */}
+                {sessions.length > 1 && (
+                  <div style={{ position:"absolute", bottom:-4, left:"6%", right:"6%", height:"100%", borderRadius:10, overflow:"hidden", opacity:0.5, transform:"scale(0.94)" }}>
+                    <SessionThumb id={sessions[1]?.id || sessions[0].id} height="100%" noPlayHover/>
                   </div>
-                ))}
+                )}
+                {/* Main thumbnail */}
+                <div style={{ position:"absolute", inset:0, borderRadius:0, overflow:"hidden" }}>
+                  {firstSession && <SessionThumb id={firstSession.id} height="100%" noPlayHover/>}
+                  {/* Dark overlay */}
+                  <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.15) 55%, transparent 100%)" }}/>
+                  {/* Status badge top-left */}
+                  <div style={{ position:"absolute", top:10, left:10 }}>
+                    <span style={{ fontSize:11, fontWeight:700, color:statusLabel.color, background:statusLabel.bg, padding:"3px 9px", borderRadius:99 }}>{statusLabel.label}</span>
+                  </div>
+                  {/* Session count pill top-right (YouTube style) */}
+                  <div style={{ position:"absolute", top:10, right:10, background:"rgba(0,0,0,0.65)", backdropFilter:"blur(4px)", borderRadius:8, padding:"4px 10px", display:"flex", alignItems:"center", gap:5 }}>
+                    <Icon name="list" size={12} color="#fff"/>
+                    <span style={{ fontSize:12, fontWeight:700, color:"#fff" }}>{sessions.length}</span>
+                  </div>
+                  {/* Season name bottom overlay */}
+                  <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"12px 14px" }}>
+                    <div style={{ fontSize:18, fontWeight:900, color:"#fff", letterSpacing:-.2, textShadow:"0 1px 4px rgba(0,0,0,0.5)" }}>{season.name}</div>
+                    <div style={{ fontSize:12, color:"rgba(255,255,255,0.75)", marginTop:2 }}>{season.tagline}</div>
+                  </div>
+                </div>
               </div>
 
-              {/* Info */}
-              <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
-                  <span style={{ fontSize:16, fontWeight:800, color:C.gray900 }}>{season.name}</span>
-                  <span style={{ fontSize:11, fontWeight:700, color:statusLabel.color, background:statusLabel.bg, padding:"2px 8px", borderRadius:99 }}>{statusLabel.label}</span>
-                </div>
-                <p style={{ margin:"0 0 6px", fontSize:13, color:C.gray500, lineHeight:1.5, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{season.description}</p>
-                <div style={{ display:"flex", gap:14, fontSize:12, color:C.gray400 }}>
-                  <span>{sessions.length} session{sessions.length!==1?"s":""}</span>
-                  {liveCount > 0 && <span style={{ color:"#10b981", fontWeight:600 }}>{liveCount} live</span>}
+              {/* ── Card footer ── */}
+              <div style={{ padding:"14px 16px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                <div style={{ display:"flex", gap:12, fontSize:12, color:C.gray400 }}>
+                  {liveCount > 0     && <span style={{ color:"#10b981", fontWeight:600 }}>● {liveCount} live</span>}
                   {upcomingCount > 0 && <span style={{ color:"#2563eb", fontWeight:600 }}>{upcomingCount} upcoming</span>}
-                  {pastCount > 0 && <span>{pastCount} recorded</span>}
+                  {pastCount > 0     && <span>{pastCount} recorded</span>}
+                  {liveCount === 0 && upcomingCount === 0 && pastCount === 0 && <span>No sessions yet</span>}
+                </div>
+                <div style={{ display:"flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, color:C.primary }}>
+                  View all <Icon name="caret-right" size={13} color={C.primary}/>
                 </div>
               </div>
-
-              <Icon name="caret-right" size={18} color={C.gray400}/>
             </div>
           );
         })}
