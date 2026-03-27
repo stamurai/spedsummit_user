@@ -1498,9 +1498,7 @@ function SchedulePage({ onOpenSession, toast, scheduleRegistrations = {}, setSch
           const monthAb = dateParts ? dateParts[2].toUpperCase().slice(0,3) : "";
           return (
             <div key={item.id}
-              style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:16, padding:"18px 20px", display:"flex", alignItems:"center", gap:16, transition:"box-shadow .15s", opacity: isPast ? 0.82 : 1 }}
-              onMouseEnter={e=>e.currentTarget.style.boxShadow="0 4px 20px rgba(0,0,0,0.08)"}
-              onMouseLeave={e=>e.currentTarget.style.boxShadow="none"}>
+              style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:16, padding:"18px 20px", display:"flex", alignItems:"center", gap:16, opacity: isPast ? 0.82 : 1 }}>
 
               {/* Date block */}
               <div style={{ flexShrink:0, width:52, background: isPast ? C.gray100 : C.primaryLight, borderRadius:12, padding:"8px 0", display:"flex", flexDirection:"column", alignItems:"center", border:`1px solid ${isPast ? C.gray200 : C.primaryBorder}` }}>
