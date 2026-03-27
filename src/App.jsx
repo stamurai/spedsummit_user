@@ -1320,8 +1320,8 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
       <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
         {/* Back + header */}
         <button onClick={()=>changeSeason(null)}
-          style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", color:C.primary, fontSize:13, fontWeight:600, cursor:"pointer", marginBottom:20, padding:0 }}>
-          <Icon name="arrow-left" size={15} color={C.primary}/> Sessions
+          style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", color:C.gray500, fontSize:14, cursor:"pointer", marginBottom:20, padding:"4px 0" }}>
+          <Icon name="arrow-left" size={16} color={C.gray500}/> Sessions
         </button>
 
         {/* Live */}
