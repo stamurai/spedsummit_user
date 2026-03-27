@@ -2482,7 +2482,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
             } else if (!hasQuiz) {
               statusEl = <span style={{ fontSize:12, color:C.gray400 }}>No assessment</span>;
             } else {
-              statusEl = <span style={{ fontSize:12, fontWeight:600, color:C.gray400, background:C.gray100, padding:"5px 11px", borderRadius:99, whiteSpace:"nowrap" }}>Not started</span>;
+              statusEl = <span style={{ fontSize:12, fontWeight:600, color:C.gray400, background:C.gray100, padding:"5px 11px", borderRadius:99, whiteSpace:"nowrap" }}>Not available yet</span>;
             }
 
             return (
