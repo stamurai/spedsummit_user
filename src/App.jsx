@@ -1425,11 +1425,8 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
 
               {/* ── Card footer ── */}
               <div style={{ padding:"14px 16px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                <div style={{ display:"flex", gap:12, fontSize:12, color:C.gray400 }}>
-                  {liveCount > 0     && <span style={{ color:"#10b981", fontWeight:600 }}>● {liveCount} live</span>}
-                  {upcomingCount > 0 && <span style={{ color:"#2563eb", fontWeight:600 }}>{upcomingCount} upcoming</span>}
-                  {pastCount > 0     && <span>{pastCount} recorded</span>}
-                  {liveCount === 0 && upcomingCount === 0 && pastCount === 0 && <span>No sessions yet</span>}
+                <div style={{ fontSize:12, color:C.gray400 }}>
+                  {sessions.length > 0 ? <span>{sessions.length} recorded</span> : <span>No sessions yet</span>}
                 </div>
                 <div style={{ display:"flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, color:C.primary, textDecoration: hov ? "underline" : "none" }}>
                   View all <Icon name="caret-right" size={13} color={C.primary}/>
