@@ -5746,38 +5746,26 @@ function LandingPage({ onGetStarted }) {
       </section>
 
       {/* ── Sponsor: AbleSpace ── */}
-      <section style={{ padding:"64px 48px", background:"#fff", borderTop:"1px solid #f0e8df" }}>
-        <div style={{ maxWidth:700, margin:"0 auto" }}>
-          {/* Sponsor label */}
-          <div style={{ textAlign:"center", marginBottom:28 }}>
-            <span style={{ fontSize:12, fontWeight:700, color:"#7e8299", letterSpacing:1.2, textTransform:"uppercase", background:"#f5f8fa", padding:"4px 14px", borderRadius:99, border:"1px solid #e4e6ef" }}>
-              Proud Sponsor
-            </span>
+      <section style={{ padding:"80px 48px", background:"linear-gradient(135deg,#eef6ff,#f0f9ff)", textAlign:"center", position:"relative", overflow:"hidden" }}>
+        {/* Decorative blobs */}
+        <div style={{ position:"absolute", top:-60, right:-60, width:280, height:280, borderRadius:"50%", background:"rgba(54,153,255,0.08)" }}/>
+        <div style={{ position:"absolute", bottom:-50, left:-50, width:220, height:220, borderRadius:"50%", background:"rgba(54,153,255,0.06)" }}/>
+
+        <div style={{ position:"relative", maxWidth:560, margin:"0 auto" }}>
+          <div style={{ marginBottom:20 }}>
+            <img src="/ablespace.svg" alt="AbleSpace" style={{ height:56, display:"block", margin:"0 auto" }}/>
           </div>
-
-          <div style={{ background:"linear-gradient(135deg,#eef6ff,#f0f9ff)", borderRadius:24, padding:"44px 48px", border:"1px solid #bae6fd", textAlign:"center", position:"relative", overflow:"hidden" }}>
-            {/* Decorative blobs */}
-            <div style={{ position:"absolute", top:-40, right:-40, width:160, height:160, borderRadius:"50%", background:"rgba(54,153,255,0.08)" }}/>
-            <div style={{ position:"absolute", bottom:-30, left:-30, width:120, height:120, borderRadius:"50%", background:"rgba(54,153,255,0.06)" }}/>
-
-            {/* Logo row */}
-            <div style={{ marginBottom:20 }}>
-              <img src="/ablespace.svg" alt="AbleSpace" style={{ height:48, display:"block", margin:"0 auto" }}/>
-            </div>
-
-            <h2 style={{ margin:"0 0 12px", fontSize:26, fontWeight:900, color:"#181c32" }}>Sponsored by AbleSpace</h2>
-            <p style={{ margin:"0 0 28px", fontSize:14, color:"#5e6278", lineHeight:1.7, maxWidth:480, marginLeft:"auto", marginRight:"auto" }}>
-              An IEP Goal Tracking app built for special education professionals. Spend less time on paperwork and more time with your students using AbleSpace.
-            </p>
-
-            <a href="https://ablespace.io" target="_blank" rel="noopener noreferrer"
-              style={{ display:"inline-flex", alignItems:"center", gap:10, padding:"14px 32px", background:"#3699ff", color:"#fff", border:"none", borderRadius:12, fontSize:14, fontWeight:700, cursor:"pointer", textDecoration:"none", transition:"background .15s, transform .15s", boxShadow:"0 4px 16px rgba(54,153,255,0.35)" }}
-              onMouseEnter={e=>{ e.currentTarget.style.background="#187de4"; e.currentTarget.style.transform="translateY(-1px)"; }}
-              onMouseLeave={e=>{ e.currentTarget.style.background="#3699ff"; e.currentTarget.style.transform="none"; }}>
-              Start Using AbleSpace for FREE
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </div>
+          <h2 style={{ margin:"0 0 12px", fontSize:28, fontWeight:900, color:"#181c32" }}>Sponsored by AbleSpace</h2>
+          <p style={{ margin:"0 0 32px", fontSize:14, color:"#5e6278", lineHeight:1.7 }}>
+            An IEP Goal Tracking app built for special education professionals. Spend less time on paperwork and more time with your students using AbleSpace.
+          </p>
+          <a href="https://ablespace.io" target="_blank" rel="noopener noreferrer"
+            style={{ display:"inline-flex", alignItems:"center", gap:10, padding:"14px 32px", background:"#3699ff", color:"#fff", border:"none", borderRadius:12, fontSize:14, fontWeight:700, cursor:"pointer", textDecoration:"none", boxShadow:"0 4px 16px rgba(54,153,255,0.35)" }}
+            onMouseEnter={e=>{ e.currentTarget.style.background="#187de4"; e.currentTarget.style.transform="translateY(-1px)"; }}
+            onMouseLeave={e=>{ e.currentTarget.style.background="#3699ff"; e.currentTarget.style.transform="none"; }}>
+            Start Using AbleSpace for FREE
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
         </div>
       </section>
 
