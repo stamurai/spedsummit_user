@@ -864,21 +864,21 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
         label: "Resume Assessment",
         icon: "article",
         bg: C.primary, color: "#fff", border: "none",
-        action: e => { e.stopPropagation(); onAssessmentClick && onAssessmentClick(session); },
+        action: e => { e.stopPropagation(); onClick(session); onAssessmentClick && onAssessmentClick(session); },
       };
     } else if (qs === "failed") {
       assessBtn = {
         label: "Try Again",
         icon: "arrow-left",
         bg: C.errorLight, color: C.error, border: `1px solid ${C.errorBorder}`,
-        action: e => { e.stopPropagation(); onAssessmentClick && onAssessmentClick(session); },
+        action: e => { e.stopPropagation(); onClick(session); onAssessmentClick && onAssessmentClick(session); },
       };
     } else {
       assessBtn = {
         label: "Take Assessment",
         icon: "article",
         bg: "#1e40af", color: "#fff", border: "none",
-        action: e => { e.stopPropagation(); onAssessmentClick && onAssessmentClick(session); },
+        action: e => { e.stopPropagation(); onClick(session); onAssessmentClick && onAssessmentClick(session); },
       };
     }
   }
