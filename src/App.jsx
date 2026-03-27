@@ -888,6 +888,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 
   function handleCardClick() {
     if (showAssessmentCTA && assessBtn) {
+      onClick(session);
       if (qs === "passed") onCertificateClick && onCertificateClick(session);
       else onAssessmentClick && onAssessmentClick(session);
     } else if (cardClickable) {
