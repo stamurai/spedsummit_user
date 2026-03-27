@@ -2515,10 +2515,16 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
                 </div>
               </div>
               {finalPassed ? (
-                <button onClick={()=>onCertificateClick && onCertificateClick(session)}
-                  style={{ padding:"8px 16px", borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", color:C.primary, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
-                  <Icon name="certificate" size={13} color={C.primary}/> View
-                </button>
+                <div style={{ display:"flex", gap:8 }}>
+                  <button onClick={()=>onCertificateClick && onCertificateClick(session)}
+                    style={{ padding:"8px 14px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray600, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
+                    <Icon name="certificate" size={13} color={C.gray500}/> View
+                  </button>
+                  <button onClick={()=>alert("Certificate download will trigger here in production!")}
+                    style={{ padding:"8px 14px", borderRadius:8, border:"none", background:C.primary, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
+                    <Icon name="download" size={13} color="#fff"/> Download
+                  </button>
+                </div>
               ) : (
                 <span style={{ fontSize:11, fontWeight:600, color:C.gray400, background:C.gray100, padding:"4px 10px", borderRadius:99, whiteSpace:"nowrap" }}>
                   {qs?.status === "in-progress" || qs?.status === "failed" ? "In Progress" : "Not available yet"}
