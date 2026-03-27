@@ -5630,7 +5630,7 @@ function LandingPage({ onGetStarted }) {
       </section>
 
       {/* ── How It Works ── */}
-      <section style={{ padding:"80px 48px", background:"#fff", borderTop:"1px solid #f0f0f0", borderBottom:"1px solid #f0f0f0" }}>
+      <section style={{ padding:"80px 48px", background:"#fffaf6", borderTop:"1px solid #f0e8df", borderBottom:"1px solid #f0e8df" }}>
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
           <h2 style={{ margin:"0 0 12px", fontSize:32, fontWeight:900, color:"#1a2e2a", textAlign:"center" }}>How it works</h2>
           <p style={{ margin:"0 0 64px", fontSize:16, color:"#6b7280", textAlign:"center" }}>From sign-up to certificate in four simple steps.</p>
