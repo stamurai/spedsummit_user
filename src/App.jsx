@@ -875,9 +875,9 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
       };
     } else {
       assessBtn = {
-        label: "Take Assessment",
+        label: "Start Assessment",
         icon: "article",
-        bg: "#1e40af", color: "#fff", border: "none",
+        bg: C.primary, color: "#fff", border: "none",
         action: e => { e.stopPropagation(); onClick(session); onAssessmentClick && onAssessmentClick(session); },
       };
     }
