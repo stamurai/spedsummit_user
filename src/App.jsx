@@ -380,7 +380,7 @@ const SCHEDULE = [
   { id:1, date:"26th Mar", time:"09:00 AM", type:"OPENING", title:"Mental Health & Teacher Wellness in Special Education", description:"Sarah Habib—Occupational Therapist and founder of The Calm Caterpillar—shares practical, mindfulness-based strategies to support emotional regulation and wellness for both students and educators.", status:"past", cta:"Watch Again", instructor:"Tara Roehl" },
   { id:2, date:"26th Mar", time:"11:00 AM", type:"KEYNOTE", title:"Accommodations & Inclusion: Integrating Students into Mainstream", description:"Casey Harrison—Certified Dyslexia Specialist—shares practical, research-aligned strategies to support students with dyslexia and language-based learning differences.", status:"past", cta:"Resume Lesson", instructor:"Casey Harrison" },
   { id:3, date:"6th Jan 2025", time:"09:00 AM", type:"WORKSHOP", title:"Empowering Language and Literacy Skills with DHH Children", description:"Sydney Bassard—Speech-Language Pathologist—shares practical, evidence-informed strategies to build strong language and literacy foundations in children who are Deaf or Hard of Hearing.", status:"past", cta:"Recording Unavailable", instructor:"Jordan Smith" },
-  { id:4, date:"7th Jan 2025", time:"02:00 PM", type:"NETWORKING", title:"Paraeducators & Team Collaboration: Training, Delegation & More", description:"Diana Williams shares practical, leadership-driven strategies for building strong, collaborative partnerships between teachers and paraeducators.", status:"past", cta:"Watch Recording", instructor:"Morgan Lee" },
+  { id:4, date:"7th Jan 2025", time:"02:00 PM", type:"NETWORKING", title:"Paraeducators & Team Collaboration: Training, Delegation & More", description:"Diana Williams shares practical, leadership-driven strategies for building strong, collaborative partnerships between teachers and paraeducators.", status:"past", cta:"Watch Again", instructor:"Morgan Lee" },
   { id:5, date:"28th Mar", time:"09:00 AM", type:"WORKSHOP", title:"AI and Advanced Technologies in SPED", description:"Join Dr. Emily Tran as she guides educators through the process of utilizing data to inform teaching practices and enhance student learning.", status:"upcoming", cta:"Registered", instructor:"Dr. Emily Tran" },
   { id:6, date:"28th Mar", time:"11:00 AM", type:"PANEL DISCUSSION", title:"Understanding & Supporting Communication for Students with AAC", description:"A panel of AAC specialists discuss implementation strategies, device selection, and how to create truly inclusive communication environments.", status:"upcoming", cta:"Register", instructor:"Dr. Sarah Kim" },
 ];
@@ -1303,8 +1303,11 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
                     onMouseEnter={e=>e.currentTarget.style.boxShadow="0 4px 18px rgba(0,0,0,0.08)"}
                     onMouseLeave={e=>e.currentTarget.style.boxShadow="none"}>
                     {/* Thumbnail */}
-                    <div style={{ width:68, height:68, borderRadius:10, background:grad, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                      <Icon name="play-circle" size={28} color="rgba(255,255,255,0.8)"/>
+                    <div style={{ width:68, height:68, borderRadius:10, overflow:"hidden", flexShrink:0, position:"relative" }}>
+                      <SessionThumb id={s.id} height={68} noPlayHover/>
+                      <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.18)" }}>
+                        <Icon name="play-circle" size={22} color="rgba(255,255,255,0.9)"/>
+                      </div>
                     </div>
                     {/* Info */}
                     <div style={{ flex:1, minWidth:0 }}>
@@ -1643,7 +1646,7 @@ function SchedulePage({ onOpenSession, toast, scheduleRegistrations = {}, setSch
                 ) : (
                 <Btn variant={ctaVariant(cta)} onClick={()=>handleCta(item)} size="sm">
                   {(cta==="Remind Me"||cta==="Reminded ✓") && <Icon name="bell" size={13} color={cta==="Reminded ✓"?C.success:"#fff"}/>}
-                  {(cta==="Watch Again"||cta==="Resume Lesson"||cta==="Watch Recording") && <Icon name="play" size={13} color={C.gray600}/>}
+                  {(cta==="Watch Again"||cta==="Resume Lesson") && <Icon name="play" size={13} color={C.gray600}/>}
                   {cta}
                 </Btn>
                 )}
@@ -5583,8 +5586,8 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
             <img src="/Container.png" alt="SPED Summit" style={{ height:28, width:"auto", display:"block" }}/>
           </div>
           <button onClick={onRegister}
-            style={{ padding:"9px 22px", background:"#181c32", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer" }}
-            onMouseEnter={e=>e.currentTarget.style.background="#3699ff"} onMouseLeave={e=>e.currentTarget.style.background="#181c32"}>
+            style={{ padding:"9px 22px", background:"#3699ff", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer" }}
+            onMouseEnter={e=>e.currentTarget.style.background="#187de4"} onMouseLeave={e=>e.currentTarget.style.background="#3699ff"}>
             Register for Free →
           </button>
         </nav>
@@ -5636,8 +5639,8 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:12 }}>
             {/* Instructor profile image */}
-            <div style={{ width:52, height:52, borderRadius:"50%", flexShrink:0, border:"2px solid rgba(255,255,255,0.5)", overflow:"hidden", background:"linear-gradient(135deg,rgba(255,255,255,0.3),rgba(255,255,255,0.1))", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 2px 12px rgba(0,0,0,0.2)" }}>
-              <span style={{ fontSize:20, fontWeight:900, color:"#fff", letterSpacing:-0.5 }}>
+            <div style={{ width:36, height:36, borderRadius:"50%", flexShrink:0, border:"2px solid rgba(255,255,255,0.5)", overflow:"hidden", background:"linear-gradient(135deg,rgba(255,255,255,0.3),rgba(255,255,255,0.1))", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 2px 12px rgba(0,0,0,0.2)" }}>
+              <span style={{ fontSize:13, fontWeight:900, color:"#fff", letterSpacing:-0.5 }}>
                 {session.instructor?.split(" ").map(w=>w[0]).slice(0,2).join("")}
               </span>
             </div>
@@ -5852,13 +5855,9 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
         {/* Right: single unified sticky card */}
         <div style={{ position:"sticky", top:76 }}>
           <div style={{ border:"1px solid #e4e6ef", borderRadius:16, overflow:"hidden", boxShadow:"0 4px 24px rgba(0,0,0,0.08)" }}>
-            {/* Gradient preview thumbnail */}
-            <div style={{ background:gradients[si], height:150, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", position:"relative" }}
-              onClick={onRegister}>
-              <div style={{ width:50, height:50, borderRadius:"50%", background:"rgba(255,255,255,0.25)", display:"flex", alignItems:"center", justifyContent:"center", border:"2px solid rgba(255,255,255,0.5)" }}>
-                <Icon name="play" size={20} color="#fff"/>
-              </div>
-              <div style={{ position:"absolute", bottom:10, left:0, right:0, textAlign:"center", fontSize:12, color:"rgba(255,255,255,0.75)", fontWeight:500 }}>Preview this session</div>
+            {/* Preview thumbnail */}
+            <div style={{ height:150, position:"relative", overflow:"hidden" }}>
+              <SessionThumb id={session.id} height={150} noPlayHover/>
             </div>
             <div style={{ padding:20 }}>
               {/* Stats */}
@@ -5875,8 +5874,8 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                 ))}
               </div>
               <button onClick={onRegister}
-                style={{ width:"100%", padding:"13px 0", background:"#181c32", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:800, cursor:"pointer", marginBottom:8 }}
-                onMouseEnter={e=>e.currentTarget.style.background="#3699ff"} onMouseLeave={e=>e.currentTarget.style.background="#181c32"}>
+                style={{ width:"100%", padding:"13px 0", background:"#3699ff", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:800, cursor:"pointer", marginBottom:8 }}
+                onMouseEnter={e=>e.currentTarget.style.background="#187de4"} onMouseLeave={e=>e.currentTarget.style.background="#3699ff"}>
                 {registerLabel || "Register for Free"}
               </button>
               {!registerLabel && <div style={{ fontSize:12, textAlign:"center", color:"#9ca3af", marginBottom:18 }}>No credit card required</div>}
@@ -5953,7 +5952,7 @@ function LandingSessionCard({ s, imgSrc, onClick, availableFrom, sessionState })
           <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:6 }}>
             <div style={{ background:"rgba(0,0,0,0.6)", backdropFilter:"blur(6px)", borderRadius:20, padding:"4px 10px", fontSize:12, fontWeight:700, letterSpacing:.3,
               color: hasRec ? "#86efac" : "#fca5a5" }}>
-              {hasRec ? "▶ Watch Recording" : "Recording Unavailable"}
+              {hasRec ? "▶ Watch Again" : "Recording Unavailable"}
             </div>
           </div>
         )}
