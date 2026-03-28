@@ -228,10 +228,31 @@ function AdminThumb({ idx = 0 }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    CERTIFICATE DOWNLOAD UTILITY
 ───────────────────────────────────────────────────────────────────────────── */
+async function loadSealAsPng(url, size = 220) {
+  const res = await fetch(url);
+  const blob = await res.blob();
+  const blobUrl = URL.createObjectURL(blob);
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, size, size);
+      URL.revokeObjectURL(blobUrl);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.onerror = reject;
+    img.src = blobUrl;
+  });
+}
+
 async function downloadCertificate({ recipientName = "Alex Johnson", sessionTitle, instructor, duration = "", score = null, quizTitle = null }) {
   const today  = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
   const certId = `SS-${Date.now().toString(36).toUpperCase()}`;
   const title  = quizTitle || sessionTitle;
+  const sealDataUrl = await loadSealAsPng(`${window.location.origin}/seal.svg`, 220);
 
   /* Build a hidden off-screen div */
   const W = 1122, H = 794; // A4 landscape at 96dpi
@@ -255,7 +276,7 @@ async function downloadCertificate({ recipientName = "Alex Johnson", sessionTitl
       <!-- Body -->
       <div>
         <div style="font-size:11px;font-weight:700;color:#7e8299;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;">Certificate of Completion</div>
-        <div style="font-size:36px;font-weight:900;color:#181c32;line-height:1.2;margin-bottom:16px;letter-spacing:-0.5px;max-width:640px;">${title}</div>
+        <div style="font-size:52px;font-weight:900;color:#181c32;line-height:1.2;margin-bottom:16px;letter-spacing:-0.5px;max-width:640px;">${title}</div>
         <div style="font-size:14px;color:#5e6278;margin-bottom:0;">
           Instructor &nbsp;<strong style="color:#181c32;">${instructor}</strong>${duration ? `&nbsp;·&nbsp;${duration}` : ""}
         </div>
@@ -274,10 +295,7 @@ async function downloadCertificate({ recipientName = "Alex Johnson", sessionTitl
           ${score !== null ? `<div style="font-size:12px;color:#5e6278;line-height:2.2;"><span style="color:#7e8299;margin-right:8px;">Score</span><strong style="color:#181c32;">${score}%</strong></div>` : ""}
         </div>
         <div style="text-align:center;">
-          <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;margin:0 auto 6px;">
-            <svg width="36" height="36" viewBox="0 0 256 256" fill="white"><path d="M128,8a120,120,0,1,0,120,120A120.14,120.14,0,0,0,128,8Zm53.92,91.07-58.54,56a8,8,0,0,1-11.12-.38l-29.46-32a8,8,0,1,1,11.78-10.84l23.61,25.63,52.73-50.43a8,8,0,0,1,11,11.6Z"/></svg>
-          </div>
-          <div style="font-size:11px;font-weight:700;color:#a1a5b7;letter-spacing:0.5px;">VERIFIED</div>
+          <img src="${sealDataUrl}" style="width:110px;height:110px;display:block;margin:0 auto;mix-blend-mode:multiply;"/>
         </div>
       </div>
       </div>
