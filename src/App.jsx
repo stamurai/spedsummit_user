@@ -233,30 +233,18 @@ const THUMB_PHOTOS = [
   "photo-1544027993-37dbfe43562a", // communication/AAC
 ];
 
-function useVimeoThumb(vimeoUrl) {
-  const [thumb, setThumb] = useState(null);
-  useEffect(() => {
-    if (!vimeoUrl) return;
-    const match = vimeoUrl.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-    if (!match) return;
-    fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${match[1]}`)
-      .then(r => r.json())
-      .then(d => { if (d.thumbnail_url) setThumb(d.thumbnail_url); })
-      .catch(() => {});
-  }, [vimeoUrl]);
-  return thumb;
-}
-
 function SessionThumb({ id = 1, height = 160, overlay = false, noPlayHover = false, vimeoUrl }) {
   const photo = THUMB_PHOTOS[(id - 1) % THUMB_PHOTOS.length];
   const fallbackSrc = `https://images.unsplash.com/${photo}?w=640&h=360&fit=crop&auto=format`;
-  const vimeoThumb = useVimeoThumb(vimeoUrl);
-  const src = vimeoThumb || fallbackSrc;
+  const match = vimeoUrl?.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  const vimeoThumbSrc = match ? `https://vumbnail.com/${match[1]}.jpg` : null;
+  const [src, setSrc] = useState(vimeoThumbSrc || fallbackSrc);
+  useEffect(() => { setSrc(vimeoThumbSrc || fallbackSrc); }, [vimeoUrl]);
   const [hov, setHov] = useState(false);
   return (
     <div onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
       style={{ width:"100%", height, position:"relative", overflow:"hidden", background:"#e5e7eb" }}>
-      <img src={src} alt="" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}/>
+      <img src={src} alt="" onError={() => setSrc(fallbackSrc)} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}/>
       {overlay && <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.32)", backdropFilter:"blur(1px)" }}/>}
       {!overlay && !noPlayHover && hov && (
         <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.15)", transition:"opacity .15s" }}>
