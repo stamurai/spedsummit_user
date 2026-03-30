@@ -1800,23 +1800,20 @@ function SchedulePage({ onOpenSession, toast, scheduleRegistrations = {}, setSch
             const dateParts = dateLabel.match(/(\d+)\w*\s+(\w+)/);
             const dayNum   = dateParts ? dateParts[1] : dateLabel;
             const monthStr = dateParts ? dateParts[2] : "";
-            const weekdays = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+            const weekdayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
             const months   = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
             const mIdx     = months[monthStr.toLowerCase().slice(0,3)];
             const dObj     = (mIdx !== undefined) ? new Date(2026, mIdx, parseInt(dayNum)) : null;
-            const weekday  = dObj ? weekdays[dObj.getDay()] : "";
+            const weekday  = dObj ? weekdayNames[dObj.getDay()] : "";
             const isLastGroup = gi === dateGroups.length - 1;
 
             return (
               <div key={dateLabel} style={{ display:"flex", alignItems:"stretch" }}>
 
                 {/* ── Date label column ── */}
-                <div style={{ width:72, flexShrink:0, paddingTop:2, textAlign:"right", paddingRight:0 }}>
-                  <div style={{ display:"inline-block", textAlign:"center" }}>
-                    <div style={{ fontSize:11, fontWeight:600, color:C.gray400, letterSpacing:.5, textTransform:"uppercase" }}>{weekday}</div>
-                    <div style={{ fontSize:28, fontWeight:900, color:C.gray900, lineHeight:1.1 }}>{dayNum}</div>
-                    <div style={{ fontSize:11, fontWeight:700, color:C.primary, textTransform:"uppercase", letterSpacing:.8 }}>{monthStr.slice(0,3).toUpperCase()}</div>
-                  </div>
+                <div style={{ width:80, flexShrink:0, paddingTop:4, textAlign:"left" }}>
+                  <div style={{ fontSize:15, fontWeight:700, color:C.gray900, lineHeight:1.2 }}>{dayNum} {monthStr.slice(0,3)}</div>
+                  <div style={{ fontSize:13, color:C.gray400, marginTop:2 }}>{weekday}</div>
                 </div>
 
                 {/* ── Spine: dashed line + dots ── */}
