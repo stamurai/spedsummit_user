@@ -1406,19 +1406,9 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
                     <span>{continueSession.duration}</span>
                   </div>
                 </div>
-                {/* Progress bar */}
-                <div>
-                  <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:C.gray500, marginBottom:6 }}>
-                    <span>Progress</span>
-                    <span style={{ fontWeight:700, color:C.gray700 }}>{continueSession.progress || 28}%</span>
-                  </div>
-                  <div style={{ height:6, background:C.gray100, borderRadius:99, marginBottom:16, overflow:"hidden" }}>
-                    <div style={{ height:"100%", width:`${continueSession.progress || 28}%`, background:C.primary, borderRadius:99 }}/>
-                  </div>
-                  <Btn size="lg" onClick={() => onOpenSession(continueSession)}>
-                    <Icon name="play" size={16} color="#fff"/> Resume Session
-                  </Btn>
-                </div>
+                <Btn size="lg" onClick={() => onOpenSession(continueSession)}>
+                  <Icon name="play" size={16} color="#fff"/> Resume Session
+                </Btn>
               </div>
             </div>
           </div>
