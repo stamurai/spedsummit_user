@@ -233,9 +233,25 @@ const THUMB_PHOTOS = [
   "photo-1544027993-37dbfe43562a", // communication/AAC
 ];
 
-function SessionThumb({ id = 1, height = 160, overlay = false, noPlayHover = false }) {
+function useVimeoThumb(vimeoUrl) {
+  const [thumb, setThumb] = useState(null);
+  useEffect(() => {
+    if (!vimeoUrl) return;
+    const match = vimeoUrl.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+    if (!match) return;
+    fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${match[1]}`)
+      .then(r => r.json())
+      .then(d => { if (d.thumbnail_url) setThumb(d.thumbnail_url); })
+      .catch(() => {});
+  }, [vimeoUrl]);
+  return thumb;
+}
+
+function SessionThumb({ id = 1, height = 160, overlay = false, noPlayHover = false, vimeoUrl }) {
   const photo = THUMB_PHOTOS[(id - 1) % THUMB_PHOTOS.length];
-  const src = `https://images.unsplash.com/${photo}?w=640&h=360&fit=crop&auto=format`;
+  const fallbackSrc = `https://images.unsplash.com/${photo}?w=640&h=360&fit=crop&auto=format`;
+  const vimeoThumb = useVimeoThumb(vimeoUrl);
+  const src = vimeoThumb || fallbackSrc;
   const [hov, setHov] = useState(false);
   return (
     <div onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
@@ -1152,7 +1168,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 
       {/* Thumbnail */}
       <div style={{ position:"relative", flexShrink:0 }}>
-        <SessionThumb id={session.id} height={152} overlay={session.status==="locked"} noPlayHover/>
+        <SessionThumb id={session.id} height={152} overlay={session.status==="locked"} noPlayHover vimeoUrl={session.vimeoUrl}/>
         {/* Play overlay on card hover */}
         {session.status !== "locked" && cardHov && (
           <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.15)", transition:"opacity .15s", pointerEvents:"none" }}>
