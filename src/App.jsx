@@ -4130,7 +4130,7 @@ function AdminCreateSession({ onBack, toast, onSave }) {
 
   function save(publish=false) {
     if (!form.title.trim()) { toast({ type:"error", title:"Title required", message:"Please add a session title before saving." }); return; }
-    onSave && onSave(form, publish);
+    onSave && onSave(form, publish, sectionsRef.current);
     if (publish) { toast({ type:"success", title:"Session published! 🚀", message:`"${form.title}" is now live.` }); }
     else { toast({ type:"info", title:"Draft saved", message:`"${form.title}" saved as draft.` }); }
     setTimeout(onBack, 800);
@@ -6865,7 +6865,7 @@ export default function App() {
   useEffect(() => { try { localStorage.setItem("sessions", JSON.stringify(sessions)); } catch {} }, [sessions]);
   useEffect(() => { try { localStorage.setItem("adminSessions", JSON.stringify(adminSessions)); } catch {} }, [adminSessions]);
 
-  function addAdminSession(form, publish) {
+  function addAdminSession(form, publish, sections) {
     const newId = Date.now();
     const dateLabel = form.availableFrom
       ? new Date(form.availableFrom).toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" })
@@ -6902,9 +6902,13 @@ export default function App() {
         status: "not-started",
         description: form.desc || "",
         vimeoUrl: form.vimeoUrl || "",
-        lessons: [
-          { id:1, sectionTitle:"Session", title:"Full Session", duration:"60:00", status:"available", type:"video" },
-        ],
+        lessons: sections && sections.length
+          ? sections.flatMap(sec => sec.lessons.map(l => ({
+              id: l.id, sectionTitle: sec.title, title: l.title,
+              duration: l.duration || "60:00", status: "available", type: l.type || "video",
+              vimeoUrl: l.vimeoUrl || form.vimeoUrl || "",
+            })))
+          : [{ id:1, sectionTitle:"Session", title:"Full Session", duration:"60:00", status:"available", type:"video", vimeoUrl: form.vimeoUrl || "" }],
       };
       setSessions(prev => [...prev, sessionEntry]);
     }
