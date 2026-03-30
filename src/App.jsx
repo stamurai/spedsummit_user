@@ -3668,12 +3668,15 @@ const CB_Q_TYPES = [
   { key:"dropdown",        label:"Dropdown",        icon:"caret-circle-down" },
 ];
 
-function CurriculumBuilder({ toast }) {
-  const [sections,         setSections]         = useState([
-    { id:1, title:"Introduction", collapsed:false, resources:[], lessons:[
+function CurriculumBuilder({ toast, initialSections, onSectionsChange }) {
+  const [sections,         setSections]         = useState(() => {
+    if (initialSections && initialSections.length) return initialSections;
+    return [{ id:1, title:"Introduction", collapsed:false, resources:[], lessons:[
       { id:101, title:"Welcome & course overview", type:"video", duration:"", status:"draft", vimeoUrl:"", questions:[], quizExpanded:false },
-    ]},
-  ]);
+    ]}];
+  });
+
+  useEffect(() => { onSectionsChange?.(sections); }, [sections]);
   const [editingSectionId, setEditingSectionId] = useState(null);
   const [editingLessonId,  setEditingLessonId]  = useState(null);
   const [vimeoLinkId,      setVimeoLinkId]      = useState(null); // { secId, lesId }
@@ -4251,7 +4254,7 @@ function AdminCreateSession({ onBack, toast, onSave }) {
         {/* ── CURRICULUM tab ── */}
         {tab === "curriculum" && (
           <FormSection icon="list" title="Course Curriculum" subtitle="Build your course structure with sections, lessons, and quizzes.">
-            <CurriculumBuilder toast={toast}/>
+            <CurriculumBuilder toast={toast} initialSections={initialSections} onSectionsChange={handleSectionsChange}/>
           </FormSection>
         )}
 
@@ -4281,6 +4284,20 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
     certificate:    session.certificate !== undefined ? session.certificate : false,
   });
   const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  // Capture curriculum sections so vimeoUrls on lessons are saved
+  const sectionsRef = useRef(null);
+  function handleSectionsChange(secs) { sectionsRef.current = secs; }
+
+  // Build initialSections from session.lessons (flat list → one section)
+  const initialSections = session.lessons && session.lessons.length ? [{
+    id: 1, title: "Session", collapsed: false, resources: [],
+    lessons: session.lessons.map(l => ({
+      id: l.id, title: l.title, type: l.type || "video",
+      duration: l.duration || "", status: l.status || "draft",
+      vimeoUrl: l.vimeoUrl || "", questions: l.questions || [], quizExpanded: false,
+    })),
+  }] : null;
 
   const [questions, setQuestions] = useState(session.questions || []);
 
@@ -4338,7 +4355,7 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
 
   function save() {
     if (!form.title.trim()) { toast({ type:"error", title:"Title required", message:"Please add a session title before saving." }); return; }
-    if (onSave) onSave(session.id, form);
+    if (onSave) onSave(session.id, form, sectionsRef.current);
     toast({ type:"success", title:"Changes saved", message:`"${form.title}" has been updated.` });
     setTimeout(onBack, 1200);
   }
@@ -4503,7 +4520,7 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
         {/* ── CURRICULUM tab ── */}
         {tab === "curriculum" && (
           <FormSection icon="list" title="Course Curriculum" subtitle="Build your course structure with sections, lessons, and quizzes.">
-            <CurriculumBuilder toast={toast}/>
+            <CurriculumBuilder toast={toast} initialSections={initialSections} onSectionsChange={handleSectionsChange}/>
           </FormSection>
         )}
 
@@ -6929,8 +6946,20 @@ export default function App() {
 
   function openEdit(s) { setEditingSession(s); setPage("admin-edit"); }
 
-  function updateSession(id, form) {
-    setSessions(prev => prev.map(s => s.id === id ? { ...s, title: form.title, category: form.category, instructor: form.instructorName, instructorBio: form.bio, description: form.desc, vimeoUrl: form.vimeoUrl, availableFrom: form.availableFrom, availableTo: form.availableTo } : s));
+  function updateSession(id, form, sections) {
+    const updatedLessons = sections
+      ? sections.flatMap(sec => sec.lessons.map(l => ({
+          id: l.id, sectionTitle: sec.title, title: l.title,
+          duration: l.duration || "60:00", status: l.status === "draft" ? "available" : l.status,
+          type: l.type || "video", vimeoUrl: l.vimeoUrl || "",
+        })))
+      : undefined;
+    setSessions(prev => prev.map(s => s.id === id ? {
+      ...s, title: form.title, category: form.category, instructor: form.instructorName,
+      instructorBio: form.bio, description: form.desc, vimeoUrl: form.vimeoUrl,
+      availableFrom: form.availableFrom, availableTo: form.availableTo,
+      ...(updatedLessons ? { lessons: updatedLessons } : {}),
+    } : s));
     setAdminSessions(prev => prev.map(s => s.id === id ? { ...s, title: form.title, category: form.category, instructor: form.instructorName, vimeoUrl: form.vimeoUrl, availableFrom: form.availableFrom, availableTo: form.availableTo } : s));
   }
 
