@@ -6056,9 +6056,9 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                   <div style={{ fontSize:16, fontWeight:700, color:"#fff", marginBottom:4 }}>Enjoying the preview?</div>
                   <div style={{ fontSize:14, color:"rgba(255,255,255,0.6)" }}>Register to unlock all {session.lessons?.length} lessons in this course.</div>
                 </div>
-                <button onClick={() => { setPreviewOpen(false); onRegister(); }}
+                <button onClick={() => { setPreviewOpen(false); handleRegister(); }}
                   style={{ flexShrink:0, background:"linear-gradient(135deg,#3699ff,#a855f7)", border:"none", borderRadius:10, padding:"12px 24px", fontSize:14, fontWeight:700, color:"#fff", cursor:"pointer", whiteSpace:"nowrap" }}>
-                  {registerLabel || "Register for this course"}
+                  Register
                 </button>
               </div>
             </div>
@@ -6066,19 +6066,23 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
         );
       })()}
 
-      {/* Nav — only shown on public landing page, not when opened from dashboard */}
-      {!registerLabel && (
-        <nav style={{ position:"sticky", top:0, zIndex:100, background:"rgba(255,255,255,0.95)", backdropFilter:"blur(8px)", borderBottom:"1px solid #f0e8df", padding:"0 48px", height:60, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-          <div style={{ display:"flex", alignItems:"center", cursor:"pointer" }} onClick={onBack}>
-            <img src="/Container.png" alt="SPED Summit" style={{ height:28, width:"auto", display:"block" }}/>
+      {/* Nav */}
+      <nav style={{ position:"sticky", top:0, zIndex:100, background:"rgba(255,255,255,0.95)", backdropFilter:"blur(8px)", borderBottom:"1px solid #f0e8df", padding:"0 48px", height:60, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <div style={{ display:"flex", alignItems:"center", cursor:"pointer" }} onClick={onBack}>
+          <img src="/Container.png" alt="SPED Summit" style={{ height:28, width:"auto", display:"block" }}/>
+        </div>
+        {registered ? (
+          <div style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 18px", background:"#f0fdf4", border:"1px solid #bbf7d0", borderRadius:10, fontSize:14, fontWeight:700, color:"#15803d" }}>
+            <Icon name="check-circle" size={16} color="#22c55e"/> Registered
           </div>
-          <button onClick={onRegister}
+        ) : (
+          <button onClick={handleRegister}
             style={{ padding:"9px 22px", background:"#3699ff", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer" }}
             onMouseEnter={e=>e.currentTarget.style.background="#187de4"} onMouseLeave={e=>e.currentTarget.style.background="#3699ff"}>
-            Register for Free →
+            Register →
           </button>
-        </nav>
-      )}
+        )}
+      </nav>
 
       {/* Hero banner — full width */}
       <div style={{ background:gradients[si], padding:"40px 48px 48px" }}>
