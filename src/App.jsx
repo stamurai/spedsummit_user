@@ -1349,8 +1349,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
       <SessionPublicPage
         session={previewSession}
         onBack={() => setPreviewSession(null)}
-        onRegister={() => { onEnroll && onEnroll(previewSession.id); setPreviewSession(null); }}
-        registerLabel="Enroll Now"
+        onRegister={() => { onEnroll && onEnroll(previewSession.id); }}
       />
     );
   }
@@ -5983,6 +5982,16 @@ function AuthModal({ onClose, onLogin }) {
 function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
   const [collapsedSections, setCollapsedSections] = useState({});
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [registered, setRegistered] = useState(false);
+
+  function handleRegister() {
+    onRegister && onRegister();
+    setRegistered(true);
+  }
+
+  // Countdown from session.availableFrom if set
+  const countdownTarget = session.availableFrom ? new Date(session.availableFrom).getTime() : null;
+  const countdownLabel  = useCountdown(countdownTarget || 0);
 
   const pageRef = useRef(null);
   useEffect(() => {
@@ -6351,12 +6360,38 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                   </div>
                 ))}
               </div>
-              <button onClick={onRegister}
-                style={{ width:"100%", padding:"13px 0", background:"#3699ff", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:800, cursor:"pointer", marginBottom:8 }}
-                onMouseEnter={e=>e.currentTarget.style.background="#187de4"} onMouseLeave={e=>e.currentTarget.style.background="#3699ff"}>
-                {registerLabel || "Register for Free"}
-              </button>
-              {!registerLabel && <div style={{ fontSize:12, textAlign:"center", color:"#9ca3af", marginBottom:18 }}>No credit card required</div>}
+              {registered ? (
+                <div style={{ marginBottom:8 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, background:"#f0fdf4", border:"1px solid #bbf7d0", borderRadius:10, padding:"12px 16px", marginBottom:10 }}>
+                    <div style={{ width:22, height:22, borderRadius:"50%", background:"#22c55e", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                      <Icon name="check" size={13} color="#fff"/>
+                    </div>
+                    <div>
+                      <div style={{ fontSize:13, fontWeight:700, color:"#15803d" }}>You're registered!</div>
+                      <div style={{ fontSize:12, color:"#16a34a" }}>You're all set for this session.</div>
+                    </div>
+                  </div>
+                  {countdownTarget && countdownLabel ? (
+                    <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6, fontSize:13, color:"#374151", background:"#fff7ed", border:"1px solid #fed7aa", borderRadius:10, padding:"10px 16px" }}>
+                      <Icon name="timer" size={14} color="#f97316"/>
+                      Starting in <span style={{ fontWeight:700, color:"#f97316" }}>{countdownLabel}</span>
+                    </div>
+                  ) : (
+                    <button onClick={onBack} style={{ width:"100%", padding:"11px 0", background:"#3699ff", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer" }}>
+                      Go to My Sessions
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <button onClick={handleRegister}
+                    style={{ width:"100%", padding:"13px 0", background:"#3699ff", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:800, cursor:"pointer", marginBottom:8 }}
+                    onMouseEnter={e=>e.currentTarget.style.background="#187de4"} onMouseLeave={e=>e.currentTarget.style.background="#3699ff"}>
+                    Register
+                  </button>
+                  <div style={{ fontSize:12, textAlign:"center", color:"#9ca3af", marginBottom:10 }}>No credit card required</div>
+                </>
+              )}
               <div style={{ fontSize:12, fontWeight:700, color:"#181c32", marginBottom:10 }}>This session includes:</div>
               <div style={{ display:"flex", flexDirection:"column", gap:9 }}>
                 {[
