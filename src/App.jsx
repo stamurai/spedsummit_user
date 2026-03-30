@@ -233,6 +233,34 @@ const THUMB_PHOTOS = [
   "photo-1544027993-37dbfe43562a", // communication/AAC
 ];
 
+function useVimeoDuration(vimeoUrl) {
+  const [dur, setDur] = useState(null);
+  useEffect(() => {
+    if (!vimeoUrl) return;
+    const match = vimeoUrl.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+    if (!match) return;
+    fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${match[1]}`)
+      .then(r => r.json())
+      .then(d => {
+        if (!d.duration) return;
+        const s = d.duration;
+        const h = Math.floor(s / 3600);
+        const m = Math.floor((s % 3600) / 60);
+        const sec = s % 60;
+        setDur(h > 0
+          ? `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`
+          : `${m}:${String(sec).padStart(2,'0')}`);
+      })
+      .catch(() => {});
+  }, [vimeoUrl]);
+  return dur;
+}
+
+function LessonDuration({ vimeoUrl, fallback }) {
+  const dur = useVimeoDuration(vimeoUrl);
+  return <>{dur || fallback}</>;
+}
+
 function SessionThumb({ id = 1, height = 160, overlay = false, noPlayHover = false, vimeoUrl }) {
   const photo = THUMB_PHOTOS[(id - 1) % THUMB_PHOTOS.length];
   const fallbackSrc = `https://images.unsplash.com/${photo}?w=640&h=360&fit=crop&auto=format`;
@@ -2415,7 +2443,7 @@ function SessionDetail({ session, onBack, backLabel, toast, onAssessmentClick })
                             <div style={{ flex:1, minWidth:0 }}>
                               <div style={{ fontSize:12, fontWeight: isActive ? 700 : 400, color: locked ? C.gray400 : isQuiz ? "#7c3aed" : C.gray900, lineHeight:1.4 }}>{l.title}</div>
                               <div style={{ fontSize:12, color: isQuiz ? "#a855f7" : C.gray400, marginTop:2 }}>
-                                {isQuiz ? `${l.questions} question${l.questions!==1?"s":""}` : l.duration}
+                                {isQuiz ? `${l.questions} question${l.questions!==1?"s":""}` : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
                               </div>
                               {isPreview && !locked && !isActive && (
                                 <span style={{ display:"inline-block", fontSize:12, fontWeight:600, color:C.gray500, background:C.gray100, borderRadius:4, padding:"1px 6px", marginTop:3 }}>Preview</span>
@@ -6197,7 +6225,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                             <div style={{ flex:1, minWidth:0 }}>
                               <div style={{ fontSize:14, color:"#181c32", lineHeight:1.4 }}>{l.title}</div>
                               <div style={{ fontSize:12, color: isQuiz?"#a855f7":"#9ca3af", marginTop:2 }}>
-                                {isQuiz ? `${l.questions} question${l.questions!==1?"s":""}` : l.duration}
+                                {isQuiz ? `${l.questions} question${l.questions!==1?"s":""}` : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
                               </div>
                             </div>
                             {isFree && (
