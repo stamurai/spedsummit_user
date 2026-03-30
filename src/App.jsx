@@ -6991,8 +6991,10 @@ export default function App() {
   };
 
   function renderPage() {
-    if (page==="session-detail" && activeSession)
-      return <SessionDetail session={activeSession} onBack={()=>nav(isAdmin?"admin-sessions":sessionSource)} backLabel={sessionBackLabel} toast={toast} onAssessmentClick={handleAssessmentClick}/>;
+    if (page==="session-detail" && activeSession) {
+      const liveSession = sessions.find(s => s.id === activeSession.id) || activeSession;
+      return <SessionDetail session={liveSession} onBack={()=>nav(isAdmin?"admin-sessions":sessionSource)} backLabel={sessionBackLabel} toast={toast} onAssessmentClick={handleAssessmentClick}/>;
+    }
     if (isAdmin) {
       if (page==="admin-overview") return <AdminOverview onNavigate={nav} onEditSession={openEdit} toast={toast}/>;
       if (page==="admin-sessions") return <AdminSessionsPage onNavigate={nav} onEditSession={openEdit} toast={toast} adminSessions={adminSessions} setAdminSessions={setAdminSessions}/>;
