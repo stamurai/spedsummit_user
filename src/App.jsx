@@ -92,6 +92,9 @@ const ICON_MAP = {
   "warning":            PhosphorIcons.Warning,
   "wifi-slash":         PhosphorIcons.WifiSlash,
   "shield-check":       PhosphorIcons.ShieldCheck,
+  gift:                 PhosphorIcons.Gift,
+  "paper-plane-tilt":   PhosphorIcons.PaperPlaneTilt,
+  "arrow-square-out":   PhosphorIcons.ArrowSquareOut,
   clock:                PhosphorIcons.Clock,
   trophy:               PhosphorIcons.Trophy,
   "chat-circle-dots":   PhosphorIcons.ChatCircleDots,
@@ -248,64 +251,86 @@ async function loadSealAsPng(url, size = 220) {
   });
 }
 
-async function downloadCertificate({ recipientName = "Alex Johnson", sessionTitle, instructor, duration = "", score = null, quizTitle = null }) {
+async function downloadCertificate({ recipientName = "Alex Johnson", sessionTitle, instructor, duration = "", score = null, quizTitle = null, description = "" }) {
   const today  = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
   const certId = `SS-${Date.now().toString(36).toUpperCase()}`;
   const title  = quizTitle || sessionTitle;
+  const pdHours = duration ? parseFloat(duration) || 1 : 1;
   const sealDataUrl = await loadSealAsPng(`${window.location.origin}/seal.svg`, 220);
 
-  /* Build a hidden off-screen div */
-  const W = 1122, H = 794; // A4 landscape at 96dpi
+  const W = 1122, H = 794;
   const el = document.createElement("div");
   el.style.cssText = `position:fixed;left:-9999px;top:-9999px;width:${W}px;height:${H}px;overflow:hidden;`;
   el.innerHTML = `
-    <div style="position:relative;width:${W}px;height:${H}px;background:#FEF5EC;font-family:'Segoe UI',Roboto,sans-serif;box-sizing:border-box;padding:64px 80px;display:flex;flex-direction:column;justify-content:space-between;">
-      <div style="position:absolute;inset:0;background-image:repeating-linear-gradient(135deg,transparent,transparent 18px,rgba(0,0,0,0.06) 18px,rgba(0,0,0,0.06) 19px);pointer-events:none;"></div>
-      <div style="position:relative;z-index:1;display:flex;flex-direction:column;justify-content:space-between;height:100%;">
+    <div style="position:relative;width:${W}px;height:${H}px;background:#ffffff;font-family:'Segoe UI',Roboto,sans-serif;box-sizing:border-box;padding:56px 80px 48px;display:flex;flex-direction:column;">
 
-      <!-- Header -->
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-        <img src="${window.location.origin}/Container.png" style="height:44px;width:auto;" crossorigin="anonymous"/>
-        <div style="text-align:right;font-size:11px;color:#a1a5b7;line-height:2;">
-          <div>Certificate no: ${certId}</div>
-          <div>spedsummit.com/cert/${certId.toLowerCase()}</div>
-          <div>Date issued: ${today}</div>
-        </div>
-      </div>
-
-      <!-- Body -->
-      <div>
-        <div style="font-size:11px;font-weight:700;color:#7e8299;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;">Certificate of Completion</div>
-        <div style="font-size:52px;font-weight:900;color:#181c32;line-height:1.2;margin-bottom:16px;letter-spacing:-0.5px;max-width:640px;">${title}</div>
-        <div style="font-size:14px;color:#5e6278;margin-bottom:0;">
-          Instructor &nbsp;<strong style="color:#181c32;">${instructor}</strong>${duration ? `&nbsp;·&nbsp;${duration}` : ""}
-        </div>
-      </div>
-
-      <!-- Divider -->
-      <div style="height:1px;background:#e4e6ef;"></div>
-
-      <!-- Footer -->
-      <div style="display:flex;justify-content:space-between;align-items:flex-end;">
-        <div>
-          <div style="font-size:30px;font-weight:900;color:#181c32;letter-spacing:-0.3px;margin-bottom:10px;">${recipientName}</div>
-          <div style="font-size:12px;color:#5e6278;line-height:2.2;">
-            <span style="color:#7e8299;margin-right:8px;">Date</span><strong style="color:#181c32;">${today}</strong>
+        <!-- Header row -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px;">
+          <img src="${window.location.origin}/Container.png" style="height:42px;width:auto;" crossorigin="anonymous"/>
+          <div style="text-align:right;font-size:11px;color:#a1a5b7;line-height:2;">
+            <div>Certificate ID: ${certId}</div>
+            <div>spedsummit.com/cert/${certId.toLowerCase()}</div>
+            <div>Date Issued: ${today}</div>
           </div>
-          ${score !== null ? `<div style="font-size:12px;color:#5e6278;line-height:2.2;"><span style="color:#7e8299;margin-right:8px;">Score</span><strong style="color:#181c32;">${score}%</strong></div>` : ""}
         </div>
-        <div style="text-align:center;">
-          <img src="${sealDataUrl}" style="width:110px;height:110px;display:block;margin:0 auto;mix-blend-mode:multiply;"/>
+
+        <!-- Certificate label -->
+        <div style="font-size:11px;font-weight:700;color:#3699ff;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:20px;">Certificate of Completion</div>
+
+        <!-- This certifies -->
+        <div style="font-size:15px;color:#7e8299;margin-bottom:8px;">This certifies that</div>
+        <div style="font-size:42px;font-weight:900;color:#181c32;letter-spacing:-0.5px;margin-bottom:8px;line-height:1.1;">${recipientName}</div>
+        <div style="font-size:15px;color:#7e8299;margin-bottom:22px;">has successfully completed</div>
+
+        <!-- Session title -->
+        <div style="font-size:34px;font-weight:800;color:#181c32;line-height:1.2;margin-bottom:28px;max-width:800px;">${title}</div>
+
+        <!-- Meta grid -->
+        <div style="display:flex;gap:48px;margin-bottom:22px;">
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#a1a5b7;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Date</div>
+            <div style="font-size:14px;font-weight:700;color:#181c32;">${today}</div>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#a1a5b7;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Duration</div>
+            <div style="font-size:14px;font-weight:700;color:#181c32;">${duration || "1 Hour"}</div>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#a1a5b7;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">PD Hours Earned</div>
+            <div style="font-size:14px;font-weight:700;color:#181c32;">${pdHours}</div>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#a1a5b7;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Provider</div>
+            <div style="font-size:14px;font-weight:700;color:#181c32;">AbleSpace (SPED Summit)</div>
+          </div>
+          ${score !== null ? `<div>
+            <div style="font-size:10px;font-weight:700;color:#a1a5b7;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Score</div>
+            <div style="font-size:14px;font-weight:700;color:#181c32;">${score}%</div>
+          </div>` : ""}
         </div>
-      </div>
-      </div>
+
+        ${description ? `<div style="font-size:13px;color:#5e6278;line-height:1.7;max-width:740px;margin-bottom:0;">${description}</div>` : ""}
+
+        <!-- Divider -->
+        <div style="height:1px;background:#e4e6ef;margin-top:auto;margin-bottom:22px;"></div>
+
+        <!-- Footer -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+          <div>
+            <div style="font-size:12px;color:#a1a5b7;margin-bottom:3px;">Authorized by</div>
+            <div style="font-size:16px;font-weight:800;color:#181c32;">${instructor}</div>
+            <div style="font-size:11px;color:#a1a5b7;margin-top:10px;">Certificate ID: ${certId}</div>
+          </div>
+          <img src="${sealDataUrl}" style="width:100px;height:100px;display:block;mix-blend-mode:multiply;"/>
+        </div>
+
     </div>`;
 
   document.body.appendChild(el);
 
   try {
     const canvas = await html2canvas(el.firstElementChild, {
-      scale: 2, useCORS: true, backgroundColor: "#FEF5EC", width: W, height: H,
+      scale: 2, useCORS: true, backgroundColor: "#ffffff", width: W, height: H,
     });
     const imgData = canvas.toDataURL("image/jpeg", 0.98);
     const pdf = new jsPDF({ orientation:"landscape", unit:"px", format:[W, H], hotfixes:["px_scaling"] });
@@ -385,8 +410,8 @@ const SCHEDULE = [
   { id:6, date:"28th Mar", time:"11:00 AM", type:"PANEL DISCUSSION", title:"Understanding & Supporting Communication for Students with AAC", description:"A panel of AAC specialists discuss implementation strategies, device selection, and how to create truly inclusive communication environments.", status:"upcoming", cta:"Register", instructor:"Dr. Sarah Kim" },
 ];
 
-const SCHEDULE_TYPE_COLORS = { OPENING:{c:"#7c3aed",bg:"#ede9fe"}, KEYNOTE:{c:"#2563eb",bg:"#dbeafe"}, WORKSHOP:{c:"#059669",bg:"#d1fae5"}, NETWORKING:{c:"#d97706",bg:"#fef3c7"}, "PANEL DISCUSSION":{c:"#dc2626",bg:"#fee2e2"} };
-const ADMIN_STATUS_COLORS = { LIVE:{c:"#fff",bg:"#10b981"}, DRAFT:{c:"#92400e",bg:"#fef3c7"}, ARCHIVED:{c:"#6b7280",bg:"#f3f4f6"} };
+const SCHEDULE_TYPE_COLORS = { OPENING:{c:"#7c3aed",bg:"rgba(124,58,237,0.12)"}, KEYNOTE:{c:"#2563eb",bg:"rgba(37,99,235,0.12)"}, WORKSHOP:{c:"#059669",bg:"rgba(5,150,105,0.12)"}, NETWORKING:{c:"#d97706",bg:"rgba(217,119,6,0.12)"}, "PANEL DISCUSSION":{c:"#dc2626",bg:"rgba(220,38,38,0.12)"} };
+const ADMIN_STATUS_COLORS = { LIVE:{c:"#fff",bg:"#10b981"}, DRAFT:{c:"#d97706",bg:"rgba(217,119,6,0.12)"}, ARCHIVED:{c:"#6b7280",bg:"rgba(107,114,128,0.12)"} };
 
 const ADMIN_SESSIONS_DATA = [
   { id:1, title:"Mental Health & Teacher Wellness in Special Education", category:"SPED", status:"LIVE", date:"Mar 26, 2026", enrolled:1240, availableFrom:"2026-03-26T09:00", availableTo:"2027-12-31T23:59" },
@@ -481,6 +506,7 @@ function UploadZone({ accept, label, hint, icon, preview, onFile, aspect="16/9",
   const inputRef = useRef(null);
   const [dragging, setDragging] = useState(false);
   const [localPreview, setLocalPreview] = useState(preview || null);
+  const dark = document.querySelector("[data-theme='dark']") !== null;
 
   function handleFile(file) {
     if (!file) return;
@@ -496,7 +522,7 @@ function UploadZone({ accept, label, hint, icon, preview, onFile, aspect="16/9",
       onDragOver={e => { e.preventDefault(); setDragging(true); }}
       onDragLeave={() => setDragging(false)}
       onDrop={e => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]); }}
-      style={{ height, border:`2px dashed ${dragging ? C.primary : C.gray300}`, borderRadius:12, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", cursor:"pointer", background:dragging?C.primaryLight:"#fafafa", transition:"all .2s", position:"relative", overflow:"hidden" }}>
+      style={{ height, border:`2px dashed ${dragging ? C.primary : dark ? "rgba(255,255,255,0.15)" : C.gray300}`, borderRadius:12, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", cursor:"pointer", background:dragging ? C.primaryLight : dark ? "rgba(255,255,255,0.04)" : "#fafafa", transition:"all .2s", position:"relative", overflow:"hidden" }}>
       {localPreview ? (
         <>
           <img src={localPreview} alt="preview" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
@@ -507,9 +533,9 @@ function UploadZone({ accept, label, hint, icon, preview, onFile, aspect="16/9",
         </>
       ) : (
         <>
-          <Icon name={icon||"cloud-arrow-up"} size={28} color={dragging?C.primary:C.gray400}/>
-          <span style={{ fontSize:14, color:C.gray600, fontWeight:600, marginTop:8 }}>{label||"Click or drag to upload"}</span>
-          {hint && <span style={{ fontSize:12, color:C.gray400, marginTop:4 }}>{hint}</span>}
+          <Icon name={icon||"cloud-arrow-up"} size={28} color={dragging ? C.primary : dark ? "rgba(255,255,255,0.3)" : C.gray400}/>
+          <span style={{ fontSize:14, color: dark ? "rgba(255,255,255,0.6)" : C.gray600, fontWeight:600, marginTop:8 }}>{label||"Click or drag to upload"}</span>
+          {hint && <span style={{ fontSize:12, color: dark ? "rgba(255,255,255,0.35)" : C.gray400, marginTop:4 }}>{hint}</span>}
         </>
       )}
       <input ref={inputRef} type="file" accept={accept||"*/*"} style={{ display:"none" }} onChange={e => handleFile(e.target.files[0])}/>
@@ -797,9 +823,95 @@ function SearchBar({ onOpenSession, onNavigate }) {
   );
 }
 
+function ReferFriendsModal({ onClose, userName }) {
+  const dark = document.querySelector("[data-theme='dark']") !== null;
+  const [email, setEmail] = useState("");
+  const [sent, setSent] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [referrals] = useState(0);
+  const [credits] = useState(0);
+  const refLink = `https://spedsummit.com/invite/${(userName || "user").toLowerCase().replace(/\s+/,"")}2026`;
+
+  function copyLink() {
+    navigator.clipboard.writeText(refLink).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+  }
+  function sendInvite() {
+    if (!email.trim()) return;
+    setSent(true);
+    setEmail("");
+    setTimeout(() => setSent(false), 2500);
+  }
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", zIndex:900, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}
+      onClick={onClose}>
+      <div style={{ background: dark ? "#1e2647" : "#fff", borderRadius:20, width:"100%", maxWidth:460, boxShadow:"0 24px 60px rgba(0,0,0,0.3)", overflow:"hidden", position:"relative" }}
+        onClick={e => e.stopPropagation()}>
+
+        {/* Close */}
+        <button onClick={onClose} style={{ position:"absolute", top:14, right:14, width:28, height:28, borderRadius:8, border:`1px solid ${dark?"rgba(255,255,255,0.12)":C.gray200}`, background:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <Icon name="x" size={14} color={dark ? "rgba(255,255,255,0.5)" : C.gray500}/>
+        </button>
+
+        {/* Header */}
+        <div style={{ padding:"32px 28px 20px", textAlign:"center", borderBottom:`1px solid ${dark?"rgba(255,255,255,0.08)":C.gray100}` }}>
+          <div style={{ width:56, height:56, borderRadius:16, background:"rgba(54,153,255,0.12)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
+            <Icon name="gift" size={28} color={C.primary}/>
+          </div>
+          <div style={{ fontSize:20, fontWeight:800, color: dark ? "#fff" : C.gray900, marginBottom:8 }}>Refer Friends, Get Pro Free</div>
+          <div style={{ fontSize:13, color: dark ? "rgba(255,255,255,0.55)" : C.gray500, lineHeight:1.6, maxWidth:320, margin:"0 auto" }}>
+            Invite a friend to SPED Summit. When they join, <strong style={{ color:C.primary }}>you both get 6 months of Pro</strong> — or refer 3+ friends for a full year free.
+          </div>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding:"24px 28px" }}>
+
+          {/* Copy link */}
+          <div style={{ fontSize:12, fontWeight:700, color: dark ? "rgba(255,255,255,0.5)" : C.gray500, marginBottom:8, letterSpacing:.5 }}>YOUR INVITATION LINK</div>
+          <div style={{ display:"flex", gap:8, marginBottom:20 }}>
+            <div style={{ flex:1, padding:"10px 14px", background: dark ? "rgba(255,255,255,0.06)" : C.gray50, border:`1px solid ${dark?"rgba(255,255,255,0.1)":C.gray200}`, borderRadius:10, fontSize:12, color: dark ? "rgba(255,255,255,0.45)" : C.gray500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+              {refLink}
+            </div>
+            <button onClick={copyLink}
+              style={{ padding:"10px 18px", background: copied ? C.success : C.primary, color:"#fff", border:"none", borderRadius:10, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, transition:"background .2s" }}>
+              <Icon name="copy" size={13} color="#fff"/>
+              {copied ? "Copied!" : "Copy"}
+            </button>
+          </div>
+
+          {/* Email invite */}
+          <div style={{ fontSize:12, fontWeight:700, color: dark ? "rgba(255,255,255,0.5)" : C.gray500, marginBottom:8, letterSpacing:.5 }}>EMAIL YOUR INVITATION</div>
+          <div style={{ display:"flex", gap:8, marginBottom:24 }}>
+            <input
+              type="email" placeholder="friend@email.com" value={email}
+              onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && sendInvite()}
+              style={{ flex:1, padding:"10px 14px", background: dark ? "rgba(255,255,255,0.06)" : C.gray50, border:`1px solid ${dark?"rgba(255,255,255,0.1)":C.gray200}`, borderRadius:10, fontSize:13, color: dark ? "#fff" : C.gray900, outline:"none" }}/>
+            <button onClick={sendInvite}
+              style={{ padding:"10px 18px", background: sent ? C.success : C.primary, color:"#fff", border:"none", borderRadius:10, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, transition:"background .2s" }}>
+              <Icon name={sent ? "check" : "paper-plane-tilt"} size={13} color="#fff"/>
+              {sent ? "Sent!" : "Send"}
+            </button>
+          </div>
+
+          {/* Stats */}
+          <div style={{ background: dark ? "rgba(255,255,255,0.04)" : C.gray50, border:`1px solid ${dark?"rgba(255,255,255,0.08)":C.gray100}`, borderRadius:12, padding:"14px 20px", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <div style={{ textAlign:"center" }}>
+              <div style={{ fontSize:22, fontWeight:900, color: dark ? "#fff" : C.gray900 }}>{referrals}</div>
+              <div style={{ fontSize:11, color: dark ? "rgba(255,255,255,0.45)" : C.gray500, fontWeight:600, marginTop:2 }}>Referrals</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, onOpenSession, onNavigate, userName = "Alex Johnson" }) {
   const [showNotif, setShowNotif] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showReferModal, setShowReferModal] = useState(false);
   const unread = NOTIF_DATA.filter(n => !n.read).length;
   const notifBtnRef = useRef(null);
 
@@ -834,6 +946,8 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
         </div>
 
 
+        {showReferModal && <ReferFriendsModal onClose={() => setShowReferModal(false)} userName={userName}/>}
+
         {/* Avatar */}
         <div style={{ position: "relative" }}>
           <button
@@ -858,6 +972,11 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
                   icon: isDark ? "sun" : "moon",
                   label: isDark ? "Light Mode" : "Dark Mode",
                   action: () => onToggleDarkMode?.(),
+                },
+                {
+                  icon: "gift",
+                  label: "Refer Friends",
+                  action: () => { setShowProfileMenu(false); setShowReferModal(true); },
                 },
                 {
                   icon: "question",
@@ -936,13 +1055,14 @@ function Sidebar({ active, onChange, isAdmin }) {
 ───────────────────────────────────────────────────────────────────────────── */
 function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCertificateClick }) {
   const cta = getCTA(session);
-  const catColors = { MANAGEMENT:{c:"#2563eb",bg:C.primaryLight}, LEADERSHIP:{c:"#7c3aed",bg:"#ede9fe"}, COMMUNICATION:{c:"#0ea5e9",bg:C.infoLight}, TEAMWORK:{c:"#f97316",bg:"#fff7ed"}, TECHNOLOGY:{c:"#1e1b4b",bg:"#e0e7ff"}, ACCESSIBILITY:{c:"#ec4899",bg:"#fdf2f8"} };
-  const cc = catColors[session.category] || { c:C.primary, bg:C.primaryLight };
+  const catColors = { MANAGEMENT:{c:"#2563eb",bg:"rgba(37,99,235,0.12)"}, LEADERSHIP:{c:"#7c3aed",bg:"rgba(124,58,237,0.12)"}, COMMUNICATION:{c:"#0ea5e9",bg:"rgba(14,165,233,0.12)"}, TEAMWORK:{c:"#f97316",bg:"rgba(249,115,22,0.12)"}, TECHNOLOGY:{c:"#6366f1",bg:"rgba(99,102,241,0.12)"}, ACCESSIBILITY:{c:"#ec4899",bg:"rgba(236,72,153,0.12)"} };
+  const cc = catColors[session.category] || { c:C.primary, bg:"rgba(54,153,255,0.12)" };
 
   /* ── Determine assessment CTA ── */
   const qs = quizState.status; // "not-taken" | "in-progress" | "passed" | "failed" | undefined
   const hasAssessment = !!SESSION_QUIZZES[session.id];
-  const showAssessmentCTA = session.status === "completed" && hasAssessment;
+  const watchedEnough = session.progress >= 80;
+  const showAssessmentCTA = session.status === "completed" && hasAssessment && watchedEnough;
 
   let assessBtn = null;
   if (showAssessmentCTA) {
@@ -981,11 +1101,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
   const cardClickable = !cta.disabled;
 
   function handleCardClick() {
-    if (showAssessmentCTA && assessBtn) {
-      onClick(session);
-      if (qs === "passed") onCertificateClick && onCertificateClick(session);
-      else onAssessmentClick && onAssessmentClick(session);
-    } else if (cardClickable) {
+    if (cardClickable || showAssessmentCTA) {
       onClick(session);
     }
   }
@@ -1082,6 +1198,14 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
             </div>
           )}
 
+          {/* ── Assessment locked hint ── */}
+          {session.status === "completed" && hasAssessment && !watchedEnough && (
+            <div style={{ marginTop:10, display:"flex", alignItems:"center", gap:6, fontSize:12, color:C.gray500, background:C.gray100, borderRadius:8, padding:"7px 10px" }}>
+              <Icon name="lock" size={13} color={C.gray400}/>
+              Watch {80 - session.progress}% more to unlock assessment
+            </div>
+          )}
+
           {/* ── Primary CTA button ── */}
           {assessBtn ? (
             <button onClick={assessBtn.action}
@@ -1121,6 +1245,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
    DASHBOARD
 ───────────────────────────────────────────────────────────────────────────── */
 function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{} }) {
+  const [calendarItem, setCalendarItem] = useState(null);
   const enrolledSessions  = SESSIONS.filter(s => enrolledIds.has(s.id) && getSessionState(s.id) === "live");
   const upcomingSessions  = SESSIONS.filter(s => getSessionState(s.id) === "upcoming");
   const pastSessions      = SESSIONS.filter(s => getSessionState(s.id) === "past");
@@ -1146,6 +1271,12 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
     }, 1500);
   }
 
+  // ── Data helpers ──
+  const continueSession = enrolledSessions.find(s => s.progress > 0 && s.status !== "completed") || (hasStarted ? enrolledSessions[0] : null);
+  const todaySchedule   = SCHEDULE.filter(i => i.status === "upcoming").slice(0, 3);
+  const recommended     = discoverSessions.slice(0, 4);
+  const certsEarned     = enrolledSessions.filter(s => s.status === "completed").length;
+
   if (previewSession) {
     return (
       <SessionPublicPage
@@ -1158,250 +1289,249 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
   }
 
   return (
-    <div style={{ display:"flex", gap:20, padding:"24px", minHeight:"100%", background:C.gray50, boxSizing:"border-box" }}>
-      <div style={{ flex:1, minWidth:0 }}>
+    <div style={{ display:"flex", gap:20, padding:24, minHeight:"100%", background:C.gray50, boxSizing:"border-box" }}>
+      {calendarItem && (
+        <AddToCalendarModal
+          item={calendarItem}
+          onClose={() => setCalendarItem(null)}
+          onConfirm={() => {
+            setScheduleRegistrations(r => ({ ...r, [calendarItem.id]: true }));
+            toast({ type:"success", title:"Registered! 🎉", message:`"${calendarItem.title.slice(0,40)}…" added to your schedule.` });
+          }}
+        />
+      )}
 
-        {/* Welcome */}
-        <div style={{ background:"var(--hero-bg)", border:`1px solid ${C.primaryBorder}`, borderRadius:16, padding:"24px 28px", marginBottom:24, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+      {/* ──────── Main column ──────── */}
+      <div style={{ flex:1, minWidth:0, display:"flex", flexDirection:"column", gap:28 }}>
+
+        {/* ① CONTINUE WATCHING — hero */}
+        {continueSession ? (
           <div>
-            <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:C.warningLight, color:"#92400e", fontSize:12, fontWeight:700, padding:"3px 10px", borderRadius:99, marginBottom:12 }}>
-              <Icon name="timer" size={12} color="#92400e"/> WATCHED 4 DAYS AGO
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+              <div>
+                <div style={{ fontSize:11, fontWeight:700, color:C.primary, letterSpacing:1, textTransform:"uppercase", marginBottom:3 }}>Continue Watching</div>
+                <h2 style={{ margin:0, fontSize:17, fontWeight:800, color:C.gray900 }}>Resume your last session</h2>
+              </div>
+              <Btn variant="ghost" size="sm" onClick={() => onNavigate("sessions")}>My Sessions <Icon name="caret-right" size={13} color={C.primary}/></Btn>
             </div>
-            <h1 style={{ margin:"0 0 6px", fontSize:26, fontWeight:900, color:C.gray900 }}>Welcome back, <span style={{ color:C.primary }}>Alex!</span></h1>
-            <p style={{ margin:"0 0 18px", color:C.gray500, fontSize:14, lineHeight:1.6 }}>You've completed <strong style={{ color:C.gray800 }}>{completed} of {enrolledSessions.length}</strong> live sessions{upcomingSessions.length > 0 ? ` · ${upcomingSessions.length} upcoming` : ""}. Your next milestone is just one lesson away.</p>
-            <Btn onClick={() => onOpenSession(SESSIONS[1])}>
-              <Icon name="play" size={14} color="#fff"/> Resume Last Session
+            {/* Hero card */}
+            <div style={{ background:C.white, borderRadius:18, border:`1px solid ${C.gray200}`, overflow:"hidden", display:"flex", gap:0 }}>
+              {/* Thumbnail side */}
+              <div style={{ width:260, flexShrink:0, position:"relative", background:"#111" }}>
+                <SessionThumb id={continueSession.id} height={170} noPlayHover/>
+                <div style={{ position:"absolute", inset:0, background:"linear-gradient(to right, transparent 55%, rgba(0,0,0,0.4) 100%)" }}/>
+                {/* Progress overlay bar */}
+                <div style={{ position:"absolute", bottom:0, left:0, right:0, height:3, background:"rgba(255,255,255,0.2)" }}>
+                  <div style={{ height:"100%", width:`${continueSession.progress || 28}%`, background:C.primary }}/>
+                </div>
+              </div>
+              {/* Content side */}
+              <div style={{ flex:1, padding:"22px 24px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
+                <div>
+                  <div style={{ fontSize:11, fontWeight:700, color:C.warning, background:"rgba(245,158,11,0.12)", display:"inline-flex", alignItems:"center", gap:5, padding:"3px 10px", borderRadius:99, marginBottom:12 }}>
+                    <Icon name="timer" size={11} color={C.warning}/> {continueSession.progress || 28}% WATCHED
+                  </div>
+                  <div style={{ fontSize:17, fontWeight:800, color:C.gray900, lineHeight:1.35, marginBottom:8 }}>{continueSession.title}</div>
+                  <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, color:C.gray500 }}>
+                    <Avatar name={continueSession.instructor} size={20}/>
+                    <span>{continueSession.instructor}</span>
+                    <span style={{ color:C.gray300 }}>·</span>
+                    <span>{continueSession.duration}</span>
+                  </div>
+                </div>
+                {/* Progress bar */}
+                <div>
+                  <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:C.gray500, marginBottom:6 }}>
+                    <span>Progress</span>
+                    <span style={{ fontWeight:700, color:C.gray700 }}>{continueSession.progress || 28}%</span>
+                  </div>
+                  <div style={{ height:6, background:C.gray100, borderRadius:99, marginBottom:16, overflow:"hidden" }}>
+                    <div style={{ height:"100%", width:`${continueSession.progress || 28}%`, background:C.primary, borderRadius:99 }}/>
+                  </div>
+                  <Btn size="lg" onClick={() => onOpenSession(continueSession)}>
+                    <Icon name="play" size={16} color="#fff"/> Resume Session
+                  </Btn>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* No continue session — show welcome prompt */
+          <div style={{ background:"var(--hero-bg)", border:`1px solid ${C.primaryBorder}`, borderRadius:18, padding:"28px 32px" }}>
+            <div style={{ fontSize:11, fontWeight:700, color:C.primary, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>Welcome to SPED Summit</div>
+            <h1 style={{ margin:"0 0 8px", fontSize:24, fontWeight:900, color:C.gray900 }}>Start your learning journey, <span style={{ color:C.primary }}>Alex</span></h1>
+            <p style={{ margin:"0 0 20px", color:C.gray500, fontSize:14, lineHeight:1.6 }}>Pick up where expert educators left off — explore sessions on IEPs, AAC, inclusion &amp; more.</p>
+            <Btn size="lg" onClick={() => onNavigate("sessions")}>
+              <Icon name="play-circle" size={16} color="#fff"/> Browse Sessions
             </Btn>
           </div>
-          <div style={{ width:88, height:88, borderRadius:"50%", border:`6px solid ${C.primaryBorder}`, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:C.white, flexShrink:0 }}>
-            <span style={{ fontSize:18, fontWeight:900, color:C.gray900 }}>{pct}%</span>
-            <span style={{ fontSize:12, color:C.gray400, letterSpacing:.5, marginTop:1 }}>PROGRESS</span>
-          </div>
-        </div>
-
-        {/* My Enrolled Sessions — only show when user has started something */}
-        {hasStarted && (
-          <>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
-              <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900 }}>My Sessions</h2>
-              <Btn variant="ghost" size="sm" onClick={() => {
-                const primarySeason = SEASONS.reduce((best, s) => {
-                  const n = s.sessionIds.filter(id => enrolledIds.has(id)).length;
-                  const bestN = best ? best.sessionIds.filter(id => enrolledIds.has(id)).length : 0;
-                  return n > bestN ? s : best;
-                }, null);
-                if (primarySeason && onNavigateToSeason) onNavigateToSeason(primarySeason.id);
-                else onNavigate("sessions");
-              }}>View All <Icon name="caret-right" size={14} color={C.primary}/></Btn>
-            </div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16, marginBottom:28 }}>
-              {enrolledSessions.map(s => <SessionCard key={s.id} session={s} onClick={onOpenSession} quizState={quizStates[s.id]||{}} onAssessmentClick={onAssessmentClick} onCertificateClick={onCertificateClick}/>)}
-            </div>
-          </>
         )}
 
-        {/* First-time user: past season recordings */}
-        {!hasStarted && pastSessions.length > 0 && (
-          <>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
-              <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900 }}>
-                Past Sessions
-                <span style={{ fontSize:12, fontWeight:700, color:C.gray500, background:C.gray100, padding:"2px 8px", borderRadius:99, marginLeft:8 }}>RECORDINGS</span>
-              </h2>
-              <Btn variant="ghost" size="sm" onClick={() => onNavigate("sessions")}>Browse All <Icon name="caret-right" size={14} color={C.primary}/></Btn>
+        {/* ② TODAY'S SESSIONS */}
+        {todaySchedule.length > 0 && (
+          <div>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+              <div>
+                <div style={{ fontSize:11, fontWeight:700, color:"#dc2626", letterSpacing:1, textTransform:"uppercase", marginBottom:3, display:"flex", alignItems:"center", gap:5 }}>
+                  <span style={{ width:7, height:7, borderRadius:"50%", background:"#dc2626", display:"inline-block" }}/>
+                  Upcoming Sessions
+                </div>
+                <h2 style={{ margin:0, fontSize:17, fontWeight:800, color:C.gray900 }}>Don't miss these</h2>
+              </div>
+              <Btn variant="ghost" size="sm" onClick={() => onNavigate("schedules")}>View Schedule <Icon name="caret-right" size={13} color={C.primary}/></Btn>
             </div>
-            <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:28 }}>
-              {pastSessions.map(s => {
-                const hasRec = SESSION_AVAILABILITY[s.id]?.hasRecording;
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              {todaySchedule.map((item, i) => {
+                const tc = SCHEDULE_TYPE_COLORS[item.type] || { c:C.gray500, bg:"rgba(128,128,128,0.10)" };
+                const registered = !!scheduleRegistrations[item.id];
                 return (
-                  <div key={s.id} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:14, padding:"14px 16px", opacity: hasRec ? 1 : 0.7 }}>
-                    <div style={{ position:"relative", width:80, height:52, borderRadius:8, overflow:"hidden", flexShrink:0 }}>
-                      <SessionThumb id={s.id} height={52} noPlayHover/>
-                      <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.32)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                        <Icon name={hasRec?"play":"warning-circle"} size={16} color="rgba(255,255,255,0.85)"/>
-                      </div>
+                  <div key={item.id} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:14, padding:"14px 16px" }}>
+                    <div style={{ width:80, height:52, borderRadius:10, overflow:"hidden", flexShrink:0 }}>
+                      <SessionThumb id={item.id} height={52} noPlayHover/>
                     </div>
                     <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
-                      <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{s.instructor} · {s.duration}</div>
-                    </div>
-                    {hasRec ? (
-                      <button onClick={()=>onOpenSession(s)}
-                        style={{ padding:"8px 14px", borderRadius:8, border:`1px solid ${C.gray300}`, background:C.white, color:C.gray700, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap" }}>
-                        <Icon name="play" size={13} color={C.gray600}/> Watch
-                      </button>
-                    ) : (
-                      <div style={{ padding:"7px 12px", borderRadius:8, background:C.gray100, fontSize:12, fontWeight:600, color:C.gray400, flexShrink:0, display:"flex", alignItems:"center", gap:5 }}>
-                        <Icon name="warning-circle" size={13} color={C.gray400}/> Unavailable
+                      <div style={{ display:"flex", alignItems:"center", gap:5, marginBottom:4 }}>
+                        <Badge label={item.type} color={tc.c} bg={tc.bg} size={11}/>
+                        <span style={{ fontSize:11, color:C.gray400 }}>· {item.time}</span>
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
-
-        {/* Upcoming sessions */}
-        {upcomingSessions.length > 0 && (
-          <>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
-              <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900 }}>
-                Coming Up
-                <span style={{ fontSize:12, fontWeight:700, color:"#2563eb", background:"#dbeafe", padding:"2px 8px", borderRadius:99, marginLeft:8, letterSpacing:.3 }}>UPCOMING</span>
-              </h2>
-              <Btn variant="ghost" size="sm" onClick={()=>onNavigate("schedules")}>View Schedule <Icon name="caret-right" size={14} color={C.primary}/></Btn>
-            </div>
-            <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:28 }}>
-              {upcomingSessions.map(s => {
-                const avail = SESSION_AVAILABILITY[s.id];
-                const releaseLabel = avail?.availableFrom
-                  ? new Date(avail.availableFrom).toLocaleString("en-US", { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" })
-                  : "Date TBD";
-                const registered = !!scheduleRegistrations[s.id];
-                return (
-                  <div key={s.id} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:14, padding:"14px 16px" }}>
-                    <div style={{ width:80, height:52, borderRadius:8, overflow:"hidden", flexShrink:0 }}>
-                      <SessionThumb id={s.id} height={52} noPlayHover/>
-                    </div>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
-                      <div style={{ fontSize:12, color:"#2563eb", fontWeight:600, marginTop:2 }}>{releaseLabel}</div>
+                      <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.title}</div>
+                      <div style={{ fontSize:12, color:C.gray500, marginTop:2, display:"flex", alignItems:"center", gap:5 }}>
+                        <Avatar name={item.instructor} size={16}/> {item.instructor}
+                      </div>
                     </div>
                     {registered ? (
-                      <div style={{ width:34, height:34, borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }} title="Registered">
-                        <Icon name="bell" size={15} color={C.primary}/>
-                      </div>
+                      <Btn variant="success" size="sm">
+                        <Icon name="check-circle" size={13} color={C.success}/> Registered
+                      </Btn>
                     ) : (
-                      <button onClick={()=>{ setScheduleRegistrations(r=>({...r,[s.id]:true})); toast({ type:"success", title:"Registered! 🎉", message:`Added "${s.title.slice(0,40)}…" to your schedule.` }); }}
-                        style={{ padding:"8px 14px", borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", color:C.primary, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap" }}>
-                        <Icon name="bell" size={13} color={C.primary}/> Register
-                      </button>
+                      <Btn variant="primary" size="sm" onClick={() => setCalendarItem(item)}>
+                        <Icon name="bell" size={13} color="#fff"/> Register
+                      </Btn>
                     )}
                   </div>
                 );
               })}
             </div>
-          </>
+          </div>
         )}
 
-        {/* Discover More Sessions */}
-        {discoverSessions.length > 0 && (
-          <>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
-              <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900 }}>Discover More Sessions</h2>
+        {/* ③ RECOMMENDED SESSIONS */}
+        {recommended.length > 0 && (
+          <div>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+              <div>
+                <div style={{ fontSize:11, fontWeight:700, color:C.primary, letterSpacing:1, textTransform:"uppercase", marginBottom:3 }}>Recommended for You</div>
+                <h2 style={{ margin:0, fontSize:17, fontWeight:800, color:C.gray900 }}>Sessions you might like</h2>
+              </div>
             </div>
-            <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:28 }}>
-              {discoverSessions.map(s => {
-                const catColors = { MANAGEMENT:{c:"#2563eb",bg:C.primaryLight}, LEADERSHIP:{c:"#7c3aed",bg:"#ede9fe"}, COMMUNICATION:{c:"#0ea5e9",bg:C.infoLight}, TEAMWORK:{c:"#f97316",bg:"#fff7ed"}, TECHNOLOGY:{c:"#1e1b4b",bg:"#e0e7ff"}, ACCESSIBILITY:{c:"#ec4899",bg:"#fdf2f8"} };
-                const cc = catColors[s.category] || { c:C.primary, bg:C.primaryLight };
-                const gradients = ["linear-gradient(135deg,#1e3a5f,#3699ff)","linear-gradient(135deg,#4c1d95,#a855f7)","linear-gradient(135deg,#166534,#50cd89)","linear-gradient(135deg,#7c2d12,#f97316)","linear-gradient(135deg,#164e63,#06b6d4)"];
-                const grad = gradients[(s.id-1)%gradients.length];
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              {recommended.map(s => {
+                const catColors = { MANAGEMENT:{c:"#2563eb",bg:"rgba(37,99,235,0.12)"}, LEADERSHIP:{c:"#7c3aed",bg:"rgba(124,58,237,0.12)"}, COMMUNICATION:{c:"#0ea5e9",bg:"rgba(14,165,233,0.12)"}, TEAMWORK:{c:"#f97316",bg:"rgba(249,115,22,0.12)"}, TECHNOLOGY:{c:"#6366f1",bg:"rgba(99,102,241,0.12)"}, ACCESSIBILITY:{c:"#ec4899",bg:"rgba(236,72,153,0.12)"} };
+                const cc = catColors[s.category] || { c:C.primary, bg:"rgba(54,153,255,0.12)" };
                 return (
                   <div key={s.id} onClick={() => setPreviewSession(s)}
-                    style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:16, padding:"14px 16px", overflow:"hidden", cursor:"pointer", transition:"box-shadow .15s" }}
+                    style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:14, padding:"14px 16px", cursor:"pointer", transition:"box-shadow .15s" }}
                     onMouseEnter={e=>e.currentTarget.style.boxShadow="0 4px 18px rgba(0,0,0,0.08)"}
                     onMouseLeave={e=>e.currentTarget.style.boxShadow="none"}>
-                    {/* Thumbnail */}
-                    <div style={{ width:68, height:68, borderRadius:10, overflow:"hidden", flexShrink:0, position:"relative" }}>
-                      <SessionThumb id={s.id} height={68} noPlayHover/>
+                    <div style={{ width:80, height:52, borderRadius:10, overflow:"hidden", flexShrink:0, position:"relative" }}>
+                      <SessionThumb id={s.id} height={52} noPlayHover/>
                       <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.18)" }}>
-                        <Icon name="play-circle" size={22} color="rgba(255,255,255,0.9)"/>
+                        <Icon name="play-circle" size={20} color="rgba(255,255,255,0.9)"/>
                       </div>
                     </div>
-                    {/* Info */}
                     <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4 }}>
-                        <span style={{ fontSize:12, fontWeight:700, color:cc.c, background:cc.bg, padding:"2px 7px", borderRadius:99 }}>{s.category}</span>
+                      <div style={{ display:"flex", alignItems:"center", gap:5, marginBottom:4 }}>
+                        <span style={{ fontSize:11, fontWeight:700, color:cc.c, background:cc.bg, padding:"2px 7px", borderRadius:99 }}>{s.category}</span>
                       </div>
-                      <div style={{ fontSize:14, fontWeight:700, color:C.gray900, lineHeight:1.3, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
-                      <div style={{ fontSize:12, color:C.gray500, marginTop:3 }}>{s.instructor} · {s.duration}</div>
+                      <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
+                      <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{s.instructor} · {s.duration}</div>
                     </div>
                     <Icon name="caret-right" size={16} color={C.gray300}/>
                   </div>
                 );
               })}
             </div>
-          </>
+          </div>
         )}
 
-        {/* Knowledge Checks — only show when user has started something */}
-        {hasStarted && <><h2 style={{ margin:"0 0 12px", fontSize:16, fontWeight:800, color:C.gray900 }}>Knowledge Checks</h2>
-        <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, overflow:"hidden" }}>
-          {[
-            { session: SESSIONS.find(s=>s.id===1), title:"AI and Advanced Tech in SPED Quiz", instructor:"Tara Roehl", questions:15 },
-            { session: SESSIONS.find(s=>s.id===2), title:"Remote Team Dynamics", instructor:"Farwa Husain", questions:15 },
-          ].map((q,i)=>(
-            <div key={i} style={{ display:"flex", alignItems:"center", padding:"14px 20px", borderBottom:i===0?`1px solid ${C.gray100}`:"none", gap:14 }}>
-              <div style={{ width:40, height:40, borderRadius:10, background:C.primaryLight, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                <Icon name="medal" size={20} color={C.primary}/>
-              </div>
-              <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ fontWeight:600, fontSize:14, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{q.title}</div>
-                <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{q.instructor} · {q.questions} Questions</div>
-              </div>
-              <Btn size="sm" onClick={() => q.session && onAssessmentClick(q.session)}>
-                <Icon name="article" size={14} color="#fff"/> Start Assessment
-              </Btn>
-            </div>
-          ))}
-        </div>
-        </>}
       </div>
 
-      {/* Right sidebar */}
-      <div style={{ width:230, flexShrink:0, display:"flex", flexDirection:"column", gap:14 }}>
+      {/* ──────── Right sidebar ──────── */}
+      <div style={{ width:236, flexShrink:0, display:"flex", flexDirection:"column", gap:14 }}>
 
-        {/* Your Progress */}
-        <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"18px 16px" }}>
-          <div style={{ fontWeight:800, fontSize:16, color:C.gray900, marginBottom:14 }}>Your Progress</div>
-          {[
-            { icon:"article", label:"Sessions Completed", sub:"THIS SEASON", value:`${completed}/${enrolledSessions.length}` },
-            { icon:"timer",   label:"Total Time",         sub:"TOTAL HOURS",  value:"42.5h" },
-          ].map((row, i) => (
-            <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom: i===0 ? `1px solid ${C.gray100}` : "none" }}>
-              <div style={{ width:32, height:32, borderRadius:9, background:C.gray100, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                <Icon name={row.icon} size={17} color={C.gray400}/>
-              </div>
-              <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ fontSize:14, fontWeight:600, color:C.gray700, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", display:"block" }}>{row.label}</div>
-                <div style={{ fontSize:12, color:C.gray400, fontWeight:600, letterSpacing:.5, marginTop:1 }}>{row.sub}</div>
-              </div>
-              <div style={{ fontSize:18, fontWeight:900, color:C.primary }}>{row.value}</div>
-            </div>
-          ))}
-        </div>
+        {/* ④ MY PROGRESS */}
+        <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"20px 18px" }}>
+          <div style={{ fontWeight:800, fontSize:15, color:C.gray900, marginBottom:16 }}>My Progress</div>
 
-        {/* Stats */}
-        <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"18px 16px" }}>
-          <div style={{ fontWeight:800, fontSize:16, color:C.gray900, marginBottom:14 }}>Summit Stats</div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:18 }}>
-            <div style={{ background:C.successLight, borderRadius:10, padding:"14px 12px", textAlign:"left" }}>
-              <Icon name="fire" size={18} color={C.success}/>
-              <div style={{ fontSize:24, fontWeight:900, color:C.gray900, margin:"6px 0 3px" }}>12</div>
-              <div style={{ fontSize:12, color:C.success, fontWeight:700, letterSpacing:.6 }}>Day Streak</div>
+          {/* Circular % */}
+          <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:18, padding:"14px 16px", background:C.gray50, borderRadius:12 }}>
+            <div style={{ width:52, height:52, borderRadius:"50%", border:`4px solid ${C.primaryBorder}`, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", flexShrink:0, background:C.white }}>
+              <span style={{ fontSize:14, fontWeight:900, color:C.gray900, lineHeight:1 }}>{pct}%</span>
             </div>
-            <div style={{ background:C.primaryLight, borderRadius:10, padding:"14px 12px", textAlign:"left" }}>
-              <Icon name="star" size={18} color={C.primary}/>
-              <div style={{ fontSize:24, fontWeight:900, color:C.gray900, margin:"6px 0 3px" }}>320</div>
-              <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:.6 }}>Exp Points</div>
+            <div>
+              <div style={{ fontSize:13, fontWeight:700, color:C.gray800 }}>Overall completion</div>
+              <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{completed} of {enrolledSessions.length} sessions done</div>
             </div>
           </div>
-          <div style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.8, marginBottom:12, textTransform:"uppercase" }}>Upcoming Sessions</div>
-          {[{date:"OCT 14",title:"Q&A with Founders",time:"10:00 AM EST"},{date:"OCT 16",title:"Workshop: IEP Planning",time:"02:00 PM EST"}].map((s,i)=>(
-            <div key={i} style={{ display:"flex", gap:12, marginBottom:12, alignItems:"center" }}>
-              <div style={{ background:C.primary, color:"#fff", borderRadius:8, padding:"5px 8px", textAlign:"center", flexShrink:0, minWidth:38 }}>
-                <div style={{ fontSize:12, fontWeight:700, opacity:.85, letterSpacing:.5 }}>{s.date.split(" ")[0]}</div>
-                <div style={{ fontSize:16, fontWeight:900, lineHeight:1.1 }}>{s.date.split(" ")[1]}</div>
+
+          {/* Stat rows */}
+          {[
+            { icon:"play-circle",  label:"Sessions Watched",    value: completed,                    color:C.primary   },
+            { icon:"certificate",  label:"Certificates Earned", value: certsEarned,                  color:"#f59e0b"   },
+            { icon:"timer",        label:"Hours Learned",       value: "42.5h",                      color:C.success   },
+            { icon:"fire",         label:"Day Streak",          value: "12",                         color:"#ef4444"   },
+          ].map((row, i, arr) => (
+            <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom: i < arr.length-1 ? `1px solid ${C.gray100}` : "none" }}>
+              <div style={{ width:32, height:32, borderRadius:9, background:`color-mix(in srgb, ${row.color} 12%, transparent)`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <Icon name={row.icon} size={16} color={row.color}/>
               </div>
-              <div>
-                <div style={{ fontSize:12, fontWeight:700, color:C.gray800, lineHeight:1.4 }}>{s.title}</div>
-                <div style={{ fontSize:12, color:C.gray500, marginTop:1 }}>{s.time}</div>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:13, fontWeight:600, color:C.gray700 }}>{row.label}</div>
               </div>
+              <div style={{ fontSize:16, fontWeight:900, color:C.gray900 }}>{row.value}</div>
             </div>
           ))}
-          <Btn variant="ghost" size="sm" onClick={()=>onNavigate("schedules")} style={{ width:"100%", justifyContent:"center", marginTop:6 }}>View all</Btn>
         </div>
+
+        {/* XP + Streak mini-badges */}
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+          <div style={{ background:C.successLight, borderRadius:12, padding:"14px 12px" }}>
+            <Icon name="fire" size={18} color={C.success}/>
+            <div style={{ fontSize:22, fontWeight:900, color:C.gray900, margin:"6px 0 2px" }}>12</div>
+            <div style={{ fontSize:11, color:C.success, fontWeight:700, letterSpacing:.5 }}>Day Streak</div>
+          </div>
+          <div style={{ background:C.primaryLight, borderRadius:12, padding:"14px 12px" }}>
+            <Icon name="star" size={18} color={C.primary}/>
+            <div style={{ fontSize:22, fontWeight:900, color:C.gray900, margin:"6px 0 2px" }}>320</div>
+            <div style={{ fontSize:11, color:C.primary, fontWeight:700, letterSpacing:.5 }}>XP Points</div>
+          </div>
+        </div>
+
+        {/* Knowledge Checks */}
+        {hasStarted && (
+          <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, overflow:"hidden" }}>
+            <div style={{ padding:"14px 16px 10px", fontWeight:800, fontSize:14, color:C.gray900, borderBottom:`1px solid ${C.gray100}` }}>Knowledge Checks</div>
+            {[
+              { session: SESSIONS.find(s=>s.id===1), title:"Mental Health in SPED", instructor:"Tara Roehl", questions:15 },
+              { session: SESSIONS.find(s=>s.id===2), title:"Accommodations & Inclusion", instructor:"Farwa Husain", questions:15 },
+            ].map((q, i, arr) => (
+              <div key={i} style={{ display:"flex", alignItems:"center", padding:"12px 16px", borderBottom: i < arr.length-1 ? `1px solid ${C.gray100}` : "none", gap:10 }}>
+                <div style={{ width:34, height:34, borderRadius:9, background:C.primaryLight, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <Icon name="medal" size={17} color={C.primary}/>
+                </div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontWeight:600, fontSize:12, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{q.title}</div>
+                  <div style={{ fontSize:11, color:C.gray500, marginTop:1 }}>{q.questions} questions</div>
+                </div>
+                <button onClick={() => q.session && onAssessmentClick(q.session)}
+                  style={{ fontSize:11, fontWeight:700, color:C.primary, background:"transparent", border:"none", cursor:"pointer", whiteSpace:"nowrap", padding:0 }}>
+                  Start →
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
       </div>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
@@ -1522,7 +1652,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
 
               {/* ── Card footer ── */}
               <div style={{ padding:"14px 16px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                <div style={{ fontSize:12, color:C.gray400 }}>
+                <div style={{ fontSize:12, color:C.gray600 }}>
                   {sessions.length > 0 ? <span>{sessions.length} recorded</span> : <span>No sessions yet</span>}
                 </div>
                 <div style={{ display:"flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, color:C.primary, textDecoration: hov ? "underline" : "none" }}>
@@ -1542,6 +1672,8 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
 ───────────────────────────────────────────────────────────────────────────── */
 function SchedulePage({ onOpenSession, toast, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{} }) {
   const [btnStates, setBtnStates] = useState({});
+  const [calendarItem, setCalendarItem] = useState(null);
+  const [activeTab, setActiveTab] = useState("upcoming");
 
   function getCta(item) {
     if (scheduleRegistrations[item.id]) return "Registered";
@@ -1556,111 +1688,189 @@ function SchedulePage({ onOpenSession, toast, scheduleRegistrations = {}, setSch
       else toast({ type:"info", title:"Opening session…", message:item.title.slice(0,50) });
       return;
     }
-    if (cta==="Register") { setScheduleRegistrations(r=>({...r,[item.id]:true})); toast({ type:"success", title:"Registered! 🎉", message:`Added "${item.title.slice(0,40)}…" to your schedule.` }); return; }
+    if (cta==="Register") { setCalendarItem(item); return; }
     if (cta==="Remind Me") { setBtnStates(b=>({...b,[item.id]:"Reminded ✓"})); toast({ type:"success", title:"Reminder set! 🔔", message:`We'll notify you before "${item.title.slice(0,40)}…" starts.` }); return; }
     if (cta==="Reminded ✓") { setBtnStates(b=>({...b,[item.id]:"Remind Me"})); toast({ type:"info", message:"Reminder removed." }); return; }
   }
 
-  function ctaVariant(cta) {
-    if (cta==="Reminded ✓") return "success";
-    if (cta==="Remind Me"||cta==="Register") return "primary";
-    return "outline";
-  }
+  // Group items by date label
+  const filtered = SCHEDULE.filter(item => item.status === activeTab);
+  const grouped = filtered.reduce((acc, item) => {
+    if (!acc[item.date]) acc[item.date] = [];
+    acc[item.date].push(item);
+    return acc;
+  }, {});
+  const dateGroups = Object.entries(grouped);
+
+  const upcomingCount = SCHEDULE.filter(i => i.status === "upcoming").length;
+  const pastCount = SCHEDULE.filter(i => i.status === "past").length;
 
   return (
     <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
+      {calendarItem && (
+        <AddToCalendarModal
+          item={calendarItem}
+          onClose={() => setCalendarItem(null)}
+          onConfirm={() => {
+            setScheduleRegistrations(r => ({ ...r, [calendarItem.id]: true }));
+            toast({ type:"success", title:"Registered! 🎉", message:`"${calendarItem.title.slice(0,40)}…" added to your schedule.` });
+          }}
+        />
+      )}
+
+      {/* Header */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:28 }}>
         <div>
-          <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>EVENT PROGRAMMING</div>
-          <h1 style={{ margin:"0 0 6px", fontSize:24, fontWeight:900, color:C.gray900 }}>Spread Summit Schedule</h1>
-          <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>Explore the full lineup of sessions, workshops, and keynote events.</p>
+          <div style={{ fontSize:11, color:C.primary, fontWeight:700, letterSpacing:1.2, marginBottom:5, textTransform:"uppercase" }}>Event Programming</div>
+          <h1 style={{ margin:"0 0 5px", fontSize:26, fontWeight:900, color:C.gray900, lineHeight:1.2 }}>SPED Summit Schedule</h1>
+          <p style={{ margin:0, color:C.gray500, fontSize:13, lineHeight:1.5 }}>Explore the full lineup of sessions, workshops &amp; keynote events.</p>
         </div>
-        <div style={{ display:"flex", gap:24 }}>
-          {[{label:"TOTAL SESSIONS",val:"42"},{label:"SPEAKERS",val:"18"}].map(s=>(
-            <div key={s.label} style={{ textAlign:"right" }}>
-              <div style={{ fontSize:12, color:C.gray400, fontWeight:600 }}>{s.label}</div>
-              <div style={{ fontSize:28, fontWeight:900, color:C.gray900 }}>{s.val}</div>
-            </div>
+
+        {/* Tab switcher */}
+        <div style={{ display:"flex", background:C.gray100, borderRadius:10, padding:3, gap:2, alignSelf:"flex-start" }}>
+          {[
+            { key:"upcoming", label:"Upcoming", count:upcomingCount },
+            { key:"past",     label:"Past",     count:pastCount },
+          ].map(tab => (
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+              style={{
+                padding:"7px 16px", borderRadius:8, border:"none", cursor:"pointer", fontSize:13, fontWeight:700,
+                background: activeTab === tab.key ? C.white : "transparent",
+                color: activeTab === tab.key ? C.gray900 : C.gray500,
+                boxShadow: activeTab === tab.key ? "0 1px 4px rgba(0,0,0,0.10)" : "none",
+                display:"flex", alignItems:"center", gap:6, transition:"all 0.15s",
+              }}>
+              {tab.label}
+              <span style={{
+                fontSize:11, fontWeight:700, padding:"1px 6px", borderRadius:20,
+                background: activeTab === tab.key ? C.primaryLight : C.gray200,
+                color: activeTab === tab.key ? C.primary : C.gray500,
+              }}>{tab.count}</span>
+            </button>
           ))}
         </div>
       </div>
-      <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-        {SCHEDULE.map(item => {
-          const tc = SCHEDULE_TYPE_COLORS[item.type] || {c:C.gray500,bg:C.gray100};
-          const cta = getCta(item);
-          const isPast = item.status === "past";
-          // Parse date label into parts e.g. "26th Mar" → month "MAR", day "26"
-          const dateParts = item.date.match(/(\d+)\w*\s+(\w+)/);
-          const dayNum  = dateParts ? dateParts[1] : item.date;
-          const monthAb = dateParts ? dateParts[2].toUpperCase().slice(0,3) : "";
-          return (
-            <div key={item.id}
-              style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:16, padding:"18px 20px", display:"flex", alignItems:"center", gap:16, opacity: isPast ? 0.82 : 1 }}>
 
-              {/* Date block */}
-              <div style={{ flexShrink:0, width:52, background: isPast ? C.gray100 : C.primaryLight, borderRadius:12, padding:"8px 0", display:"flex", flexDirection:"column", alignItems:"center", border:`1px solid ${isPast ? C.gray200 : C.primaryBorder}` }}>
-                <span style={{ fontSize:12, fontWeight:700, color: isPast ? C.gray400 : C.primary, letterSpacing:.5 }}>{monthAb}</span>
-                <span style={{ fontSize:22, fontWeight:900, color: isPast ? C.gray600 : C.gray900, lineHeight:1.1 }}>{dayNum}</span>
-                <span style={{ fontSize:12, color: isPast ? C.gray400 : C.gray500, marginTop:1 }}>{item.time.split(" ")[0]}</span>
-              </div>
+      {/* Timeline */}
+      {dateGroups.length === 0 ? (
+        <div style={{ textAlign:"center", padding:"60px 0", color:C.gray400 }}>
+          <Icon name="calendar" size={36} color={C.gray300}/>
+          <div style={{ marginTop:12, fontSize:15, fontWeight:600 }}>No {activeTab} sessions</div>
+        </div>
+      ) : (
+        <div style={{ display:"flex", flexDirection:"column" }}>
+          {dateGroups.map(([dateLabel, items], gi) => {
+            const dateParts = dateLabel.match(/(\d+)\w*\s+(\w+)/);
+            const dayNum   = dateParts ? dateParts[1] : dateLabel;
+            const monthStr = dateParts ? dateParts[2] : "";
+            const weekdays = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+            const months   = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+            const mIdx     = months[monthStr.toLowerCase().slice(0,3)];
+            const dObj     = (mIdx !== undefined) ? new Date(2026, mIdx, parseInt(dayNum)) : null;
+            const weekday  = dObj ? weekdays[dObj.getDay()] : "";
+            const isLastGroup = gi === dateGroups.length - 1;
 
-              {/* Thumbnail */}
-              <div style={{ width:100, height:64, borderRadius:10, overflow:"hidden", flexShrink:0 }}>
-                <SessionThumb id={item.id} height={64} noPlayHover/>
-              </div>
+            return (
+              <div key={dateLabel} style={{ display:"flex", alignItems:"stretch" }}>
 
-              {/* Content */}
-              <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:5 }}>
-                  <Badge label={item.type} color={tc.c} bg={tc.bg} size={12}/>
-                  {isPast && <Badge label="PAST" color={C.gray500} bg={C.gray100} size={12}/>}
-                  {!isPast && <Badge label="UPCOMING" color={C.primary} bg={C.primaryLight} size={12}/>}
-                </div>
-                <div style={{ fontSize:14, fontWeight:700, color: isPast ? C.gray600 : C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", marginBottom:3 }}>{item.title}</div>
-                <div style={{ fontSize:12, color:C.gray400, display:"flex", alignItems:"center", gap:6 }}>
-                  <Avatar name={item.instructor} size={18}/>
-                  <span>{item.instructor}</span>
-                  <span style={{ color:C.gray200 }}>·</span>
-                  <Icon name="clock" size={12} color={C.gray400}/>
-                  <span>{item.time}</span>
-                </div>
-              </div>
-
-              {/* CTA */}
-              <div style={{ flexShrink:0, display:"flex", flexDirection:"column", alignItems:"flex-end", gap:6 }}>
-                {cta === "Recording Unavailable" ? (
-                  <div style={{ padding:"8px 14px", borderRadius:8, background:C.gray100, fontSize:12, fontWeight:600, color:C.gray400, flexShrink:0, whiteSpace:"nowrap", display:"flex", alignItems:"center", gap:6 }}>
-                    <Icon name="warning-circle" size={13} color={C.gray400}/>
-                    Recording unavailable
+                {/* ── Date label column ── */}
+                <div style={{ width:72, flexShrink:0, paddingTop:2, textAlign:"right", paddingRight:0 }}>
+                  <div style={{ display:"inline-block", textAlign:"center" }}>
+                    <div style={{ fontSize:11, fontWeight:600, color:C.gray400, letterSpacing:.5, textTransform:"uppercase" }}>{weekday}</div>
+                    <div style={{ fontSize:28, fontWeight:900, color:C.gray900, lineHeight:1.1 }}>{dayNum}</div>
+                    <div style={{ fontSize:11, fontWeight:700, color:C.primary, textTransform:"uppercase", letterSpacing:.8 }}>{monthStr.slice(0,3).toUpperCase()}</div>
                   </div>
-                ) : cta==="Registered" ? (
-                  <div style={{ width:34, height:34, borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", display:"flex", alignItems:"center", justifyContent:"center" }}
-                    title="Registered">
-                    <Icon name="bell" size={15} color={C.primary}/>
-                  </div>
-                ) : cta==="Register" ? (
-                  <button onClick={()=>handleCta(item)}
-                    style={{ padding:"8px 16px", borderRadius:8, border:`1px solid ${C.primary}`, background:"transparent", color:C.primary, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap" }}>
-                    <Icon name="bell" size={13} color={C.primary}/> Register
-                  </button>
-                ) : (
-                <Btn variant={ctaVariant(cta)} onClick={()=>handleCta(item)} size="sm">
-                  {(cta==="Remind Me"||cta==="Reminded ✓") && <Icon name="bell" size={13} color={cta==="Reminded ✓"?C.success:"#fff"}/>}
-                  {(cta==="Watch Again"||cta==="Resume Lesson") && <Icon name="play" size={13} color={C.gray600}/>}
-                  {cta}
-                </Btn>
-                )}
-                {(cta==="Remind Me"||cta==="Reminded ✓") && (
-                  <button onClick={()=>toast({type:"success",title:"Added to calendar 📅",message:`"${item.title.slice(0,40)}…" saved to your calendar.`})}
-                    style={{ width:30, height:30, borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <Icon name="calendar" size={14} color={C.gray500}/>
-                  </button>
-                )}
+                </div>
+
+                {/* ── Spine: dashed line + dots ── */}
+                <div style={{ width:32, flexShrink:0, display:"flex", flexDirection:"column", alignItems:"center", position:"relative" }}>
+                  {/* Top segment of dashed line — above first dot */}
+                  {gi > 0 && (
+                    <div style={{ width:0, height:14, borderLeft:"2px dashed var(--c-gray200)" }}/>
+                  )}
+                  {gi === 0 && <div style={{ height:14 }}/>}
+
+                  {/* Date dot */}
+                  <div style={{ width:10, height:10, borderRadius:"50%", flexShrink:0, zIndex:1,
+                    background: activeTab === "upcoming" ? C.primary : C.gray300,
+                    border:`2px solid ${activeTab === "upcoming" ? "var(--c-primaryBorder)" : "var(--c-gray200)"}`,
+                    boxShadow: activeTab === "upcoming" ? "0 0 0 3px var(--c-primaryLight)" : "none",
+                  }}/>
+
+                  {/* Remaining line to bottom */}
+                  {!isLastGroup && (
+                    <div style={{ flex:1, width:0, borderLeft:"2px dashed var(--c-gray200)", minHeight:20 }}/>
+                  )}
+                </div>
+
+                {/* ── Cards column ── */}
+                <div style={{ flex:1, paddingLeft:12, paddingBottom: isLastGroup ? 8 : 28, paddingTop:0, display:"flex", flexDirection:"column", gap:10 }}>
+                  {items.map((item) => {
+                    const tc  = SCHEDULE_TYPE_COLORS[item.type] || { c:C.gray500, bg:"rgba(128,128,128,0.10)" };
+                    const cta = getCta(item);
+                    const isPast = item.status === "past";
+                    return (
+                      <div key={item.id} style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:16, padding:"14px 16px", display:"flex", gap:12, alignItems:"center", opacity: isPast ? 0.82 : 1 }}>
+
+                        {/* Thumbnail */}
+                        <div style={{ width:84, height:56, borderRadius:10, overflow:"hidden", flexShrink:0 }}>
+                          <SessionThumb id={item.id} height={56} noPlayHover/>
+                        </div>
+
+                        {/* Body */}
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ display:"flex", alignItems:"center", gap:5, marginBottom:4, flexWrap:"wrap" }}>
+                            <Badge label={item.type} color={tc.c} bg={tc.bg} size={11}/>
+                            <span style={{ fontSize:11, color:C.gray400 }}>·</span>
+                            <span style={{ fontSize:11, color:C.gray500, display:"flex", alignItems:"center", gap:3 }}>
+                              <Icon name="clock" size={11} color={C.gray400}/>{item.time}
+                            </span>
+                          </div>
+                          <div style={{ fontSize:14, fontWeight:700, color:C.gray900, marginBottom:4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.title}</div>
+                          <div style={{ display:"flex", alignItems:"center", gap:5 }}>
+                            <Avatar name={item.instructor} size={18}/>
+                            <span style={{ fontSize:12, color:C.gray600, fontWeight:500 }}>{item.instructor}</span>
+                          </div>
+                        </div>
+
+                        {/* CTA */}
+                        <div style={{ flexShrink:0 }}>
+                          {cta === "Recording Unavailable" ? (
+                            <Btn variant="outline" size="sm" disabled>
+                              <Icon name="warning-circle" size={13} color={C.gray400}/> Unavailable
+                            </Btn>
+                          ) : cta === "Registered" ? (
+                            <Btn variant="success" size="sm">
+                              <Icon name="check-circle" size={13} color={C.success}/> Registered
+                            </Btn>
+                          ) : cta === "Register" ? (
+                            <Btn variant="primary" size="sm" onClick={() => handleCta(item)}>
+                              <Icon name="bell" size={13} color="#fff"/> Register
+                            </Btn>
+                          ) : (cta === "Watch Again" || cta === "Resume Lesson") ? (
+                            <Btn variant="outline" size="sm" onClick={() => handleCta(item)}>
+                              <Icon name="play" size={13} color={C.gray600}/> {cta}
+                            </Btn>
+                          ) : cta === "Reminded ✓" ? (
+                            <Btn variant="success" size="sm" onClick={() => handleCta(item)}>
+                              <Icon name="bell" size={13} color={C.success}/> Reminded
+                            </Btn>
+                          ) : cta === "Remind Me" ? (
+                            <Btn variant="primary" size="sm" onClick={() => handleCta(item)}>
+                              <Icon name="bell" size={13} color="#fff"/> Remind Me
+                            </Btn>
+                          ) : null}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -1733,7 +1943,10 @@ function SessionDetail({ session, onBack, backLabel, toast, onAssessmentClick })
   function switchLesson(idx) {
     const l = session.lessons[idx];
     if (!l || l.status==="locked") { toast({ type:"warning", title:"Lesson locked", message:"Complete previous lessons to unlock this one." }); return; }
-    if (l.type==="quiz") { onAssessmentClick && onAssessmentClick(session); return; }
+    if (l.type==="quiz") {
+      if (progress < 80) { toast({ type:"warning", title:"Watch more to unlock", message:`You need to watch at least 80% of the video before taking the assessment. Currently at ${progress}%.` }); return; }
+      onAssessmentClick && onAssessmentClick(session); return;
+    }
     setActiveLesson(idx);
     setProgress(l.status==="completed"?100:0);
     setPlaying(false);
@@ -2597,7 +2810,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
                           style={{ padding:"7px 12px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray600, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
                           <Icon name="share-network" size={13} color={C.gray500}/> Share
                         </button>
-                        <button onClick={()=>downloadCertificate({ recipientName:userName, sessionTitle:session.title, instructor:session.instructor, quizTitle:l.title })}
+                        <button onClick={()=>downloadCertificate({ recipientName:userName, sessionTitle:session.title, instructor:session.instructor, quizTitle:l.title, description:session.description, duration:session.duration })}
                           style={{ padding:"7px 12px", borderRadius:8, border:"none", background:C.primary, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
                           <Icon name="download" size={13} color="#fff"/> Download
                         </button>
@@ -2636,7 +2849,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
                     style={{ padding:"8px 14px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray600, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
                     <Icon name="share-network" size={13} color={C.gray500}/> Share
                   </button>
-                  <button onClick={()=>downloadCertificate({ recipientName:userName, sessionTitle:session.title, instructor:session.instructor, duration:session.duration, score:qs?.score })}
+                  <button onClick={()=>downloadCertificate({ recipientName:userName, sessionTitle:session.title, instructor:session.instructor, duration:session.duration, score:qs?.score, description:session.description })}
                     style={{ padding:"8px 14px", borderRadius:8, border:"none", background:C.primary, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
                     <Icon name="download" size={13} color="#fff"/> Download
                   </button>
@@ -2698,12 +2911,12 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
                 </div>
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
-                  <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{s.instructor}</div>
+                  <div style={{ fontSize:12, color:C.gray600, marginTop:2 }}>{s.instructor}</div>
                   {lessonQuizCount > 0 && (
-                    <div style={{ fontSize:11, color:C.gray400, marginTop:3 }}>{lessonDoneCount}/{lessonQuizCount} knowledge checks · {passed ? "Certificate earned" : hasQuiz ? "Final assessment pending" : "No final assessment"}</div>
+                    <div style={{ fontSize:11, color:C.gray600, marginTop:3 }}>{lessonDoneCount}/{lessonQuizCount} knowledge checks · {passed ? "Certificate earned" : hasQuiz ? "Final assessment pending" : "No final assessment"}</div>
                   )}
                 </div>
-                <Icon name="caret-right" size={16} color={C.gray300}/>
+                <Icon name="caret-right" size={16} color={C.gray500}/>
               </div>
             );
           })}
@@ -3895,9 +4108,9 @@ function AdminCreateSession({ onBack, toast }) {
                 <input type="datetime-local" value={form.availableTo} onChange={e=>upd("availableTo",e.target.value)} style={inputSt}/>
               </div>
             </div>
-            <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 12px", background:"#f0f9ff", borderRadius:8, border:"1px solid #bae6fd" }}>
-              <Icon name="info" size={14} color="#0369a1"/>
-              <span style={{ fontSize:12, color:"#0369a1", lineHeight:1.5 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 12px", background:C.primaryLight, borderRadius:8, border:`1px solid ${C.primaryBorder}` }}>
+              <Icon name="info" size={14} color={C.primary}/>
+              <span style={{ fontSize:12, color:C.primary, lineHeight:1.5 }}>
                 When the <strong>Available To</strong> date passes, this session is automatically moved to <strong>Archive</strong> and hidden from students. Leave blank for no expiry.
               </span>
             </div>
@@ -4136,9 +4349,9 @@ function AdminEditSession({ session, onBack, toast }) {
                 <input type="datetime-local" value={form.availableTo} onChange={e=>upd("availableTo",e.target.value)} style={inputSt}/>
               </div>
             </div>
-            <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 12px", background:"#f0f9ff", borderRadius:8, border:"1px solid #bae6fd" }}>
-              <Icon name="info" size={14} color="#0369a1"/>
-              <span style={{ fontSize:12, color:"#0369a1", lineHeight:1.5 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 12px", background:C.primaryLight, borderRadius:8, border:`1px solid ${C.primaryBorder}` }}>
+              <Icon name="info" size={14} color={C.primary}/>
+              <span style={{ fontSize:12, color:C.primary, lineHeight:1.5 }}>
                 The session goes live at the <strong>Available From</strong> date &amp; time and auto-archives after <strong>Available To</strong>. Leave blank for no expiry.
               </span>
             </div>
@@ -4615,8 +4828,120 @@ function ReviewModal({ session, passed, score, onClose, onSubmit }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    SHARE CERTIFICATE MODAL
 ───────────────────────────────────────────────────────────────────────────── */
+function AddToCalendarModal({ item, onClose, onConfirm }) {
+  const dark = document.querySelector("[data-theme='dark']") !== null;
+
+  // Parse date + time from schedule item e.g. "28th Mar" + "09:00 AM"
+  function buildDatetime() {
+    try {
+      const year = new Date().getFullYear();
+      const dateStr = item.date.replace(/(\d+)\w+/, "$1"); // "28 Mar" or "6th Jan 2025" → strip ordinal
+      const cleaned = dateStr.replace(/(\d+)\w*\s+(\w+)(\s+\d+)?/, (_, d, m, y) => `${d} ${m}${y||" "+year}`);
+      const dt = new Date(`${cleaned} ${item.time}`);
+      return isNaN(dt) ? new Date() : dt;
+    } catch { return new Date(); }
+  }
+
+  const start = buildDatetime();
+  const end = new Date(start.getTime() + 60 * 60 * 1000); // +1 hour
+
+  function pad(n) { return String(n).padStart(2, "0"); }
+  function toICS(dt) {
+    return `${dt.getUTCFullYear()}${pad(dt.getUTCMonth()+1)}${pad(dt.getUTCDate())}T${pad(dt.getUTCHours())}${pad(dt.getUTCMinutes())}00Z`;
+  }
+  function toGoogle(dt) {
+    return `${dt.getUTCFullYear()}${pad(dt.getUTCMonth()+1)}${pad(dt.getUTCDate())}T${pad(dt.getUTCHours())}${pad(dt.getUTCMinutes())}00Z`;
+  }
+
+  const title   = encodeURIComponent(item.title);
+  const details = encodeURIComponent(`SPED Summit Session\nInstructor: ${item.instructor}\nspedsummit.com`);
+  const dates   = `${toGoogle(start)}/${toGoogle(end)}`;
+  const googleUrl = `https://calendar.google.com/calendar/r/eventedit?text=${title}&dates=${dates}&details=${details}&sf=true&output=xml`;
+
+  function downloadICS() {
+    const ics = [
+      "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//SPED Summit//EN",
+      "BEGIN:VEVENT",
+      `DTSTART:${toICS(start)}`,
+      `DTEND:${toICS(end)}`,
+      `SUMMARY:${item.title}`,
+      `DESCRIPTION:SPED Summit Session\\nInstructor: ${item.instructor}\\nspedsummit.com`,
+      `URL:https://spedsummit.com`,
+      "END:VEVENT", "END:VCALENDAR"
+    ].join("\r\n");
+    const blob = new Blob([ics], { type: "text/calendar" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${item.title.replace(/[^a-z0-9]/gi,"_").slice(0,40)}.ics`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  const displayDate = start.toLocaleDateString("en-US", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+  const displayTime = start.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit" });
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", zIndex:900, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}
+      onClick={onClose}>
+      <div style={{ background: dark ? "#1e2647" : "#fff", borderRadius:20, width:"100%", maxWidth:420, boxShadow:"0 24px 60px rgba(0,0,0,0.3)", overflow:"hidden", position:"relative" }}
+        onClick={e => e.stopPropagation()}>
+
+        {/* Close */}
+        <button onClick={onClose} style={{ position:"absolute", top:14, right:14, width:28, height:28, borderRadius:8, border:`1px solid ${dark?"rgba(255,255,255,0.12)":C.gray200}`, background:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <Icon name="x" size={14} color={dark?"rgba(255,255,255,0.5)":C.gray500}/>
+        </button>
+
+        {/* Header */}
+        <div style={{ padding:"28px 28px 20px", borderBottom:`1px solid ${dark?"rgba(255,255,255,0.08)":C.gray100}` }}>
+          <div style={{ width:48, height:48, borderRadius:14, background:"rgba(54,153,255,0.12)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:14 }}>
+            <Icon name="calendar" size={24} color={C.primary}/>
+          </div>
+          <div style={{ fontSize:18, fontWeight:800, color: dark?"#fff":C.gray900, marginBottom:6 }}>Add to Calendar</div>
+          <div style={{ fontSize:13, fontWeight:700, color: dark?"rgba(255,255,255,0.8)":C.gray800, marginBottom:4, lineHeight:1.4 }}>{item.title}</div>
+          <div style={{ fontSize:12, color: dark?"rgba(255,255,255,0.45)":C.gray500 }}>{displayDate} · {displayTime}</div>
+        </div>
+
+        {/* Options */}
+        <div style={{ padding:"20px 28px 24px", display:"flex", flexDirection:"column", gap:10 }}>
+          {/* Google Calendar */}
+          <a href={googleUrl} target="_blank" rel="noopener noreferrer"
+            onClick={() => { onConfirm(); onClose(); }}
+            style={{ display:"flex", alignItems:"center", gap:14, padding:"14px 16px", borderRadius:12, border:`1px solid ${dark?"rgba(255,255,255,0.1)":C.gray200}`, background: dark?"rgba(255,255,255,0.04)":"#fff", cursor:"pointer", textDecoration:"none", transition:"background .15s" }}
+            onMouseEnter={e=>e.currentTarget.style.background=dark?"rgba(255,255,255,0.08)":C.gray50}
+            onMouseLeave={e=>e.currentTarget.style.background=dark?"rgba(255,255,255,0.04)":"#fff"}>
+            <div style={{ width:36, height:36, borderRadius:10, background:"#fff", border:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow:"0 1px 4px rgba(0,0,0,0.08)" }}>
+              <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M44 20H24v8h11.3C33.7 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-8 20-20 0-1.3-.1-2.7-.4-4z"/><path fill="#34A853" d="M6.3 14.7l6.6 4.8C14.5 15.1 18.9 12 24 12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4c-7.7 0-14.3 4.4-17.7 10.7z"/><path fill="#FBBC05" d="M24 44c5.2 0 9.9-1.8 13.5-4.7l-6.2-5.2C29.4 35.6 26.8 36 24 36c-5.2 0-9.6-2.9-11.3-7H6.3C9.7 39.6 16.3 44 24 44z"/><path fill="#EA4335" d="M44 20H24v8h11.3c-.8 2.3-2.3 4.3-4.3 5.8l6.2 5.2C41.6 35.6 44 30.1 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:14, fontWeight:700, color: dark?"#fff":C.gray900 }}>Google Calendar</div>
+              <div style={{ fontSize:12, color: dark?"rgba(255,255,255,0.45)":C.gray500, marginTop:1 }}>Opens in a new tab</div>
+            </div>
+            <Icon name="arrow-square-out" size={16} color={dark?"rgba(255,255,255,0.3)":C.gray400}/>
+          </a>
+
+          {/* Apple / iCal */}
+          <button onClick={() => { downloadICS(); onConfirm(); onClose(); }}
+            style={{ display:"flex", alignItems:"center", gap:14, padding:"14px 16px", borderRadius:12, border:`1px solid ${dark?"rgba(255,255,255,0.1)":C.gray200}`, background: dark?"rgba(255,255,255,0.04)":"#fff", cursor:"pointer", transition:"background .15s", width:"100%" }}
+            onMouseEnter={e=>e.currentTarget.style.background=dark?"rgba(255,255,255,0.08)":C.gray50}
+            onMouseLeave={e=>e.currentTarget.style.background=dark?"rgba(255,255,255,0.04)":"#fff"}>
+            <div style={{ width:36, height:36, borderRadius:10, background:"#000", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98l-.09.06c-.22.14-2.18 1.28-2.16 3.82.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.76M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            </div>
+            <div style={{ flex:1, textAlign:"left" }}>
+              <div style={{ fontSize:14, fontWeight:700, color: dark?"#fff":C.gray900 }}>Apple Calendar / iCal</div>
+              <div style={{ fontSize:12, color: dark?"rgba(255,255,255,0.45)":C.gray500, marginTop:1 }}>Downloads .ics file</div>
+            </div>
+            <Icon name="download" size={16} color={dark?"rgba(255,255,255,0.3)":C.gray400}/>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ShareCertificateModal({ certUrl, sessionTitle, onClose }) {
   const [copied, setCopied] = useState(false);
+  const dark = document.querySelector("[data-theme='dark']") !== null;
   const fullUrl = `https://${certUrl}`;
   const text = encodeURIComponent(`I just earned a certificate in "${sessionTitle}" from SPED Summit! 🎓`);
   const encodedUrl = encodeURIComponent(fullUrl);
@@ -4685,19 +5010,19 @@ function ShareCertificateModal({ certUrl, sessionTitle, onClose }) {
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", zIndex:800,
                   display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}
          onClick={onClose}>
-      <div style={{ background:"#fff", borderRadius:16, width:"100%", maxWidth:440,
-                    boxShadow:"0 24px 60px rgba(0,0,0,0.25)", padding:"28px 28px 24px", position:"relative" }}
+      <div style={{ background: dark ? "#1e2647" : "#fff", borderRadius:16, width:"100%", maxWidth:440,
+                    boxShadow:"0 24px 60px rgba(0,0,0,0.4)", padding:"28px 28px 24px", position:"relative" }}
            onClick={e => e.stopPropagation()}>
         {/* Close */}
         <button onClick={onClose}
           style={{ position:"absolute", top:14, right:14, width:28, height:28, borderRadius:8,
-                   border:`1px solid ${C.gray200}`, background:"none", cursor:"pointer",
+                   border:`1px solid ${dark ? "rgba(255,255,255,0.12)" : C.gray200}`, background:"none", cursor:"pointer",
                    display:"flex", alignItems:"center", justifyContent:"center" }}>
-          <Icon name="x" size={14} color={C.gray500}/>
+          <Icon name="x" size={14} color={dark ? "rgba(255,255,255,0.5)" : C.gray500}/>
         </button>
 
-        <div style={{ fontSize:20, fontWeight:700, color:"#181c32", marginBottom:6 }}>Share this certificate</div>
-        <div style={{ fontSize:13, color:C.gray400, marginBottom:24 }}>Show your network what you've accomplished</div>
+        <div style={{ fontSize:20, fontWeight:700, color: dark ? "#fff" : "#181c32", marginBottom:6 }}>Share this certificate</div>
+        <div style={{ fontSize:13, color: dark ? "rgba(255,255,255,0.5)" : C.gray400, marginBottom:24 }}>Show your network what you've accomplished</div>
 
         {/* Social icons */}
         <div style={{ display:"flex", gap:16, justifyContent:"center", marginBottom:24 }}>
@@ -4706,25 +5031,25 @@ function ShareCertificateModal({ certUrl, sessionTitle, onClose }) {
                style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:8, textDecoration:"none" }}>
               <div style={{ width:50, height:50, borderRadius:"50%", background:s.color,
                             display:"flex", alignItems:"center", justifyContent:"center",
-                            boxShadow:"0 2px 8px rgba(0,0,0,0.15)", transition:"transform .15s" }}
+                            boxShadow:"0 2px 8px rgba(0,0,0,0.25)", transition:"transform .15s" }}
                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.08)"}
                    onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
                 {s.icon}
               </div>
-              <span style={{ fontSize:11, color:C.gray500, fontWeight:500 }}>{s.label}</span>
+              <span style={{ fontSize:11, color: dark ? "rgba(255,255,255,0.5)" : C.gray500, fontWeight:500 }}>{s.label}</span>
             </a>
           ))}
         </div>
 
         {/* Copy link row */}
-        <div style={{ display:"flex", alignItems:"center", gap:0, border:`1px solid ${C.gray200}`,
-                      borderRadius:10, overflow:"hidden", background:C.gray50 }}>
-          <div style={{ flex:1, padding:"10px 14px", fontSize:12, color:C.gray500,
+        <div style={{ display:"flex", alignItems:"center", gap:0, border:`1px solid ${dark ? "rgba(255,255,255,0.1)" : C.gray200}`,
+                      borderRadius:10, overflow:"hidden", background: dark ? "rgba(255,255,255,0.06)" : C.gray50 }}>
+          <div style={{ flex:1, padding:"10px 14px", fontSize:12, color: dark ? "rgba(255,255,255,0.45)" : C.gray500,
                         overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
             {fullUrl}
           </div>
           <button onClick={copyLink}
-            style={{ padding:"10px 16px", background:"none", border:"none", borderLeft:`1px solid ${C.gray200}`,
+            style={{ padding:"10px 16px", background:"none", border:"none", borderLeft:`1px solid ${dark ? "rgba(255,255,255,0.1)" : C.gray200}`,
                      color: copied ? C.success : C.primary, fontSize:12, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap" }}>
             {copied ? "COPIED!" : "COPY"}
           </button>
