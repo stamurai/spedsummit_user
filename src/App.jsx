@@ -1279,7 +1279,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 /* ─────────────────────────────────────────────────────────────────────────────
    DASHBOARD
 ───────────────────────────────────────────────────────────────────────────── */
-function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{} }) {
+function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS }) {
   const [calendarItem, setCalendarItem] = useState(null);
   const enrolledSessions  = SESSIONS.filter(s => enrolledIds.has(s.id));
   const upcomingSessions  = SESSIONS.filter(s => getSessionState(s.id) === "upcoming");
@@ -1579,7 +1579,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
 /* ─────────────────────────────────────────────────────────────────────────────
    SESSIONS PAGE
 ───────────────────────────────────────────────────────────────────────────── */
-function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set(), onNavigate, initialSeason = null, onSeasonChange, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{} }) {
+function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set(), onNavigate, initialSeason = null, onSeasonChange, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS }) {
   const [activeSeason, setActiveSeason] = useState(initialSeason);
   const [hoveredSeason, setHoveredSeason] = useState(null);
   function changeSeason(id) { setActiveSeason(id); onSeasonChange?.(id); }
@@ -1587,10 +1587,10 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
   /* ── Season Detail View ── */
   if (activeSeason) {
     const season = SEASONS.find(s => s.id === activeSeason);
-    const sessions = SESSIONS.filter(s => season.sessionIds.includes(s.id));
-    const liveSessions     = sessions.filter(s => enrolledIds.has(s.id));
-    const upcomingSessions = sessions.filter(s => getSessionState(s.id) === "upcoming");
-    const pastSessions     = sessions.filter(s => getSessionState(s.id) === "past");
+    const seasonSessions   = sessions.filter(s => season.sessionIds.includes(s.id));
+    const liveSessions     = seasonSessions.filter(s => enrolledIds.has(s.id));
+    const upcomingSessions = seasonSessions.filter(s => getSessionState(s.id) === "upcoming");
+    const pastSessions     = seasonSessions.filter(s => getSessionState(s.id) === "past");
 
     return (
       <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
@@ -1639,16 +1639,34 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
         <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>Browse sessions by season — each season is a curated collection of expert-led content.</p>
       </div>
 
+      {/* Newly published sessions not in any season */}
+      {(() => {
+        const allSeasonIds = new Set(SEASONS.flatMap(s => s.sessionIds));
+        const loose = sessions.filter(s => !allSeasonIds.has(s.id));
+        if (!loose.length) return null;
+        return (
+          <div style={{ marginBottom:28 }}>
+            <div style={{ fontSize:14, fontWeight:800, color:C.gray900, marginBottom:14, display:"flex", alignItems:"center", gap:8 }}>
+              New Sessions
+              <span style={{ fontSize:11, fontWeight:700, color:"#fff", background:"#10b981", padding:"2px 8px", borderRadius:99 }}>● LIVE</span>
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16 }}>
+              {loose.map(s => <SessionCard key={s.id} session={s} onClick={onOpenSession} quizState={quizStates?.[s.id]||{}} onAssessmentClick={onAssessmentClick} onCertificateClick={onCertificateClick}/>)}
+            </div>
+          </div>
+        );
+      })()}
+
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))", gap:20 }}>
         {SEASONS.map(season => {
-          const sessions     = SESSIONS.filter(s => season.sessionIds.includes(s.id));
-          const liveCount     = sessions.filter(s => getSessionState(s.id) === "live").length;
-          const upcomingCount = sessions.filter(s => getSessionState(s.id) === "upcoming").length;
-          const pastCount     = sessions.filter(s => getSessionState(s.id) === "past").length;
+          const seasonSessions = sessions.filter(s => season.sessionIds.includes(s.id));
+          const liveCount     = seasonSessions.filter(s => getSessionState(s.id) === "live").length;
+          const upcomingCount = seasonSessions.filter(s => getSessionState(s.id) === "upcoming").length;
+          const pastCount     = seasonSessions.filter(s => getSessionState(s.id) === "past").length;
           const statusLabel   = liveCount > 0     ? { label:"● LIVE NOW", color:"#fff",    bg:"#10b981" }
                               : upcomingCount > 0 ? { label:"UPCOMING",   color:"#2563eb", bg:"#dbeafe" }
                               : { label:"PAST SEASON", color:"#6b7280", bg:"#f3f4f6" };
-          const firstSession  = sessions[0];
+          const firstSession  = seasonSessions[0];
 
           const hov = hoveredSeason === season.id;
           return (
@@ -1661,9 +1679,9 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
               {/* ── Stacked playlist thumbnail ── */}
               <div style={{ position:"relative", width:"100%", paddingBottom:"56.25%", background:"#1f2937" }}>
                 {/* Back stack layers */}
-                {sessions.length > 1 && (
+                {seasonSessions.length > 1 && (
                   <div style={{ position:"absolute", bottom:-4, left:"6%", right:"6%", height:"100%", borderRadius:10, overflow:"hidden", opacity:0.5, transform:"scale(0.94)" }}>
-                    <SessionThumb id={sessions[1]?.id || sessions[0].id} height="100%" noPlayHover/>
+                    <SessionThumb id={seasonSessions[1]?.id || seasonSessions[0].id} height="100%" noPlayHover/>
                   </div>
                 )}
                 {/* Main thumbnail */}
@@ -1678,7 +1696,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
                   {/* Session count pill top-right (YouTube style) */}
                   <div style={{ position:"absolute", top:10, right:10, background:"rgba(0,0,0,0.65)", backdropFilter:"blur(4px)", borderRadius:8, padding:"4px 10px", display:"flex", alignItems:"center", gap:5 }}>
                     <Icon name="list" size={12} color="#fff"/>
-                    <span style={{ fontSize:12, fontWeight:700, color:"#fff" }}>{sessions.length}</span>
+                    <span style={{ fontSize:12, fontWeight:700, color:"#fff" }}>{seasonSessions.length}</span>
                   </div>
                   {/* Season name bottom overlay */}
                   <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"12px 14px" }}>
@@ -1691,7 +1709,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
               {/* ── Card footer ── */}
               <div style={{ padding:"14px 16px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
                 <div style={{ fontSize:12, color:C.gray600 }}>
-                  {sessions.length > 0 ? <span>{sessions.length} recorded</span> : <span>No sessions yet</span>}
+                  {seasonSessions.length > 0 ? <span>{seasonSessions.length} recorded</span> : <span>No sessions yet</span>}
                 </div>
                 <div style={{ display:"flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, color:C.primary, textDecoration: hov ? "underline" : "none" }}>
                   View all <Icon name="caret-right" size={13} color={C.primary}/>
@@ -3165,12 +3183,11 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    ADMIN SESSIONS PAGE
 ───────────────────────────────────────────────────────────────────────────── */
-function AdminSessionsPage({ onNavigate, onEditSession, toast }) {
+function AdminSessionsPage({ onNavigate, onEditSession, toast, adminSessions = ADMIN_SESSIONS_DATA, setAdminSessions }) {
   const [filter, setFilter] = useState("ALL");
   const statuses = ["ALL", "LIVE", "DRAFT", "ARCHIVED"];
-  const archived = ADMIN_SESSIONS_DATA.filter(s => s.status === "ARCHIVED");
-  const filtered = filter === "ALL" ? ADMIN_SESSIONS_DATA :
-                   ADMIN_SESSIONS_DATA.filter(s => s.status === filter);
+  const filtered = filter === "ALL" ? adminSessions :
+                   adminSessions.filter(s => s.status === filter);
 
   return (
     <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
@@ -3186,10 +3203,10 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast }) {
       {/* Summary stats */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
         {[
-          {label:"Total",    val:ADMIN_SESSIONS_DATA.length,                                    color:C.gray700},
-          {label:"Live",     val:ADMIN_SESSIONS_DATA.filter(s=>s.status==="LIVE").length,       color:C.success},
-          {label:"Drafts",   val:ADMIN_SESSIONS_DATA.filter(s=>s.status==="DRAFT").length,      color:C.warning},
-          {label:"Archived", val:ADMIN_SESSIONS_DATA.filter(s=>s.status==="ARCHIVED").length,   color:C.gray500},
+          {label:"Total",    val:adminSessions.length,                                    color:C.gray700},
+          {label:"Live",     val:adminSessions.filter(s=>s.status==="LIVE").length,       color:C.success},
+          {label:"Drafts",   val:adminSessions.filter(s=>s.status==="DRAFT").length,      color:C.warning},
+          {label:"Archived", val:adminSessions.filter(s=>s.status==="ARCHIVED").length,   color:C.gray500},
         ].map(s=>(
           <div key={s.label} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"18px 20px" }}>
             <div style={{ fontSize:30, fontWeight:900, color:s.color, marginBottom:4 }}>{s.val}</div>
@@ -4024,12 +4041,13 @@ function CurriculumBuilder({ toast }) {
 }
 
 
-function AdminCreateSession({ onBack, toast }) {
+function AdminCreateSession({ onBack, toast, onSave }) {
   const [tab,  setTab]  = useState("details");
   const [form, setForm] = useState({
-    title:"", category:"UI Design", lang:"English", desc:"",
+    title:"", category:"SPED", lang:"English", desc:"",
     availableFrom:"", availableTo:"",
     instructorName:"", bio:"",
+    vimeoUrl:"",
     discussion:true, qa:true, spinWheel:false, certificate:false,
   });
   const upd = (k,v) => setForm(f=>({...f,[k]:v}));
@@ -4073,8 +4091,10 @@ function AdminCreateSession({ onBack, toast }) {
 
   function save(publish=false) {
     if (!form.title.trim()) { toast({ type:"error", title:"Title required", message:"Please add a session title before saving." }); return; }
-    if (publish) { toast({ type:"success", title:"Session published! 🚀", message:`"${form.title}" is now live.` }); setTimeout(onBack, 1200); }
-    else toast({ type:"info", title:"Draft saved", message:`"${form.title}" saved as draft.` });
+    onSave && onSave(form, publish);
+    if (publish) { toast({ type:"success", title:"Session published! 🚀", message:`"${form.title}" is now live.` }); }
+    else { toast({ type:"info", title:"Draft saved", message:`"${form.title}" saved as draft.` }); }
+    setTimeout(onBack, 800);
   }
 
   const TABS = [
@@ -4135,7 +4155,9 @@ function AdminCreateSession({ onBack, toast }) {
               <div><Label>LANGUAGE</Label><select value={form.lang} onChange={e=>upd("lang",e.target.value)} style={inputSt}>{["English","Spanish","French","Hindi","Portuguese"].map(l=><option key={l}>{l}</option>)}</select></div>
             </div>
             <Label>DESCRIPTION</Label>
-            <textarea value={form.desc} onChange={e=>upd("desc",e.target.value)} placeholder="Deep dive into the nuances of the course content…" rows={4} style={{...inputSt,resize:"vertical"}}/>
+            <textarea value={form.desc} onChange={e=>upd("desc",e.target.value)} placeholder="Deep dive into the nuances of the course content…" rows={4} style={{...inputSt,resize:"vertical",marginBottom:14}}/>
+            <Label>VIMEO VIDEO URL</Label>
+            <input value={form.vimeoUrl} onChange={e=>upd("vimeoUrl",e.target.value)} placeholder="https://vimeo.com/123456789" style={inputSt}/>
           </FormSection>
 
           <FormSection icon="calendar" title="Availability" subtitle="Set the access window. The session goes live on the start date and auto-archives after the end date.">
@@ -6778,6 +6800,53 @@ export default function App() {
   const [userName, setUserName] = useState("Alex Johnson");
   const [scheduleRegistrations, setScheduleRegistrations] = useState({});
   const [sessionsDeepLink, setSessionsDeepLink] = useState(null);
+  const [adminSessions, setAdminSessions] = useState(ADMIN_SESSIONS_DATA);
+  const [sessions, setSessions] = useState(SESSIONS);
+
+  function addAdminSession(form, publish) {
+    const newId = Date.now();
+    const dateLabel = form.availableFrom
+      ? new Date(form.availableFrom).toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" })
+      : new Date().toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
+
+    // Add to admin sessions list
+    const adminEntry = {
+      id: newId,
+      title: form.title,
+      category: form.category || "SPED",
+      status: publish ? "LIVE" : "DRAFT",
+      date: dateLabel,
+      enrolled: 0,
+      availableFrom: form.availableFrom || "",
+      availableTo: form.availableTo || "",
+      instructor: form.instructorName || "",
+      vimeoUrl: form.vimeoUrl || "",
+      desc: form.desc || "",
+    };
+    setAdminSessions(prev => [adminEntry, ...prev]);
+
+    // If published, also add to user-facing sessions list
+    if (publish) {
+      const sessionEntry = {
+        id: newId,
+        title: form.title,
+        category: form.category || "SPED",
+        instructor: form.instructorName || "",
+        instructorBio: form.bio || "",
+        instructorQuote: "",
+        duration: "60 mins",
+        resources: 0,
+        progress: 0,
+        status: "not-started",
+        description: form.desc || "",
+        vimeoUrl: form.vimeoUrl || "",
+        lessons: [
+          { id:1, sectionTitle:"Session", title:"Full Session", duration:"60:00", status:"available", type:"video" },
+        ],
+      };
+      setSessions(prev => [...prev, sessionEntry]);
+    }
+  }
 
   function enroll(sessionId) {
     setEnrolledIds(prev => new Set([...prev, sessionId]));
@@ -6847,13 +6916,13 @@ export default function App() {
       return <SessionDetail session={activeSession} onBack={()=>nav(isAdmin?"admin-sessions":sessionSource)} backLabel={sessionBackLabel} toast={toast} onAssessmentClick={handleAssessmentClick}/>;
     if (isAdmin) {
       if (page==="admin-overview") return <AdminOverview onNavigate={nav} onEditSession={openEdit} toast={toast}/>;
-      if (page==="admin-sessions") return <AdminSessionsPage onNavigate={nav} onEditSession={openEdit} toast={toast}/>;
-      if (page==="admin-create") return <AdminCreateSession onBack={()=>nav("admin-sessions")} toast={toast}/>;
+      if (page==="admin-sessions") return <AdminSessionsPage onNavigate={nav} onEditSession={openEdit} toast={toast} adminSessions={adminSessions} setAdminSessions={setAdminSessions}/>;
+      if (page==="admin-create") return <AdminCreateSession onBack={()=>nav("admin-sessions")} toast={toast} onSave={addAdminSession}/>;
       if (page==="admin-edit" && editingSession) return <AdminEditSession session={editingSession} onBack={()=>nav("admin-sessions")} toast={toast}/>;
       if (page==="admin-analytics") return <AnalyticsPage onEditSession={openEdit}/>;
     }
-    if (page==="dashboard") return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
-    if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
+    if (page==="dashboard") return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={sessions}/>;
+    if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={sessions}/>;
     if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
     if (page==="community") return <CommunityPage toast={toast}/>;
