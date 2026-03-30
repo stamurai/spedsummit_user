@@ -1943,12 +1943,14 @@ const SESSION_RESOURCES = {
 /* ─────────────────────────────────────────────────────────────────────────────
    SESSION DETAIL (VIDEO EXPERIENCE)
 ───────────────────────────────────────────────────────────────────────────── */
-function VimeoPlayer({ url, onPlay, onPause }) {
+function VimeoPlayer({ url, onPlay, onPause, onProgress }) {
   const match = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
   const videoId = match ? match[1] : null;
   const iframeRef = useRef(null);
   const storageKey = videoId ? `vimeo_pos_${videoId}` : null;
   const savedTime = storageKey ? (parseFloat(localStorage.getItem(storageKey)) || 0) : 0;
+  const onProgressRef = useRef(onProgress);
+  useEffect(() => { onProgressRef.current = onProgress; }, [onProgress]);
 
   useEffect(() => {
     if (!videoId) return;
@@ -1958,12 +1960,20 @@ function VimeoPlayer({ url, onPlay, onPause }) {
         const d = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
         if (d.event === "ready" && iframeRef.current) {
           iframeRef.current.contentWindow.postMessage(JSON.stringify({ method:"addEventListener", value:"timeupdate" }), "https://player.vimeo.com");
+          iframeRef.current.contentWindow.postMessage(JSON.stringify({ method:"addEventListener", value:"play" }), "https://player.vimeo.com");
+          iframeRef.current.contentWindow.postMessage(JSON.stringify({ method:"addEventListener", value:"pause" }), "https://player.vimeo.com");
           if (savedTime > 0) {
             iframeRef.current.contentWindow.postMessage(JSON.stringify({ method:"setCurrentTime", value: savedTime }), "https://player.vimeo.com");
           }
         }
-        if (d.event === "timeupdate" && d.data?.seconds) {
+        if (d.event === "play")  { onPlay?.();  }
+        if (d.event === "pause") { onPause?.(); }
+        if (d.event === "timeupdate" && d.data?.seconds != null) {
           localStorage.setItem(storageKey, d.data.seconds);
+          if (d.data.percent != null) {
+            const pct = Math.round(d.data.percent * 100);
+            onProgressRef.current?.(pct);
+          }
         }
       } catch {}
     }
@@ -1993,7 +2003,7 @@ function VimeoPlayer({ url, onPlay, onPause }) {
   );
 }
 
-function SessionDetail({ session, onBack, backLabel, toast, onAssessmentClick }) {
+function SessionDetail({ session, onBack, backLabel, toast, onAssessmentClick, onUpdateProgress }) {
   const [playing, setPlaying] = useState(false);
   const [activeLesson, setActiveLesson] = useState(() => session.lessons.findIndex(l=>l.status==="active" && l.type!=="quiz")||0);
   const [progress, setProgress] = useState(28);
@@ -2113,7 +2123,7 @@ function SessionDetail({ session, onBack, backLabel, toast, onAssessmentClick })
         <div style={{ borderRadius:16, overflow:"hidden", marginBottom:18, position:"relative", background:"#0f172a", boxShadow:"0 4px 24px rgba(0,0,0,0.15)", paddingBottom:"56.25%", height:0 }}>
           <div style={{ position:"absolute", inset:0 }}>
             {(session.vimeoUrl || lesson?.vimeoUrl) ? (
-              <VimeoPlayer url={session.vimeoUrl || lesson?.vimeoUrl} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)}/>
+              <VimeoPlayer url={session.vimeoUrl || lesson?.vimeoUrl} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onProgress={pct => { setProgress(pct); onUpdateProgress?.(session.id, pct); }}/>
             ) : (
               <>
                 <SessionThumb id={session.id} height="100%" overlay={!playing}/>
@@ -7011,6 +7021,10 @@ export default function App() {
     setPage("admin-edit");
   }
 
+  function updateProgress(sessionId, pct) {
+    setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, progress: pct, status: pct >= 100 ? "completed" : "in-progress" } : s));
+  }
+
   function updateSession(id, form, sections) {
     const updatedLessons = sections
       ? sections.flatMap(sec => sec.lessons.map(l => ({
@@ -7055,7 +7069,7 @@ export default function App() {
   function renderPage() {
     if (page==="session-detail" && activeSession) {
       const liveSession = sessions.find(s => s.id === activeSession.id) || activeSession;
-      return <SessionDetail session={liveSession} onBack={()=>nav(isAdmin?"admin-sessions":sessionSource)} backLabel={sessionBackLabel} toast={toast} onAssessmentClick={handleAssessmentClick}/>;
+      return <SessionDetail session={liveSession} onBack={()=>nav(isAdmin?"admin-sessions":sessionSource)} backLabel={sessionBackLabel} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress}/>;
     }
     if (isAdmin) {
       if (page==="admin-overview") return <AdminOverview onNavigate={nav} onEditSession={openEdit} toast={toast}/>;
