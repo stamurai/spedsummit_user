@@ -4263,7 +4263,7 @@ function AdminCreateSession({ onBack, toast, onSave }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    ADMIN EDIT SESSION
 ───────────────────────────────────────────────────────────────────────────── */
-function AdminEditSession({ session, onBack, toast }) {
+function AdminEditSession({ session, onBack, toast, onSave }) {
   const [tab,  setTab]  = useState("details");
   const [form, setForm] = useState({
     title:          session.title          || "",
@@ -4274,6 +4274,7 @@ function AdminEditSession({ session, onBack, toast }) {
     availableTo:    session.availableTo    || "",
     instructorName: session.instructor     || "",
     bio:            session.bio            || "",
+    vimeoUrl:       session.vimeoUrl       || "",
     discussion:     session.discussion !== undefined ? session.discussion : true,
     qa:             session.qa         !== undefined ? session.qa         : true,
     spinWheel:      session.spinWheel  !== undefined ? session.spinWheel  : false,
@@ -4337,6 +4338,7 @@ function AdminEditSession({ session, onBack, toast }) {
 
   function save() {
     if (!form.title.trim()) { toast({ type:"error", title:"Title required", message:"Please add a session title before saving." }); return; }
+    if (onSave) onSave(session.id, form);
     toast({ type:"success", title:"Changes saved", message:`"${form.title}" has been updated.` });
     setTimeout(onBack, 1200);
   }
@@ -6920,6 +6922,11 @@ export default function App() {
 
   function openEdit(s) { setEditingSession(s); setPage("admin-edit"); }
 
+  function updateSession(id, form) {
+    setSessions(prev => prev.map(s => s.id === id ? { ...s, title: form.title, category: form.category, instructor: form.instructorName, instructorBio: form.bio, description: form.desc, vimeoUrl: form.vimeoUrl, availableFrom: form.availableFrom, availableTo: form.availableTo } : s));
+    setAdminSessions(prev => prev.map(s => s.id === id ? { ...s, title: form.title, category: form.category, instructor: form.instructorName, vimeoUrl: form.vimeoUrl, availableFrom: form.availableFrom, availableTo: form.availableTo } : s));
+  }
+
   function openSession(s, source) {
     setActiveSession(s);
     setSessionSource(source || page);
@@ -6951,7 +6958,7 @@ export default function App() {
       if (page==="admin-overview") return <AdminOverview onNavigate={nav} onEditSession={openEdit} toast={toast}/>;
       if (page==="admin-sessions") return <AdminSessionsPage onNavigate={nav} onEditSession={openEdit} toast={toast} adminSessions={adminSessions} setAdminSessions={setAdminSessions}/>;
       if (page==="admin-create") return <AdminCreateSession onBack={()=>nav("admin-sessions")} toast={toast} onSave={addAdminSession}/>;
-      if (page==="admin-edit" && editingSession) return <AdminEditSession session={editingSession} onBack={()=>nav("admin-sessions")} toast={toast}/>;
+      if (page==="admin-edit" && editingSession) return <AdminEditSession session={editingSession} onBack={()=>nav("admin-sessions")} toast={toast} onSave={updateSession}/>;
       if (page==="admin-analytics") return <AnalyticsPage onEditSession={openEdit}/>;
     }
     if (page==="dashboard") return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={sessions}/>;
