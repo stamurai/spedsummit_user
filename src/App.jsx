@@ -6835,8 +6835,15 @@ export default function App() {
   const [userName, setUserName] = useState("Alex Johnson");
   const [scheduleRegistrations, setScheduleRegistrations] = useState({});
   const [sessionsDeepLink, setSessionsDeepLink] = useState(null);
-  const [adminSessions, setAdminSessions] = useState(ADMIN_SESSIONS_DATA);
-  const [sessions, setSessions] = useState(SESSIONS);
+  const [adminSessions, setAdminSessions] = useState(() => {
+    try { const s = localStorage.getItem("adminSessions"); return s ? JSON.parse(s) : ADMIN_SESSIONS_DATA; } catch { return ADMIN_SESSIONS_DATA; }
+  });
+  const [sessions, setSessions] = useState(() => {
+    try { const s = localStorage.getItem("sessions"); return s ? JSON.parse(s) : SESSIONS; } catch { return SESSIONS; }
+  });
+
+  useEffect(() => { try { localStorage.setItem("sessions", JSON.stringify(sessions)); } catch {} }, [sessions]);
+  useEffect(() => { try { localStorage.setItem("adminSessions", JSON.stringify(adminSessions)); } catch {} }, [adminSessions]);
 
   function addAdminSession(form, publish) {
     const newId = Date.now();
