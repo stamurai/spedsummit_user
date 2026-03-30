@@ -1982,10 +1982,32 @@ const SESSION_RESOURCES = {
    SESSION DETAIL (VIDEO EXPERIENCE)
 ───────────────────────────────────────────────────────────────────────────── */
 function VimeoPlayer({ url, onPlay, onPause }) {
-  // Extract Vimeo video ID from various URL formats
-  // e.g. https://vimeo.com/123456789 or https://player.vimeo.com/video/123456789
   const match = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
   const videoId = match ? match[1] : null;
+  const iframeRef = useRef(null);
+  const storageKey = videoId ? `vimeo_pos_${videoId}` : null;
+  const savedTime = storageKey ? (parseFloat(localStorage.getItem(storageKey)) || 0) : 0;
+
+  useEffect(() => {
+    if (!videoId) return;
+    function onMsg(e) {
+      if (e.origin !== "https://player.vimeo.com") return;
+      try {
+        const d = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+        if (d.event === "ready" && iframeRef.current) {
+          iframeRef.current.contentWindow.postMessage(JSON.stringify({ method:"addEventListener", value:"timeupdate" }), "https://player.vimeo.com");
+          if (savedTime > 0) {
+            iframeRef.current.contentWindow.postMessage(JSON.stringify({ method:"setCurrentTime", value: savedTime }), "https://player.vimeo.com");
+          }
+        }
+        if (d.event === "timeupdate" && d.data?.seconds) {
+          localStorage.setItem(storageKey, d.data.seconds);
+        }
+      } catch {}
+    }
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, [videoId]);
 
   if (!videoId) {
     return (
@@ -1995,10 +2017,11 @@ function VimeoPlayer({ url, onPlay, onPause }) {
     );
   }
 
-  const embedUrl = `https://player.vimeo.com/video/${videoId}?autoplay=0&title=0&byline=0&portrait=0&dnt=1`;
+  const embedUrl = `https://player.vimeo.com/video/${videoId}?autoplay=0&title=0&byline=0&portrait=0&dnt=1&api=1`;
 
   return (
     <iframe
+      ref={iframeRef}
       src={embedUrl}
       style={{ position:"absolute", inset:0, width:"100%", height:"100%", border:"none" }}
       allow="autoplay; fullscreen; picture-in-picture"
