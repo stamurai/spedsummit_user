@@ -1550,44 +1550,6 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
           ))}
         </div>
 
-        {/* XP + Streak mini-badges */}
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
-          <div style={{ background:C.successLight, borderRadius:12, padding:"14px 12px" }}>
-            <Icon name="fire" size={18} color={C.success}/>
-            <div style={{ fontSize:22, fontWeight:900, color:C.gray900, margin:"6px 0 2px" }}>12</div>
-            <div style={{ fontSize:11, color:C.success, fontWeight:700, letterSpacing:.5 }}>Day Streak</div>
-          </div>
-          <div style={{ background:C.primaryLight, borderRadius:12, padding:"14px 12px" }}>
-            <Icon name="star" size={18} color={C.primary}/>
-            <div style={{ fontSize:22, fontWeight:900, color:C.gray900, margin:"6px 0 2px" }}>320</div>
-            <div style={{ fontSize:11, color:C.primary, fontWeight:700, letterSpacing:.5 }}>XP Points</div>
-          </div>
-        </div>
-
-        {/* Knowledge Checks */}
-        {hasStarted && (
-          <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, overflow:"hidden" }}>
-            <div style={{ padding:"14px 16px 10px", fontWeight:800, fontSize:14, color:C.gray900, borderBottom:`1px solid ${C.gray100}` }}>Knowledge Checks</div>
-            {[
-              { session: SESSIONS.find(s=>s.id===1), title:"Mental Health in SPED", instructor:"Tara Roehl", questions:15 },
-              { session: SESSIONS.find(s=>s.id===2), title:"Accommodations & Inclusion", instructor:"Farwa Husain", questions:15 },
-            ].map((q, i, arr) => (
-              <div key={i} style={{ display:"flex", alignItems:"center", padding:"12px 16px", borderBottom: i < arr.length-1 ? `1px solid ${C.gray100}` : "none", gap:10 }}>
-                <div style={{ width:34, height:34, borderRadius:9, background:C.primaryLight, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                  <Icon name="medal" size={17} color={C.primary}/>
-                </div>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontWeight:600, fontSize:12, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{q.title}</div>
-                  <div style={{ fontSize:11, color:C.gray500, marginTop:1 }}>{q.questions} questions</div>
-                </div>
-                <button onClick={() => q.session && onAssessmentClick(q.session)}
-                  style={{ fontSize:11, fontWeight:700, color:C.primary, background:"transparent", border:"none", cursor:"pointer", whiteSpace:"nowrap", padding:0 }}>
-                  Start →
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
 
       </div>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
