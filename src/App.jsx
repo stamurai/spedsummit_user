@@ -141,6 +141,41 @@ const C = {
 /* ─────────────────────────────────────────────────────────────────────────────
    TOAST SYSTEM
 ───────────────────────────────────────────────────────────────────────────── */
+function useCountdown(targetDate) {
+  const [diff, setDiff] = useState(() => targetDate - Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setDiff(targetDate - Date.now()), 60000);
+    return () => clearInterval(t);
+  }, [targetDate]);
+  if (diff <= 0) return null;
+  const totalMins = Math.floor(diff / 60000);
+  const days  = Math.floor(totalMins / 1440);
+  const hours = Math.floor((totalMins % 1440) / 60);
+  const mins  = totalMins % 60;
+  if (days > 0)  return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${mins}m`;
+  return `${mins}m`;
+}
+
+function SessionCountdown({ dateStr, timeStr, fallback = null }) {
+  function parseDate() {
+    try {
+      const year = new Date().getFullYear();
+      const cleaned = dateStr.replace(/(\d+)\w*\s+(\w+)(\s+\d+)?/, (_, d, m, y) => `${d} ${m}${y || " " + year}`);
+      const dt = new Date(`${cleaned} ${timeStr}`);
+      return isNaN(dt) ? null : dt.getTime();
+    } catch { return null; }
+  }
+  const target = parseDate();
+  const label  = useCountdown(target || 0);
+  if (!label || !target) return fallback;
+  return (
+    <div style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:12, color:"var(--c-gray500)", background:"var(--c-gray100)", padding:"6px 12px", borderRadius:99, fontWeight:500 }}>
+      Starting in <span style={{ color:"#f97316", fontWeight:700 }}>{label}</span>
+    </div>
+  );
+}
+
 function useToast() {
   const [toasts, setToasts] = useState([]);
   const remove = useCallback(id => setToasts(t => t.filter(x => x.id !== id)), []);
@@ -406,8 +441,8 @@ const SCHEDULE = [
   { id:2, date:"26th Mar", time:"11:00 AM", type:"KEYNOTE", title:"Accommodations & Inclusion: Integrating Students into Mainstream", description:"Casey Harrison—Certified Dyslexia Specialist—shares practical, research-aligned strategies to support students with dyslexia and language-based learning differences.", status:"past", cta:"Resume Lesson", instructor:"Casey Harrison" },
   { id:3, date:"6th Jan 2025", time:"09:00 AM", type:"WORKSHOP", title:"Empowering Language and Literacy Skills with DHH Children", description:"Sydney Bassard—Speech-Language Pathologist—shares practical, evidence-informed strategies to build strong language and literacy foundations in children who are Deaf or Hard of Hearing.", status:"past", cta:"Recording Unavailable", instructor:"Jordan Smith" },
   { id:4, date:"7th Jan 2025", time:"02:00 PM", type:"NETWORKING", title:"Paraeducators & Team Collaboration: Training, Delegation & More", description:"Diana Williams shares practical, leadership-driven strategies for building strong, collaborative partnerships between teachers and paraeducators.", status:"past", cta:"Watch Again", instructor:"Morgan Lee" },
-  { id:5, date:"28th Mar", time:"09:00 AM", type:"WORKSHOP", title:"AI and Advanced Technologies in SPED", description:"Join Dr. Emily Tran as she guides educators through the process of utilizing data to inform teaching practices and enhance student learning.", status:"upcoming", cta:"Registered", instructor:"Dr. Emily Tran" },
-  { id:6, date:"28th Mar", time:"11:00 AM", type:"PANEL DISCUSSION", title:"Understanding & Supporting Communication for Students with AAC", description:"A panel of AAC specialists discuss implementation strategies, device selection, and how to create truly inclusive communication environments.", status:"upcoming", cta:"Register", instructor:"Dr. Sarah Kim" },
+  { id:5, date:"15th Apr", time:"09:00 AM", type:"WORKSHOP", title:"AI and Advanced Technologies in SPED", description:"Join Dr. Emily Tran as she guides educators through the process of utilizing data to inform teaching practices and enhance student learning.", status:"upcoming", cta:"Registered", instructor:"Dr. Emily Tran" },
+  { id:6, date:"15th Apr", time:"11:00 AM", type:"PANEL DISCUSSION", title:"Understanding & Supporting Communication for Students with AAC", description:"A panel of AAC specialists discuss implementation strategies, device selection, and how to create truly inclusive communication environments.", status:"upcoming", cta:"Register", instructor:"Dr. Sarah Kim" },
 ];
 
 const SCHEDULE_TYPE_COLORS = { OPENING:{c:"#7c3aed",bg:"rgba(124,58,237,0.12)"}, KEYNOTE:{c:"#2563eb",bg:"rgba(37,99,235,0.12)"}, WORKSHOP:{c:"#059669",bg:"rgba(5,150,105,0.12)"}, NETWORKING:{c:"#d97706",bg:"rgba(217,119,6,0.12)"}, "PANEL DISCUSSION":{c:"#dc2626",bg:"rgba(220,38,38,0.12)"} };
@@ -680,9 +715,9 @@ function SpedLogo({ height = 34 }) {
    SEARCH BAR
 ───────────────────────────────────────────────────────────────────────────── */
 const SEARCH_PAGES = [
-  { id:"dashboard",        label:"Dashboard",    icon:"house",       type:"page" },
+  { id:"dashboard",        label:"My Learnings", icon:"house",       type:"page" },
   { id:"schedules",        label:"Schedules",    icon:"calendar",    type:"page" },
-  { id:"certifications",   label:"Certifications", icon:"certificate", type:"page" },
+  { id:"certifications",   label:"My Certificates", icon:"certificate", type:"page" },
   { id:"profile",          label:"My Profile",   icon:"user-circle", type:"page" },
 ];
 
@@ -1005,10 +1040,10 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
 function Sidebar({ active, onChange, isAdmin }) {
   const [hov, setHov] = useState(null);
   const userNav = [
-    { id:"dashboard", icon:"house",        label:"Dashboard" },
-    { id:"sessions",  icon:"play-circle",  label:"Sessions"  },
-    { id:"schedules", icon:"calendar",     label:"Schedules" },
-    { id:"certifications", icon:"certificate", label:"Certifications" },
+    { id:"dashboard", icon:"house",        label:"My Learnings"    },
+    { id:"sessions",  icon:"play-circle",  label:"All Sessions"    },
+    { id:"schedules", icon:"calendar",     label:"Schedules"       },
+    { id:"certifications", icon:"certificate", label:"My Certificates" },
   ];
   const adminNav = [
     { id:"admin-overview",  icon:"house",       label:"Overview"    },
@@ -1246,7 +1281,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 ───────────────────────────────────────────────────────────────────────────── */
 function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{} }) {
   const [calendarItem, setCalendarItem] = useState(null);
-  const enrolledSessions  = SESSIONS.filter(s => enrolledIds.has(s.id) && getSessionState(s.id) === "live");
+  const enrolledSessions  = SESSIONS.filter(s => enrolledIds.has(s.id));
   const upcomingSessions  = SESSIONS.filter(s => getSessionState(s.id) === "upcoming");
   const pastSessions      = SESSIONS.filter(s => getSessionState(s.id) === "past");
   const discoverSessions  = SESSIONS.filter(s => !enrolledIds.has(s.id) && getSessionState(s.id) === "live");
@@ -1400,9 +1435,12 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
                       </div>
                     </div>
                     {registered ? (
-                      <Btn variant="success" size="sm">
-                        <Icon name="check-circle" size={13} color={C.success}/> Registered
-                      </Btn>
+                      <SessionCountdown dateStr={item.date} timeStr={item.time}
+                        fallback={
+                          <div style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:12, color:C.success, background:"rgba(16,185,129,0.10)", padding:"6px 12px", borderRadius:99, fontWeight:600 }}>
+                            <Icon name="check-circle" size={13} color={C.success}/> Registered
+                          </div>
+                        }/>
                     ) : (
                       <Btn variant="primary" size="sm" onClick={() => setCalendarItem(item)}>
                         <Icon name="bell" size={13} color="#fff"/> Register
@@ -1550,7 +1588,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
   if (activeSeason) {
     const season = SEASONS.find(s => s.id === activeSeason);
     const sessions = SESSIONS.filter(s => season.sessionIds.includes(s.id));
-    const liveSessions     = sessions.filter(s => enrolledIds.has(s.id) && getSessionState(s.id) === "live");
+    const liveSessions     = sessions.filter(s => enrolledIds.has(s.id));
     const upcomingSessions = sessions.filter(s => getSessionState(s.id) === "upcoming");
     const pastSessions     = sessions.filter(s => getSessionState(s.id) === "past");
 
@@ -1834,15 +1872,18 @@ function SchedulePage({ onOpenSession, toast, scheduleRegistrations = {}, setSch
                         </div>
 
                         {/* CTA */}
-                        <div style={{ flexShrink:0 }}>
+                        <div style={{ flexShrink:0, display:"flex", flexDirection:"column", alignItems:"flex-end", gap:6 }}>
                           {cta === "Recording Unavailable" ? (
                             <Btn variant="outline" size="sm" disabled>
                               <Icon name="warning-circle" size={13} color={C.gray400}/> Unavailable
                             </Btn>
                           ) : cta === "Registered" ? (
-                            <Btn variant="success" size="sm">
-                              <Icon name="check-circle" size={13} color={C.success}/> Registered
-                            </Btn>
+                            <SessionCountdown dateStr={item.date} timeStr={item.time}
+                              fallback={
+                                <div style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:12, color:C.success, background:"rgba(16,185,129,0.10)", padding:"6px 12px", borderRadius:99, fontWeight:600 }}>
+                                  <Icon name="check-circle" size={13} color={C.success}/> Registered
+                                </div>
+                              }/>
                           ) : cta === "Register" ? (
                             <Btn variant="primary" size="sm" onClick={() => handleCta(item)}>
                               <Icon name="bell" size={13} color="#fff"/> Register
@@ -4831,11 +4872,12 @@ function ReviewModal({ session, passed, score, onClose, onSubmit }) {
 function AddToCalendarModal({ item, onClose, onConfirm }) {
   const dark = document.querySelector("[data-theme='dark']") !== null;
 
-  // Parse date + time from schedule item e.g. "28th Mar" + "09:00 AM"
+  useEffect(() => { onConfirm(); }, []);
+
   function buildDatetime() {
     try {
       const year = new Date().getFullYear();
-      const dateStr = item.date.replace(/(\d+)\w+/, "$1"); // "28 Mar" or "6th Jan 2025" → strip ordinal
+      const dateStr = item.date.replace(/(\d+)\w+/, "$1");
       const cleaned = dateStr.replace(/(\d+)\w*\s+(\w+)(\s+\d+)?/, (_, d, m, y) => `${d} ${m}${y||" "+year}`);
       const dt = new Date(`${cleaned} ${item.time}`);
       return isNaN(dt) ? new Date() : dt;
@@ -4843,15 +4885,11 @@ function AddToCalendarModal({ item, onClose, onConfirm }) {
   }
 
   const start = buildDatetime();
-  const end = new Date(start.getTime() + 60 * 60 * 1000); // +1 hour
+  const end = new Date(start.getTime() + 60 * 60 * 1000);
 
   function pad(n) { return String(n).padStart(2, "0"); }
-  function toICS(dt) {
-    return `${dt.getUTCFullYear()}${pad(dt.getUTCMonth()+1)}${pad(dt.getUTCDate())}T${pad(dt.getUTCHours())}${pad(dt.getUTCMinutes())}00Z`;
-  }
-  function toGoogle(dt) {
-    return `${dt.getUTCFullYear()}${pad(dt.getUTCMonth()+1)}${pad(dt.getUTCDate())}T${pad(dt.getUTCHours())}${pad(dt.getUTCMinutes())}00Z`;
-  }
+  function toICS(dt) { return `${dt.getUTCFullYear()}${pad(dt.getUTCMonth()+1)}${pad(dt.getUTCDate())}T${pad(dt.getUTCHours())}${pad(dt.getUTCMinutes())}00Z`; }
+  function toGoogle(dt) { return `${dt.getUTCFullYear()}${pad(dt.getUTCMonth()+1)}${pad(dt.getUTCDate())}T${pad(dt.getUTCHours())}${pad(dt.getUTCMinutes())}00Z`; }
 
   const title   = encodeURIComponent(item.title);
   const details = encodeURIComponent(`SPED Summit Session\nInstructor: ${item.instructor}\nspedsummit.com`);
@@ -4862,14 +4900,13 @@ function AddToCalendarModal({ item, onClose, onConfirm }) {
     const ics = [
       "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//SPED Summit//EN",
       "BEGIN:VEVENT",
-      `DTSTART:${toICS(start)}`,
-      `DTEND:${toICS(end)}`,
+      `DTSTART:${toICS(start)}`, `DTEND:${toICS(end)}`,
       `SUMMARY:${item.title}`,
       `DESCRIPTION:SPED Summit Session\\nInstructor: ${item.instructor}\\nspedsummit.com`,
       `URL:https://spedsummit.com`,
       "END:VEVENT", "END:VCALENDAR"
     ].join("\r\n");
-    const blob = new Blob([ics], { type: "text/calendar" });
+    const blob = new Blob([ics], { type:"text/calendar" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = `${item.title.replace(/[^a-z0-9]/gi,"_").slice(0,40)}.ics`;
@@ -4877,63 +4914,82 @@ function AddToCalendarModal({ item, onClose, onConfirm }) {
     URL.revokeObjectURL(a.href);
   }
 
-  const displayDate = start.toLocaleDateString("en-US", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+  const displayDate = start.toLocaleDateString("en-US", { weekday:"long", month:"long", day:"numeric", year:"numeric" });
   const displayTime = start.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit" });
+
+  const bg    = dark ? "#1a1f36" : "#fff";
+  const border = dark ? "rgba(255,255,255,0.08)" : C.gray100;
+  const textPrimary = dark ? "#fff" : C.gray900;
+  const textSecondary = dark ? "rgba(255,255,255,0.45)" : C.gray500;
+  const rowBg = dark ? "rgba(255,255,255,0.04)" : "#fff";
+  const rowBgHover = dark ? "rgba(255,255,255,0.08)" : C.gray50;
+  const rowBorder = dark ? "rgba(255,255,255,0.1)" : C.gray200;
 
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", zIndex:900, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}
       onClick={onClose}>
-      <div style={{ background: dark ? "#1e2647" : "#fff", borderRadius:20, width:"100%", maxWidth:420, boxShadow:"0 24px 60px rgba(0,0,0,0.3)", overflow:"hidden", position:"relative" }}
+      <div style={{ background:bg, borderRadius:20, width:"100%", maxWidth:400, boxShadow:"0 24px 60px rgba(0,0,0,0.3)", overflow:"hidden", position:"relative" }}
         onClick={e => e.stopPropagation()}>
 
         {/* Close */}
-        <button onClick={onClose} style={{ position:"absolute", top:14, right:14, width:28, height:28, borderRadius:8, border:`1px solid ${dark?"rgba(255,255,255,0.12)":C.gray200}`, background:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
-          <Icon name="x" size={14} color={dark?"rgba(255,255,255,0.5)":C.gray500}/>
+        <button onClick={onClose} style={{ position:"absolute", top:14, right:14, width:28, height:28, borderRadius:8, border:`1px solid ${border}`, background:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", zIndex:1 }}>
+          <Icon name="x" size={14} color={textSecondary}/>
         </button>
 
-        {/* Header */}
-        <div style={{ padding:"28px 28px 20px", borderBottom:`1px solid ${dark?"rgba(255,255,255,0.08)":C.gray100}` }}>
-          <div style={{ width:48, height:48, borderRadius:14, background:"rgba(54,153,255,0.12)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:14 }}>
-            <Icon name="calendar" size={24} color={C.primary}/>
-          </div>
-          <div style={{ fontSize:18, fontWeight:800, color: dark?"#fff":C.gray900, marginBottom:6 }}>Add to Calendar</div>
-          <div style={{ fontSize:13, fontWeight:700, color: dark?"rgba(255,255,255,0.8)":C.gray800, marginBottom:4, lineHeight:1.4 }}>{item.title}</div>
-          <div style={{ fontSize:12, color: dark?"rgba(255,255,255,0.45)":C.gray500 }}>{displayDate} · {displayTime}</div>
-        </div>
+        <>
+            {/* Green confirmation header */}
+            <div style={{ padding:"28px 24px 22px", borderBottom:`1px solid ${border}` }}>
+              <div style={{ width:48, height:48, borderRadius:"50%", background:"rgba(16,185,129,0.12)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:14 }}>
+                <Icon name="check-circle" size={26} color={C.success}/>
+              </div>
+              <div style={{ fontSize:22, fontWeight:900, color:textPrimary, marginBottom:5 }}>You're registered!</div>
+              <div style={{ fontSize:13, color:textSecondary, lineHeight:1.5 }}>
+                You're signed up for <strong style={{ color: dark?"rgba(255,255,255,0.85)":C.gray800 }}>{item.title}</strong>
+              </div>
+              <div style={{ display:"flex", alignItems:"center", gap:6, marginTop:10, fontSize:12, color:textSecondary }}>
+                <Icon name="calendar" size={13} color={textSecondary}/> {displayDate} · {displayTime}
+              </div>
+            </div>
 
-        {/* Options */}
-        <div style={{ padding:"20px 28px 24px", display:"flex", flexDirection:"column", gap:10 }}>
-          {/* Google Calendar */}
-          <a href={googleUrl} target="_blank" rel="noopener noreferrer"
-            onClick={() => { onConfirm(); onClose(); }}
-            style={{ display:"flex", alignItems:"center", gap:14, padding:"14px 16px", borderRadius:12, border:`1px solid ${dark?"rgba(255,255,255,0.1)":C.gray200}`, background: dark?"rgba(255,255,255,0.04)":"#fff", cursor:"pointer", textDecoration:"none", transition:"background .15s" }}
-            onMouseEnter={e=>e.currentTarget.style.background=dark?"rgba(255,255,255,0.08)":C.gray50}
-            onMouseLeave={e=>e.currentTarget.style.background=dark?"rgba(255,255,255,0.04)":"#fff"}>
-            <div style={{ width:36, height:36, borderRadius:10, background:"#fff", border:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow:"0 1px 4px rgba(0,0,0,0.08)" }}>
-              <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M44 20H24v8h11.3C33.7 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-8 20-20 0-1.3-.1-2.7-.4-4z"/><path fill="#34A853" d="M6.3 14.7l6.6 4.8C14.5 15.1 18.9 12 24 12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4c-7.7 0-14.3 4.4-17.7 10.7z"/><path fill="#FBBC05" d="M24 44c5.2 0 9.9-1.8 13.5-4.7l-6.2-5.2C29.4 35.6 26.8 36 24 36c-5.2 0-9.6-2.9-11.3-7H6.3C9.7 39.6 16.3 44 24 44z"/><path fill="#EA4335" d="M44 20H24v8h11.3c-.8 2.3-2.3 4.3-4.3 5.8l6.2 5.2C41.6 35.6 44 30.1 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
-            </div>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:14, fontWeight:700, color: dark?"#fff":C.gray900 }}>Google Calendar</div>
-              <div style={{ fontSize:12, color: dark?"rgba(255,255,255,0.45)":C.gray500, marginTop:1 }}>Opens in a new tab</div>
-            </div>
-            <Icon name="arrow-square-out" size={16} color={dark?"rgba(255,255,255,0.3)":C.gray400}/>
-          </a>
+            {/* Calendar options */}
+            <div style={{ padding:"18px 24px 24px" }}>
+              <div style={{ fontSize:11, fontWeight:700, color:textSecondary, letterSpacing:.8, textTransform:"uppercase", marginBottom:12 }}>Add to your calendar</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                <a href={googleUrl} target="_blank" rel="noopener noreferrer"
+                  onClick={onClose}
+                  style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", borderRadius:12, border:`1px solid ${rowBorder}`, background:rowBg, cursor:"pointer", textDecoration:"none", transition:"background .15s" }}
+                  onMouseEnter={e=>e.currentTarget.style.background=rowBgHover}
+                  onMouseLeave={e=>e.currentTarget.style.background=rowBg}>
+                  <div style={{ width:32, height:32, borderRadius:8, background:"#fff", border:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow:"0 1px 3px rgba(0,0,0,0.08)" }}>
+                    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M44 20H24v8h11.3C33.7 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-8 20-20 0-1.3-.1-2.7-.4-4z"/><path fill="#34A853" d="M6.3 14.7l6.6 4.8C14.5 15.1 18.9 12 24 12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4c-7.7 0-14.3 4.4-17.7 10.7z"/><path fill="#FBBC05" d="M24 44c5.2 0 9.9-1.8 13.5-4.7l-6.2-5.2C29.4 35.6 26.8 36 24 36c-5.2 0-9.6-2.9-11.3-7H6.3C9.7 39.6 16.3 44 24 44z"/><path fill="#EA4335" d="M44 20H24v8h11.3c-.8 2.3-2.3 4.3-4.3 5.8l6.2 5.2C41.6 35.6 44 30.1 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
+                  </div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:13, fontWeight:700, color:textPrimary }}>Google Calendar</div>
+                    <div style={{ fontSize:11, color:textSecondary, marginTop:1 }}>Opens in a new tab</div>
+                  </div>
+                  <Icon name="arrow-square-out" size={14} color={textSecondary}/>
+                </a>
 
-          {/* Apple / iCal */}
-          <button onClick={() => { downloadICS(); onConfirm(); onClose(); }}
-            style={{ display:"flex", alignItems:"center", gap:14, padding:"14px 16px", borderRadius:12, border:`1px solid ${dark?"rgba(255,255,255,0.1)":C.gray200}`, background: dark?"rgba(255,255,255,0.04)":"#fff", cursor:"pointer", transition:"background .15s", width:"100%" }}
-            onMouseEnter={e=>e.currentTarget.style.background=dark?"rgba(255,255,255,0.08)":C.gray50}
-            onMouseLeave={e=>e.currentTarget.style.background=dark?"rgba(255,255,255,0.04)":"#fff"}>
-            <div style={{ width:36, height:36, borderRadius:10, background:"#000", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98l-.09.06c-.22.14-2.18 1.28-2.16 3.82.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.76M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                <button onClick={() => { downloadICS(); onClose(); }}
+                  style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", borderRadius:12, border:`1px solid ${rowBorder}`, background:rowBg, cursor:"pointer", transition:"background .15s", width:"100%" }}
+                  onMouseEnter={e=>e.currentTarget.style.background=rowBgHover}
+                  onMouseLeave={e=>e.currentTarget.style.background=rowBg}>
+                  <div style={{ width:32, height:32, borderRadius:8, background:"#000", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98l-.09.06c-.22.14-2.18 1.28-2.16 3.82.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.76M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                  </div>
+                  <div style={{ flex:1, textAlign:"left" }}>
+                    <div style={{ fontSize:13, fontWeight:700, color:textPrimary }}>Apple Calendar / iCal</div>
+                    <div style={{ fontSize:11, color:textSecondary, marginTop:1 }}>Downloads .ics file</div>
+                  </div>
+                  <Icon name="download" size={14} color={textSecondary}/>
+                </button>
+              </div>
+
+              <button onClick={onClose} style={{ width:"100%", marginTop:12, padding:"10px", background:"none", border:"none", fontSize:13, color:textSecondary, cursor:"pointer" }}>
+                Skip for now
+              </button>
             </div>
-            <div style={{ flex:1, textAlign:"left" }}>
-              <div style={{ fontSize:14, fontWeight:700, color: dark?"#fff":C.gray900 }}>Apple Calendar / iCal</div>
-              <div style={{ fontSize:12, color: dark?"rgba(255,255,255,0.45)":C.gray500, marginTop:1 }}>Downloads .ics file</div>
-            </div>
-            <Icon name="download" size={16} color={dark?"rgba(255,255,255,0.3)":C.gray400}/>
-          </button>
-        </div>
+          </>
       </div>
     </div>
   );
@@ -6707,9 +6763,9 @@ function LandingPage({ onGetStarted }) {
    APP
 ───────────────────────────────────────────────────────────────────────────── */
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [page, setPage] = useState("dashboard");
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => sessionStorage.getItem("loggedIn") === "1");
+  const [page, setPage] = useState(() => sessionStorage.getItem("page") || "dashboard");
+  const [isAdmin, setIsAdmin] = useState(() => sessionStorage.getItem("isAdmin") === "1");
   const [isDark, setIsDark] = useState(false);
   const [activeSession,   setActiveSession]   = useState(null);
   const [sessionSource,   setSessionSource]   = useState("sessions");
@@ -6757,7 +6813,7 @@ export default function App() {
     }
   }
 
-  function nav(p) { setPage(p); setActiveSession(null); setEditingSession(null); }
+  function nav(p) { setPage(p); sessionStorage.setItem("page", p); setActiveSession(null); setEditingSession(null); }
   function navToSeason(seasonId) { setSessionsDeepLink(seasonId); setPage("sessions"); setActiveSession(null); }
 
   function openEdit(s) { setEditingSession(s); setPage("admin-edit"); }
@@ -6773,7 +6829,10 @@ export default function App() {
   function toggleAdmin() {
     const next = !isAdmin;
     setIsAdmin(next);
-    setPage(next ? "admin-overview" : "dashboard");
+    sessionStorage.setItem("isAdmin", next ? "1" : "0");
+    const p = next ? "admin-overview" : "dashboard";
+    setPage(p);
+    sessionStorage.setItem("page", p);
     setActiveSession(null);
   }
 
@@ -6811,6 +6870,7 @@ export default function App() {
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet"/>
         <LandingPage onGetStarted={(sessionId) => {
           setIsLoggedIn(true);
+          sessionStorage.setItem("loggedIn", "1");
           if (sessionId) enroll(sessionId);
         }}/>
       </>
@@ -6827,6 +6887,7 @@ export default function App() {
         isDark={isDark}
         onToggleDarkMode={() => setIsDark(v => !v)}
         onLogout={() => {
+          sessionStorage.clear();
           setIsLoggedIn(false); setPage("dashboard"); setIsAdmin(false);
           setEnrolledIds(new Set([1,2,3])); setQuizStates({});
         }}
