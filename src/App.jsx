@@ -1962,6 +1962,33 @@ const SESSION_RESOURCES = {
 /* ─────────────────────────────────────────────────────────────────────────────
    SESSION DETAIL (VIDEO EXPERIENCE)
 ───────────────────────────────────────────────────────────────────────────── */
+function VimeoPlayer({ url, onPlay, onPause }) {
+  // Extract Vimeo video ID from various URL formats
+  // e.g. https://vimeo.com/123456789 or https://player.vimeo.com/video/123456789
+  const match = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  const videoId = match ? match[1] : null;
+
+  if (!videoId) {
+    return (
+      <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", background:"#0f172a", color:"rgba(255,255,255,0.5)", fontSize:14 }}>
+        Invalid Vimeo URL
+      </div>
+    );
+  }
+
+  const embedUrl = `https://player.vimeo.com/video/${videoId}?autoplay=0&title=0&byline=0&portrait=0&dnt=1`;
+
+  return (
+    <iframe
+      src={embedUrl}
+      style={{ position:"absolute", inset:0, width:"100%", height:"100%", border:"none" }}
+      allow="autoplay; fullscreen; picture-in-picture"
+      allowFullScreen
+      title="Session video"
+    />
+  );
+}
+
 function SessionDetail({ session, onBack, backLabel, toast, onAssessmentClick }) {
   const [playing, setPlaying] = useState(false);
   const [activeLesson, setActiveLesson] = useState(() => session.lessons.findIndex(l=>l.status==="active" && l.type!=="quiz")||0);
@@ -2081,15 +2108,21 @@ function SessionDetail({ session, onBack, backLabel, toast, onAssessmentClick })
         {/* ── Video Player ── */}
         <div style={{ borderRadius:16, overflow:"hidden", marginBottom:18, position:"relative", background:"#0f172a", boxShadow:"0 4px 24px rgba(0,0,0,0.15)", paddingBottom:"56.25%", height:0 }}>
           <div style={{ position:"absolute", inset:0 }}>
-          <SessionThumb id={session.id} height="100%" overlay={!playing}/>
-          <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <button onClick={() => setPlaying(p => !p)}
-              style={{ width:58, height:58, borderRadius:"50%", background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", border:"2px solid rgba(255,255,255,0.45)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"transform .2s" }}
-              onMouseEnter={e => e.currentTarget.style.transform="scale(1.1)"}
-              onMouseLeave={e => e.currentTarget.style.transform=""}>
-              <Icon name={playing ? "pause" : "play"} size={22} color="#fff"/>
-            </button>
-          </div>
+            {(session.vimeoUrl || lesson?.vimeoUrl) ? (
+              <VimeoPlayer url={session.vimeoUrl || lesson?.vimeoUrl} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)}/>
+            ) : (
+              <>
+                <SessionThumb id={session.id} height="100%" overlay={!playing}/>
+                <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <button onClick={() => setPlaying(p => !p)}
+                    style={{ width:58, height:58, borderRadius:"50%", background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", border:"2px solid rgba(255,255,255,0.45)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"transform .2s" }}
+                    onMouseEnter={e => e.currentTarget.style.transform="scale(1.1)"}
+                    onMouseLeave={e => e.currentTarget.style.transform=""}>
+                    <Icon name={playing ? "pause" : "play"} size={22} color="#fff"/>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
