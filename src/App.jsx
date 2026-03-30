@@ -4087,6 +4087,9 @@ function AdminCreateSession({ onBack, toast, onSave }) {
     discussion:true, qa:true, spinWheel:false, certificate:false,
   });
   const upd = (k,v) => setForm(f=>({...f,[k]:v}));
+  const sectionsRef = useRef(null);
+  function handleSectionsChange(secs) { sectionsRef.current = secs; }
+  const initialSections = null;
 
   const [questions,  setQuestions]  = useState([]);
   const [typeMenuId, setTypeMenuId] = useState(null);
