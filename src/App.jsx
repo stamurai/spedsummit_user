@@ -6951,7 +6951,11 @@ export default function App() {
   function nav(p) { setPage(p); sessionStorage.setItem("page", p); setActiveSession(null); setEditingSession(null); }
   function navToSeason(seasonId) { setSessionsDeepLink(seasonId); setPage("sessions"); setActiveSession(null); }
 
-  function openEdit(s) { setEditingSession(s); setPage("admin-edit"); }
+  function openEdit(s) {
+    const full = sessions.find(sess => sess.id === s.id);
+    setEditingSession(full ? { ...s, lessons: full.lessons, vimeoUrl: full.vimeoUrl || s.vimeoUrl } : s);
+    setPage("admin-edit");
+  }
 
   function updateSession(id, form, sections) {
     const updatedLessons = sections
