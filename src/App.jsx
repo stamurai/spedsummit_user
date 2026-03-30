@@ -1393,18 +1393,16 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
                 </div>
               </div>
               {/* Content side */}
-              <div style={{ flex:1, padding:"22px 24px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
-                <div>
-                  <div style={{ fontSize:11, fontWeight:700, color:C.warning, background:"rgba(245,158,11,0.12)", display:"inline-flex", alignItems:"center", gap:5, padding:"3px 10px", borderRadius:99, marginBottom:12 }}>
-                    <Icon name="timer" size={11} color={C.warning}/> {continueSession.progress || 28}% WATCHED
-                  </div>
-                  <div style={{ fontSize:17, fontWeight:800, color:C.gray900, lineHeight:1.35, marginBottom:8 }}>{continueSession.title}</div>
-                  <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, color:C.gray500 }}>
-                    <Avatar name={continueSession.instructor} size={20}/>
-                    <span>{continueSession.instructor}</span>
-                    <span style={{ color:C.gray300 }}>·</span>
-                    <span>{continueSession.duration}</span>
-                  </div>
+              <div style={{ flex:1, padding:"20px 22px", display:"flex", flexDirection:"column", gap:12 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:"#92400e", background:"#fef3c7", border:"1px solid #fcd34d", display:"inline-flex", alignItems:"center", gap:5, padding:"4px 10px", borderRadius:99, alignSelf:"flex-start" }}>
+                  <Icon name="timer" size={11} color="#92400e"/> {continueSession.progress || 28}% WATCHED
+                </div>
+                <div style={{ fontSize:16, fontWeight:800, color:C.gray900, lineHeight:1.35 }}>{continueSession.title}</div>
+                <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, color:C.gray500 }}>
+                  <Avatar name={continueSession.instructor} size={20}/>
+                  <span>{continueSession.instructor}</span>
+                  <span style={{ color:C.gray300 }}>·</span>
+                  <span>{continueSession.duration}</span>
                 </div>
                 <Btn size="lg" onClick={() => onOpenSession(continueSession)}>
                   <Icon name="play" size={16} color="#fff"/> Resume Session
