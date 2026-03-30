@@ -1598,14 +1598,14 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
 /* ─────────────────────────────────────────────────────────────────────────────
    SESSIONS PAGE
 ───────────────────────────────────────────────────────────────────────────── */
-function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set(), onNavigate, initialSeason = null, onSeasonChange, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS }) {
+function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set(), onNavigate, initialSeason = null, onSeasonChange, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS, seasons = SEASONS }) {
   const [activeSeason, setActiveSeason] = useState(initialSeason);
   const [hoveredSeason, setHoveredSeason] = useState(null);
   function changeSeason(id) { setActiveSeason(id); onSeasonChange?.(id); }
 
   /* ── Season Detail View ── */
   if (activeSeason) {
-    const season = SEASONS.find(s => s.id === activeSeason);
+    const season = seasons.find(s => s.id === activeSeason);
     const seasonSessions   = sessions.filter(s => season.sessionIds.includes(s.id));
     const liveSessions     = seasonSessions.filter(s => enrolledIds.has(s.id));
     const upcomingSessions = seasonSessions.filter(s => getSessionState(s.id) === "upcoming");
@@ -1660,7 +1660,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
 
       {/* Newly published sessions not in any season */}
       {(() => {
-        const allSeasonIds = new Set(SEASONS.flatMap(s => s.sessionIds));
+        const allSeasonIds = new Set(seasons.flatMap(s => s.sessionIds));
         const loose = sessions.filter(s => !allSeasonIds.has(s.id));
         if (!loose.length) return null;
         return (
@@ -1677,7 +1677,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
       })()}
 
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))", gap:20 }}>
-        {SEASONS.map(season => {
+        {seasons.map(season => {
           const seasonSessions = sessions.filter(s => season.sessionIds.includes(s.id));
           const liveCount     = seasonSessions.filter(s => getSessionState(s.id) === "live").length;
           const upcomingCount = seasonSessions.filter(s => getSessionState(s.id) === "upcoming").length;
@@ -6943,6 +6943,12 @@ export default function App() {
   const [sessions, setSessions] = useState(() => {
     try { const s = localStorage.getItem("sessions"); return s ? JSON.parse(s) : SESSIONS; } catch { return SESSIONS; }
   });
+  const [spring2026Ids, setSpring2026Ids] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("spring2026Ids") || "[]"); } catch { return []; }
+  });
+  useEffect(() => { localStorage.setItem("spring2026Ids", JSON.stringify(spring2026Ids)); }, [spring2026Ids]);
+  // Merged seasons — Spring 2026 gets any newly created sessions without a date
+  const seasons = SEASONS.map(s => s.id === "spring-2026" ? { ...s, sessionIds: [...s.sessionIds, ...spring2026Ids] } : s);
 
   useEffect(() => { try { localStorage.setItem("sessions", JSON.stringify(sessions)); } catch {} }, [sessions]);
   useEffect(() => { try { localStorage.setItem("adminSessions", JSON.stringify(adminSessions)); } catch {} }, [adminSessions]);
@@ -6993,6 +6999,10 @@ export default function App() {
           : [{ id:1, sectionTitle:"Session", title:"Full Session", duration:"60:00", status:"available", type:"video", vimeoUrl: form.vimeoUrl || "" }],
       };
       setSessions(prev => [...prev, sessionEntry]);
+      // If no date set, add to Spring 2026 bucket
+      if (!form.availableFrom) {
+        setSpring2026Ids(prev => [...prev, newId]);
+      }
     }
   }
 
@@ -7093,7 +7103,7 @@ export default function App() {
       if (page==="admin-analytics") return <AnalyticsPage onEditSession={openEdit}/>;
     }
     if (page==="dashboard") return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={sessions}/>;
-    if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={sessions}/>;
+    if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={sessions} seasons={seasons}/>;
     if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
     if (page==="community") return <CommunityPage toast={toast}/>;
