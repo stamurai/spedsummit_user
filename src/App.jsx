@@ -100,11 +100,12 @@ const ICON_MAP = {
   "chat-circle-dots":   PhosphorIcons.ChatCircleDots,
   megaphone:            PhosphorIcons.Megaphone,
   "book-open":          PhosphorIcons.BookOpen,
-  lightbulb:            PhosphorIcons.Lightbulb,
   target:               PhosphorIcons.Target,
   "note-pencil":        PhosphorIcons.NotePencil,
   coffee:               PhosphorIcons.Coffee,
   confetti:             PhosphorIcons.Confetti,
+  brain:                PhosphorIcons.Brain,
+  clipboard:            PhosphorIcons.Clipboard,
 };
 
 const Icon = ({ name, size = 20, color = "currentColor", style: s = {} }) => {
@@ -6665,7 +6666,7 @@ function LandingPage({ onGetStarted }) {
           { icon:"book-open",     top:160, left:"14%",  size:32, rotate:8,   color:"#e83e8c" },
           { icon:"pencil-simple", top:80,  left:"18%",  size:28, rotate:-6,  color:"#f59e0b" },
           { icon:"trophy",        top:130, right:"9%",  size:38, rotate:10,  color:"#f59e0b" },
-          { icon:"lightbulb",     top:90,  right:"15%", size:30, rotate:-8,  color:"#fbbf24" },
+          { icon:"lightning",     top:90,  right:"15%", size:30, rotate:-8,  color:"#fbbf24" },
           { icon:"star",          top:190, right:"20%", size:26, rotate:14,  color:"#f59e0b" },
           { icon:"target",        top:220, left:"6%",   size:28, rotate:-4,  color:"#ef4444" },
           { icon:"note-pencil",   top:200, right:"7%",  size:32, rotate:6,   color:"#6366f1" },
@@ -6677,7 +6678,7 @@ function LandingPage({ onGetStarted }) {
 
         <div style={{ maxWidth:780, margin:"0 auto", padding:"80px 24px 64px", textAlign:"center", position:"relative" }}>
           <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"#f1f0ef", borderRadius:6, padding:"4px 10px", fontSize:13, fontWeight:500, color:T.muted, marginBottom:24 }}>
-            <span style={{ fontSize:14 }}>✨</span> 100% free · Jan 2026 · 9 Expert Sessions
+            <Icon name="star" size={14} color="#f59e0b"/> 100% free · Jan 2026 · 9 Expert Sessions
           </div>
           <h1 style={{ margin:"0 0 20px", fontSize:64, fontWeight:800, color:T.text, lineHeight:1.15, letterSpacing:-2.5 }}>
             The simplest way to learn<br/>
@@ -6751,8 +6752,17 @@ function LandingPage({ onGetStarted }) {
       <section style={{ borderTop:`1px solid ${T.border}`, borderBottom:`1px solid ${T.border}`, padding:"28px 24px" }}>
         <div style={{ maxWidth:1024, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"center", gap:48, flexWrap:"wrap" }}>
           <span style={{ fontSize:13, color:T.muted, fontWeight:500, whiteSpace:"nowrap" }}>Trusted by educators at</span>
-          {["🏫 Public Schools","🏥 Children's Hospitals","🎓 Universities","🧠 ABA Clinics","📋 IEP Teams"].map((item,i)=>(
-            <span key={i} style={{ fontSize:14, fontWeight:600, color:T.muted, whiteSpace:"nowrap" }}>{item}</span>
+          {[
+            { icon:"house",        label:"Public Schools" },
+            { icon:"heart",        label:"Children's Hospitals" },
+            { icon:"student",      label:"Universities" },
+            { icon:"brain",        label:"ABA Clinics" },
+            { icon:"clipboard",    label:"IEP Teams" },
+          ].map(({icon,label},i)=>(
+            <span key={i} style={{ display:"flex", alignItems:"center", gap:6, fontSize:14, fontWeight:600, color:T.muted, whiteSpace:"nowrap" }}>
+              <Icon name={icon} size={16} color={T.muted}/>
+              {label}
+            </span>
           ))}
         </div>
       </section>
