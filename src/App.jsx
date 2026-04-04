@@ -17,6 +17,7 @@ const ICON_MAP = {
   gear: PhosphorIcons.Gear,
   "user-circle": PhosphorIcons.UserCircle,
   "arrow-left": PhosphorIcons.ArrowLeft,
+  "arrow-right": PhosphorIcons.ArrowRight,
   "caret-right": PhosphorIcons.CaretRight,
   lock: PhosphorIcons.Lock,
   check: PhosphorIcons.Check,
@@ -92,13 +93,18 @@ const ICON_MAP = {
   "warning":            PhosphorIcons.Warning,
   "wifi-slash":         PhosphorIcons.WifiSlash,
   "shield-check":       PhosphorIcons.ShieldCheck,
-  gift:                 PhosphorIcons.Gift,
   "paper-plane-tilt":   PhosphorIcons.PaperPlaneTilt,
   "arrow-square-out":   PhosphorIcons.ArrowSquareOut,
   clock:                PhosphorIcons.Clock,
   trophy:               PhosphorIcons.Trophy,
   "chat-circle-dots":   PhosphorIcons.ChatCircleDots,
   megaphone:            PhosphorIcons.Megaphone,
+  "book-open":          PhosphorIcons.BookOpen,
+  lightbulb:            PhosphorIcons.Lightbulb,
+  target:               PhosphorIcons.Target,
+  "note-pencil":        PhosphorIcons.NotePencil,
+  coffee:               PhosphorIcons.Coffee,
+  confetti:             PhosphorIcons.Confetti,
 };
 
 const Icon = ({ name, size = 20, color = "currentColor", style: s = {} }) => {
@@ -1948,13 +1954,19 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress }) {
   const savedTime = storageKey ? (parseFloat(localStorage.getItem(storageKey)) || 0) : 0;
   const onProgressRef = useRef(onProgress);
   useEffect(() => { onProgressRef.current = onProgress; }, [onProgress]);
+  const [embedError, setEmbedError] = useState(null);
 
   useEffect(() => {
     if (!videoId) return;
+    setEmbedError(null);
     function onMsg(e) {
       if (e.origin !== "https://player.vimeo.com") return;
       try {
         const d = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+        if (d.event === "error") {
+          setEmbedError(d.data?.code ?? d.data?.message ?? "unknown");
+          return;
+        }
         if (d.event === "ready" && iframeRef.current) {
           iframeRef.current.contentWindow.postMessage(JSON.stringify({ method:"addEventListener", value:"timeupdate" }), "https://player.vimeo.com");
           iframeRef.current.contentWindow.postMessage(JSON.stringify({ method:"addEventListener", value:"play" }), "https://player.vimeo.com");
@@ -1989,21 +2001,47 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress }) {
   const embedUrl = `https://player.vimeo.com/video/${videoId}?autoplay=0&title=0&byline=0&portrait=0&dnt=1&api=1`;
 
   return (
-    <iframe
-      ref={iframeRef}
-      src={embedUrl}
-      style={{ position:"absolute", inset:0, width:"100%", height:"100%", border:"none" }}
-      allow="autoplay; fullscreen; picture-in-picture"
-      allowFullScreen
-      title="Session video"
-    />
+    <div style={{ position:"absolute", inset:0 }}>
+      {embedError !== null && (
+        <div style={{ position:"absolute", inset:0, zIndex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:"#0f172a", gap:12 }}>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5">
+            <circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="15"/><line x1="12" y1="8" x2="12" y2="12"/>
+          </svg>
+          <div style={{ color:"rgba(255,255,255,0.7)", fontSize:15, fontWeight:600 }}>Video unavailable</div>
+          <div style={{ color:"rgba(255,255,255,0.4)", fontSize:13, textAlign:"center", maxWidth:280 }}>
+            {embedError === -102
+              ? "This video is not allowed to be embedded here. The video owner needs to enable embedding for this domain."
+              : `Playback error (${embedError})`}
+          </div>
+          <a
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            style={{ marginTop:4, padding:"8px 18px", background:"#1db954", color:"#fff", borderRadius:6, fontSize:13, textDecoration:"none", fontWeight:600 }}
+          >
+            Watch on Vimeo
+          </a>
+        </div>
+      )}
+      <iframe
+        ref={iframeRef}
+        src={embedUrl}
+        style={{ position:"absolute", inset:0, width:"100%", height:"100%", border:"none" }}
+        allow="autoplay; fullscreen; picture-in-picture"
+        allowFullScreen
+        title="Session video"
+      />
+    </div>
   );
 }
 
 function SessionDetail({ session, onBack, backLabel, toast, onAssessmentClick, onUpdateProgress }) {
   const [playing, setPlaying] = useState(false);
   const [activeLesson, setActiveLesson] = useState(() => session.lessons.findIndex(l=>l.status==="active" && l.type!=="quiz")||0);
-  const [progress, setProgress] = useState(28);
+  const [progress, setProgress] = useState(session.progress || 0);
+  const [unlockedIndices, setUnlockedIndices] = useState(() =>
+    new Set(session.lessons.map((l, i) => (l.status !== "locked" || l.type === "material") ? i : null).filter(x => x !== null))
+  );
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([
     { user:"Alex Rivera", color:"#3b82f6", text:"Any recommendations for async documentation tools?", time:"2m ago" },
@@ -2039,9 +2077,12 @@ function SessionDetail({ session, onBack, backLabel, toast, onAssessmentClick, o
 
   function switchLesson(idx) {
     const l = session.lessons[idx];
-    if (!l || l.status==="locked") { toast({ type:"warning", title:"Lesson locked", message:"Complete previous lessons to unlock this one." }); return; }
+    if (!l) return;
+    if (!unlockedIndices.has(idx) && l.type !== "material") {
+      toast({ type:"warning", title:"Lesson locked", message:"Watch 80% of the previous video to unlock this lesson." });
+      return;
+    }
     if (l.type==="quiz") {
-      if (progress < 80) { toast({ type:"warning", title:"Watch more to unlock", message:`You need to watch at least 80% of the video before taking the assessment. Currently at ${progress}%.` }); return; }
       onAssessmentClick && onAssessmentClick(session); return;
     }
     setActiveLesson(idx);
@@ -2120,7 +2161,7 @@ function SessionDetail({ session, onBack, backLabel, toast, onAssessmentClick, o
         <div style={{ borderRadius:16, overflow:"hidden", marginBottom:18, position:"relative", background:"#0f172a", boxShadow:"0 4px 24px rgba(0,0,0,0.15)", paddingBottom:"56.25%", height:0 }}>
           <div style={{ position:"absolute", inset:0 }}>
             {(session.vimeoUrl || lesson?.vimeoUrl) ? (
-              <VimeoPlayer url={session.vimeoUrl || lesson?.vimeoUrl} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onProgress={pct => { setProgress(pct); onUpdateProgress?.(session.id, pct); }}/>
+              <VimeoPlayer url={session.vimeoUrl || lesson?.vimeoUrl} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onProgress={pct => { setProgress(pct); onUpdateProgress?.(session.id, pct); if (pct >= 80) { setUnlockedIndices(prev => { const next = new Set(prev); next.add(activeLesson + 1); return next; }); } }}/>
             ) : (
               <>
                 <SessionThumb id={session.id} height="100%" overlay={!playing}/>
@@ -2388,7 +2429,7 @@ function SessionDetail({ session, onBack, backLabel, toast, onAssessmentClick, o
                       {sec.lessons.map(l => {
                         const i = l._index;
                         const isActive = i === activeLesson && l.type !== "quiz";
-                        const locked = l.status === "locked";
+                        const locked = !unlockedIndices.has(i) && l.type !== "material";
                         const isQuiz = l.type === "quiz";
                         const quizDone = isQuiz && l.status === "completed";
                         const quizAvailable = isQuiz && (l.status === "active" || l.status === "available");
@@ -2422,7 +2463,7 @@ function SessionDetail({ session, onBack, backLabel, toast, onAssessmentClick, o
                             <div style={{ flex:1, minWidth:0 }}>
                               <div style={{ fontSize:12, fontWeight: isActive ? 700 : 400, color: locked ? C.gray400 : isQuiz ? "#7c3aed" : C.gray900, lineHeight:1.4 }}>{l.title}</div>
                               <div style={{ fontSize:12, color: isQuiz ? "#a855f7" : C.gray400, marginTop:2 }}>
-                                {isQuiz ? `${l.questions} question${l.questions!==1?"s":""}` : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
+                                {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
                               </div>
                               {isPreview && !locked && !isActive && (
                                 <span style={{ display:"inline-block", fontSize:12, fontWeight:600, color:C.gray500, background:C.gray100, borderRadius:4, padding:"1px 6px", marginTop:3 }}>Preview</span>
@@ -2905,7 +2946,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
                     </div>
                     <div style={{ flex:1, minWidth:0 }}>
                       <div style={{ fontSize:13, fontWeight:600, color:C.gray800, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{l.title}</div>
-                      <div style={{ fontSize:12, color:C.gray400 }}>{l.questions} questions</div>
+                      <div style={{ fontSize:12, color:C.gray400 }}>{Array.isArray(l.questions) ? l.questions.length : (l.questions||0)} questions</div>
                     </div>
                     {l.status === "completed" ? (
                       <div style={{ display:"flex", gap:6, flexShrink:0 }}>
@@ -3102,7 +3143,6 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
   return (
     <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
       <div style={{ marginBottom:22 }}>
-        <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>ADMIN PANEL</div>
         <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900 }}>Overview</h1>
         <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>Your teaching performance at a glance.</p>
       </div>
@@ -3237,8 +3277,7 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast, adminSessions = A
     <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:22 }}>
         <div>
-          <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>ADMIN PANEL</div>
-          <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900 }}>My Sessions</h1>
+            <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900 }}>My Sessions</h1>
           <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>Manage, publish and track all your content.</p>
         </div>
         <Btn onClick={()=>onNavigate("admin-create")}><Icon name="plus" size={14} color="#fff"/>New Session</Btn>
@@ -3522,8 +3561,7 @@ function AnalyticsPage({ onEditSession }) {
       {/* Header */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:22 }}>
         <div>
-          <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>ADMIN PANEL</div>
-          <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900 }}>Analytics</h1>
+            <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900 }}>Analytics</h1>
           <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>Track engagement, performance and learner outcomes.</p>
         </div>
         {/* Date range picker */}
@@ -3684,6 +3722,7 @@ function CurriculumBuilder({ toast, initialSections, onSectionsChange }) {
     if (initialSections && initialSections.length) return initialSections;
     return [{ id:1, title:"Introduction", collapsed:false, resources:[], lessons:[
       { id:101, title:"Welcome & course overview", type:"video", duration:"", status:"draft", vimeoUrl:"", questions:[], quizExpanded:false },
+      { id:102, title:"New Quiz", type:"quiz", duration:"", status:"draft", vimeoUrl:"", questions:[], quizExpanded:false },
     ]}];
   });
 
@@ -3692,6 +3731,7 @@ function CurriculumBuilder({ toast, initialSections, onSectionsChange }) {
   const [editingLessonId,  setEditingLessonId]  = useState(null);
   const [vimeoLinkId,      setVimeoLinkId]      = useState(null); // { secId, lesId }
   const [vimeoInputVal,    setVimeoInputVal]    = useState("");
+  const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [draggingId,       setDraggingId]       = useState(null);
   const [dragOverId,       setDragOverId]       = useState(null);
   const dragRef            = useRef(null);
@@ -3699,6 +3739,8 @@ function CurriculumBuilder({ toast, initialSections, onSectionsChange }) {
   const materialInputRef   = useRef(null);
   const [uploadingResourceSecId, setUploadingResourceSecId] = useState(null);
   const [uploadingMaterialId,    setUploadingMaterialId]    = useState(null);
+  const [matDropOver,            setMatDropOver]            = useState(false);
+  const materialDropInputRef = useRef(null);
 
   // ── helpers ──────────────────────────────────────────────────────────────
   function patchLesson(secId, lesId, patch) {
@@ -3791,6 +3833,7 @@ function CurriculumBuilder({ toast, initialSections, onSectionsChange }) {
     setSections(s => s.map(sec => sec.id!==secId ? sec : {
       ...sec, lessons: sec.lessons.map(l => l.id!==lesId ? l : { ...l, questions:[...l.questions, q] })
     }));
+    setEditingQuestionId(q.id);
   }
   function patchQuestion(secId, lesId, qid, patch) {
     setSections(s => s.map(sec => sec.id!==secId ? sec : {
@@ -3809,279 +3852,205 @@ function CurriculumBuilder({ toast, initialSections, onSectionsChange }) {
   const totalQuizzes   = sections.reduce((n,s) => n + s.lessons.filter(l=>l.type==="quiz").length, 0);
   const totalMaterials = sections.reduce((n,s) => n + s.lessons.filter(l=>l.type==="material").length, 0);
 
+  // flat lessons across all sections
+  const allLessons = sections.flatMap(sec => sec.lessons.map(l => ({ ...l, _secId: sec.id })));
+
+  function addFlatLesson(type) {
+    if (sections.length === 0) {
+      const secId = Date.now();
+      setSections([{ id: secId, title:"Section 1", collapsed:false, resources:[], lessons:[{ id: secId+1, title: type==="quiz"?"New Quiz": type==="material"?"New Material":"New Lesson", type, duration:"", status:"draft", vimeoUrl:"", questions:[], quizExpanded:false }] }]);
+    } else {
+      addLesson(sections[sections.length-1].id, type);
+    }
+  }
+
+  function deleteFlatLesson(secId, lesId) { deleteLesson(secId, lesId); }
+
+  function addMaterialWithFile(file) {
+    const lesId = Date.now();
+    const name  = file ? file.name.replace(/\.[^.]+$/, "") : "New Material";
+    const mat   = { id:lesId, title:name, type:"material", duration:"", status:"draft", vimeoUrl:"", questions:[], quizExpanded:false, materialFile:file||null, materialFileName:name };
+    if (sections.length === 0) {
+      const secId = lesId + 1;
+      setSections([{ id:secId, title:"Section 1", collapsed:false, resources:[], lessons:[mat] }]);
+    } else {
+      setSections(s => s.map((sec,i) => i < s.length-1 ? sec : { ...sec, lessons:[...sec.lessons, mat] }));
+    }
+  }
+
+  const nonMaterialLessons = allLessons.filter(l => l.type !== "material");
+  const materialLessons    = allLessons.filter(l => l.type === "material");
+
   return (
-    <div>
+    <div style={{ padding:"0" }}>
       {/* Hidden file inputs */}
       <input ref={resourceInputRef} type="file" accept="application/pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip" style={{ display:"none" }} onChange={handleResourceChosen}/>
       <input ref={materialInputRef} type="file" accept="application/pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.mp3,.mp4" style={{ display:"none" }} onChange={handleMaterialChosen}/>
+      <input ref={materialDropInputRef} type="file" accept="application/pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.mp3,.mp4" style={{ display:"none" }}
+        onChange={e=>{ const f=e.target.files?.[0]; if(f){ e.target.value=""; addMaterialWithFile(f); } }}/>
 
-      {/* Summary bar */}
-      <div style={{ display:"flex", gap:12, marginBottom:18 }}>
-        {[{ label:"Sections", val:sections.length },{ label:"Lessons", val:totalLessons },{ label:"Quizzes", val:totalQuizzes },{ label:"Materials", val:totalMaterials }].map(s=>(
-          <div key={s.label} style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:10, padding:"10px 18px", display:"flex", gap:10, alignItems:"center" }}>
-            <span style={{ fontSize:20, fontWeight:800, color:C.primary }}>{s.val}</span>
-            <span style={{ fontSize:12, color:C.gray500, fontWeight:600 }}>{s.label}</span>
-          </div>
-        ))}
-      </div>
+      {/* Lesson / Quiz cards */}
+      {nonMaterialLessons.map((l, li) => (
+        <div key={l.id} style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, marginBottom:16, padding:24 }}>
 
-      {/* Sections */}
-      {sections.map((sec, si) => (
-        <div key={sec.id}
-          draggable
-          onDragStart={e=>{ dragRef.current={type:"section",id:sec.id}; setDraggingId("s-"+sec.id); e.dataTransfer.effectAllowed="move"; }}
-          onDragOver={e=>{ e.preventDefault(); if(dragRef.current?.type==="section") setDragOverId("s-"+sec.id); }}
-          onDragLeave={()=>setDragOverId(null)}
-          onDrop={e=>{ e.preventDefault(); setDragOverId(null); setDraggingId(null); if(dragRef.current?.type==="section") moveSection(dragRef.current.id,sec.id); dragRef.current=null; }}
-          onDragEnd={()=>{ setDraggingId(null); setDragOverId(null); dragRef.current=null; }}
-          style={{ background:C.white, border:`2px solid ${dragOverId==="s-"+sec.id?C.primary:C.gray200}`, borderRadius:14, marginBottom:12, overflow:"hidden", opacity:draggingId==="s-"+sec.id?0.45:1, transition:"opacity .15s,border-color .1s" }}>
-          {/* Section header */}
-          <div style={{ display:"flex", alignItems:"center", gap:10, padding:"13px 18px", borderBottom:sec.collapsed?"none":`1px solid ${C.gray100}`, background:C.gray50 }}>
-            <span style={{ cursor:"grab", display:"flex", alignItems:"center" }} onMouseDown={e=>e.stopPropagation()}>
-              <Icon name="dots-six-vertical" size={16} color={C.gray400}/>
-            </span>
-            {editingSectionId===sec.id
-              ? <input autoFocus value={sec.title} onChange={e=>updateSectionTitle(sec.id,e.target.value)}
-                  onBlur={()=>setEditingSectionId(null)} onKeyDown={e=>e.key==="Enter"&&setEditingSectionId(null)}
-                  style={{ flex:1, fontSize:14, fontWeight:700, border:`1px solid ${C.primary}`, borderRadius:7, padding:"4px 10px", outline:"none", color:C.gray900, background:C.white }}/>
-              : <div style={{ flex:1, fontSize:14, fontWeight:700, color:C.gray900, cursor:"text" }} onClick={()=>setEditingSectionId(sec.id)}>
-                  {si===0?"":si+". "}{sec.title}
-                  <span style={{ fontSize:12, color:C.gray400, fontWeight:400, marginLeft:8 }}>{sec.lessons.length} item{sec.lessons.length!==1?"s":""}</span>
-                </div>
-            }
-            <div style={{ display:"flex", gap:4 }}>
-              <button onClick={()=>setEditingSectionId(sec.id)} style={{ width:28,height:28,borderRadius:7,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center" }}><Icon name="pencil" size={13} color={C.gray500}/></button>
-              <button onClick={()=>deleteSection(sec.id)}       style={{ width:28,height:28,borderRadius:7,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center" }}><Icon name="trash"  size={13} color={C.error}/></button>
-              <button onClick={()=>toggleCollapse(sec.id)}      style={{ width:28,height:28,borderRadius:7,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center" }}><Icon name={sec.collapsed?"caret-down":"caret-up"} size={13} color={C.gray500}/></button>
+          {/* Card header — FormSection style */}
+          <div style={{ display:"flex", gap:12, marginBottom:20, alignItems:"flex-start" }}>
+            <div style={{ width:36, height:36, borderRadius:10, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center",
+              background: l.type==="video" ? C.primaryLight : "#ede9fe" }}>
+              <Icon name={l.type==="video"?"video":"article"} size={18} color={l.type==="video"?C.primary:"#7c3aed"}/>
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontWeight:800, fontSize:16, color:C.gray900 }}>{l.type==="quiz"?"Assessment":"Lesson"}</div>
+              <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{l.type==="quiz"?"Add questions for this assessment":"Add a title and video link"}</div>
             </div>
           </div>
 
-          {/* Lessons */}
-          {!sec.collapsed && (
+          <Label>TITLE</Label>
+          <input value={l.title} onChange={e=>patchLesson(l._secId,l.id,{title:e.target.value})}
+            placeholder="Enter title…"
+            style={{...inputSt, marginBottom:16}}/>
+
+          {/* Video content */}
+          {l.type==="video" && <>
+            <Label>LESSON CONTENT</Label>
+            <input value={l.vimeoUrl||""} onChange={e=>patchLesson(l._secId,l.id,{vimeoUrl:e.target.value})}
+              placeholder="https://vimeo.com/…"
+              style={inputSt}/>
+            <div style={{ fontSize:11, color:C.gray400, marginTop:5 }}>Supported: Vimeo, YouTube, and more.</div>
+          </>}
+
+          {/* Quiz questions — compact rows + inline edit panel */}
+          {l.type==="quiz" && <>
+            <Label>QUESTIONS</Label>
             <div>
-              {sec.lessons.map(l => (
-                <div key={l.id}
-                  draggable
-                  onDragStart={e=>{ dragRef.current={type:"lesson",secId:sec.id,id:l.id}; setDraggingId("l-"+l.id); e.dataTransfer.effectAllowed="move"; }}
-                  onDragOver={e=>{ e.preventDefault(); if(dragRef.current?.type==="lesson"&&dragRef.current?.secId===sec.id) setDragOverId("l-"+l.id); }}
-                  onDragLeave={()=>setDragOverId(null)}
-                  onDrop={e=>{ e.preventDefault(); setDragOverId(null); setDraggingId(null); if(dragRef.current?.type==="lesson"&&dragRef.current?.secId===sec.id) moveLesson(sec.id,dragRef.current.id,l.id); dragRef.current=null; }}
-                  onDragEnd={()=>{ setDraggingId(null); setDragOverId(null); dragRef.current=null; }}
-                  style={{ opacity:draggingId==="l-"+l.id?0.45:1, transition:"opacity .15s" }}>
-                  {/* Lesson row */}
-                  <div style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 18px", borderBottom:`1px solid ${dragOverId==="l-"+l.id?C.primary:C.gray100}`, borderLeft:dragOverId==="l-"+l.id?`3px solid ${C.primary}`:"3px solid transparent", background:dragOverId==="l-"+l.id?C.primaryLight:"transparent", transition:"border-color .1s,background .1s" }}>
-                    <span style={{ cursor:"grab", display:"flex", alignItems:"center" }}>
-                      <Icon name="dots-six-vertical" size={14} color={C.gray400}/>
-                    </span>
-
-                    {/* Thumbnail or type icon */}
-                    {l.type==="video" ? (
-                      <div style={{ width:52, height:30, borderRadius:5, background:`linear-gradient(135deg,${C.primary},#a855f7)`, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                        <Icon name="video" size={14} color="#fff"/>
-                      </div>
-                    ) : l.type==="material" ? (
-                      <div style={{ width:52, height:30, borderRadius:5, background:"#ecfdf5", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                        <Icon name="file-pdf" size={14} color="#059669"/>
-                      </div>
-                    ) : (
-                      <div style={{ width:52, height:30, borderRadius:5, background:"#ede9fe", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                        <Icon name="article" size={14} color="#7c3aed"/>
-                      </div>
-                    )}
-
-                    {/* Title */}
-                    {editingLessonId===l.id
-                      ? <input autoFocus value={l.title} onChange={e=>patchLesson(sec.id,l.id,{title:e.target.value})}
-                          onBlur={()=>setEditingLessonId(null)} onKeyDown={e=>e.key==="Enter"&&setEditingLessonId(null)}
-                          style={{ flex:1, fontSize:14, border:`1px solid ${C.primary}`, borderRadius:7, padding:"4px 10px", outline:"none", color:C.gray900, background:C.white }}/>
-                      : <div style={{ flex:1, minWidth:0, display:"flex", alignItems:"center", gap:6, cursor:"text" }} onClick={()=>setEditingLessonId(l.id)}>
-                          <div style={{ minWidth:0 }}>
-                            <div style={{ fontSize:14, fontWeight:500, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{l.title}</div>
-                            {l.duration && <div style={{ fontSize:12, color:C.gray400, marginTop:1 }}>{l.duration}</div>}
+                {l.questions.map((q, qi) => {
+                  const isEditing = editingQuestionId === q.id;
+                  const answerLetters = ["A","B","C","D","E","F"];
+                  return (
+                    <div key={q.id} style={{ marginBottom:8 }}>
+                      {/* Compact row */}
+                      {!isEditing && (
+                        <div style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", border:`1px solid ${C.gray200}`, borderRadius:10, background:C.white }}>
+                          <div style={{ width:30, height:30, borderRadius:8, background:C.gray100, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:C.gray600, flexShrink:0 }}>{qi+1}</div>
+                          <div style={{ flex:1, minWidth:0 }}>
+                            <div style={{ fontSize:14, fontWeight:600, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{q.text || "Untitled question"}</div>
+                            <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{q.options.filter(o=>o).length} answers</div>
                           </div>
-                          {l.type==="quiz" && (
-                            <button onClick={e=>{ e.stopPropagation(); patchLesson(sec.id,l.id,{quizExpanded:!l.quizExpanded}); }}
-                              style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", display:"flex", alignItems:"center", flexShrink:0 }}>
-                              <Icon name={l.quizExpanded?"caret-up":"caret-down"} size={14} color="#7c3aed"/>
-                            </button>
-                          )}
-                        </div>
-                    }
-
-                    {/* Type badge */}
-                    <span style={{ fontSize:12, fontWeight:700, padding:"2px 8px", borderRadius:99,
-                      background: l.type==="quiz"?"#ede9fe": l.type==="material"?"#ecfdf5":C.primaryLight,
-                      color:      l.type==="quiz"?"#7c3aed": l.type==="material"?"#059669":C.primary,
-                      flexShrink:0 }}>
-                      {l.type==="quiz"?"Quiz": l.type==="material"?"Material":"Video"}
-                    </span>
-
-                    {/* Material upload button */}
-                    {l.type==="material" && (
-                      <button onClick={()=>{ setUploadingMaterialId({secId:sec.id,lesId:l.id}); setTimeout(()=>materialInputRef.current?.click(),0); }}
-                        style={{ fontSize:12, fontWeight:600, color: l.materialFile?C.success:C.primary, background:"none", border:`1px solid ${l.materialFile?C.success:C.gray200}`, borderRadius:7, padding:"4px 10px", cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:4 }}>
-                        <Icon name={l.materialFile?"check":"paperclip"} size={12} color={l.materialFile?C.success:C.primary}/>
-                        {l.materialFile ? l.materialFile.name.slice(0,16)+"…" : "Upload File"}
-                      </button>
-                    )}
-
-                    {/* Vimeo link control (video type only) */}
-                    {l.type==="video" && (() => {
-                      const isEditing = vimeoLinkId?.secId===sec.id && vimeoLinkId?.lesId===l.id;
-                      if (isEditing) {
-                        return (
-                          <div style={{ display:"flex", alignItems:"center", gap:4, flexShrink:0 }}>
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="#1ab7ea"><path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm5.568 8.16c-.169 1.858-1.387 3.915-3.653 6.173-2.347 2.355-4.332 3.532-5.956 3.532-.999 0-1.847-.926-2.541-2.778L4.56 11.605C4.04 9.753 3.483 8.826 2.888 8.826c-.132 0-.593.278-1.384.832L.72 8.544c.871-.765 1.729-1.53 2.573-2.297C4.527 5.138 5.55 4.63 6.18 4.564c1.557-.149 2.514.917 2.87 3.196.386 2.456.655 3.985.806 4.588.447 2.039.938 3.058 1.473 3.058.416 0 1.043-.659 1.881-1.977.837-1.317 1.286-2.318 1.347-3.004.12-1.138-.328-1.708-1.347-1.708-.479 0-.974.111-1.481.333.984-3.225 2.864-4.79 5.641-4.696 2.058.063 3.029 1.39 2.918 3.798l-.02.008z"/></svg>
-                            <input autoFocus value={vimeoInputVal}
-                              onChange={e=>setVimeoInputVal(e.target.value)}
-                              onKeyDown={e=>{ if(e.key==="Enter"){ patchLesson(sec.id,l.id,{vimeoUrl:vimeoInputVal}); setVimeoLinkId(null); toast({type:"success",message:"Vimeo link saved."}); } if(e.key==="Escape") setVimeoLinkId(null); }}
-                              onBlur={()=>{ patchLesson(sec.id,l.id,{vimeoUrl:vimeoInputVal}); setVimeoLinkId(null); if(vimeoInputVal) toast({type:"success",message:"Vimeo link saved."}); }}
-                              placeholder="https://vimeo.com/…"
-                              style={{ width:180, fontSize:12, border:`1px solid ${C.primary}`, borderRadius:7, padding:"4px 8px", outline:"none", color:C.gray900, background:C.white }}/>
-                          </div>
-                        );
-                      }
-                      return l.vimeoUrl ? (
-                        <button onClick={()=>{ setVimeoLinkId({secId:sec.id,lesId:l.id}); setVimeoInputVal(l.vimeoUrl); }}
-                          style={{ fontSize:12, fontWeight:600, color:C.success, background:"none", border:`1px solid ${C.success}`, borderRadius:7, padding:"4px 10px", cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:4 }}>
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="#50cd89"><path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm5.568 8.16c-.169 1.858-1.387 3.915-3.653 6.173-2.347 2.355-4.332 3.532-5.956 3.532-.999 0-1.847-.926-2.541-2.778L4.56 11.605C4.04 9.753 3.483 8.826 2.888 8.826c-.132 0-.593.278-1.384.832L.72 8.544c.871-.765 1.729-1.53 2.573-2.297C4.527 5.138 5.55 4.63 6.18 4.564c1.557-.149 2.514.917 2.87 3.196.386 2.456.655 3.985.806 4.588.447 2.039.938 3.058 1.473 3.058.416 0 1.043-.659 1.881-1.977.837-1.317 1.286-2.318 1.347-3.004.12-1.138-.328-1.708-1.347-1.708-.479 0-.974.111-1.481.333.984-3.225 2.864-4.79 5.641-4.696 2.058.063 3.029 1.39 2.918 3.798l-.02.008z"/></svg>
-                          Linked ✓
-                        </button>
-                      ) : (
-                        <button onClick={()=>{ setVimeoLinkId({secId:sec.id,lesId:l.id}); setVimeoInputVal(""); }}
-                          style={{ fontSize:12, fontWeight:600, color:C.primary, background:"none", border:`1px solid ${C.gray200}`, borderRadius:7, padding:"4px 10px", cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:4 }}>
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="#3699ff"><path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm5.568 8.16c-.169 1.858-1.387 3.915-3.653 6.173-2.347 2.355-4.332 3.532-5.956 3.532-.999 0-1.847-.926-2.541-2.778L4.56 11.605C4.04 9.753 3.483 8.826 2.888 8.826c-.132 0-.593.278-1.384.832L.72 8.544c.871-.765 1.729-1.53 2.573-2.297C4.527 5.138 5.55 4.63 6.18 4.564c1.557-.149 2.514.917 2.87 3.196.386 2.456.655 3.985.806 4.588.447 2.039.938 3.058 1.473 3.058.416 0 1.043-.659 1.881-1.977.837-1.317 1.286-2.318 1.347-3.004.12-1.138-.328-1.708-1.347-1.708-.479 0-.974.111-1.481.333.984-3.225 2.864-4.79 5.641-4.696 2.058.063 3.029 1.39 2.918 3.798l-.02.008z"/></svg>
-                          Link Vimeo
-                        </button>
-                      );
-                    })()}
-
-                    <button onClick={()=>deleteLesson(sec.id,l.id)} style={{ width:26,height:26,borderRadius:7,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
-                      <Icon name="x" size={12} color={C.gray400}/>
-                    </button>
-                  </div>
-
-                  {/* Inline quiz builder */}
-                  {l.type==="quiz" && l.quizExpanded && (
-                    <div style={{ background:C.gray50, borderBottom:`1px solid ${C.gray100}`, padding:"16px 18px" }}>
-                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-                        <div style={{ fontSize:14, fontWeight:700, color:"#7c3aed" }}>
-                          Questions · {l.questions.length} total
-                        </div>
-                        <button onClick={()=>addQuestion(sec.id,l.id)}
-                          style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 12px", background:"#7c3aed", color:"#fff", border:"none", borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer" }}>
-                          <Icon name="plus" size={12} color="#fff"/> Add Question
-                        </button>
-                      </div>
-
-                      {l.questions.length===0 && (
-                        <div style={{ textAlign:"center", padding:"20px 0", color:C.gray400, fontSize:14 }}>
-                          No questions yet. Click "Add Question" to get started.
+                          <button onClick={()=>setEditingQuestionId(q.id)} style={{ width:28,height:28,borderRadius:7,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}><Icon name="pencil" size={13} color={C.gray500}/></button>
+                          <button onClick={()=>deleteQuestion(l._secId,l.id,q.id)} style={{ width:28,height:28,borderRadius:7,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}><Icon name="trash" size={13} color={C.error}/></button>
                         </div>
                       )}
-
-                      {l.questions.map((q, qi) => (
-                        <div key={q.id} style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, marginBottom:10, overflow:"hidden" }}>
-                          <div style={{ padding:"14px 16px" }}>
-                            {/* Q header */}
-                            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
-                              <span style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.3 }}>QUESTION {qi+1}</span>
-                              <div style={{ display:"flex", gap:6 }}>
-                                <select value={q.type} onChange={e=>patchQuestion(sec.id,l.id,q.id,{type:e.target.value,correct:0,options:["","","",""]})}
-                                  style={{ fontSize:12, border:`1px solid ${C.gray200}`, borderRadius:6, padding:"4px 28px 4px 10px", outline:"none", color:C.gray700, background:C.white, cursor:"pointer", appearance:"auto" }}>
-                                  {CB_Q_TYPES.map(t=><option key={t.key} value={t.key}>{t.label}</option>)}
-                                </select>
-                                <button onClick={()=>deleteQuestion(sec.id,l.id,q.id)}
-                                  style={{ width:26,height:26,borderRadius:7,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center" }}>
-                                  <Icon name="trash" size={12} color={C.error}/>
+                      {/* Edit question panel */}
+                      {isEditing && (
+                        <div style={{ border:`1px solid ${C.gray200}`, borderRadius:10, overflow:"hidden", background:C.white }}>
+                          <div style={{ padding:"16px 18px", borderBottom:`1px solid ${C.gray100}` }}>
+                            <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:6 }}>QUESTION</div>
+                            <input value={q.text} onChange={e=>patchQuestion(l._secId,l.id,q.id,{text:e.target.value})}
+                              placeholder="Enter your question…"
+                              style={{ width:"100%", padding:"9px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:14, color:C.gray700, outline:"none", background:C.gray50, boxSizing:"border-box", fontFamily:"inherit" }}/>
+                          </div>
+                          <div style={{ padding:"16px 18px", borderBottom:`1px solid ${C.gray100}` }}>
+                            <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:12 }}>ANSWERS</div>
+                            {q.options.map((opt, oi) => (
+                              <div key={oi} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
+                                <div style={{ display:"flex", alignItems:"center", flex:1, border:`1px solid ${C.gray200}`, borderRadius:8, background:C.gray50, overflow:"hidden" }}>
+                                  <span style={{ fontSize:12, fontWeight:700, color:C.gray400, padding:"0 10px", borderRight:`1px solid ${C.gray200}`, alignSelf:"stretch", display:"flex", alignItems:"center", background:C.white, flexShrink:0 }}>{answerLetters[oi]||oi+1}</span>
+                                  <input value={opt} onChange={e=>{ const opts=[...q.options]; opts[oi]=e.target.value; patchQuestion(l._secId,l.id,q.id,{options:opts}); }}
+                                    placeholder={`Answer ${answerLetters[oi]||oi+1}`}
+                                    style={{ flex:1, padding:"9px 12px", border:"none", outline:"none", fontSize:13, color:C.gray700, background:"transparent", fontFamily:"inherit" }}/>
+                                </div>
+                                {/* Right / Wrong toggles */}
+                                <button onClick={()=>patchQuestion(l._secId,l.id,q.id,{correct:oi})}
+                                  style={{ padding:"5px 10px", borderRadius:"6px 0 0 6px", border:`1px solid ${q.correct===oi ? C.primary : C.gray200}`, borderRight:"none", fontSize:12, fontWeight:700, cursor:"pointer", background: q.correct===oi ? C.primary : C.white, color: q.correct===oi ? "#fff" : C.gray600 }}>
+                                  Right
+                                </button>
+                                <button onClick={()=>{ if(q.correct===oi) patchQuestion(l._secId,l.id,q.id,{correct:-1}); }}
+                                  style={{ padding:"5px 10px", borderRadius:"0 6px 6px 0", border:`1px solid ${q.correct!==oi ? C.primary : C.gray200}`, fontSize:12, fontWeight:700, cursor:"pointer", background: q.correct!==oi ? C.primary : C.white, color: q.correct!==oi ? "#fff" : C.gray600 }}>
+                                  Wrong
+                                </button>
+                                <button onClick={()=>{ const opts=q.options.filter((_,i)=>i!==oi); patchQuestion(l._secId,l.id,q.id,{options:opts, correct: q.correct===oi?-1: q.correct>oi?q.correct-1:q.correct}); }}
+                                  style={{ width:26,height:26,borderRadius:6,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
+                                  <Icon name="x" size={11} color={C.gray400}/>
                                 </button>
                               </div>
-                            </div>
-                            {/* Question text */}
-                            <input value={q.text} onChange={e=>patchQuestion(sec.id,l.id,q.id,{text:e.target.value})}
-                              placeholder="Enter your question…"
-                              style={{ width:"100%", padding:"8px 10px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:14, color:C.gray900, outline:"none", background:C.gray50, boxSizing:"border-box", marginBottom:10, fontFamily:"inherit" }}/>
-                            {/* Options */}
-                            {(q.type==="multiple-choice"||q.type==="checkboxes"||q.type==="dropdown") && q.options.map((opt,oi)=>(
-                              <div key={oi} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-                                {q.type==="dropdown"
-                                  ? <span style={{ fontSize:12, color:C.gray400, width:18, textAlign:"right", flexShrink:0 }}>{oi+1}.</span>
-                                  : <input type={q.type==="checkboxes"?"checkbox":"radio"} checked={q.correct===oi} onChange={()=>patchQuestion(sec.id,l.id,q.id,{correct:oi})} style={{ accentColor:"#7c3aed", width:14, height:14, flexShrink:0 }}/>
-                                }
-                                <input value={opt} onChange={e=>{ const opts=[...q.options]; opts[oi]=e.target.value; patchQuestion(sec.id,l.id,q.id,{options:opts}); }}
-                                  placeholder={`Option ${oi+1}`}
-                                  style={{ flex:1, padding:"6px 10px", border:`1px solid ${C.gray200}`, borderRadius:7, fontSize:12, color:C.gray700, outline:"none", background: q.correct===oi&&q.type!=="dropdown"?"#faf5ff":C.white, fontFamily:"inherit" }}/>
-                                {q.correct===oi && q.type!=="dropdown" && <span style={{ fontSize:12, fontWeight:700, color:"#7c3aed", background:"#ede9fe", borderRadius:99, padding:"2px 8px" }}>Correct</span>}
-                              </div>
                             ))}
-                            {(q.type==="short-answer") && (
-                              <input placeholder="Student types a short answer here…" disabled style={{ width:"100%", padding:"7px 10px", border:`1.5px dashed ${C.gray200}`, borderRadius:8, fontSize:12, color:C.gray400, background:C.gray50, boxSizing:"border-box", fontFamily:"inherit" }}/>
-                            )}
-                            {q.type==="paragraph" && (
-                              <textarea placeholder="Student writes a longer response here…" disabled rows={3} style={{ width:"100%", padding:"7px 10px", border:`1.5px dashed ${C.gray200}`, borderRadius:8, fontSize:12, color:C.gray400, background:C.gray50, boxSizing:"border-box", resize:"none", fontFamily:"inherit" }}/>
-                            )}
-                            {q.type==="dropdown" && (
-                              <div style={{ fontSize:12, color:C.gray400, marginTop:4 }}>Students will pick from the options above in a dropdown menu.</div>
-                            )}
+                            <button onClick={()=>{ const opts=[...q.options,""]; patchQuestion(l._secId,l.id,q.id,{options:opts}); }}
+                              style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, background:C.white, cursor:"pointer", color:C.gray600, fontSize:13, fontWeight:600, marginTop:4 }}>
+                              <Icon name="plus" size={12} color={C.gray500}/> New answer
+                            </button>
+                            {q.correct===-1 && <div style={{ fontSize:12, color:"#dc2626", marginTop:8 }}>You must have at least one right answer.</div>}
+                          </div>
+                          <div style={{ display:"flex", justifyContent:"flex-end", gap:8, padding:"12px 16px" }}>
+                            <button onClick={()=>setEditingQuestionId(null)}
+                              style={{ padding:"7px 16px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:13, fontWeight:600, cursor:"pointer" }}>
+                              Discard
+                            </button>
+                            <button onClick={()=>setEditingQuestionId(null)}
+                              style={{ padding:"7px 16px", borderRadius:8, border:"none", background:C.primary, color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer" }}>
+                              Save
+                            </button>
                           </div>
                         </div>
-                      ))}
+                      )}
                     </div>
-                  )}
-                </div>
-              ))}
-
-              {/* Add lesson / quiz / material */}
-              <div style={{ padding:"10px 18px", display:"flex", gap:8 }}>
-                <button onClick={()=>addLesson(sec.id,"video")}
-                  style={{ display:"flex",alignItems:"center",gap:6,padding:"6px 14px",border:`1px solid ${C.gray200}`,borderRadius:8,background:C.white,fontSize:12,fontWeight:600,color:C.gray700,cursor:"pointer" }}>
-                  <Icon name="video" size={13} color={C.gray500}/> Add Lesson
-                </button>
-                <button onClick={()=>addLesson(sec.id,"quiz")}
-                  style={{ display:"flex",alignItems:"center",gap:6,padding:"6px 14px",border:`1px solid #e9d5ff`,borderRadius:8,background:"#faf5ff",fontSize:12,fontWeight:600,color:"#7c3aed",cursor:"pointer" }}>
-                  <Icon name="article" size={13} color="#7c3aed"/> Add Quiz
-                </button>
-                <button onClick={()=>addLesson(sec.id,"material")}
-                  style={{ display:"flex",alignItems:"center",gap:6,padding:"6px 14px",border:`1px solid #a7f3d0`,borderRadius:8,background:"#ecfdf5",fontSize:12,fontWeight:600,color:"#059669",cursor:"pointer" }}>
-                  <Icon name="file-pdf" size={13} color="#059669"/> Add Material
-                </button>
+                  );
+                })}
+            <div onClick={()=>addQuestion(l._secId,l.id)} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 14px 2px", cursor:"pointer" }}>
+              <div style={{ width:30, height:30, borderRadius:8, background:C.gray100, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <Icon name="plus" size={13} color={C.gray500}/>
               </div>
-              {/* Section resources */}
-              {(sec.resources && sec.resources.length > 0) && (
-                <div style={{ margin:"0 18px 12px", borderRadius:10, border:`1px solid ${C.gray200}`, overflow:"hidden" }}>
-                  <div style={{ padding:"8px 14px", background:C.gray50, borderBottom:`1px solid ${C.gray200}`, fontSize:12, fontWeight:700, color:C.gray500, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                    <span>Resources</span>
-                    <button onClick={()=>triggerResourceUpload(sec.id)} style={{ fontSize:12, fontWeight:600, color:C.primary, background:"none", border:`1px solid ${C.gray200}`, borderRadius:6, padding:"3px 8px", cursor:"pointer", display:"flex", alignItems:"center", gap:4 }}>
-                      <Icon name="plus" size={12} color={C.primary}/> Add
-                    </button>
-                  </div>
-                  {sec.resources.map((r, ri) => (
-                    <div key={r.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 14px", borderBottom: ri < sec.resources.length-1 ? `1px solid ${C.gray100}` : "none", background:C.white }}>
-                      <span style={{ fontSize:18, flexShrink:0 }}>{r.icon}</span>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontSize:12, fontWeight:500, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{r.title}</div>
-                        <div style={{ display:"flex", gap:6, alignItems:"center", marginTop:2 }}>
-                          <span style={{ fontSize:12, fontWeight:700, color:C.primary, background:C.primaryLight, borderRadius:4, padding:"1px 5px" }}>{r.type}</span>
-                          <span style={{ fontSize:12, color:C.gray400 }}>{r.size}</span>
-                        </div>
-                      </div>
-                      <button onClick={()=>removeResource(sec.id, r.id)} style={{ width:24, height:24, borderRadius:6, border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                        <Icon name="x" size={12} color={C.gray400}/>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {/* Add resource button (when no resources yet) */}
+              <span style={{ fontSize:14, fontWeight:600, color:C.gray700 }}>New question</span>
             </div>
-          )}
+          </div>
+          </>}
+        </div>
+      ))}
+      {/* ── Materials section ── */}
+      {materialLessons.map((l, mi) => (
+        <div key={l.id} style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, marginBottom:16, padding:24 }}>
+
+          {/* Card header — FormSection style */}
+          <div style={{ display:"flex", gap:12, marginBottom:20, alignItems:"flex-start" }}>
+            <div style={{ width:36, height:36, borderRadius:10, background:"#ecfdf5", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              <Icon name="file-pdf" size={18} color="#059669"/>
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontWeight:800, fontSize:16, color:C.gray900 }}>Material</div>
+              <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>Upload files for this lesson</div>
+            </div>
+            <button onClick={()=>deleteFlatLesson(l._secId,l.id)}
+              style={{ width:28,height:28,borderRadius:7,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
+              <Icon name="trash" size={13} color={C.error}/>
+            </button>
+          </div>
+
+          <Label>TITLE</Label>
+          <input value={l.title} onChange={e=>patchLesson(l._secId,l.id,{title:e.target.value})}
+            placeholder="Enter title…"
+            style={{...inputSt, marginBottom:16}}/>
+          <Label>MATERIAL</Label>
+            <div
+              onDragOver={e=>{ e.preventDefault(); patchLesson(l._secId,l.id,{_dropOver:true}); }}
+              onDragLeave={()=>patchLesson(l._secId,l.id,{_dropOver:false})}
+              onDrop={e=>{ e.preventDefault(); patchLesson(l._secId,l.id,{_dropOver:false}); const f=e.dataTransfer.files?.[0]; if(f) patchLesson(l._secId,l.id,{materialFile:f,title:l.title||f.name.replace(/\.[^.]+$/,"")}); }}
+              onClick={()=>{ setUploadingMaterialId({secId:l._secId,lesId:l.id}); setTimeout(()=>materialInputRef.current?.click(),0); }}
+              style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:8, padding:"24px 16px", border:`2px dashed ${l._dropOver?"#059669": l.materialFile?"#bbf7d0":C.gray200}`, borderRadius:10, background: l._dropOver?"#f0fdf4": l.materialFile?"#f0fdf4":C.gray50, cursor:"pointer", transition:"all .15s" }}>
+              <Icon name="cloud-arrow-up" size={26} color={l.materialFile?"#059669":C.gray400}/>
+              {l.materialFile
+                ? <span style={{ fontSize:13, fontWeight:600, color:"#059669" }}>{l.materialFile.name}</span>
+                : <>
+                    <span style={{ fontSize:13, fontWeight:600, color:C.gray700 }}>Click here or drag to add materials</span>
+                    <span style={{ fontSize:12, color:C.gray400 }}>Any document or zip file, max size 10MB</span>
+                  </>
+              }
+            </div>
         </div>
       ))}
 
-      {/* Add Section */}
-      <button onClick={addSection}
-        style={{ width:"100%", padding:"13px", border:`2px dashed ${C.gray200}`, borderRadius:14, background:"transparent", fontSize:14, fontWeight:700, color:C.primary, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
-        <Icon name="plus" size={15} color={C.primary}/> Add Section
+      {/* Add material button */}
+      <button onClick={()=>addMaterialWithFile(null)}
+        style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 16px", border:"none", borderRadius:8, background:C.primary, fontSize:13, fontWeight:600, color:"#fff", cursor:"pointer" }}>
+        <Icon name="plus" size={12} color="#fff"/> Add Material
       </button>
     </div>
   );
@@ -4095,7 +4064,7 @@ function AdminCreateSession({ onBack, toast, onSave }) {
     availableFrom:"", availableTo:"",
     instructorName:"", bio:"",
     vimeoUrl:"",
-    discussion:true, qa:true, spinWheel:false, certificate:false,
+    discussion:true, qa:true, spinWheel:false, certificate:false, commentVisibility:"visible",
   });
   const upd = (k,v) => setForm(f=>({...f,[k]:v}));
   const sectionsRef = useRef(null);
@@ -4148,51 +4117,45 @@ function AdminCreateSession({ onBack, toast, onSave }) {
   }
 
   const TABS = [
-    { key:"details",    label:"Session Details" },
-    { key:"curriculum", label:"Curriculum"      },
+    { key:"details",      label:"Details"      },
+    { key:"curriculum",   label:"Lessons"      },
+    { key:"availability", label:"Availability" },
   ];
 
   return (
     <div style={{ background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
 
-      {/* Header */}
-      <div style={{ padding:"16px 28px", background:C.white, borderBottom:`1px solid ${C.gray200}`,
-        display:"flex", justifyContent:"space-between", alignItems:"center", flexShrink:0 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-          <button onClick={onBack} style={{ width:32,height:32,borderRadius:8,border:`1px solid ${C.gray200}`,
-            background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center" }}>
-            <Icon name="arrow-left" size={16} color={C.gray600}/>
-          </button>
-          <div>
-            <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1 }}>ADMIN PANEL</div>
-            <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900, lineHeight:1.3 }}>Create New Session</h2>
+      {/* Header + Tabs combined */}
+      <div style={{ background:C.white, borderBottom:`1px solid ${C.gray200}`, flexShrink:0 }}>
+        <div style={{ padding:"16px 28px 0", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+            <button onClick={onBack} style={{ background:"none", border:"none", cursor:"pointer", fontSize:14, color:C.gray400, fontWeight:500, padding:0 }}>Sessions</button>
+            <Icon name="caret-right" size={13} color={C.gray300}/>
+            <span style={{ fontSize:14, fontWeight:400, color:C.gray900 }}>Create New Session</span>
+          </div>
+          <div style={{ display:"flex", gap:8 }}>
+            <Btn variant="outline" onClick={()=>save(false)}>Save Draft</Btn>
+            <Btn onClick={()=>save(true)}><Icon name="lightning" size={14} color="#fff"/>Publish Session</Btn>
           </div>
         </div>
-        <div style={{ display:"flex", gap:8 }}>
-          <Btn variant="outline" onClick={()=>save(false)}>Save Draft</Btn>
-          <Btn onClick={()=>save(true)}><Icon name="lightning" size={14} color="#fff"/>Publish Session</Btn>
+        <div style={{ display:"flex", gap:20, padding:"0 28px" }}>
+          {TABS.map(t => {
+            const active = tab === t.key;
+            return (
+              <button key={t.key} onClick={()=>setTab(t.key)}
+                style={{ padding:"12px 0", background:"none", border:"none",
+                  borderBottom: active ? `2px solid ${C.primary}` : "2px solid transparent",
+                  cursor:"pointer", fontSize:14, fontWeight: active ? 700 : 500,
+                  color: active ? C.primary : C.gray500, marginBottom:-1 }}>
+                {t.label}
+              </button>
+            );
+          })}
         </div>
-      </div>
-
-      {/* Tab bar */}
-      <div style={{ display:"flex", background:C.white, borderBottom:`1px solid ${C.gray200}`,
-        padding:"0 28px", flexShrink:0 }}>
-        {TABS.map(t => {
-          const active = tab === t.key;
-          return (
-            <button key={t.key} onClick={()=>setTab(t.key)}
-              style={{ padding:"14px 20px", background:"none", border:"none",
-                borderBottom: active ? `2px solid ${C.primary}` : "2px solid transparent",
-                cursor:"pointer", fontSize:14, fontWeight: active ? 700 : 500,
-                color: active ? C.primary : C.gray500, marginBottom:-1 }}>
-              {t.label}
-            </button>
-          );
-        })}
       </div>
 
       {/* Tab content */}
-      <div style={{ flex:1, overflowY:"auto", padding:"24px 28px 36px" }}>
+      <div style={{ flex:1, overflowY:"auto", padding: tab==="curriculum" ? "20px" : "20px" }}>
 
         {/* ── SESSION DETAILS tab ── */}
         {tab === "details" && <>
@@ -4200,33 +4163,8 @@ function AdminCreateSession({ onBack, toast, onSave }) {
           <FormSection icon="info" title="General Information" subtitle="Set the foundational details for your curated recorded course.">
             <Label required>COURSE TITLE</Label>
             <input value={form.title} onChange={e=>upd("title",e.target.value)} placeholder="e.g. Advanced Figma Auto-Layout Masterclass" style={{...inputSt,marginBottom:14}}/>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
-              <div><Label>CATEGORY</Label><select value={form.category} onChange={e=>upd("category",e.target.value)} style={inputSt}>{["UI Design","Management","Leadership","Marketing","Sales","UX Research","Accessibility"].map(c=><option key={c}>{c}</option>)}</select></div>
-              <div><Label>LANGUAGE</Label><select value={form.lang} onChange={e=>upd("lang",e.target.value)} style={inputSt}>{["English","Spanish","French","Hindi","Portuguese"].map(l=><option key={l}>{l}</option>)}</select></div>
-            </div>
             <Label>DESCRIPTION</Label>
             <textarea value={form.desc} onChange={e=>upd("desc",e.target.value)} placeholder="Deep dive into the nuances of the course content…" rows={4} style={{...inputSt,resize:"vertical",marginBottom:14}}/>
-            <Label>VIMEO VIDEO URL</Label>
-            <input value={form.vimeoUrl} onChange={e=>upd("vimeoUrl",e.target.value)} placeholder="https://vimeo.com/123456789" style={inputSt}/>
-          </FormSection>
-
-          <FormSection icon="calendar" title="Availability" subtitle="Set the access window. The session goes live on the start date and auto-archives after the end date.">
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:8 }}>
-              <div>
-                <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE FROM</div>
-                <input type="datetime-local" value={form.availableFrom} onChange={e=>upd("availableFrom",e.target.value)} style={inputSt}/>
-              </div>
-              <div>
-                <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE TO</div>
-                <input type="datetime-local" value={form.availableTo} onChange={e=>upd("availableTo",e.target.value)} style={inputSt}/>
-              </div>
-            </div>
-            <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 12px", background:C.primaryLight, borderRadius:8, border:`1px solid ${C.primaryBorder}` }}>
-              <Icon name="info" size={14} color={C.primary}/>
-              <span style={{ fontSize:12, color:C.primary, lineHeight:1.5 }}>
-                When the <strong>Available To</strong> date passes, this session is automatically moved to <strong>Archive</strong> and hidden from students. Leave blank for no expiry.
-              </span>
-            </div>
           </FormSection>
 
           <FormSection icon="user-circle" title="Instructor Profile" subtitle="Share your expertise and background with your students.">
@@ -4248,28 +4186,67 @@ function AdminCreateSession({ onBack, toast, onSave }) {
             </div>
           </FormSection>
 
-          <FormSection icon="chat-circle" title="Engagement Settings" subtitle="Configure how you will interact with your audience.">
+          <FormSection icon="chat-circle" title="Engagement Settings" subtitle="Configure how learners interact with this session.">
+            {/* Certificate */}
             {[
-              { key:"discussion", label:"Enable Discussion Forum",  desc:"Allow students to ask questions and discuss with peers" },
-              { key:"qa",         label:"Enable Q&A Section",       desc:"Moderate and answer student questions individually"   },
-            ].map(item=>(
-              <div key={item.key} style={{ display:"flex", justifyContent:"space-between", alignItems:"center",
-                padding:"14px 0", borderBottom:`1px solid ${C.gray100}` }}>
-                <div>
-                  <div style={{ fontWeight:600, fontSize:14, color:C.gray900 }}>{item.label}</div>
-                  <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{item.desc}</div>
-                </div>
+              { key:"certificate", label:"Certificate",   desc:"Send students a certificate when they complete all lessons." },
+              { key:"spinWheel",   label:"Spin the Wheel", desc:"Enable a spin the wheel activity for students to win rewards." },
+            ].map(item => (
+              <div key={item.key} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"16px 0", borderBottom:`1px solid ${C.gray100}` }}>
+                <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{item.label}</div>
                 <Toggle fieldKey={item.key}/>
               </div>
             ))}
+            {/* Comment visibility */}
+            <div style={{ padding:"16px 0" }}>
+              <div style={{ fontWeight:700, fontSize:14, color:C.gray900, marginBottom:14 }}>Community visibility</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                {[
+                  { val:"visible", label:"Visible", desc:"All comments are shown and new ones can be posted." },
+                  { val:"hidden",  label:"Hidden",  desc:"No comments are shown and new ones can't be posted." },
+                  { val:"locked",  label:"Locked",  desc:"Existing comments are shown, but students cannot leave new ones." },
+                ].map(opt => (
+                  <div key={opt.val} onClick={()=>upd("commentVisibility", opt.val)}
+                    style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, cursor:"pointer" }}>
+                    <div>
+                      <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{opt.label}</div>
+                      <div style={{ fontSize:12, color:C.gray400, marginTop:2, lineHeight:1.5 }}>{opt.desc}</div>
+                    </div>
+                    <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${form.commentVisibility===opt.val ? C.primary : C.gray300}`, background: form.commentVisibility===opt.val ? C.primary : C.white, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      {form.commentVisibility===opt.val && <div style={{ width:6, height:6, borderRadius:"50%", background:"#fff" }}/>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </FormSection>
         </>}
 
-        {/* ── CURRICULUM tab ── */}
-        {tab === "curriculum" && (
-          <FormSection icon="list" title="Course Curriculum" subtitle="Build your course structure with sections, lessons, and quizzes.">
-            <CurriculumBuilder toast={toast} initialSections={initialSections} onSectionsChange={handleSectionsChange}/>
+        {/* ── AVAILABILITY tab ── */}
+        {tab === "availability" && (
+          <FormSection icon="calendar" title="Availability" subtitle="Set the access window. The session goes live on the start date and auto-archives after the end date.">
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
+              <div>
+                <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE FROM</div>
+                <input type="datetime-local" value={form.availableFrom} onChange={e=>upd("availableFrom",e.target.value)} style={inputSt}/>
+              </div>
+              <div>
+                <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE TO</div>
+                <input type="datetime-local" value={form.availableTo} onChange={e=>upd("availableTo",e.target.value)} style={inputSt}/>
+              </div>
+            </div>
+            <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 12px", background:C.primaryLight, borderRadius:8, border:`1px solid ${C.primaryBorder}` }}>
+              <Icon name="info" size={14} color={C.primary}/>
+              <span style={{ fontSize:12, color:C.primary, lineHeight:1.5 }}>
+                When the <strong>Available To</strong> date passes, this session is automatically moved to <strong>Archive</strong> and hidden from students. Leave blank for no expiry.
+              </span>
+            </div>
           </FormSection>
+        )}
+
+        {/* ── LESSONS tab ── */}
+        {tab === "curriculum" && (
+          <CurriculumBuilder toast={toast} initialSections={initialSections} onSectionsChange={handleSectionsChange}/>
         )}
 
       </div>
@@ -4296,6 +4273,7 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
     qa:             session.qa         !== undefined ? session.qa         : true,
     spinWheel:      session.spinWheel  !== undefined ? session.spinWheel  : false,
     certificate:    session.certificate !== undefined ? session.certificate : false,
+    commentVisibility: session.commentVisibility || "visible",
   });
   const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -4381,8 +4359,9 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
 
 
   const TABS = [
-    { key:"details",    label:"Session Details" },
-    { key:"curriculum", label:"Curriculum"      },
+    { key:"details",      label:"Details"      },
+    { key:"curriculum",   label:"Lessons"      },
+    { key:"availability", label:"Availability" },
   ];
 
   const Toggle = ({ fieldKey }) => (
@@ -4397,47 +4376,37 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
   return (
     <div style={{ background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
 
-      {/* Header */}
-      <div style={{ padding:"16px 28px", background:C.white, borderBottom:`1px solid ${C.gray200}`,
-        display:"flex", justifyContent:"space-between", alignItems:"center", flexShrink:0 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-          <button onClick={onBack} style={{ width:32,height:32,borderRadius:8,border:`1px solid ${C.gray200}`,
-            background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center" }}>
-            <Icon name="arrow-left" size={16} color={C.gray600}/>
-          </button>
-          <div>
-            <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1 }}>EDITING SESSION</div>
-            <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900, lineHeight:1.3,
-              maxWidth:480, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-              {session.title}
-            </h2>
+      {/* Header + Tabs combined */}
+      <div style={{ background:C.white, borderBottom:`1px solid ${C.gray200}`, flexShrink:0 }}>
+        <div style={{ padding:"16px 28px 0", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+            <button onClick={onBack} style={{ background:"none", border:"none", cursor:"pointer", fontSize:14, color:C.gray400, fontWeight:500, padding:0 }}>Sessions</button>
+            <Icon name="caret-right" size={13} color={C.gray300}/>
+            <span style={{ fontSize:14, fontWeight:400, color:C.gray900, maxWidth:300, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{session.title}</span>
+          </div>
+          <div style={{ display:"flex", gap:8 }}>
+            <Btn variant="outline" onClick={discard}>Discard</Btn>
+            <Btn onClick={save}><Icon name="floppy-disk" size={14} color="#fff"/>Save Changes</Btn>
           </div>
         </div>
-        <div style={{ display:"flex", gap:8 }}>
-          <Btn variant="outline" onClick={discard}>Discard</Btn>
-          <Btn onClick={save}><Icon name="floppy-disk" size={14} color="#fff"/>Save Changes</Btn>
+        <div style={{ display:"flex", padding:"0 28px", gap:20 }}>
+          {TABS.map(t => {
+            const active = tab === t.key;
+            return (
+              <button key={t.key} onClick={()=>setTab(t.key)}
+                style={{ padding:"12px 0", background:"none", border:"none",
+                  borderBottom: active ? `2px solid ${C.primary}` : "2px solid transparent",
+                  cursor:"pointer", fontSize:14, fontWeight: active ? 700 : 500,
+                  color: active ? C.primary : C.gray500, marginBottom:-1 }}>
+                {t.label}
+              </button>
+            );
+          })}
         </div>
-      </div>
-
-      {/* Tab bar */}
-      <div style={{ display:"flex", background:C.white, borderBottom:`1px solid ${C.gray200}`,
-        padding:"0 28px", flexShrink:0 }}>
-        {TABS.map(t => {
-          const active = tab === t.key;
-          return (
-            <button key={t.key} onClick={()=>setTab(t.key)}
-              style={{ padding:"14px 20px", background:"none", border:"none",
-                borderBottom: active ? `2px solid ${C.primary}` : "2px solid transparent",
-                cursor:"pointer", fontSize:14, fontWeight: active ? 700 : 500,
-                color: active ? C.primary : C.gray500, marginBottom:-1 }}>
-              {t.label}
-            </button>
-          );
-        })}
       </div>
 
       {/* Tab content */}
-      <div style={{ flex:1, overflowY:"auto", padding:"24px 28px 36px" }}>
+      <div style={{ flex:1, overflowY:"auto", padding: tab==="curriculum" ? "20px" : "20px" }}>
 
         {/* ── SESSION DETAILS tab ── */}
         {tab === "details" && <>
@@ -4447,43 +4416,9 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
             <Label required>SESSION TITLE</Label>
             <input value={form.title} onChange={e=>upd("title",e.target.value)}
               placeholder="e.g. Advanced Figma Auto-Layout Masterclass" style={{...inputSt,marginBottom:14}}/>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
-              <div>
-                <Label>CATEGORY</Label>
-                <select value={form.category} onChange={e=>upd("category",e.target.value)} style={inputSt}>
-                  {["UI Design","Management","Leadership","Marketing","Sales","UX Research","Accessibility","Content Strategy","Life Skills","Design Systems"].map(c=><option key={c}>{c}</option>)}
-                </select>
-              </div>
-              <div>
-                <Label>LANGUAGE</Label>
-                <select value={form.lang} onChange={e=>upd("lang",e.target.value)} style={inputSt}>
-                  {["English","Spanish","French","Hindi","Portuguese"].map(l=><option key={l}>{l}</option>)}
-                </select>
-              </div>
-            </div>
             <Label>DESCRIPTION</Label>
             <textarea value={form.desc} onChange={e=>upd("desc",e.target.value)}
               placeholder="Describe what students will learn in this session…" rows={4} style={{...inputSt,resize:"vertical"}}/>
-          </FormSection>
-
-          {/* Availability */}
-          <FormSection icon="calendar" title="Availability" subtitle="Set the access window. The session goes live on the start date and auto-archives after the end date.">
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:8 }}>
-              <div>
-                <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE FROM</div>
-                <input type="datetime-local" value={form.availableFrom} onChange={e=>upd("availableFrom",e.target.value)} style={inputSt}/>
-              </div>
-              <div>
-                <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE TO</div>
-                <input type="datetime-local" value={form.availableTo} onChange={e=>upd("availableTo",e.target.value)} style={inputSt}/>
-              </div>
-            </div>
-            <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 12px", background:C.primaryLight, borderRadius:8, border:`1px solid ${C.primaryBorder}` }}>
-              <Icon name="info" size={14} color={C.primary}/>
-              <span style={{ fontSize:12, color:C.primary, lineHeight:1.5 }}>
-                The session goes live at the <strong>Available From</strong> date &amp; time and auto-archives after <strong>Available To</strong>. Leave blank for no expiry.
-              </span>
-            </div>
           </FormSection>
 
           {/* Instructor Profile */}
@@ -4513,29 +4448,65 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
           {/* Engagement Settings */}
           <FormSection icon="chat-circle" title="Engagement Settings" subtitle="Configure how learners interact with this session.">
             {[
-              { key:"discussion", label:"Enable Discussion Forum",  desc:"Allow students to ask questions and discuss with peers" },
-              { key:"qa",         label:"Enable Q&A Section",       desc:"Moderate and answer student questions individually"   },
+              { key:"certificate", label:"Certificate",      desc:"Send students a certificate when they complete all lessons." },
+              { key:"discussion",  label:"Discussion Forum", desc:"Allow students to ask questions and discuss with peers." },
+              { key:"qa",          label:"Q&A Section",      desc:"Moderate and answer student questions individually." },
             ].map(item => (
-              <div key={item.key} style={{ display:"flex", justifyContent:"space-between",
-                alignItems:"center", padding:"14px 0",
-                borderBottom:`1px solid ${C.gray100}` }}>
-                <div style={{ display:"flex", gap:12, alignItems:"center" }}>
-                  <div>
-                    <div style={{ fontWeight:600, fontSize:14, color:C.gray900 }}>{item.label}</div>
-                    <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{item.desc}</div>
-                  </div>
-                </div>
+              <div key={item.key} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"16px 0", borderBottom:`1px solid ${C.gray100}` }}>
+                <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{item.label}</div>
                 <Toggle fieldKey={item.key}/>
               </div>
             ))}
+            {/* Comment visibility */}
+            <div style={{ padding:"16px 0" }}>
+              <div style={{ fontWeight:700, fontSize:14, color:C.gray900, marginBottom:14 }}>Community visibility</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                {[
+                  { val:"visible", label:"Visible", desc:"All comments are shown and new ones can be posted." },
+                  { val:"hidden",  label:"Hidden",  desc:"No comments are shown and new ones can't be posted." },
+                  { val:"locked",  label:"Locked",  desc:"Existing comments are shown, but students cannot leave new ones." },
+                ].map(opt => (
+                  <div key={opt.val} onClick={()=>upd("commentVisibility", opt.val)}
+                    style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, cursor:"pointer" }}>
+                    <div>
+                      <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{opt.label}</div>
+                      <div style={{ fontSize:12, color:C.gray400, marginTop:2, lineHeight:1.5 }}>{opt.desc}</div>
+                    </div>
+                    <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${form.commentVisibility===opt.val ? C.primary : C.gray300}`, background: form.commentVisibility===opt.val ? C.primary : C.white, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      {form.commentVisibility===opt.val && <div style={{ width:6, height:6, borderRadius:"50%", background:"#fff" }}/>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </FormSection>
         </>}
 
-        {/* ── CURRICULUM tab ── */}
-        {tab === "curriculum" && (
-          <FormSection icon="list" title="Course Curriculum" subtitle="Build your course structure with sections, lessons, and quizzes.">
-            <CurriculumBuilder toast={toast} initialSections={initialSections} onSectionsChange={handleSectionsChange}/>
+        {/* ── AVAILABILITY tab ── */}
+        {tab === "availability" && (
+          <FormSection icon="calendar" title="Availability" subtitle="Set the access window. The session goes live on the start date and auto-archives after the end date.">
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
+              <div>
+                <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE FROM</div>
+                <input type="datetime-local" value={form.availableFrom} onChange={e=>upd("availableFrom",e.target.value)} style={inputSt}/>
+              </div>
+              <div>
+                <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE TO</div>
+                <input type="datetime-local" value={form.availableTo} onChange={e=>upd("availableTo",e.target.value)} style={inputSt}/>
+              </div>
+            </div>
+            <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 12px", background:C.primaryLight, borderRadius:8, border:`1px solid ${C.primaryBorder}` }}>
+              <Icon name="info" size={14} color={C.primary}/>
+              <span style={{ fontSize:12, color:C.primary, lineHeight:1.5 }}>
+                The session goes live at the <strong>Available From</strong> date &amp; time and auto-archives after <strong>Available To</strong>. Leave blank for no expiry.
+              </span>
+            </div>
           </FormSection>
+        )}
+
+        {/* ── LESSONS tab ── */}
+        {tab === "curriculum" && (
+          <CurriculumBuilder toast={toast} initialSections={initialSections} onSectionsChange={handleSectionsChange}/>
         )}
 
       </div>
@@ -6050,7 +6021,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                 </div>
                 <button onClick={() => { setPreviewOpen(false); handleRegister(); }}
                   style={{ flexShrink:0, background:"linear-gradient(135deg,#3699ff,#a855f7)", border:"none", borderRadius:10, padding:"12px 24px", fontSize:14, fontWeight:700, color:"#fff", cursor:"pointer", whiteSpace:"nowrap" }}>
-                  Register
+                  {registerLabel || "Register"}
                 </button>
               </div>
             </div>
@@ -6071,7 +6042,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
           <button onClick={handleRegister}
             style={{ padding:"9px 22px", background:"#3699ff", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer" }}
             onMouseEnter={e=>e.currentTarget.style.background="#187de4"} onMouseLeave={e=>e.currentTarget.style.background="#3699ff"}>
-            Register →
+            {registerLabel || "Register"}
           </button>
         )}
       </nav>
@@ -6383,7 +6354,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                   <button onClick={handleRegister}
                     style={{ width:"100%", padding:"13px 0", background:"#3699ff", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:800, cursor:"pointer", marginBottom:8 }}
                     onMouseEnter={e=>e.currentTarget.style.background="#187de4"} onMouseLeave={e=>e.currentTarget.style.background="#3699ff"}>
-                    Register
+                    {registerLabel || "Register"}
                   </button>
                   <div style={{ fontSize:12, textAlign:"center", color:"#9ca3af", marginBottom:10 }}>No credit card required</div>
                 </>
@@ -6483,32 +6454,57 @@ function LandingSessionCard({ s, imgSrc, onClick, availableFrom, sessionState })
   );
 }
 
+const DISPLAY_FONT = "'Outfit','Helvetica Neue',Helvetica,Arial,sans-serif";
+const SERIF_FONT   = "'Playfair Display', Georgia, serif";
+const CTA_ORANGE   = "#fe4d01";
+
 function LandingPage({ onGetStarted }) {
   const [showAuth, setShowAuth] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
   const [faqOpen, setFaqOpen] = useState(null);
-  const [featuredPage, setFeaturedPage] = useState(0);
+  const [scheduleTab, setScheduleTab] = useState("upcoming");
+  const [instructorPage, setInstructorPage] = useState(0);
   const [testimonialPage, setTestimonialPage] = useState(0);
 
   const experts = [
-    { name:"Tara Roehl",         role:"Mindfulness & Wellness",   img:"https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=300&fit=crop&auto=format" },
-    { name:"Casey Harrison",     role:"Inclusion Specialist",     img:"https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=300&fit=crop&auto=format" },
-    { name:"Sydney Bassard",     role:"Dyslexia Expert",          img:"https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=300&fit=crop&auto=format" },
-    { name:"Diana Williams",     role:"Leadership Coach",         img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=300&fit=crop&auto=format" },
-    { name:"Farwa Husain",       role:"Curriculum Designer",      img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=300&fit=crop&auto=format" },
-    { name:"Jordan Smith",       role:"Speech-Language Path.",    img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=300&fit=crop&auto=format" },
-    { name:"Sam Parmelee",       role:"AAC Specialist",           img:"https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=400&h=300&fit=crop&auto=format" },
-    { name:"Natasha Schaumburg", role:"Behavior Analyst",         img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=300&fit=crop&auto=format" },
-    { name:"Rose Karentina",     role:"Data & Assessment",        img:"https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=400&h=300&fit=crop&auto=format" },
+    { name:"Tara Roehl",         role:"Mindfulness & Wellness Specialist",   org:"SPED Wellness Institute",         img:"https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=300&fit=crop&auto=format",
+      bio:"Tara Roehl is a certified mindfulness instructor and special education advocate with over 15 years of classroom experience. She has helped thousands of educators integrate evidence-based wellness practices into their daily routines to reduce burnout and improve student outcomes.\n\nTara holds a Master's degree in Special Education and a certification in Mindfulness-Based Stress Reduction (MBSR). She is the founder of the SPED Wellness Institute, where she trains educators across the country.",
+      session:"Mindfulness for SPED Educators", sessionDesc:"Practical mindfulness techniques you can use before, during, and after school to stay regulated and present for your students.",
+      highlights:["Evidence-based mindfulness practices for the classroom","Managing stress and preventing SPED burnout","Building co-regulation skills with your students"] },
+    { name:"Casey Harrison",     role:"Inclusion Specialist",                org:"National Inclusion Network",      img:"https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=300&fit=crop&auto=format",
+      bio:"Casey Harrison has spent two decades designing inclusive learning environments across diverse school districts. As a nationally recognized inclusion specialist, Casey works with administrators, teachers, and families to create schools where every student belongs.\n\nCasey is the author of 'Belonging in Every Classroom' and a sought-after keynote speaker at educational conferences worldwide.",
+      session:"Building Truly Inclusive Classrooms", sessionDesc:"A practical framework for designing learning environments where students with disabilities thrive alongside their peers.",
+      highlights:["Universal Design for Learning (UDL) strategies","Collaborative co-teaching models","Family engagement in inclusive settings"] },
+    { name:"Sydney Bassard",     role:"Dyslexia & Literacy Expert",          org:"Reading Rights Foundation",       img:"https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=300&fit=crop&auto=format",
+      bio:"Sydney Bassard is a certified dyslexia specialist and literacy intervention expert who has worked with struggling readers for over 12 years. She is passionate about early identification and evidence-based reading instruction.\n\nSydney holds certifications in Orton-Gillingham and LETRS and regularly consults with school districts to build structured literacy programs.",
+      session:"Unlocking Reading for Students with Dyslexia", sessionDesc:"Structured literacy approaches and early intervention strategies proven to accelerate reading growth in students with dyslexia.",
+      highlights:["Orton-Gillingham fundamentals","Screening and early identification","Building a structured literacy program"] },
+    { name:"Diana Williams",     role:"SPED Leadership Coach",               org:"EdLeaders Collaborative",         img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=300&fit=crop&auto=format",
+      bio:"Diana Williams coaches special education directors and school leaders across the country to build high-performing SPED programs. With a background in both classroom teaching and district administration, Diana brings a unique systems-thinking perspective to leadership development.\n\nShe has led SPED programs in three states and currently coaches over 200 school leaders annually through the EdLeaders Collaborative.",
+      session:"Leading High-Impact SPED Programs", sessionDesc:"How to build, sustain, and continuously improve a special education program that delivers real results for students and families.",
+      highlights:["Data-driven program evaluation","Building strong IEP teams","Advocating for SPED at the district level"] },
+    { name:"Farwa Husain",       role:"Curriculum & IEP Designer",           org:"Individualized Learning Co.",     img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=300&fit=crop&auto=format",
+      bio:"Farwa Husain specializes in designing individualized curriculum and IEP goals that are both legally compliant and educationally meaningful. She has trained hundreds of special education teachers on writing measurable, standards-aligned IEPs.\n\nFarwa is a former SPED coordinator and current consultant who partners with school districts to streamline IEP processes and improve compliance outcomes.",
+      session:"Writing IEPs That Actually Work", sessionDesc:"A step-by-step approach to writing IEP goals that are measurable, standards-aligned, and meaningful for each student.",
+      highlights:["Present levels and baseline data","Writing SMART IEP goals","Connecting IEP goals to the general curriculum"] },
+    { name:"Jordan Smith",       role:"Speech-Language Pathologist",         org:"CommunicateFirst SLP Group",      img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=300&fit=crop&auto=format",
+      bio:"Jordan Smith is a licensed Speech-Language Pathologist with a specialization in school-based communication disorders. Jordan has worked in both urban and rural school settings, supporting students with autism, language delays, and articulation disorders.\n\nJordan is a member of ASHA and frequently presents at state and national SLP conferences on practical, classroom-based communication strategies.",
+      session:"Communication Strategies for Every SPED Classroom", sessionDesc:"How classroom teachers and SLPs can collaborate to support communication growth for all students, including those who are non-verbal.",
+      highlights:["Core vocabulary in the classroom","Teacher-SLP collaboration strategies","Supporting non-verbal and minimally verbal students"] },
+    { name:"Sam Parmelee",       role:"AAC Specialist & Consultant",         org:"Voices for All AAC Center",       img:"https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=400&h=300&fit=crop&auto=format",
+      bio:"Sam Parmelee is one of the country's leading AAC (Augmentative and Alternative Communication) specialists, with over 10 years of experience implementing AAC systems in school and clinical settings. Sam works with students who rely on AAC as their primary means of communication.\n\nSam is a passionate advocate for presuming competence and has helped hundreds of families and educators unlock communication for non-speaking individuals.",
+      session:"AAC Implementation That Transforms Lives", sessionDesc:"Practical strategies for implementing AAC in the classroom, building communication partners, and measuring progress.",
+      highlights:["Choosing the right AAC system","Training communication partners","Data collection for AAC goals"] },
+    { name:"Natasha Schaumburg", role:"Board Certified Behavior Analyst",    org:"Positive Behavior Solutions",    img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=300&fit=crop&auto=format",
+      bio:"Natasha Schaumburg, BCBA, specializes in positive behavior support and applied behavior analysis in school settings. She has designed behavior intervention plans for hundreds of students and trained entire school staffs on trauma-informed, proactive behavior strategies.\n\nNatasha is a firm believer that behavior is communication, and she helps teams understand the function of behavior before designing any intervention.",
+      session:"Behavior as Communication: A Positive Approach", sessionDesc:"Understanding the function of challenging behavior and designing proactive, positive behavior support plans that actually work.",
+      highlights:["Functional behavior assessment (FBA) basics","Writing effective behavior intervention plans","Trauma-informed behavior support"] },
+    { name:"Rose Karentina",     role:"Data & Assessment Specialist",        org:"Evidence-Based Ed Consulting",    img:"https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=400&h=300&fit=crop&auto=format",
+      bio:"Rose Karentina is a data and assessment specialist who helps SPED teams use data to drive instruction and demonstrate student progress. With a background in educational psychology and statistics, Rose makes data accessible and actionable for classroom teachers.\n\nShe has worked with school districts nationwide to design data collection systems, progress monitoring protocols, and data-driven IEP review processes.",
+      session:"Using Data to Drive SPED Instruction", sessionDesc:"How to collect meaningful data, monitor student progress, and use evidence to make better instructional decisions.",
+      highlights:["Progress monitoring systems that work","Data visualization for IEP meetings","Making data-driven instructional adjustments"] },
   ];
-
-  const steps = [
-    { n:"01", title:"Create Your Free Account",      desc:"Sign up in seconds and get instant access to the portal." },
-    { n:"02", title:"Watch Expert-Led Sessions",     desc:"Access recordings from certified SPED professionals." },
-    { n:"03", title:"Take Interactional Quizzes",    desc:"Test your knowledge and reinforce what you've learned." },
-    { n:"04", title:"Track Your Progress",           desc:"Monitor completion rates and earn badges as you grow." },
-    { n:"05", title:"Earn Your Certificate",         desc:"Complete all sessions and download your certificate." },
-  ];
+  const [selectedInstructor, setSelectedInstructor] = useState(null);
 
   const testimonials = [
     { stars:5, text:"SPED Summit gave me the practical tools I could use in my classroom the very next day. The sessions are so mindful and packed with the right content.", name:"Maria Gonzalez", role:"Special Ed Teacher", img:"https://images.unsplash.com/photo-1573497491208-6b1acb260507?w=80&h=80&fit=crop&auto=format" },
@@ -6525,362 +6521,717 @@ function LandingPage({ onGetStarted }) {
     { q:"What topics are covered at SPED Summit?",       a:"We cover mindfulness, inclusion, AAC, behavior strategies, AI in SPED, literacy, IEP planning, and much more." },
   ];
 
+  if (selectedInstructor) {
+    const instr = selectedInstructor;
+    const paras = instr.bio.split("\n\n");
+    return (
+      <div style={{ minHeight:"100vh", fontFamily:"Inter,'Segoe UI',system-ui,sans-serif", background:"#fff", color:"#37352f" }}>
+        {/* Nav */}
+        <nav style={{ position:"sticky", top:0, zIndex:100, background:"rgba(255,255,255,0.95)", backdropFilter:"blur(8px)", borderBottom:"1px solid rgba(55,53,47,0.09)", height:60, display:"flex", alignItems:"center", padding:"0 24px" }}>
+          <div style={{ maxWidth:1024, margin:"0 auto", width:"100%", display:"flex", alignItems:"center" }}>
+            <button onClick={()=>{ setSelectedInstructor(null); window.scrollTo(0,0); }}
+              style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", fontSize:14, color:"#787774", cursor:"pointer", padding:"4px 8px", borderRadius:6, transition:"background .12s, color .12s" }}
+              onMouseEnter={e=>{ e.currentTarget.style.background="rgba(55,53,47,0.06)"; e.currentTarget.style.color="#37352f"; }}
+              onMouseLeave={e=>{ e.currentTarget.style.background="none"; e.currentTarget.style.color="#787774"; }}>
+              <Icon name="arrow-left" size={16} color="currentColor"/>
+              Back
+            </button>
+          </div>
+        </nav>
+
+        <div style={{ maxWidth:1024, margin:"0 auto", padding:"64px 24px", display:"grid", gridTemplateColumns:"1fr 1fr", gap:80, alignItems:"start" }}>
+          {/* Left: Instructor bio */}
+          <div>
+            {/* Header */}
+            <div style={{ display:"flex", alignItems:"flex-start", gap:20, marginBottom:32 }}>
+              <div style={{ width:120, height:120, borderRadius:16, overflow:"hidden", flexShrink:0, background:"#f1f0ef" }}>
+                <img src={instr.img} alt={instr.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 20%", display:"block" }}/>
+              </div>
+              <div style={{ paddingTop:4 }}>
+                <h1 style={{ margin:"0 0 6px", fontSize:28, fontWeight:700, color:"#37352f", letterSpacing:-.5 }}>{instr.name}</h1>
+                <p style={{ margin:"0 0 4px", fontSize:15, color:"#787774" }}>{instr.role}</p>
+                <p style={{ margin:0, fontSize:13, color:"#787774" }}>{instr.org}</p>
+              </div>
+            </div>
+            {/* Bio paragraphs */}
+            <div style={{ borderTop:"1px solid rgba(55,53,47,0.09)", paddingTop:28 }}>
+              {paras.map((p,i)=>(
+                <p key={i} style={{ margin:"0 0 20px", fontSize:15, color:"#37352f", lineHeight:1.75 }}>{p}</p>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: Session info */}
+          <div style={{ paddingTop:8 }}>
+            <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:"#0070d7", letterSpacing:.5, textTransform:"uppercase" }}>Session</p>
+            <h2 style={{ margin:"0 0 16px", fontSize:28, fontWeight:700, color:"#37352f", letterSpacing:-.5, lineHeight:1.2 }}>{instr.session}</h2>
+            <p style={{ margin:"0 0 24px", fontSize:15, color:"#787774", lineHeight:1.7 }}>{instr.sessionDesc}</p>
+
+            <p style={{ margin:"0 0 14px", fontSize:14, color:"#37352f", fontWeight:500 }}>In this session:</p>
+            <ul style={{ margin:"0 0 36px", padding:0, listStyle:"none", display:"flex", flexDirection:"column", gap:12 }}>
+              {instr.highlights.map((h,i)=>(
+                <li key={i} style={{ display:"flex", alignItems:"flex-start", gap:10, fontSize:14, color:"#37352f", lineHeight:1.6 }}>
+                  <span style={{ color:"#8a46ff", fontWeight:700, flexShrink:0, marginTop:1 }}>•</span>
+                  {h}
+                </li>
+              ))}
+            </ul>
+
+            <button onClick={()=>setShowAuth(true)}
+              style={{ padding:"0 20px", height:40, background:"#0070d7", color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
+              onMouseEnter={e=>e.currentTarget.style.background="#005bb5"}
+              onMouseLeave={e=>e.currentTarget.style.background="#0070d7"}>
+              Register for this session
+            </button>
+          </div>
+        </div>
+        {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={()=>onGetStarted(null)}/>}
+      </div>
+    );
+  }
+
   if (selectedSession) {
+    const _pastIds = new Set([1,2,3,4]); // sessions in the "past" schedule tab
+    const _isPastSession = _pastIds.has(selectedSession.id);
     return (
       <>
         <SessionPublicPage
           session={selectedSession}
           onBack={() => setSelectedSession(null)}
           onRegister={() => setShowAuth(true)}
+          registerLabel={_isPastSession ? "View Recording" : "Register"}
         />
         {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={()=>onGetStarted(selectedSession?.id)}/>}
       </>
     );
   }
 
+  const sessionImgs = [
+    "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=480&h=260&fit=crop&auto=format",
+    "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=480&h=260&fit=crop&auto=format",
+    "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=480&h=260&fit=crop&auto=format",
+    "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=480&h=260&fit=crop&auto=format",
+    "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=480&h=260&fit=crop&auto=format",
+    "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=480&h=260&fit=crop&auto=format",
+  ];
+  const allSessions = SESSIONS.filter(s => !isSessionArchived(s.id));
+
+  const T = {
+    bg:       "#ffffff",
+    text:     "#37352f",
+    muted:    "#787774",
+    border:   "rgba(55,53,47,0.09)",
+    hover:    "rgba(55,53,47,0.06)",
+    blue:     "#0070d7",
+    blueHov:  "#005bb5",
+    pink:     "#e83e8c",
+  };
+
   return (
-    <div style={{ minHeight:"100vh", fontFamily:"'Roboto','Segoe UI',system-ui,sans-serif", background:"#fffaf6", overflowX:"hidden", paddingTop:60 }}>
+    <div style={{ minHeight:"100vh", fontFamily:"Inter,'Segoe UI',system-ui,sans-serif", background:T.bg, overflowX:"hidden", color:T.text }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        * { box-sizing: border-box; }
+        a { text-decoration: none; color: inherit; }
+      `}</style>
 
       {/* ── Nav ── */}
-      <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:100, background:"rgba(255,250,246,0.92)", backdropFilter:"blur(8px)", borderBottom:"1px solid #f0e8df", padding:"0 48px", height:60, display:"flex", alignItems:"center", gap:32 }}>
-        <div style={{ display:"flex", alignItems:"center", marginRight:"auto", cursor:"pointer" }}
-          onClick={()=>window.scrollTo({ top:0, behavior:"smooth" })}>
-          <img src="/Container.png" alt="SPED Summit" style={{ height:28, width:"auto", display:"block" }}/>
+      <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:100, background:"rgba(255,255,255,0.95)", backdropFilter:"blur(8px)", borderBottom:`1px solid ${T.border}`, height:60, display:"flex", alignItems:"center", padding:"0 24px" }}>
+        <div style={{ maxWidth:1024, margin:"0 auto", width:"100%", display:"flex", alignItems:"center", gap:4 }}>
+          <div style={{ display:"flex", alignItems:"center", cursor:"pointer", marginRight:"auto" }}
+            onClick={()=>window.scrollTo({ top:0, behavior:"smooth" })}>
+            <img src="/Container.png" alt="SPED Summit" style={{ height:28, width:"auto", display:"block" }}/>
+          </div>
+          {[["Sessions","sessions"],["Instructors","instructors"],["FAQ","help"]].map(([l,id])=>(
+            <button key={l} onClick={()=>document.getElementById(id)?.scrollIntoView({ behavior:"smooth" })}
+              style={{ background:"none", border:"none", fontSize:14, color:T.muted, fontWeight:400, cursor:"pointer", padding:"4px 12px", borderRadius:7, height:32, transition:"background .12s, color .12s" }}
+              onMouseEnter={e=>{ e.currentTarget.style.background=T.hover; e.currentTarget.style.color=T.text; }}
+              onMouseLeave={e=>{ e.currentTarget.style.background="none"; e.currentTarget.style.color=T.muted; }}>{l}</button>
+          ))}
+          <button onClick={()=>setShowAuth(true)}
+            style={{ marginLeft:8, padding:"0 16px", height:36, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
+            onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
+            onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
+            Get started free
+          </button>
         </div>
-        {[["Sessions","sessions"],["Instructors","instructors"],["Help","help"]].map(([l,id])=>(
-          <button key={l} onClick={()=>document.getElementById(id)?.scrollIntoView({ behavior:"smooth" })}
-            style={{ background:"none", border:"none", fontSize:14, color:"#5e6278", fontWeight:500, cursor:"pointer", padding:"4px 2px" }}
-            onMouseEnter={e=>e.currentTarget.style.color="#181c32"}
-            onMouseLeave={e=>e.currentTarget.style.color="#5e6278"}>{l}</button>
-        ))}
-        <button onClick={()=>setShowAuth(true)}
-          style={{ marginLeft:16, padding:"9px 22px", background:"#3699ff", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer", transition:"background .15s" }}
-          onMouseEnter={e=>e.currentTarget.style.background="#187de4"}
-          onMouseLeave={e=>e.currentTarget.style.background="#3699ff"}>
-          Go to Dashboard →
-        </button>
       </nav>
 
       {/* ── Hero ── */}
-      <section style={{ padding:"80px 48px 60px", maxWidth:1100, margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 420px", gap:48, alignItems:"center" }}>
-        <div>
-          <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"#e1f0ff", borderRadius:99, padding:"5px 14px", fontSize:12, fontWeight:700, color:"#3699ff", marginBottom:20, letterSpacing:.3 }}>
-            <Icon name="star" size={13} color="#3699ff"/> 9 Science-Backed · 100% Free
+      <section style={{ paddingTop:60, background:T.bg, position:"relative", overflow:"hidden" }}>
+        {/* Floating decorative Phosphor icons */}
+        {[
+          { icon:"student",       top:100, left:"8%",   size:40, rotate:-12, color:"#8a46ff" },
+          { icon:"book-open",     top:160, left:"14%",  size:32, rotate:8,   color:"#e83e8c" },
+          { icon:"pencil-simple", top:80,  left:"18%",  size:28, rotate:-6,  color:"#f59e0b" },
+          { icon:"trophy",        top:130, right:"9%",  size:38, rotate:10,  color:"#f59e0b" },
+          { icon:"lightbulb",     top:90,  right:"15%", size:30, rotate:-8,  color:"#fbbf24" },
+          { icon:"star",          top:190, right:"20%", size:26, rotate:14,  color:"#f59e0b" },
+          { icon:"target",        top:220, left:"6%",   size:28, rotate:-4,  color:"#ef4444" },
+          { icon:"note-pencil",   top:200, right:"7%",  size:32, rotate:6,   color:"#6366f1" },
+        ].map((d,i)=>(
+          <div key={i} style={{ position:"absolute", top:d.top, left:d.left, right:d.right, transform:`rotate(${d.rotate}deg)`, pointerEvents:"none", userSelect:"none", opacity:.6 }}>
+            <Icon name={d.icon} size={d.size} color={d.color}/>
           </div>
-          <h1 style={{ margin:"0 0 16px", fontSize:52, fontWeight:900, color:"#181c32", lineHeight:1.1, letterSpacing:-1 }}>
-            Learn from the<br/>best in <span style={{ color:"#3699ff" }}>SPED</span>
+        ))}
+
+        <div style={{ maxWidth:780, margin:"0 auto", padding:"80px 24px 64px", textAlign:"center", position:"relative" }}>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"#f1f0ef", borderRadius:6, padding:"4px 10px", fontSize:13, fontWeight:500, color:T.muted, marginBottom:24 }}>
+            <span style={{ fontSize:14 }}>✨</span> 100% free · Jan 2026 · 9 Expert Sessions
+          </div>
+          <h1 style={{ margin:"0 0 20px", fontSize:64, fontWeight:800, color:T.text, lineHeight:1.15, letterSpacing:-2.5 }}>
+            The simplest way to learn<br/>
+            <span style={{ background:"linear-gradient(90deg,#8a46ff,#e83e8c)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>
+              Special Education
+            </span>
           </h1>
-          <p style={{ margin:"0 0 32px", fontSize:16, color:"#5e6278", lineHeight:1.7, maxWidth:460 }}>
-            Practical professional development in special education. Watch sessions, take quizzes, earn your certificate.
+          <p style={{ margin:"0 0 32px", fontSize:18, color:T.muted, lineHeight:1.6 }}>
+            Expert-led sessions, interactive assessments, and real certificates.<br/>No credit card required.
           </p>
-          <div style={{ display:"flex", gap:12, flexWrap:"wrap" }}>
+          <div style={{ display:"flex", gap:12, justifyContent:"center", alignItems:"center" }}>
             <button onClick={()=>setShowAuth(true)}
-              style={{ padding:"14px 28px", background:"#3699ff", color:"#fff", border:"none", borderRadius:12, fontSize:16, fontWeight:700, cursor:"pointer", transition:"background .15s" }}
-              onMouseEnter={e=>e.currentTarget.style.background="#187de4"}
-              onMouseLeave={e=>e.currentTarget.style.background="#3699ff"}>
-              Continue Learning →
+              style={{ padding:"0 20px", height:40, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:15, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
+              onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
+              onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
+              Start learning — it's free
             </button>
-            <button onClick={()=>setShowAuth(true)}
-              style={{ padding:"14px 28px", background:"transparent", color:"#5e6278", border:"1.5px solid #e4e6ef", borderRadius:12, fontSize:16, fontWeight:600, cursor:"pointer" }}>
-              Explore Sessions
+            <button onClick={()=>document.getElementById("sessions")?.scrollIntoView({ behavior:"smooth" })}
+              style={{ padding:"0 20px", height:40, background:"transparent", color:T.text, border:`1px solid ${T.border}`, borderRadius:8, fontSize:15, fontWeight:500, cursor:"pointer", transition:"background .12s" }}
+              onMouseEnter={e=>e.currentTarget.style.background=T.hover}
+              onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+              View sessions
             </button>
           </div>
-          <div style={{ marginTop:28, display:"flex", alignItems:"center", gap:10 }}>
-            <div style={{ display:"flex" }}>
-              {[
-                "https://images.unsplash.com/photo-1573497491208-6b1acb260507?w=56&h=56&fit=crop&auto=format",
-                "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=56&h=56&fit=crop&auto=format",
-                "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=56&h=56&fit=crop&auto=format",
-                "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=56&h=56&fit=crop&auto=format",
-                "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=56&h=56&fit=crop&auto=format",
-              ].map((src,i)=>(
-                <img key={i} src={src} alt="" style={{ width:28, height:28, borderRadius:"50%", objectFit:"cover", border:"2px solid #fffaf6", marginLeft:i?-8:0, display:"block" }}/>
-              ))}
-            </div>
-            <span style={{ fontSize:14, color:"#7e8299" }}>Join <strong style={{ color:"#181c32" }}>4,200+</strong> educators already learning</span>
-          </div>
+          <p style={{ margin:"20px 0 0", fontSize:13, color:T.muted }}>No signup required to preview sessions</p>
         </div>
-        {/* Hero visual */}
-        <div style={{ position:"relative" }}>
-          <div style={{ background:"linear-gradient(135deg,#e1f0ff 0%,#ede9fe 100%)", borderRadius:24, aspectRatio:"4/5", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden", position:"relative" }}>
-            <img src="/LandingPage.png" alt="Educator" style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center top", display:"block" }}/>
-            <div style={{ position:"absolute", bottom:20, left:20, right:20, background:"rgba(255,255,255,0.92)", borderRadius:14, padding:"12px 16px", display:"flex", alignItems:"center", gap:10 }}>
-              <div style={{ width:36, height:36, borderRadius:10, background:"#50cd89", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                <Icon name="check-circle" size={18} color="#fff"/>
-              </div>
-              <div>
-                <div style={{ fontSize:12, fontWeight:700, color:"#181c32" }}>Certificate Earned!</div>
-                <div style={{ fontSize:12, color:"#7e8299" }}>Mindfulness in SPED · Session 1</div>
+
+        {/* Staggered collage — crops at bottom */}
+        {(()=>{
+          const cols = [
+            { mt:60  },
+            { mt:0   },
+            { mt:80  },
+            { mt:20  },
+            { mt:40  },
+            { mt:70  },
+            { mt:10  },
+            { mt:50  },
+            { mt:30  },
+          ];
+          const CARD_W = 170, CARD_H = 210;
+          const n = experts.length;
+          return (
+            <div style={{ position:"relative", height:300, overflow:"hidden", marginTop:32 }}>
+              <div style={{ display:"flex", justifyContent:"center", gap:10 }}>
+                {cols.map((col, ci) => {
+                  const top = experts[ci % n];
+                  const bot = experts[(ci + 5) % n];
+                  return (
+                    <div key={ci} style={{ flexShrink:0, display:"flex", flexDirection:"column", gap:10, marginTop:col.mt }}>
+                      <div style={{ width:CARD_W, height:CARD_H, borderRadius:16, overflow:"hidden", boxShadow:"0 6px 24px rgba(0,0,0,0.10)", cursor:"pointer" }}
+                        onMouseEnter={e=>e.currentTarget.querySelector("img").style.transform="scale(1.08)"}
+                        onMouseLeave={e=>e.currentTarget.querySelector("img").style.transform="scale(1)"}>
+                        <img src={top.img} alt={top.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%", display:"block", transition:"transform 0.4s ease" }}/>
+                      </div>
+                      <div style={{ width:CARD_W, height:CARD_H, borderRadius:16, overflow:"hidden", boxShadow:"0 6px 24px rgba(0,0,0,0.10)", cursor:"pointer" }}
+                        onMouseEnter={e=>e.currentTarget.querySelector("img").style.transform="scale(1.08)"}
+                        onMouseLeave={e=>e.currentTarget.querySelector("img").style.transform="scale(1)"}>
+                        <img src={bot.img} alt={bot.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%", display:"block", transition:"transform 0.4s ease" }}/>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
-          </div>
-          <div style={{ position:"absolute", top:-12, right:-12, background:"#ffc700", borderRadius:12, padding:"8px 14px", fontSize:12, fontWeight:800, color:"#181c32", boxShadow:"0 4px 16px rgba(0,0,0,0.12)" }}>🏆 Top Rated</div>
+          );
+        })()}
+      </section>
+
+      {/* ── Social proof strip ── */}
+      <section style={{ borderTop:`1px solid ${T.border}`, borderBottom:`1px solid ${T.border}`, padding:"28px 24px" }}>
+        <div style={{ maxWidth:1024, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"center", gap:48, flexWrap:"wrap" }}>
+          <span style={{ fontSize:13, color:T.muted, fontWeight:500, whiteSpace:"nowrap" }}>Trusted by educators at</span>
+          {["🏫 Public Schools","🏥 Children's Hospitals","🎓 Universities","🧠 ABA Clinics","📋 IEP Teams"].map((item,i)=>(
+            <span key={i} style={{ fontSize:14, fontWeight:600, color:T.muted, whiteSpace:"nowrap" }}>{item}</span>
+          ))}
         </div>
       </section>
 
-      {/* ── Featured Sessions ── */}
-      <section id="sessions" style={{ padding:"48px 48px", background:"#fff", borderTop:"1px solid #f0e8df", borderBottom:"1px solid #f0e8df" }}>
-        <div style={{ maxWidth:1100, margin:"0 auto" }}>
-          <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:28 }}>
-            <div>
-              <div style={{ fontSize:12, color:"#3699ff", fontWeight:700, letterSpacing:1, marginBottom:8 }}>FEATURED SESSIONS</div>
-              <h2 style={{ margin:0, fontSize:32, fontWeight:900, color:"#181c32" }}>Start watching today</h2>
-            </div>
-            <div style={{ display:"flex", gap:10 }}>
-              {(() => {
-                const allSessions = SESSIONS.filter(s => !isSessionArchived(s.id));
-                return [["chevron-left", () => setFeaturedPage(p => Math.max(0, p-1)), featuredPage === 0],
-                  ["chevron-right", () => setFeaturedPage(p => Math.min(Math.ceil(allSessions.length/4)-1, p+1)), featuredPage >= Math.ceil(allSessions.length/4)-1]
-                ].map(([icon, onClick, disabled], idx) => (
-                  <button key={idx} onClick={onClick} disabled={disabled}
-                    style={{ width:48, height:48, borderRadius:"50%", border:"1.5px solid #e8ddd5", background:"#fdf8f4", display:"flex", alignItems:"center", justifyContent:"center", cursor:disabled?"not-allowed":"pointer", opacity:disabled?0.4:1, transition:"border-color .15s, background .15s" }}
-                    onMouseEnter={e=>{ if(!disabled){ e.currentTarget.style.borderColor="#c4b5a5"; e.currentTarget.style.background="#f5ede6"; }}}
-                    onMouseLeave={e=>{ e.currentTarget.style.borderColor="#e8ddd5"; e.currentTarget.style.background="#fdf8f4"; }}>
-                    <Icon name={icon} size={16} color="#8a9ab0"/>
-                  </button>
-                ));
-              })()}
-            </div>
-          </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(220px,1fr))", gap:16 }}>
-            {(() => {
-              const sessionImgs = [
-                "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=480&h=260&fit=crop&auto=format",
-                "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=480&h=260&fit=crop&auto=format",
-                "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=480&h=260&fit=crop&auto=format",
-                "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=480&h=260&fit=crop&auto=format",
-                "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=480&h=260&fit=crop&auto=format",
-                "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=480&h=260&fit=crop&auto=format",
-              ];
-              const allSessions = SESSIONS.filter(s => !isSessionArchived(s.id));
-              return allSessions.slice(featuredPage*4, featuredPage*4+4).map((s,i)=>{
-                const imgIdx = featuredPage*4+i;
-                const avail = SESSION_AVAILABILITY[s.id];
-                return (
-                  <LandingSessionCard key={s.id} s={s} imgSrc={sessionImgs[imgIdx % sessionImgs.length]} onClick={()=>setSelectedSession(s)} availableFrom={avail?.availableFrom} sessionState={getSessionState(s.id)}/>
-                );
-              });
-            })()}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Experts ── */}
-      <section id="instructors" style={{ padding:"64px 48px", maxWidth:1100, margin:"0 auto" }}>
-        <div style={{ fontSize:12, color:"#3699ff", fontWeight:700, letterSpacing:1, marginBottom:8 }}>WORLD-CLASS INSTRUCTORS</div>
-        <h2 style={{ margin:"0 0 36px", fontSize:32, fontWeight:900, color:"#181c32" }}>9 Experts. Real strategies.</h2>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:16 }}>
-          {experts.map((e,i)=>(
-            <div key={i} style={{ borderRadius:16, overflow:"hidden", position:"relative", cursor:"pointer", transition:"transform .15s", boxShadow:"0 2px 12px rgba(0,0,0,0.07)" }}
-              onMouseEnter={ev=>ev.currentTarget.style.transform="scale(1.02)"}
-              onMouseLeave={ev=>ev.currentTarget.style.transform=""}>
-              <div style={{ height:180, position:"relative", overflow:"hidden" }}>
-                <img src={e.img} alt={e.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center top", display:"block" }}/>
-                <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 60%)" }}/>
-              </div>
-              <div style={{ background:"#fff", padding:"12px 16px", borderTop:"1px solid #f0f0f0" }}>
-                <div style={{ fontWeight:700, fontSize:14, color:"#181c32" }}>{e.name}</div>
-                <div style={{ fontSize:12, color:"#7e8299", marginTop:2 }}>{e.role}</div>
-              </div>
+      {/* ── Stats strip ── */}
+      <section style={{ padding:"40px 24px", borderBottom:`1px solid ${T.border}` }}>
+        <div style={{ maxWidth:1024, margin:"0 auto", display:"flex", justifyContent:"center", gap:64, flexWrap:"wrap" }}>
+          {[
+            { n:"4,200+", label:"educators enrolled" },
+            { n:"9",      label:"expert sessions" },
+            { n:"100%",   label:"free to attend" },
+            { n:"$10k+",  label:"in prizes" },
+          ].map((s,i)=>(
+            <div key={i} style={{ textAlign:"center" }}>
+              <div style={{ fontSize:36, fontWeight:800, color:T.text, letterSpacing:-1.5, lineHeight:1 }}>{s.n}</div>
+              <div style={{ fontSize:14, color:T.muted, marginTop:6 }}>{s.label}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── Giveaways ── */}
-      <section style={{ padding:"72px 48px", background:"#fff", borderTop:"1px solid #f0f0f0" }}>
-        <div style={{ maxWidth:1100, margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 1fr", gap:64, alignItems:"center" }}>
-          {/* Left */}
-          <div>
-            <div style={{ fontSize:12, color:"#3699ff", fontWeight:700, letterSpacing:1, marginBottom:12 }}>PRIZES & GIVEAWAYS</div>
-            <h2 style={{ margin:"0 0 16px", fontSize:36, fontWeight:900, color:"#181c32", lineHeight:1.2 }}>
-              Starbucks Gift Cards, TpT Resources, AbleSpace Subscriptions, <span style={{ color:"#3699ff" }}>and much more…</span>
+      {/* ── For You ── */}
+      <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#fafafa" }}>
+        <div style={{ maxWidth:1024, margin:"0 auto" }}>
+          <div style={{ textAlign:"center", marginBottom:40 }}>
+            <h2 style={{ margin:"0 0 10px", fontSize:26, fontWeight:700, color:T.text, letterSpacing:-.5 }}>
+              Are you a Sped Professional? This is for you!
             </h2>
-            <p style={{ margin:"0 0 28px", fontSize:16, color:"#7e8299", lineHeight:1.7 }}>
-              We have multiple giveaways lined up for you during the entire conference. Raffles, quizzes, and surprise gifts. Get ready to learn and get ready to win!
+            <p style={{ margin:0, fontSize:15, color:T.muted }}>
+              Special Education Teachers, SLPs, PTs, OTs, ABA Professionals and more…
             </p>
-            <button onClick={()=>setShowAuth(true)}
-              style={{ padding:"14px 30px", background:"#3699ff", color:"#fff", border:"none", borderRadius:12, fontSize:14, fontWeight:700, cursor:"pointer", display:"inline-flex", alignItems:"center", gap:8, transition:"background .15s" }}
-              onMouseEnter={e=>e.currentTarget.style.background="#187de4"}
-              onMouseLeave={e=>e.currentTarget.style.background="#3699ff"}>
-              Register for Free →
-            </button>
           </div>
-
-          {/* Right — prize visual */}
-          <div style={{ position:"relative", height:320 }}>
-            <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", textAlign:"center", zIndex:2 }}>
-              <div style={{ fontSize:48, fontWeight:900, color:"#181c32", lineHeight:1 }}>$10,000<span style={{ color:"#3699ff" }}>+</span></div>
-              <div style={{ fontSize:14, fontWeight:600, color:"#7e8299", marginTop:4, letterSpacing:.5 }}>in Prizes & Giveaways</div>
-            </div>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12 }}>
             {[
-              { label:"Starbucks", emoji:"☕", bg:"#00704a", color:"#fff", top:"4%",  left:"56%", size:72 },
-              { label:"TpT",       emoji:"📚", bg:"#ff6d00", color:"#fff", top:"62%", left:"68%", size:60 },
-              { label:"AbleSpace", emoji:"🎯", bg:"#3699ff", color:"#fff", top:"70%", left:"8%",  size:64 },
-              { label:"Gift Card", emoji:"🎁", bg:"#7c3aed", color:"#fff", top:"8%",  left:"10%", size:58 },
-              { label:"Cash",      emoji:"💵", bg:"#059669", color:"#fff", top:"38%", left:"78%", size:54 },
-            ].map((b,i) => (
-              <div key={i} style={{ position:"absolute", top:b.top, left:b.left, width:b.size, height:b.size, borderRadius:"50%", background:b.bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", boxShadow:"0 8px 24px rgba(0,0,0,0.14)", zIndex:1 }}>
-                <span style={{ fontSize:b.size*0.36, lineHeight:1 }}>{b.emoji}</span>
+              { icon:"calendar",    label:"Sessions starts",       detail:"05th Jan 2026"          },
+              { icon:"users",       label:"4-day virtual",         detail:"conference"              },
+              { icon:"student",     label:"9 speakers and",        detail:"9 sessions"             },
+              { icon:"play-circle", label:"Completely Virtual",    detail:"and online"             },
+              { icon:"play",        label:"Replays available",     detail:"throughout January"     },
+              { icon:"gift",        label:"Absolutely free",       detail:"at no extra cost"       },
+            ].map((item,i)=>(
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:14, padding:"20px 22px", background:T.bg, border:`1px solid ${T.border}`, borderRadius:12 }}>
+                <div style={{ width:40, height:40, borderRadius:10, background:"#fff0eb", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <Icon name={item.icon} size={20} color="#e07a5f"/>
+                </div>
+                <div>
+                  <div style={{ fontSize:14, fontWeight:600, color:T.text, lineHeight:1.3 }}>{item.label}</div>
+                  <div style={{ fontSize:13, color:T.muted, marginTop:2 }}>{item.detail}</div>
+                </div>
               </div>
-            ))}
-            {[
-              { top:"2%",  left:"42%", size:12, bg:"#ffc700", opacity:.8 },
-              { top:"78%", left:"40%", size:10, bg:"#3699ff", opacity:.5 },
-              { top:"22%", left:"72%", size:8,  bg:"#f1416c", opacity:.6 },
-            ].map((s,i) => (
-              <div key={i} style={{ position:"absolute", top:s.top, left:s.left, width:s.size, height:s.size, borderRadius:3, background:s.bg, opacity:s.opacity, transform:"rotate(20deg)" }}/>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── How It Works ── */}
-      <section style={{ padding:"80px 48px", background:"#fffaf6", borderTop:"1px solid #f0e8df", borderBottom:"1px solid #f0e8df" }}>
-        <div style={{ maxWidth:1100, margin:"0 auto" }}>
-          <h2 style={{ margin:"0 0 12px", fontSize:32, fontWeight:900, color:"#1a2e2a", textAlign:"center" }}>How it works</h2>
-          <p style={{ margin:"0 0 64px", fontSize:16, color:"#6b7280", textAlign:"center" }}>From sign-up to certificate in four simple steps.</p>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:40 }}>
-            {[
-              { n:"01", title:"Create account",  desc:"Sign up for free in seconds. No credit card required." },
-              { n:"02", title:"Watch sessions",  desc:"Stream expert-led video sessions at your own pace." },
-              { n:"03", title:"Take quizzes",    desc:"Test your knowledge with interactive quizzes after each session." },
-              { n:"04", title:"Get certified",   desc:"Pass all quizzes with 75%+ and download your certificate." },
-            ].map((s,i)=>(
-              <div key={i}>
-                <div style={{ fontSize:72, fontWeight:900, color:"#d1dbd9", lineHeight:1, marginBottom:20, letterSpacing:-2 }}>{s.n}</div>
-                <div style={{ fontWeight:800, fontSize:16, color:"#1a2e2a", marginBottom:10 }}>{s.title}</div>
-                <div style={{ fontSize:14, color:"#6b7280", lineHeight:1.65 }}>{s.desc}</div>
+      {/* ── Instructors ── */}
+      <section id="instructors" style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}` }}>
+        <div style={{ maxWidth:1200, margin:"0 auto" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:40 }}>
+            <div>
+              <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Speakers</p>
+              <h2 style={{ margin:"0 0 12px", fontSize:36, fontWeight:800, color:T.text, letterSpacing:-1 }}>9 experts. Real strategies.</h2>
+              <p style={{ margin:0, fontSize:16, color:T.muted }}>People who have been there and done that. Practical tips at the comfort of your home.</p>
+            </div>
+            <div style={{ display:"flex", gap:8, flexShrink:0 }}>
+              <button onClick={()=>setInstructorPage(p=>Math.max(0,p-1))} disabled={instructorPage===0}
+                style={{ width:36, height:36, borderRadius:8, border:`1px solid ${T.border}`, background:T.bg, cursor:instructorPage===0?"not-allowed":"pointer", display:"flex", alignItems:"center", justifyContent:"center", opacity:instructorPage===0?0.4:1, transition:"background .15s" }}
+                onMouseEnter={e=>{ if(instructorPage>0) e.currentTarget.style.background=T.hover; }}
+                onMouseLeave={e=>e.currentTarget.style.background=T.bg}>
+                <Icon name="chevron-left" size={16} color={T.text}/>
+              </button>
+              <button onClick={()=>setInstructorPage(p=>Math.min(Math.ceil(experts.length/4)-1,p+1))} disabled={instructorPage===Math.ceil(experts.length/4)-1}
+                style={{ width:36, height:36, borderRadius:8, border:`1px solid ${T.border}`, background:T.bg, cursor:instructorPage===Math.ceil(experts.length/4)-1?"not-allowed":"pointer", display:"flex", alignItems:"center", justifyContent:"center", opacity:instructorPage===Math.ceil(experts.length/4)-1?0.4:1, transition:"background .15s" }}
+                onMouseEnter={e=>{ if(instructorPage<Math.ceil(experts.length/4)-1) e.currentTarget.style.background=T.hover; }}
+                onMouseLeave={e=>e.currentTarget.style.background=T.bg}>
+                <Icon name="chevron-right" size={16} color={T.text}/>
+              </button>
+            </div>
+          </div>
+          {(() => {
+            const bgs = ["#d8d4f5","#f7cfd8","#fde68a","#a7f3d0","#fed7aa","#c7d2fe","#fca5a5","#6ee7b7","#e9d5ff"];
+            const PER_PAGE = 4;
+            const totalPages = Math.ceil(experts.length / PER_PAGE);
+            const visible = experts.slice(instructorPage * PER_PAGE, instructorPage * PER_PAGE + PER_PAGE);
+            const Card = ({e,i}) => (
+              <div style={{ cursor:"pointer", borderRadius:20, border:`1px solid ${T.border}`, overflow:"hidden", background:T.bg }}
+                onClick={()=>{ setSelectedInstructor(e); window.scrollTo(0,0); }}
+                onMouseEnter={ev=>{ ev.currentTarget.querySelector("img").style.transform="scale(1.08)"; ev.currentTarget.querySelector(".arrow-btn").style.background=T.blue; ev.currentTarget.querySelector(".arrow-btn").style.color="#fff"; }}
+                onMouseLeave={ev=>{ ev.currentTarget.querySelector("img").style.transform="scale(1)"; ev.currentTarget.querySelector(".arrow-btn").style.background=T.hover; ev.currentTarget.querySelector(".arrow-btn").style.color=T.text; }}>
+                <div style={{ background:bgs[i % bgs.length], overflow:"hidden", aspectRatio:"3/4" }}>
+                  <img src={e.img} alt={e.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 20%", display:"block", transition:"transform 0.4s ease" }}/>
+                </div>
+                <div style={{ padding:"14px 16px", display:"flex", alignItems:"center", gap:10 }}>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontWeight:700, fontSize:14, color:T.text, lineHeight:1.3, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{e.name}</div>
+                    <div style={{ fontSize:12, color:T.muted, marginTop:2, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{e.role}</div>
+                  </div>
+                  <div className="arrow-btn" style={{ width:30, height:30, borderRadius:8, background:T.hover, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background .15s, color .15s", color:T.text }}>
+                    <Icon name="arrow-right" size={14} color="currentColor"/>
+                  </div>
+                </div>
               </div>
-            ))}
+            );
+            return (
+              <>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:24, marginBottom:48 }}>
+                  {visible.map((e,i)=><Card key={instructorPage*PER_PAGE+i} e={e} i={instructorPage*PER_PAGE+i}/>)}
+                </div>
+                {/* Become an Instructor banner */}
+                <div style={{ marginTop:48, borderRadius:16, border:`1px solid ${T.border}`, background:"rgba(250, 250, 250, 1)", padding:24, display:"flex", alignItems:"center", gap:24 }}>
+                  <div style={{ width:56, height:56, borderRadius:12, background:"#ede9fe", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    <Icon name="student" size={28} color="#7c3aed"/>
+                  </div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontWeight:700, fontSize:17, color:T.text, marginBottom:4 }}>Want to share your expertise in special education?</div>
+                    <div style={{ fontSize:14, color:T.muted, lineHeight:1.5 }}>Apply to be a speaker at SPED Summit!</div>
+                  </div>
+                  <button onClick={()=>setShowAuth(true)}
+                    style={{ flexShrink:0, display:"flex", alignItems:"center", gap:8, padding:"0 20px", height:40, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .15s", whiteSpace:"nowrap" }}
+                    onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
+                    onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
+                    <Icon name="paper-plane-tilt" size={15} color="#fff"/>
+                    Apply
+                  </button>
+                </div>
+              </>
+            );
+          })()}
+        </div>
+      </section>
+
+      {/* ── Giveaways ── */}
+      <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#fafafa" }}>
+        <div style={{ maxWidth:1024, margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 1fr", gap:80, alignItems:"center" }}>
+          <div>
+            <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Prizes & Giveaways</p>
+            <h2 style={{ margin:"0 0 16px", fontSize:36, fontWeight:800, color:T.text, letterSpacing:-1, lineHeight:1.2 }}>
+              Win Starbucks, TpT, AbleSpace & more
+            </h2>
+            <p style={{ margin:"0 0 28px", fontSize:16, color:T.muted, lineHeight:1.6 }}>
+              Multiple giveaways throughout the conference — raffles, quiz prizes, and surprise gifts. Learn, engage, and get a chance to win!
+            </p>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:28 }}>
+              {[
+                { icon:"coffee",  color:"#a16207", bg:"#fef9c3", label:"Starbucks Gift Cards" },
+                { icon:"book-open", color:"#1d4ed8", bg:"#dbeafe", label:"TpT Resources" },
+                { icon:"target",  color:"#7c3aed", bg:"#ede9fe", label:"AbleSpace Subscriptions" },
+                { icon:"gift",    color:"#be185d", bg:"#fce7f3", label:"Surprise Gifts" },
+              ].map(({icon,color,bg,label},i)=>(
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 16px", border:`1px solid ${T.border}`, borderRadius:10, background:T.bg, fontSize:14, color:T.text, fontWeight:500 }}>
+                  <div style={{ width:32, height:32, borderRadius:8, background:bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    <Icon name={icon} size={16} color={color}/>
+                  </div>
+                  {label}
+                </div>
+              ))}
+            </div>
+            <button onClick={()=>setShowAuth(true)}
+              style={{ padding:"0 20px", height:36, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
+              onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
+              onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
+              Register for free
+            </button>
+          </div>
+          <div style={{ textAlign:"center", padding:"40px", border:`1px solid ${T.border}`, borderRadius:16, background:T.bg }}>
+            <div style={{ fontSize:72, fontWeight:800, color:T.text, letterSpacing:-3, lineHeight:1 }}>$10,000<span style={{ color:"#8a46ff" }}>+</span></div>
+            <div style={{ fontSize:16, color:T.muted, marginTop:12 }}>in prizes & giveaways</div>
+            <div style={{ display:"flex", justifyContent:"center", gap:16, marginTop:28 }}>
+              {[
+                { icon:"trophy",  color:"#f59e0b" },
+                { icon:"confetti",color:"#8a46ff" },
+                { icon:"star",    color:"#fbbf24" },
+                { icon:"gift",    color:"#e83e8c" },
+                { icon:"heart",   color:"#ef4444" },
+              ].map(({icon,color},i)=>(
+                <Icon key={i} name={icon} size={28} color={color}/>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* ── Sponsor: AbleSpace ── */}
-      <section style={{ padding:"80px 48px", background:"linear-gradient(135deg,#eef6ff,#f0f9ff)", textAlign:"center", position:"relative", overflow:"hidden" }}>
-        <div style={{ position:"absolute", top:-60, right:-60, width:280, height:280, borderRadius:"50%", background:"rgba(54,153,255,0.08)" }}/>
-        <div style={{ position:"absolute", bottom:-50, left:-50, width:220, height:220, borderRadius:"50%", background:"rgba(54,153,255,0.06)" }}/>
-        <div style={{ position:"relative", maxWidth:560, margin:"0 auto" }}>
-          <div style={{ marginBottom:20 }}>
-            <img src="/ablespace.svg" alt="AbleSpace" style={{ height:56, display:"block", margin:"0 auto" }}/>
-          </div>
-          <h2 style={{ margin:"0 0 12px", fontSize:28, fontWeight:900, color:"#181c32" }}>Sponsored by AbleSpace</h2>
-          <p style={{ margin:"0 0 32px", fontSize:14, color:"#5e6278", lineHeight:1.7 }}>
-            An IEP Goal Tracking app built for special education professionals. Spend less time on paperwork and more time with your students using AbleSpace.
+      <section style={{ padding:"64px 24px", borderBottom:`1px solid ${T.border}`, textAlign:"center" }}>
+        <div style={{ maxWidth:560, margin:"0 auto" }}>
+          <p style={{ margin:"0 0 16px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Presenting Sponsor</p>
+          <img src="/ablespace.svg" alt="AbleSpace" style={{ height:44, display:"block", margin:"0 auto 16px" }}/>
+          <h2 style={{ margin:"0 0 12px", fontSize:28, fontWeight:800, color:T.text, letterSpacing:-.5 }}>Sponsored by AbleSpace</h2>
+          <p style={{ margin:"0 0 28px", fontSize:15, color:T.muted, lineHeight:1.65 }}>
+            An IEP Goal Tracking app built for special education professionals. Spend less time on paperwork and more time with students.
           </p>
           <a href="https://ablespace.io" target="_blank" rel="noopener noreferrer"
-            style={{ display:"inline-flex", alignItems:"center", gap:10, padding:"14px 32px", background:"#3699ff", color:"#fff", border:"none", borderRadius:12, fontSize:14, fontWeight:700, cursor:"pointer", textDecoration:"none", boxShadow:"0 4px 16px rgba(54,153,255,0.35)" }}
-            onMouseEnter={e=>{ e.currentTarget.style.background="#187de4"; e.currentTarget.style.transform="translateY(-1px)"; }}
-            onMouseLeave={e=>{ e.currentTarget.style.background="#3699ff"; e.currentTarget.style.transform="none"; }}>
-            Start Using AbleSpace for FREE
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"0 20px", height:36, background:T.blue, color:"#fff", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", textDecoration:"none", transition:"background .12s" }}
+            onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
+            onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
+            Start using AbleSpace for free
           </a>
         </div>
       </section>
 
-      {/* ── Testimonials ── */}
-      <section style={{ padding:"64px 48px", maxWidth:1100, margin:"0 auto" }}>
-        <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:36 }}>
-          <div>
-            <div style={{ fontSize:12, color:"#3699ff", fontWeight:700, letterSpacing:1, marginBottom:8 }}>LOVED BY EDUCATORS</div>
-            <h2 style={{ margin:0, fontSize:32, fontWeight:900, color:"#181c32" }}>What Educators Are Saying</h2>
-          </div>
-          <div style={{ display:"flex", gap:10 }}>
-            {[["chevron-left", () => setTestimonialPage(p => Math.max(0, p-1)), testimonialPage === 0],
-              ["chevron-right", () => setTestimonialPage(p => Math.min(Math.ceil(testimonials.length/2)-1, p+1)), testimonialPage >= Math.ceil(testimonials.length/2)-1]
-            ].map(([icon, onClick, disabled], idx) => (
-              <button key={idx} onClick={onClick} disabled={disabled}
-                style={{ width:48, height:48, borderRadius:"50%", border:"1.5px solid #e8ddd5", background:"#fdf8f4", display:"flex", alignItems:"center", justifyContent:"center", cursor:disabled?"not-allowed":"pointer", opacity:disabled?0.4:1, transition:"border-color .15s, background .15s" }}
-                onMouseEnter={e=>{ if(!disabled){ e.currentTarget.style.borderColor="#c4b5a5"; e.currentTarget.style.background="#f5ede6"; }}}
-                onMouseLeave={e=>{ e.currentTarget.style.borderColor="#e8ddd5"; e.currentTarget.style.background="#fdf8f4"; }}>
-                <Icon name={icon} size={16} color="#8a9ab0"/>
-              </button>
-            ))}
-          </div>
-        </div>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20 }}>
-          {testimonials.slice(testimonialPage*2, testimonialPage*2+2).map((t,i)=>(
-            <div key={i} style={{ background:"#fff", borderRadius:16, padding:"24px 28px", border:"1px solid #f0e8df", boxShadow:"0 2px 12px rgba(0,0,0,0.05)" }}>
-              <div style={{ display:"flex", gap:3, marginBottom:14 }}>
-                {Array(t.stars).fill(0).map((_,j)=><span key={j} style={{ color:"#ffc700", fontSize:16 }}>★</span>)}
-              </div>
-              <p style={{ margin:"0 0 20px", fontSize:14, color:"#5e6278", lineHeight:1.7, fontStyle:"italic" }}>"{t.text}"</p>
-              <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-                <img src={t.img} alt={t.name} style={{ width:36, height:36, borderRadius:"50%", objectFit:"cover", flexShrink:0 }}/>
-                <div>
-                  <div style={{ fontWeight:700, fontSize:14, color:"#181c32" }}>{t.name}</div>
-                  <div style={{ fontSize:12, color:"#a1a5b7" }}>{t.role}</div>
-                </div>
-              </div>
+      {/* ── Featured Sessions ── */}
+      <section id="sessions" style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
+        <div style={{ maxWidth:1024, margin:"0 auto" }}>
+          {/* Header */}
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:40, flexWrap:"wrap", gap:16 }}>
+            <div>
+              <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Event Programming</p>
+              <h2 style={{ margin:0, fontSize:32, fontWeight:800, color:T.text, letterSpacing:-1, lineHeight:1.1 }}>SPED Summit Schedule</h2>
+              <p style={{ margin:"8px 0 0", fontSize:15, color:T.muted }}>Explore the full lineup of sessions, workshops &amp; keynote events.</p>
             </div>
-          ))}
+            {/* Upcoming / Past tabs */}
+            <div style={{ display:"flex", border:`1px solid ${T.border}`, borderRadius:8, overflow:"hidden", flexShrink:0 }}>
+              {[["upcoming",2],["past",4]].map(([tab, count]) => (
+                <button key={tab} onClick={()=>setScheduleTab(tab)}
+                  style={{ padding:"8px 16px", background:scheduleTab===tab?T.blue:"transparent", border:"none", borderRight:tab==="upcoming"?`1px solid ${T.border}`:"none", cursor:"pointer", display:"flex", alignItems:"center", gap:6, fontSize:13, fontWeight:600, color:scheduleTab===tab?"#fff":T.muted, transition:"all .15s" }}>
+                  {tab.charAt(0).toUpperCase()+tab.slice(1)}
+                  <span style={{ background:scheduleTab===tab?"rgba(255,255,255,0.25)":T.hover, color:scheduleTab===tab?"#fff":T.muted, borderRadius:99, fontSize:11, fontWeight:700, padding:"1px 7px" }}>{count}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Timeline */}
+          {(()=>{
+            const SD = {
+              5:{ type:"WORKSHOP",        date:"Apr 15", day:"Wednesday", time:"09:00 AM", ts:new Date("2026-04-15T09:00"), tab:"upcoming" },
+              6:{ type:"PANEL DISCUSSION",date:"Apr 15", day:"Wednesday", time:"11:00 AM", ts:new Date("2026-04-15T11:00"), tab:"upcoming" },
+              1:{ type:"KEYNOTE",         date:"Mar 26", day:"Wednesday", time:"09:00 AM", ts:new Date("2026-03-26T09:00"), tab:"past" },
+              2:{ type:"WORKSHOP",        date:"Mar 26", day:"Wednesday", time:"11:00 AM", ts:new Date("2026-03-26T11:00"), tab:"past" },
+              3:{ type:"WORKSHOP",        date:"Mar 12", day:"Wednesday", time:"09:00 AM", ts:new Date("2026-03-12T09:00"), tab:"past" },
+              4:{ type:"PANEL DISCUSSION",date:"Mar 12", day:"Wednesday", time:"11:00 AM", ts:new Date("2026-03-12T11:00"), tab:"past" },
+            };
+            const BADGE = {
+              "WORKSHOP":        { bg:"#d1fae5", color:"#065f46" },
+              "PANEL DISCUSSION":{ bg:"#fff0f6", color:"#c2185b", border:"1px solid #f48fb1" },
+              "KEYNOTE":         { bg:"#ede9fe", color:"#6d28d9" },
+            };
+            const AVATAR_COLORS = ["#0070d7","#8a46ff","#e83e8c","#059669","#f59e0b","#ef4444"];
+            const now = new Date();
+            const filtered = SESSIONS.filter(s => SD[s.id]?.tab === scheduleTab);
+            const groups = {};
+            filtered.forEach(s => {
+              const d = SD[s.id];
+              if (!groups[d.date]) groups[d.date] = { date:d.date, day:d.day, items:[] };
+              groups[d.date].items.push(s);
+            });
+            const groupArr = Object.values(groups);
+            /* Layout metrics:
+               date col = 100px, gap = 24px, dot col = 16px (dot centered at 8px)
+               Line left = 100 + 24 + 8 - 1 = 131px  (1px = half of 2px line) */
+            const LINE_LEFT = 131;
+            return (
+              <div style={{ position:"relative" }}>
+                {/* Continuous vertical line */}
+                <div style={{ position:"absolute", left:LINE_LEFT, top:0, bottom:0, width:0, borderLeft:`2px dashed ${T.border}`, zIndex:0 }}/>
+                {groupArr.map((grp, gi) => (
+                  <div key={gi} style={{ display:"flex", alignItems:"flex-start", gap:24, marginBottom: gi < groupArr.length-1 ? 28 : 0 }}>
+                    {/* Date — vertically centered with first card's top padding */}
+                    <div style={{ width:100, flexShrink:0, paddingTop:22, textAlign:"right" }}>
+                      <div style={{ fontSize:17, fontWeight:800, color:T.text, lineHeight:1.1 }}>{grp.date}</div>
+                      <div style={{ fontSize:12, color:T.muted, marginTop:3 }}>{grp.day}</div>
+                    </div>
+                    {/* Dot — sits exactly on the line, halo masks line behind it */}
+                    <div style={{ width:16, flexShrink:0, paddingTop:28, display:"flex", justifyContent:"center", position:"relative", zIndex:1 }}>
+                      <div style={{ width:9, height:9, borderRadius:"50%", background:T.muted, boxShadow:`0 0 0 4px ${T.bg}` }}/>
+                    </div>
+                    {/* Cards stack */}
+                    <div style={{ flex:1, display:"flex", flexDirection:"column", gap:10 }}>
+                      {grp.items.map((s) => {
+                        const d = SD[s.id];
+                        const badge = BADGE[d.type] || BADGE["WORKSHOP"];
+                        const initials = s.instructor.replace(/^Dr\.\s*/,"").split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase();
+                        const avatarBg = AVATAR_COLORS[s.id % AVATAR_COLORS.length];
+                        const imgSrc = sessionImgs[(s.id - 1) % sessionImgs.length];
+                        return (
+                          <div key={s.id} onClick={()=>setSelectedSession(s)}
+                            style={{ background:"#fff", border:`1px solid ${T.border}`, borderRadius:12, padding:"20px 20px 20px 24px", display:"flex", alignItems:"stretch", gap:0, cursor:"pointer", overflow:"hidden" }}
+                            onMouseEnter={e=>e.currentTarget.querySelector("img").style.transform="scale(1.08)"}
+                            onMouseLeave={e=>e.currentTarget.querySelector("img").style.transform="scale(1)"}>
+                            {/* Left: text content */}
+                            <div style={{ flex:1, minWidth:0, paddingRight:20 }}>
+                              <div style={{ fontSize:12, color:T.muted, fontWeight:500, marginBottom:6 }}>{d.time}</div>
+                              <div style={{ fontSize:16, fontWeight:700, color:T.text, lineHeight:1.35, marginBottom:10 }}>{s.title}</div>
+                              <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:14 }}>
+                                <div style={{ width:22, height:22, borderRadius:"50%", background:avatarBg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:800, color:"#fff", flexShrink:0 }}>{initials}</div>
+                                <span style={{ fontSize:13, color:T.muted }}>By {s.instructor}</span>
+                              </div>
+                              <span style={{ fontSize:11, fontWeight:700, padding:"3px 10px", borderRadius:99, background:badge.bg, color:badge.color, border:badge.border||"none", letterSpacing:.3 }}>{d.type}</span>
+                            </div>
+                            {/* Right: thumbnail flush to card edge */}
+                            <div style={{ width:150, flexShrink:0, borderRadius:10, overflow:"hidden", alignSelf:"stretch" }}>
+                              <img src={imgSrc} alt={s.title} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block", transition:"transform 0.4s ease" }}/>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
         </div>
       </section>
 
-      {/* ── Social Community ── */}
-      <section style={{ padding:"72px 48px", background:"#fff", textAlign:"center" }}>
-        <div style={{ maxWidth:680, margin:"0 auto" }}>
-          <div style={{ fontSize:12, color:"#3699ff", fontWeight:700, letterSpacing:1.5, marginBottom:14 }}>COMMUNITY</div>
-          <h2 style={{ margin:"0 0 16px", fontSize:36, fontWeight:900, color:"#181c32", lineHeight:1.15 }}>Connect with other educators on social media</h2>
-          <p style={{ margin:"0 0 40px", fontSize:16, color:"#7e8299", lineHeight:1.65 }}>
-            Stay in the loop! Follow us for updates, announcements, and<br/>community highlights.
+      {/* ── Community ── */}
+      <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#fafafa", textAlign:"center" }}>
+        <div style={{ maxWidth:560, margin:"0 auto" }}>
+          <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Community</p>
+          <h2 style={{ margin:"0 0 12px", fontSize:32, fontWeight:800, color:T.text, letterSpacing:-1, lineHeight:1.2 }}>Connect with educators across the country</h2>
+          <p style={{ margin:"0 0 36px", fontSize:16, color:T.muted, lineHeight:1.6 }}>
+            Stay in the loop — follow us for session updates, announcements, and community highlights.
           </p>
-          <div style={{ display:"flex", gap:16, justifyContent:"center", flexWrap:"wrap" }}>
-            {/* Facebook */}
-            <button style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 28px", background:"#1877f2", color:"#fff", border:"none", borderRadius:14, fontSize:16, fontWeight:700, cursor:"pointer", transition:"opacity .15s" }}
-              onMouseEnter={e=>e.currentTarget.style.opacity="0.88"}
+          <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
+            <button style={{ display:"flex", alignItems:"center", gap:8, padding:"0 20px", height:40, background:"#1877f2", color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"opacity .12s" }}
+              onMouseEnter={e=>e.currentTarget.style.opacity=".88"}
               onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
               Join the Facebook Group
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
-              </svg>
             </button>
-            {/* Instagram */}
-            <button style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 28px", background:"linear-gradient(135deg,#e1306c,#f77737)", color:"#fff", border:"none", borderRadius:14, fontSize:16, fontWeight:700, cursor:"pointer", transition:"opacity .15s" }}
-              onMouseEnter={e=>e.currentTarget.style.opacity="0.88"}
+            <button style={{ display:"flex", alignItems:"center", gap:8, padding:"0 20px", height:40, background:"linear-gradient(135deg,#e1306c,#f77737)", color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"opacity .12s" }}
+              onMouseEnter={e=>e.currentTarget.style.opacity=".88"}
               onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
               Follow on Instagram
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-              </svg>
             </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Testimonials ── */}
+      <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}` }}>
+        <div style={{ maxWidth:1024, margin:"0 auto" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:40 }}>
+            <div>
+              <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Testimonials</p>
+              <h2 style={{ margin:0, fontSize:36, fontWeight:800, color:T.text, letterSpacing:-1 }}>Loved by educators</h2>
+            </div>
+            <div style={{ display:"flex", gap:8, flexShrink:0 }}>
+              <button onClick={()=>setTestimonialPage(p=>Math.max(0,p-1))} disabled={testimonialPage===0}
+                style={{ width:36, height:36, borderRadius:8, border:`1px solid ${T.border}`, background:T.bg, cursor:testimonialPage===0?"not-allowed":"pointer", display:"flex", alignItems:"center", justifyContent:"center", opacity:testimonialPage===0?0.4:1, transition:"background .15s" }}
+                onMouseEnter={e=>{ if(testimonialPage>0) e.currentTarget.style.background=T.hover; }}
+                onMouseLeave={e=>e.currentTarget.style.background=T.bg}>
+                <Icon name="chevron-left" size={16} color={T.text}/>
+              </button>
+              <button onClick={()=>setTestimonialPage(p=>Math.min(Math.ceil(testimonials.length/2)-1,p+1))} disabled={testimonialPage===Math.ceil(testimonials.length/2)-1}
+                style={{ width:36, height:36, borderRadius:8, border:`1px solid ${T.border}`, background:T.bg, cursor:testimonialPage===Math.ceil(testimonials.length/2)-1?"not-allowed":"pointer", display:"flex", alignItems:"center", justifyContent:"center", opacity:testimonialPage===Math.ceil(testimonials.length/2)-1?0.4:1, transition:"background .15s" }}
+                onMouseEnter={e=>{ if(testimonialPage<Math.ceil(testimonials.length/2)-1) e.currentTarget.style.background=T.hover; }}
+                onMouseLeave={e=>e.currentTarget.style.background=T.bg}>
+                <Icon name="chevron-right" size={16} color={T.text}/>
+              </button>
+            </div>
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:16 }}>
+            {testimonials.slice(testimonialPage*2, testimonialPage*2+2).map((t,i)=>(
+              <div key={testimonialPage*2+i} style={{ padding:"28px", border:`1px solid ${T.border}`, borderRadius:12, background:T.bg }}>
+                <div style={{ display:"flex", gap:2, marginBottom:16 }}>
+                  {Array(t.stars).fill(0).map((_,j)=><span key={j} style={{ color:"#f59e0b", fontSize:15 }}>★</span>)}
+                </div>
+                <p style={{ margin:"0 0 20px", fontSize:15, color:T.text, lineHeight:1.65 }}>"{t.text}"</p>
+                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                  <img src={t.img} alt={t.name} style={{ width:36, height:36, borderRadius:"50%", objectFit:"cover", flexShrink:0 }}/>
+                  <div>
+                    <div style={{ fontWeight:600, fontSize:14, color:T.text }}>{t.name}</div>
+                    <div style={{ fontSize:12, color:T.muted, marginTop:1 }}>{t.role}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* ── FAQ ── */}
-      <section id="help" style={{ padding:"64px 48px", borderTop:"1px solid #f0e8df" }}>
-        <div style={{ maxWidth:720, margin:"0 auto" }}>
-          <h2 style={{ margin:"0 0 36px", fontSize:32, fontWeight:900, color:"#181c32", textAlign:"center" }}>Frequently Asked Questions</h2>
+      <section id="help" style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#fafafa" }}>
+        <div style={{ maxWidth:680, margin:"0 auto" }}>
+          <div style={{ textAlign:"center", marginBottom:40 }}>
+            <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>FAQ</p>
+            <h2 style={{ margin:0, fontSize:36, fontWeight:800, color:T.text, letterSpacing:-1 }}>Frequently asked questions</h2>
+          </div>
           {faqs.map((f,i)=>(
-            <div key={i} style={{ borderBottom:"1px solid #f0e8df" }}>
+            <div key={i} style={{ borderBottom:`1px solid ${T.border}` }}>
               <button onClick={()=>setFaqOpen(faqOpen===i?null:i)}
-                style={{ width:"100%", display:"flex", justifyContent:"space-between", alignItems:"center", padding:"18px 0", background:"none", border:"none", cursor:"pointer", textAlign:"left" }}>
-                <span style={{ fontSize:14, fontWeight:600, color:"#181c32", flex:1, paddingRight:16 }}>{f.q}</span>
-                <span style={{ fontSize:18, color:"#a1a5b7", transform: faqOpen===i?"rotate(45deg)":"none", transition:"transform .2s", flexShrink:0 }}>+</span>
+                style={{ width:"100%", display:"flex", justifyContent:"space-between", alignItems:"center", padding:"18px 0", background:"none", border:"none", cursor:"pointer", textAlign:"left" }}
+                onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
+                onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+                <span style={{ fontSize:15, fontWeight:600, color:T.text, flex:1, paddingRight:16 }}>{f.q}</span>
+                <span style={{ fontSize:18, color:T.muted, flexShrink:0, transform: faqOpen===i?"rotate(45deg)":"none", display:"block", transition:"transform .2s", lineHeight:1 }}>+</span>
               </button>
               {faqOpen===i && (
-                <div style={{ fontSize:14, color:"#7e8299", lineHeight:1.7, paddingBottom:18 }}>{f.a}</div>
+                <div style={{ fontSize:14, color:T.muted, lineHeight:1.7, paddingBottom:18 }}>{f.a}</div>
               )}
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── Final CTA ── */}
-      <section style={{ padding:"80px 48px", background:"linear-gradient(135deg,#181c32,#1e3a5f)", textAlign:"center" }}>
-        <h2 style={{ margin:"0 0 12px", fontSize:36, fontWeight:900, color:"#fff", letterSpacing:-.5 }}>
-          Ready to level up your <span style={{ color:"#3699ff" }}>SPED practice</span>?
-        </h2>
-        <p style={{ margin:"0 0 32px", fontSize:16, color:"#a1a5b7", lineHeight:1.6 }}>Join thousands of educators already transforming their classrooms.</p>
-        <button onClick={()=>setShowAuth(true)}
-          style={{ padding:"16px 40px", background:"#3699ff", color:"#fff", border:"none", borderRadius:14, fontSize:16, fontWeight:800, cursor:"pointer", transition:"background .15s" }}
-          onMouseEnter={e=>e.currentTarget.style.background="#187de4"}
-          onMouseLeave={e=>e.currentTarget.style.background="#3699ff"}>
-          Go to Dashboard →
-        </button>
-      </section>
+      {/* ── Footer ── */}
+      <footer style={{ background:T.bg }}>
+
+        {/* CTA band */}
+        <div style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
+          <div style={{ maxWidth:1024, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-between", gap:40, flexWrap:"wrap" }}>
+            <div style={{ flex:1, minWidth:280 }}>
+              <h2 style={{ margin:"0 0 12px", fontSize:40, fontWeight:800, color:T.text, lineHeight:1.1, letterSpacing:-1.5 }}>
+                Ready to advance<br/>your SPED career?
+              </h2>
+              <p style={{ margin:0, fontSize:16, color:T.muted, lineHeight:1.6 }}>
+                Join 4,200+ educators. Free sessions, real certificates, expert instructors.
+              </p>
+            </div>
+            <div style={{ display:"flex", gap:10, flexShrink:0 }}>
+              <button onClick={()=>setShowAuth(true)}
+                style={{ padding:"0 24px", height:42, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
+                onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
+                onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
+                Start for free
+              </button>
+              <button onClick={()=>document.getElementById("sessions")?.scrollIntoView({ behavior:"smooth" })}
+                style={{ padding:"0 24px", height:42, background:"transparent", color:T.text, border:`1px solid ${T.border}`, borderRadius:8, fontSize:14, fontWeight:500, cursor:"pointer", transition:"background .12s" }}
+                onMouseEnter={e=>e.currentTarget.style.background=T.hover}
+                onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                View sessions
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer columns */}
+        <div style={{ padding:"56px 24px 48px", borderBottom:`1px solid ${T.border}` }}>
+          <div style={{ maxWidth:1024, margin:"0 auto", display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:48 }}>
+            {/* Brand column */}
+            <div>
+              <img src="/Container.png" alt="SPED Summit" style={{ height:26, display:"block", marginBottom:16 }}/>
+              <p style={{ margin:"0 0 24px", fontSize:14, color:T.muted, lineHeight:1.7, maxWidth:280 }}>
+                SPED Summit is a free professional development platform for Special Education professionals — built by educators, for educators.
+              </p>
+              <div style={{ display:"flex", gap:10 }}>
+                {[
+                  { label:"YouTube",   icon:null, svg:"M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z" },
+                  { label:"Instagram", icon:null, svg:"M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" },
+                  { label:"Facebook",  icon:null, svg:"M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" },
+                ].map(({ label, icon, svg }) => (
+                  <a key={label} href="#" aria-label={label}
+                    style={{ width:32, height:32, borderRadius:8, border:`1px solid ${T.border}`, background:T.bg, display:"flex", alignItems:"center", justifyContent:"center", transition:"background .12s", textDecoration:"none" }}
+                    onMouseEnter={e=>e.currentTarget.style.background=T.hover}
+                    onMouseLeave={e=>e.currentTarget.style.background=T.bg}>
+                    {icon ? <Icon name={icon} size={14} color={T.muted}/> : <svg width="14" height="14" viewBox="0 0 24 24" fill={T.muted}><path d={svg}/></svg>}
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Links columns */}
+            {[
+              { heading:"Platform", links:["Sessions","Instructors","Giveaways","Schedule","Community"] },
+              { heading:"Company",  links:["About","Blog","Careers","Press","Contact"] },
+              { heading:"Legal",    links:["Privacy Policy","Terms of Service","Cookie Policy","Accessibility"] },
+            ].map(({ heading, links }) => (
+              <div key={heading}>
+                <div style={{ fontSize:11, fontWeight:600, color:T.muted, letterSpacing:.8, textTransform:"uppercase", marginBottom:16 }}>{heading}</div>
+                <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                  {links.map(l => (
+                    <a key={l} href="#" style={{ fontSize:14, color:T.muted, textDecoration:"none", transition:"color .12s" }}
+                      onMouseEnter={e=>e.currentTarget.style.color=T.text}
+                      onMouseLeave={e=>e.currentTarget.style.color=T.muted}>{l}</a>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Copyright strip */}
+        <div style={{ padding:"16px 24px", display:"flex", justifyContent:"center" }}>
+          <span style={{ fontSize:12, color:T.muted }}>© 2026 SPED Summit. All rights reserved.</span>
+        </div>
+
+      </footer>
 
       {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={()=>onGetStarted(null)}/>}
     </div>
@@ -7028,6 +7379,7 @@ export default function App() {
           id: l.id, sectionTitle: sec.title, title: l.title,
           duration: l.duration || "60:00", status: l.status === "draft" ? "available" : l.status,
           type: l.type || "video", vimeoUrl: l.vimeoUrl || "",
+          questions: l.questions || [],
         })))
       : undefined;
     setSessions(prev => prev.map(s => s.id === id ? {
