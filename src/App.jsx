@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect, useCallback, useReducer } from "react";
+import { createPortal } from "react-dom";
 import * as PhosphorIcons from "@phosphor-icons/react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import LandingV2 from "./v2/LandingV2";
+import { motion } from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PHOSPHOR ICONS  (inline SVG, consistent 20px/24px strokes)
@@ -1076,51 +1079,113 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
 /* ─────────────────────────────────────────────────────────────────────────────
    SIDEBAR
 ───────────────────────────────────────────────────────────────────────────── */
+const SIDEBAR_USER_NAV = [
+  { id: "dashboard",      Icon: PhosphorIcons.House,          label: "My Learnings"    },
+  { id: "sessions",       Icon: PhosphorIcons.PlayCircle,     label: "All Sessions"    },
+  { id: "schedules",      Icon: PhosphorIcons.CalendarBlank,  label: "Schedules"       },
+  { id: "certifications", Icon: PhosphorIcons.Certificate,    label: "My Certificates" },
+];
+const SIDEBAR_ADMIN_NAV = [
+  { id: "admin-overview",  Icon: PhosphorIcons.House,       label: "Overview"    },
+  { id: "admin-sessions",  Icon: PhosphorIcons.PlayCircle,  label: "My Sessions" },
+  { id: "admin-analytics", Icon: PhosphorIcons.ChartLine,   label: "Analytics"   },
+];
+
+const sidebarMotionVariants = {
+  open:   { width: "15rem" },
+  closed: { width: "3.25rem" },
+};
+const labelVariants = {
+  open:   { opacity: 1, x: 0,   display: "block", transition: { duration: 0.18 } },
+  closed: { opacity: 0, x: -10, transitionEnd: { display: "none" } },
+};
+
 function Sidebar({ active, onChange, isAdmin }) {
-  const [hov, setHov] = useState(null);
-  const userNav = [
-    { id:"dashboard", icon:"house",        label:"My Learnings"    },
-    { id:"sessions",  icon:"play-circle",  label:"All Sessions"    },
-    { id:"schedules", icon:"calendar",     label:"Schedules"       },
-    { id:"certifications", icon:"certificate", label:"My Certificates" },
-  ];
-  const adminNav = [
-    { id:"admin-overview",  icon:"house",       label:"Overview"    },
-    { id:"admin-sessions",  icon:"play-circle", label:"My Sessions" },
-    { id:"admin-analytics", icon:"chart-line",  label:"Analytics"   },
-  ];
-  const nav = isAdmin ? adminNav : userNav;
+  const [collapsed, setCollapsed] = useState(true);
+  const nav = isAdmin ? SIDEBAR_ADMIN_NAV : SIDEBAR_USER_NAV;
 
   return (
-    <div style={{ width:52, background:C.white, borderRight:`1px solid ${C.gray200}`, display:"flex", flexDirection:"column", alignItems:"center", padding:"10px 0 12px", flexShrink:0, height:"100%", gap:2 }}>
+    <motion.div
+      initial="closed"
+      animate={collapsed ? "closed" : "open"}
+      variants={sidebarMotionVariants}
+      transition={{ type: "tween", ease: "easeOut", duration: 0.2 }}
+      onMouseEnter={() => setCollapsed(false)}
+      onMouseLeave={() => setCollapsed(true)}
+      style={{
+        position: "relative",
+        flexShrink: 0,
+        height: "100%",
+        background: C.white,
+        borderRight: `1px solid ${C.gray200}`,
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        zIndex: 40,
+      }}
+    >
       {/* Nav items */}
-      {nav.map(item => {
-        const isActive = active === item.id;
-        const isHov = hov === item.id;
-        return (
-          <div key={item.id} style={{ position:"relative" }}>
+      <div style={{ flex: 1, padding: "10px 8px", display: "flex", flexDirection: "column", gap: 2 }}>
+        {nav.map(({ id, Icon: NavIcon, label }) => {
+          const isActive = active === id;
+          return (
             <button
-              onClick={() => onChange(item.id)}
-              onMouseEnter={() => setHov(item.id)}
-              onMouseLeave={() => setHov(null)}
-              style={{ width:36, height:36, borderRadius:9, border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", background: isActive ? C.primaryLight : isHov ? C.gray100 : "transparent", transition:"background .12s", position:"relative" }}>
-              <Icon name={item.icon} size={18} color={isActive ? C.primary : C.gray500}/>
+              key={id}
+              onClick={() => onChange(id)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                width: "100%",
+                height: 36,
+                padding: "0 8px",
+                borderRadius: 9,
+                border: "none",
+                cursor: "pointer",
+                background: isActive ? C.primaryLight : "transparent",
+                transition: "background .12s",
+                position: "relative",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+              }}
+              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = C.gray100; }}
+              onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
+            >
+              {/* Active indicator */}
               {isActive && (
-                <div style={{ position:"absolute", left:-8, top:"50%", transform:"translateY(-50%)", width:3, height:18, borderRadius:99, background:C.primary }}/>
+                <div style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", width: 3, height: 18, borderRadius: 99, background: C.primary }} />
               )}
+              <NavIcon
+                size={18}
+                weight={isActive ? "fill" : "regular"}
+                color={isActive ? C.primary : C.gray500}
+                style={{ flexShrink: 0 }}
+              />
+              <motion.span
+                variants={labelVariants}
+                style={{ fontSize: 13, fontWeight: 600, color: isActive ? C.primary : C.gray700 }}
+              >
+                {label}
+              </motion.span>
             </button>
-            {/* Tooltip */}
-            {isHov && (
-              <div style={{ position:"absolute", left:"calc(100% + 10px)", top:"50%", transform:"translateY(-50%)", background:"#181c32", color:"#fff", fontSize:12, fontWeight:600, padding:"5px 9px", borderRadius:7, whiteSpace:"nowrap", pointerEvents:"none", zIndex:999, boxShadow:"0 2px 8px rgba(0,0,0,0.18)" }}>
-                {item.label}
-                <div style={{ position:"absolute", right:"100%", top:"50%", transform:"translateY(-50%)", borderWidth:"4px 5px 4px 0", borderStyle:"solid", borderColor:"transparent #181c32 transparent transparent" }}/>
-              </div>
-            )}
-          </div>
-        );
-      })}
-      <div style={{ marginTop:"auto", display:"flex", flexDirection:"column", alignItems:"center", gap:2 }}/>
-    </div>
+          );
+        })}
+      </div>
+
+      {/* Bottom: settings */}
+      <div style={{ padding: "8px", borderTop: `1px solid ${C.gray200}` }}>
+        <button
+          style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", height: 36, padding: "0 8px", borderRadius: 9, border: "none", cursor: "pointer", background: "transparent", transition: "background .12s", whiteSpace: "nowrap", overflow: "hidden" }}
+          onMouseEnter={e => { e.currentTarget.style.background = C.gray100; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+        >
+          <PhosphorIcons.Gear size={18} color={C.gray500} style={{ flexShrink: 0 }} />
+          <motion.span variants={labelVariants} style={{ fontSize: 13, fontWeight: 600, color: C.gray700 }}>
+            Settings
+          </motion.span>
+        </button>
+      </div>
+    </motion.div>
   );
 }
 
@@ -1320,249 +1385,641 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 ───────────────────────────────────────────────────────────────────────────── */
 function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS }) {
   const [calendarItem, setCalendarItem] = useState(null);
-  const enrolledSessions  = SESSIONS.filter(s => enrolledIds.has(s.id));
-  const upcomingSessions  = SESSIONS.filter(s => getSessionState(s.id) === "upcoming");
-  const pastSessions      = SESSIONS.filter(s => getSessionState(s.id) === "past");
-  const discoverSessions  = SESSIONS.filter(s => !enrolledIds.has(s.id) && getSessionState(s.id) === "live");
-  const completed = enrolledSessions.filter(s=>s.status==="completed").length;
-  const total = enrolledSessions.length;
-  const pct = total > 0 ? Math.round((completed/total)*100) : 0;
-  // First-time user: no enrolled sessions with any progress
-  const hasStarted = enrolledSessions.some(s => s.progress > 0 || s.status === "completed" || s.status === "in-progress");
-  const [spinning, setSpinning] = useState(false);
-  const [rotation, setRotation] = useState(0);
   const [previewSession, setPreviewSession] = useState(null);
 
-  function spin() {
-    if (spinning) return;
-    setSpinning(true);
-    setRotation(r => r + 1440 + Math.floor(Math.random()*360));
-    setTimeout(() => {
-      setSpinning(false);
-      const prizes = ["$5 Cashback 🎉","$10 Cashback 🎉","50 Bonus XP ✦","Better luck next time!","$25 Cashback 🎉","Quiz Unlock 🔓"];
-      const prize = prizes[Math.floor(Math.random()*prizes.length)];
-      toast({ type: prize.includes("luck")?"warning":"success", title:"Spin Result!", message:`You won: ${prize}` });
-    }, 1500);
-  }
+  const enrolledSessions = SESSIONS.filter(s => enrolledIds.has(s.id));
+  const upcomingSchedule = SCHEDULE.filter(i => i.status === "upcoming");
+  const completed     = enrolledSessions.filter(s => s.status === "completed").length;
+  const certsEarned   = enrolledSessions.filter(s => s.status === "completed").length;
+  const totalEnrolled = enrolledSessions.length;
+  const pct = totalEnrolled > 0 ? Math.round((completed / totalEnrolled) * 100) : 0;
+  const hasStarted = enrolledSessions.some(s => s.progress > 0 || s.status === "completed" || s.status === "in-progress");
+  const continueSession = enrolledSessions.find(s => s.progress > 0 && s.status !== "completed");
+  const featuredSession = SESSIONS.find(s => s.status === "not-started") || SESSIONS[0];
 
-  // ── Data helpers ──
-  const continueSession = enrolledSessions.find(s => s.progress > 0 && s.status !== "completed") || (hasStarted ? enrolledSessions[0] : null);
-  const todaySchedule   = SCHEDULE.filter(i => i.status === "upcoming").slice(0, 3);
-  const recommended     = discoverSessions.slice(0, 4);
-  const certsEarned     = enrolledSessions.filter(s => s.status === "completed").length;
+  const LEARNING_PATH = SESSIONS.slice(0, 4).map(s => {
+    const enrolled = enrolledIds.has(s.id);
+    if (!enrolled) return { ...s, pathStatus: "locked" };
+    if (s.status === "completed") return { ...s, pathStatus: "completed" };
+    if (s.status === "in-progress") return { ...s, pathStatus: "in-progress" };
+    return { ...s, pathStatus: "available" };
+  });
 
   if (previewSession) {
     return (
       <SessionPublicPage
         session={previewSession}
         onBack={() => setPreviewSession(null)}
-        onRegister={() => { onEnroll && onEnroll(previewSession.id); }}
+        onRegister={() => { onEnroll && onEnroll(previewSession.id); setPreviewSession(null); }}
       />
     );
   }
 
-  return (
-    <div style={{ display:"flex", gap:20, padding:24, minHeight:"100%", background:C.gray50, boxSizing:"border-box" }}>
-      {calendarItem && (
-        <AddToCalendarModal
-          item={calendarItem}
-          onClose={() => setCalendarItem(null)}
-          onConfirm={() => {
-            setScheduleRegistrations(r => ({ ...r, [calendarItem.id]: true }));
-            toast({ type:"success", title:"Registered! 🎉", message:`"${calendarItem.title.slice(0,40)}…" added to your schedule.` });
-          }}
-        />
-      )}
+  // ─── SHARED STYLES ────────────────────────────────────────────────────────
+  const CSS = `
+    :root {
+      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+      --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    }
 
-      {/* ──────── Main column ──────── */}
-      <div style={{ flex:1, minWidth:0, display:"flex", flexDirection:"column", gap:28 }}>
+    @keyframes db-fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+    @keyframes db-fadeIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to   { opacity: 1; transform: scale(1);    }
+    }
+    @keyframes db-progressFill {
+      from { transform: scaleX(0); }
+      to   { transform: scaleX(1); }
+    }
+    @keyframes db-pulse {
+      0%,100% { opacity: 1; }
+      50%      { opacity: 0.35; }
+    }
 
-        {/* ① CONTINUE WATCHING — hero */}
-        {continueSession ? (
+    .db-hero { animation: db-fadeUp 380ms var(--ease-out) both; }
+    .db-section { animation: db-fadeUp 350ms var(--ease-out) both; }
+    .db-section-1 { animation-delay: 60ms;  }
+    .db-section-2 { animation-delay: 110ms; }
+    .db-section-3 { animation-delay: 160ms; }
+    .db-section-4 { animation-delay: 210ms; }
+    .db-section-5 { animation-delay: 260ms; }
+
+    .db-card {
+      background: var(--c-white);
+      border-radius: 16px;
+      border: 1px solid var(--c-gray200);
+      transition: box-shadow 180ms var(--ease-out), transform 180ms var(--ease-out);
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .db-card-hover:hover {
+        box-shadow: 0 6px 24px rgba(0,0,0,0.09);
+        transform: translateY(-2px);
+      }
+    }
+
+    .db-btn-primary {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 10px 20px; border-radius: 9px; border: none;
+      background: var(--c-primary); color: #fff;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: transform 160ms var(--ease-out), opacity 160ms var(--ease-out);
+      transform-origin: center;
+    }
+    .db-btn-primary:hover   { opacity: 0.88; }
+    .db-btn-primary:active  { transform: scale(0.97); }
+
+    .db-btn-ghost {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 7px 14px; border-radius: 8px; border: none;
+      background: transparent; color: var(--c-primary);
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: background 150ms ease, transform 160ms var(--ease-out);
+    }
+    .db-btn-ghost:hover  { background: var(--c-primaryLight); }
+    .db-btn-ghost:active { transform: scale(0.97); }
+
+    .db-btn-outline {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 10px 20px; border-radius: 9px;
+      background: rgba(255,255,255,0.15); color: #fff;
+      border: 1.5px solid rgba(255,255,255,0.3);
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      transition: background 160ms ease, transform 160ms var(--ease-out);
+    }
+    .db-btn-outline:hover  { background: rgba(255,255,255,0.22); }
+    .db-btn-outline:active { transform: scale(0.97); }
+
+    .db-path-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 13px 22px;
+      border-bottom: 1px solid var(--c-gray50);
+      transition: background 130ms ease;
+    }
+    .db-path-item:last-child { border-bottom: none; }
+    .db-path-item.clickable { cursor: pointer; }
+    @media (hover: hover) and (pointer: fine) {
+      .db-path-item.clickable:hover { background: var(--c-gray50); }
+    }
+    .db-path-item.db-stagger-1 { animation: db-fadeIn 280ms var(--ease-out) 40ms  both; }
+    .db-path-item.db-stagger-2 { animation: db-fadeIn 280ms var(--ease-out) 80ms  both; }
+    .db-path-item.db-stagger-3 { animation: db-fadeIn 280ms var(--ease-out) 120ms both; }
+    .db-path-item.db-stagger-4 { animation: db-fadeIn 280ms var(--ease-out) 160ms both; }
+
+    .db-upcoming-item {
+      transition: box-shadow 150ms var(--ease-out), transform 150ms var(--ease-out);
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .db-upcoming-item:hover {
+        box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+        transform: translateY(-1px);
+      }
+    }
+    .db-upcoming-item.db-stagger-1 { animation: db-fadeIn 260ms var(--ease-out) 30ms  both; }
+    .db-upcoming-item.db-stagger-2 { animation: db-fadeIn 260ms var(--ease-out) 70ms  both; }
+    .db-upcoming-item.db-stagger-3 { animation: db-fadeIn 260ms var(--ease-out) 110ms both; }
+
+    .db-stat-tile {
+      flex: 1; min-width: 90px;
+      background: var(--c-gray50); border-radius: 14px; padding: 16px 14px; text-align: center;
+      transition: transform 150ms var(--ease-out), box-shadow 150ms var(--ease-out);
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .db-stat-tile:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.07); }
+    }
+    .db-stat-tile.db-stagger-1 { animation: db-fadeIn 260ms var(--ease-out) 50ms  both; }
+    .db-stat-tile.db-stagger-2 { animation: db-fadeIn 260ms var(--ease-out) 100ms both; }
+    .db-stat-tile.db-stagger-3 { animation: db-fadeIn 260ms var(--ease-out) 150ms both; }
+
+    .db-progress-bar-fill {
+      height: 100%; border-radius: 99px;
+      background: var(--c-primary);
+      transform-origin: left;
+      animation: db-progressFill 600ms var(--ease-out) 200ms both;
+    }
+    .db-hero-progress-fill {
+      height: 100%; border-radius: 99px;
+      background: rgba(255,255,255,0.9);
+      transform-origin: left;
+      animation: db-progressFill 700ms var(--ease-out) 300ms both;
+    }
+
+    .db-sidebar-card { animation: db-fadeUp 360ms var(--ease-out) 80ms both; }
+    .db-sidebar-goal { animation: db-fadeUp 360ms var(--ease-out) 140ms both; }
+    .db-sidebar-cert { animation: db-fadeUp 360ms var(--ease-out) 200ms both; }
+
+    .db-cert-link {
+      transition: box-shadow 150ms var(--ease-out), transform 150ms var(--ease-out);
+      cursor: pointer;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .db-cert-link:hover {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.09);
+        transform: translateY(-1px);
+      }
+    }
+
+    .db-pulse { animation: db-pulse 1.8s ease-in-out infinite; }
+  `;
+
+  // ─── SUB-COMPONENTS ───────────────────────────────────────────────────────
+
+  function LearningPathSection({ showProgress }) {
+    const statusConfig = {
+      completed:    { icon:"check-circle",  iconColor:"#10b981", iconBg:"rgba(16,185,129,0.12)", label:"Completed",   labelColor:"#10b981", labelBg:"rgba(16,185,129,0.1)"  },
+      "in-progress":{ icon:"play",          iconColor:C.primary,  iconBg:C.primaryLight,          label:"In Progress", labelColor:C.primary,  labelBg:C.primaryLight           },
+      available:    { icon:"play-circle",   iconColor:"#6366f1", iconBg:"rgba(99,102,241,0.1)", label:"Available",   labelColor:"#6366f1", labelBg:"rgba(99,102,241,0.1)"  },
+      locked:       { icon:"lock",          iconColor:C.gray400,  iconBg:C.gray100,               label:"Locked",      labelColor:C.gray400,  labelBg:C.gray100                },
+    };
+    return (
+      <div className="db-card db-section db-section-2">
+        <div style={{ padding:"18px 22px 14px", borderBottom:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           <div>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
-              <div>
-                <div style={{ fontSize:11, fontWeight:700, color:C.primary, letterSpacing:1, textTransform:"uppercase", marginBottom:3 }}>Continue Watching</div>
-                <h2 style={{ margin:0, fontSize:17, fontWeight:800, color:C.gray900 }}>Resume your last session</h2>
-              </div>
-              <Btn variant="ghost" size="sm" onClick={() => onNavigate("sessions")}>My Sessions <Icon name="caret-right" size={13} color={C.primary}/></Btn>
-            </div>
-            {/* Hero card */}
-            <div style={{ background:C.white, borderRadius:18, border:`1px solid ${C.gray200}`, overflow:"hidden", display:"flex", gap:0 }}>
-              {/* Thumbnail side */}
-              <div style={{ width:260, flexShrink:0, position:"relative", background:"#111" }}>
-                <SessionThumb id={continueSession.id} height={170} noPlayHover/>
-                <div style={{ position:"absolute", inset:0, background:"linear-gradient(to right, transparent 55%, rgba(0,0,0,0.4) 100%)" }}/>
-                {/* Progress overlay bar */}
-                <div style={{ position:"absolute", bottom:0, left:0, right:0, height:3, background:"rgba(255,255,255,0.2)" }}>
-                  <div style={{ height:"100%", width:`${continueSession.progress || 28}%`, background:C.primary }}/>
-                </div>
-              </div>
-              {/* Content side */}
-              <div style={{ flex:1, padding:"20px 22px", display:"flex", flexDirection:"column", gap:12 }}>
-                <div style={{ fontSize:11, fontWeight:700, color:"#92400e", background:"#fef3c7", border:"1px solid #fcd34d", display:"inline-flex", alignItems:"center", gap:5, padding:"4px 10px", borderRadius:99, alignSelf:"flex-start" }}>
-                  <Icon name="timer" size={11} color="#92400e"/> {continueSession.progress || 28}% WATCHED
-                </div>
-                <div style={{ fontSize:16, fontWeight:800, color:C.gray900, lineHeight:1.35 }}>{continueSession.title}</div>
-                <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, color:C.gray500 }}>
-                  <Avatar name={continueSession.instructor} size={20}/>
-                  <span>{continueSession.instructor}</span>
-                  <span style={{ color:C.gray300 }}>·</span>
-                  <span>{continueSession.duration}</span>
-                </div>
-                <Btn size="lg" onClick={() => onOpenSession(continueSession)}>
-                  <Icon name="play" size={16} color="#fff"/> Resume Session
-                </Btn>
-              </div>
-            </div>
+            <div style={{ fontSize:11, fontWeight:700, color:C.primary, letterSpacing:1, textTransform:"uppercase", marginBottom:2 }}>Spring 2026</div>
+            <div style={{ fontSize:16, fontWeight:800, color:C.gray900 }}>Your Learning Path</div>
           </div>
-        ) : (
-          /* No continue session — show welcome prompt */
-          <div style={{ background:"var(--hero-bg)", border:`1px solid ${C.primaryBorder}`, borderRadius:18, padding:"28px 32px" }}>
-            <div style={{ fontSize:11, fontWeight:700, color:C.primary, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>Welcome to SPED Summit</div>
-            <h1 style={{ margin:"0 0 8px", fontSize:24, fontWeight:900, color:C.gray900 }}>Start your learning journey, <span style={{ color:C.primary }}>Alex</span></h1>
-            <p style={{ margin:"0 0 20px", color:C.gray500, fontSize:14, lineHeight:1.6 }}>Pick up where expert educators left off — explore sessions on IEPs, AAC, inclusion &amp; more.</p>
-            <Btn size="lg" onClick={() => onNavigate("sessions")}>
-              <Icon name="play-circle" size={16} color="#fff"/> Browse Sessions
-            </Btn>
-          </div>
-        )}
-
-        {/* ② TODAY'S SESSIONS */}
-        {todaySchedule.length > 0 && (
-          <div>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
-              <div>
-                <div style={{ fontSize:11, fontWeight:700, color:"#dc2626", letterSpacing:1, textTransform:"uppercase", marginBottom:3, display:"flex", alignItems:"center", gap:5 }}>
-                  <span style={{ width:7, height:7, borderRadius:"50%", background:"#dc2626", display:"inline-block" }}/>
-                  Upcoming Sessions
+          <button className="db-btn-ghost" onClick={() => onNavigate("sessions")}>
+            View All <Icon name="caret-right" size={13} color={C.primary}/>
+          </button>
+        </div>
+        <div>
+          {LEARNING_PATH.map((s, i) => {
+            const sc = statusConfig[s.pathStatus] || statusConfig.locked;
+            const clickable = s.pathStatus !== "locked";
+            return (
+              <div key={s.id}
+                className={`db-path-item${clickable ? " clickable" : ""} db-stagger-${i + 1}`}
+                onClick={() => clickable && onOpenSession(s)}>
+                <div style={{ width:36, height:36, borderRadius:"50%", background:sc.iconBg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, border: s.pathStatus === "in-progress" ? `2px solid ${C.primary}` : "2px solid transparent", transition:"border-color 200ms ease" }}>
+                  <Icon name={sc.icon} size={16} color={sc.iconColor}/>
                 </div>
-                <h2 style={{ margin:0, fontSize:17, fontWeight:800, color:C.gray900 }}>Don't miss these</h2>
-              </div>
-              <Btn variant="ghost" size="sm" onClick={() => onNavigate("schedules")}>View Schedule <Icon name="caret-right" size={13} color={C.primary}/></Btn>
-            </div>
-            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-              {todaySchedule.map((item, i) => {
-                const tc = SCHEDULE_TYPE_COLORS[item.type] || { c:C.gray500, bg:"rgba(128,128,128,0.10)" };
-                const registered = !!scheduleRegistrations[item.id];
-                return (
-                  <div key={item.id} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:14, padding:"14px 16px" }}>
-                    <div style={{ width:80, height:52, borderRadius:10, overflow:"hidden", flexShrink:0 }}>
-                      <SessionThumb id={item.id} height={52} noPlayHover/>
-                    </div>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ display:"flex", alignItems:"center", gap:5, marginBottom:4 }}>
-                        <Badge label={item.type} color={tc.c} bg={tc.bg} size={11}/>
-                        <span style={{ fontSize:11, color:C.gray400 }}>· {item.time}</span>
-                      </div>
-                      <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.title}</div>
-                      <div style={{ fontSize:12, color:C.gray500, marginTop:2, display:"flex", alignItems:"center", gap:5 }}>
-                        <Avatar name={item.instructor} size={16}/> {item.instructor}
-                      </div>
-                    </div>
-                    {registered ? (
-                      <SessionCountdown dateStr={item.date} timeStr={item.time}
-                        fallback={
-                          <div style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:12, color:C.success, background:"rgba(16,185,129,0.10)", padding:"6px 12px", borderRadius:99, fontWeight:600 }}>
-                            <Icon name="check-circle" size={13} color={C.success}/> Registered
-                          </div>
-                        }/>
-                    ) : (
-                      <Btn variant="primary" size="sm" onClick={() => setCalendarItem(item)}>
-                        <Icon name="bell" size={13} color="#fff"/> Register
-                      </Btn>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:14, fontWeight:700, color: s.pathStatus === "locked" ? C.gray400 : C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", marginBottom:3 }}>{s.title}</div>
+                  <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                    <span style={{ fontSize:12, color:C.gray500 }}>{s.duration}</span>
+                    {showProgress && s.pathStatus === "in-progress" && s.progress > 0 && (
+                      <><span style={{ color:C.gray300 }}>·</span><span style={{ fontSize:12, color:C.primary, fontWeight:600 }}>{s.progress}% watched</span></>
                     )}
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* ③ RECOMMENDED SESSIONS */}
-        {recommended.length > 0 && (
-          <div>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
-              <div>
-                <div style={{ fontSize:11, fontWeight:700, color:C.primary, letterSpacing:1, textTransform:"uppercase", marginBottom:3 }}>Recommended for You</div>
-                <h2 style={{ margin:0, fontSize:17, fontWeight:800, color:C.gray900 }}>Sessions you might like</h2>
+                  {showProgress && s.pathStatus === "in-progress" && (
+                    <div style={{ marginTop:6, height:3, background:C.gray200, borderRadius:99, overflow:"hidden" }}>
+                      <div className="db-progress-bar-fill" style={{ width:`${s.progress || 0}%` }}/>
+                    </div>
+                  )}
+                </div>
+                <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
+                  <span style={{ fontSize:11, fontWeight:700, color:sc.labelColor, background:sc.labelBg, padding:"3px 9px", borderRadius:99 }}>{sc.label}</span>
+                  {clickable && <Icon name="caret-right" size={15} color={C.gray300}/>}
+                </div>
               </div>
-            </div>
-            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-              {recommended.map(s => {
-                const catColors = { MANAGEMENT:{c:"#2563eb",bg:"rgba(37,99,235,0.12)"}, LEADERSHIP:{c:"#7c3aed",bg:"rgba(124,58,237,0.12)"}, COMMUNICATION:{c:"#0ea5e9",bg:"rgba(14,165,233,0.12)"}, TEAMWORK:{c:"#f97316",bg:"rgba(249,115,22,0.12)"}, TECHNOLOGY:{c:"#6366f1",bg:"rgba(99,102,241,0.12)"}, ACCESSIBILITY:{c:"#ec4899",bg:"rgba(236,72,153,0.12)"} };
-                const cc = catColors[s.category] || { c:C.primary, bg:"rgba(54,153,255,0.12)" };
-                return (
-                  <div key={s.id} onClick={() => setPreviewSession(s)}
-                    style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:14, padding:"14px 16px", cursor:"pointer", transition:"box-shadow .15s" }}
-                    onMouseEnter={e=>e.currentTarget.style.boxShadow="0 4px 18px rgba(0,0,0,0.08)"}
-                    onMouseLeave={e=>e.currentTarget.style.boxShadow="none"}>
-                    <div style={{ width:80, height:52, borderRadius:10, overflow:"hidden", flexShrink:0, position:"relative" }}>
-                      <SessionThumb id={s.id} height={52} noPlayHover/>
-                      <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.18)" }}>
-                        <Icon name="play-circle" size={20} color="rgba(255,255,255,0.9)"/>
-                      </div>
-                    </div>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ display:"flex", alignItems:"center", gap:5, marginBottom:4 }}>
-                        <span style={{ fontSize:11, fontWeight:700, color:cc.c, background:cc.bg, padding:"2px 7px", borderRadius:99 }}>{s.category}</span>
-                      </div>
-                      <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
-                      <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{s.instructor} · {s.duration}</div>
-                    </div>
-                    <Icon name="caret-right" size={16} color={C.gray300}/>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
+            );
+          })}
+        </div>
       </div>
+    );
+  }
 
-      {/* ──────── Right sidebar ──────── */}
-      <div style={{ width:236, flexShrink:0, display:"flex", flexDirection:"column", gap:14 }}>
-
-        {/* ④ MY PROGRESS */}
-        <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"20px 18px" }}>
-          <div style={{ fontWeight:800, fontSize:15, color:C.gray900, marginBottom:16 }}>My Progress</div>
-
-          {/* Circular % */}
-          <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:18, padding:"14px 16px", background:C.gray50, borderRadius:12 }}>
-            <div style={{ width:52, height:52, borderRadius:"50%", border:`4px solid ${C.primaryBorder}`, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", flexShrink:0, background:C.white }}>
-              <span style={{ fontSize:14, fontWeight:900, color:C.gray900, lineHeight:1 }}>{pct}%</span>
+  function UpcomingSessionsSection({ sectionClass }) {
+    if (upcomingSchedule.length === 0) return null;
+    return (
+      <div className={`db-section ${sectionClass || ""}`}>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+          <div>
+            <div style={{ fontSize:11, fontWeight:700, color:"#dc2626", letterSpacing:1, textTransform:"uppercase", marginBottom:3, display:"flex", alignItems:"center", gap:6 }}>
+              <span className="db-pulse" style={{ width:7, height:7, borderRadius:"50%", background:"#dc2626", display:"inline-block" }}/>
+              Coming Up
             </div>
+            <div style={{ fontSize:16, fontWeight:800, color:C.gray900 }}>Don't miss these</div>
+          </div>
+          <button className="db-btn-ghost" onClick={() => onNavigate("schedules")}>
+            Full Schedule <Icon name="caret-right" size={13} color={C.primary}/>
+          </button>
+        </div>
+        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+          {upcomingSchedule.slice(0, 3).map((item, i) => {
+            const tc = SCHEDULE_TYPE_COLORS[item.type] || { c:C.gray500, bg:"rgba(128,128,128,0.10)" };
+            const registered = !!scheduleRegistrations[item.id];
+            return (
+              <div key={item.id}
+                className={`db-card db-upcoming-item db-stagger-${i + 1}`}
+                style={{ display:"flex", alignItems:"center", gap:14, padding:"13px 16px" }}>
+                <div style={{ width:72, height:48, borderRadius:10, overflow:"hidden", flexShrink:0 }}>
+                  <SessionThumb id={item.id} height={48} noPlayHover/>
+                </div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4 }}>
+                    <Badge label={item.type} color={tc.c} bg={tc.bg} size={10}/>
+                    <span style={{ fontSize:11, color:C.gray400 }}>· {item.date}, {item.time}</span>
+                  </div>
+                  <div style={{ fontSize:13, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.title}</div>
+                  <div style={{ fontSize:12, color:C.gray500, marginTop:2, display:"flex", alignItems:"center", gap:4 }}>
+                    <Avatar name={item.instructor} size={14}/>
+                    <span>{item.instructor}</span>
+                  </div>
+                </div>
+                {registered ? (
+                  <div style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:12, color:C.success, background:"rgba(16,185,129,0.10)", padding:"6px 12px", borderRadius:99, fontWeight:600, flexShrink:0 }}>
+                    <Icon name="check-circle" size={13} color={C.success}/> Registered
+                  </div>
+                ) : (
+                  <button className="db-btn-primary" style={{ fontSize:13, padding:"7px 14px", flexShrink:0 }}
+                    onClick={() => setCalendarItem(item)}>
+                    <Icon name="bell" size={13} color="#fff"/> Register
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  function RightSidebar() {
+    const sessionsLeft = Math.max(0, 2 - completed);
+    return (
+      <div style={{ width:248, flexShrink:0, display:"flex", flexDirection:"column", gap:14 }}>
+        {/* Progress */}
+        <div className="db-card db-sidebar-card" style={{ padding:"20px 18px" }}>
+          <div style={{ fontWeight:800, fontSize:15, color:C.gray900, marginBottom:16 }}>My Progress</div>
+          <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:18, padding:"14px 16px", background:C.gray50, borderRadius:12 }}>
+            <svg width="52" height="52" viewBox="0 0 52 52" style={{ flexShrink:0 }}>
+              <circle cx="26" cy="26" r="21" fill="none" stroke={C.gray200} strokeWidth="5"/>
+              <circle cx="26" cy="26" r="21" fill="none" stroke={C.primary} strokeWidth="5"
+                strokeDasharray={`${2 * Math.PI * 21}`}
+                strokeDashoffset={`${2 * Math.PI * 21 * (1 - pct / 100)}`}
+                strokeLinecap="round"
+                style={{ transformOrigin:"center", transform:"rotate(-90deg)", transition:`stroke-dashoffset 700ms cubic-bezier(0.23, 1, 0.32, 1) 200ms` }}/>
+              <text x="26" y="31" textAnchor="middle" fontSize="12" fontWeight="800" fill="var(--c-gray900)">{pct}%</text>
+            </svg>
             <div>
               <div style={{ fontSize:13, fontWeight:700, color:C.gray800 }}>Overall completion</div>
-              <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{completed} of {enrolledSessions.length} sessions done</div>
+              <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{completed} of {totalEnrolled} sessions</div>
             </div>
           </div>
-
-          {/* Stat rows */}
           {[
-            { icon:"play-circle",  label:"Sessions Watched",    value: completed,                    color:C.primary   },
-            { icon:"certificate",  label:"Certificates Earned", value: certsEarned,                  color:"#f59e0b"   },
-            { icon:"timer",        label:"Hours Learned",       value: "42.5h",                      color:C.success   },
-            { icon:"fire",         label:"Day Streak",          value: "12",                         color:"#ef4444"   },
+            { icon:"play-circle", label:"Sessions Watched",    val: completed,   color:C.primary  },
+            { icon:"certificate", label:"Certificates Earned", val: certsEarned, color:"#f59e0b"  },
+            { icon:"timer",       label:"Hours Learned",       val: "2.5h",      color:C.success  },
           ].map((row, i, arr) => (
-            <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom: i < arr.length-1 ? `1px solid ${C.gray100}` : "none" }}>
-              <div style={{ width:32, height:32, borderRadius:9, background:`color-mix(in srgb, ${row.color} 12%, transparent)`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                <Icon name={row.icon} size={16} color={row.color}/>
+            <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 0", borderBottom: i < arr.length - 1 ? `1px solid ${C.gray100}` : "none" }}>
+              <div style={{ width:30, height:30, borderRadius:8, background:`color-mix(in srgb, ${row.color} 12%, transparent)`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <Icon name={row.icon} size={15} color={row.color}/>
               </div>
-              <div style={{ flex:1 }}>
-                <div style={{ fontSize:13, fontWeight:600, color:C.gray700 }}>{row.label}</div>
-              </div>
-              <div style={{ fontSize:16, fontWeight:900, color:C.gray900 }}>{row.value}</div>
+              <div style={{ flex:1, fontSize:12, fontWeight:600, color:C.gray600 }}>{row.label}</div>
+              <div style={{ fontSize:15, fontWeight:900, color:C.gray900 }}>{row.val}</div>
             </div>
           ))}
         </div>
 
+        {/* Next Goal */}
+        <div className="db-sidebar-goal" style={{ background:"linear-gradient(135deg, #1d4ed8 0%, #4f46e5 100%)", borderRadius:16, padding:"18px 18px" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:12 }}>
+            <Icon name="target" size={16} color="rgba(255,255,255,0.85)"/>
+            <span style={{ fontSize:12, fontWeight:800, color:"rgba(255,255,255,0.85)", letterSpacing:0.8, textTransform:"uppercase" }}>Next Goal</span>
+          </div>
+          {sessionsLeft > 0 ? (
+            <>
+              <div style={{ fontSize:14, fontWeight:700, color:"#fff", lineHeight:1.45, marginBottom:10 }}>
+                Complete {sessionsLeft} more session{sessionsLeft > 1 ? "s" : ""} to unlock:
+              </div>
+              <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
+                {[
+                  { icon:"trophy",      label:"Quiz Challenge Game"    },
+                  { icon:"star",        label:"Win Pro Membership"      },
+                  { icon:"certificate", label:"Session Certificate"     },
+                ].map((r, i) => (
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:8 }}>
+                    <div style={{ width:24, height:24, borderRadius:6, background:"rgba(255,255,255,0.15)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                      <Icon name={r.icon} size={13} color="#fff"/>
+                    </div>
+                    <span style={{ fontSize:12, color:"rgba(255,255,255,0.88)", fontWeight:600 }}>{r.label}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div style={{ fontSize:14, fontWeight:700, color:"#fff", lineHeight:1.5 }}>You've unlocked all rewards! Keep exploring.</div>
+          )}
+        </div>
+
+        {/* Cert quick-link */}
+        {certsEarned > 0 && (
+          <div className="db-card db-cert-link db-sidebar-cert"
+            style={{ padding:"14px 16px", display:"flex", alignItems:"center", gap:12 }}
+            onClick={() => onNavigate("certifications")}>
+            <div style={{ width:38, height:38, borderRadius:10, background:"rgba(245,158,11,0.12)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              <Icon name="certificate" size={20} color="#f59e0b"/>
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:13, fontWeight:700, color:C.gray900 }}>{certsEarned} Certificate{certsEarned > 1 ? "s" : ""} Earned</div>
+              <div style={{ fontSize:11, color:C.gray500 }}>View & download →</div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ─── STATE 1: FIRST-TIME USER ─────────────────────────────────────────────
+  if (!hasStarted) {
+    return (
+      <div style={{ display:"flex", gap:24, padding:24, minHeight:"100%", background:C.gray50, boxSizing:"border-box", alignItems:"flex-start" }}>
+        <style>{CSS}</style>
+        {calendarItem && (
+          <AddToCalendarModal item={calendarItem} onClose={() => setCalendarItem(null)}
+            onConfirm={() => {
+              setScheduleRegistrations(r => ({ ...r, [calendarItem.id]: true }));
+              toast({ type:"success", title:"Registered! 🎉", message:`Added "${calendarItem.title.slice(0,40)}…" to your schedule.` });
+              setCalendarItem(null);
+            }}/>
+        )}
+
+        <div style={{ flex:1, minWidth:0, display:"flex", flexDirection:"column", gap:24 }}>
+
+          {/* ① HERO */}
+          <div className="db-hero" style={{ background:"linear-gradient(135deg, #1e40af 0%, #3b82f6 60%, #6366f1 100%)", borderRadius:20, padding:"36px 40px", position:"relative", overflow:"hidden" }}>
+            <div style={{ position:"absolute", top:-40, right:-40, width:220, height:220, borderRadius:"50%", background:"rgba(255,255,255,0.07)", pointerEvents:"none" }}/>
+            <div style={{ position:"absolute", bottom:-60, right:80, width:160, height:160, borderRadius:"50%", background:"rgba(255,255,255,0.05)", pointerEvents:"none" }}/>
+            <div style={{ position:"relative", maxWidth:540 }}>
+              <div style={{ display:"inline-flex", alignItems:"center", gap:7, background:"rgba(255,255,255,0.15)", padding:"5px 13px", borderRadius:99, marginBottom:16 }}>
+                <Icon name="star" size={13} color="#fbbf24"/>
+                <span style={{ fontSize:12, fontWeight:700, color:"rgba(255,255,255,0.95)", letterSpacing:0.5 }}>SPED Summit · Spring 2026</span>
+              </div>
+              <h1 style={{ margin:"0 0 12px", fontSize:28, fontWeight:900, color:"#fff", lineHeight:1.2 }}>Start Your Learning Journey</h1>
+              <p style={{ margin:"0 0 28px", fontSize:15, color:"rgba(255,255,255,0.8)", lineHeight:1.7, maxWidth:460 }}>
+                Explore expert-led sessions in special education and earn certificates that advance your career.
+              </p>
+              <div style={{ display:"flex", gap:12 }}>
+                <button className="db-btn-primary" style={{ background:"#fff", color:"#1e40af", fontWeight:800, fontSize:14 }}
+                  onClick={() => onOpenSession(featuredSession)}>
+                  <Icon name="play-circle" size={16} color="#1e40af"/> Start First Session
+                </button>
+                <button className="db-btn-outline" onClick={() => onNavigate("sessions")}>Explore Learning Path</button>
+              </div>
+            </div>
+          </div>
+
+          {/* ② FEATURED SESSION */}
+          <div className="db-section db-section-1">
+            <div style={{ fontSize:11, fontWeight:700, color:C.primary, letterSpacing:1, textTransform:"uppercase", marginBottom:10 }}>Start Here</div>
+            <div className="db-card db-card-hover" style={{ overflow:"hidden", display:"flex", cursor:"pointer" }}
+              onClick={() => onOpenSession(featuredSession)}>
+              <div style={{ width:280, flexShrink:0 }}>
+                <SessionThumb id={featuredSession.id} height={185} vimeoUrl={featuredSession.vimeoUrl}/>
+              </div>
+              <div style={{ flex:1, padding:"22px 24px", display:"flex", flexDirection:"column", gap:10 }}>
+                <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"rgba(16,185,129,0.1)", padding:"4px 10px", borderRadius:99, alignSelf:"flex-start" }}>
+                  <Icon name="book-open" size={12} color="#059669"/>
+                  <span style={{ fontSize:11, fontWeight:700, color:"#059669" }}>FEATURED SESSION</span>
+                </div>
+                <div style={{ fontSize:17, fontWeight:800, color:C.gray900, lineHeight:1.35 }}>{featuredSession.title}</div>
+                <div style={{ display:"flex", alignItems:"center", gap:8, fontSize:13, color:C.gray500 }}>
+                  <Avatar name={featuredSession.instructor} size={22}/>
+                  <span>{featuredSession.instructor}</span>
+                  <span style={{ color:C.gray300 }}>·</span>
+                  <Icon name="clock" size={13} color={C.gray400}/>
+                  <span>{featuredSession.duration}</span>
+                </div>
+                <p style={{ margin:0, fontSize:13, color:C.gray500, lineHeight:1.6, flex:1 }}>{featuredSession.description}</p>
+                <button className="db-btn-primary" style={{ alignSelf:"flex-start" }}
+                  onClick={e => { e.stopPropagation(); onOpenSession(featuredSession); }}>
+                  <Icon name="play" size={14} color="#fff"/> Start Learning
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* ③ LEARNING PATH */}
+          <LearningPathSection showProgress={false}/>
+
+          {/* ④ UPCOMING */}
+          <UpcomingSessionsSection sectionClass="db-section-3"/>
+
+          {/* ⑤ HOW IT WORKS */}
+          <div className="db-card db-section db-section-4" style={{ padding:"24px 28px" }}>
+            <div style={{ fontSize:11, fontWeight:700, color:C.primary, letterSpacing:1, textTransform:"uppercase", marginBottom:6 }}>How It Works</div>
+            <div style={{ fontSize:16, fontWeight:800, color:C.gray900, marginBottom:20 }}>Your path to certification & rewards</div>
+            <div style={{ display:"flex", gap:0 }}>
+              {[
+                { icon:"play-circle",  color:"#3b82f6", bg:"rgba(59,130,246,0.1)",  n:"1", title:"Watch Sessions",   desc:"Access expert-led sessions at your own pace"          },
+                { icon:"note-pencil",  color:"#6366f1", bg:"rgba(99,102,241,0.1)",  n:"2", title:"Take the Quiz",    desc:"Test your knowledge with post-session assessments"    },
+                { icon:"certificate",  color:"#f59e0b", bg:"rgba(245,158,11,0.1)",  n:"3", title:"Earn Certificate", desc:"Download your verified certificate of completion"     },
+                { icon:"trophy",       color:"#10b981", bg:"rgba(16,185,129,0.1)",  n:"4", title:"Unlock Rewards",   desc:"Complete all sessions to win the quiz game & Pro Membership" },
+              ].map((item, i, arr) => (
+                <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", textAlign:"center", padding:"0 16px", borderRight: i < arr.length - 1 ? `1px solid ${C.gray100}` : "none" }}>
+                  <div style={{ width:48, height:48, borderRadius:14, background:item.bg, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:12, position:"relative" }}>
+                    <Icon name={item.icon} size={22} color={item.color}/>
+                    <div style={{ position:"absolute", top:-6, right:-6, width:18, height:18, borderRadius:"50%", background:item.color, color:"#fff", fontSize:10, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center" }}>{item.n}</div>
+                  </div>
+                  <div style={{ fontSize:13, fontWeight:800, color:C.gray900, marginBottom:5 }}>{item.title}</div>
+                  <div style={{ fontSize:12, color:C.gray500, lineHeight:1.5 }}>{item.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+        <RightSidebar/>
+      </div>
+    );
+  }
+
+  // ─── STATE 2: RETURNING USER ──────────────────────────────────────────────
+  return (
+    <div style={{ display:"flex", gap:24, padding:24, minHeight:"100%", background:C.gray50, boxSizing:"border-box", alignItems:"flex-start" }}>
+      <style>{CSS}</style>
+      {calendarItem && (
+        <AddToCalendarModal item={calendarItem} onClose={() => setCalendarItem(null)}
+          onConfirm={() => {
+            setScheduleRegistrations(r => ({ ...r, [calendarItem.id]: true }));
+            toast({ type:"success", title:"Registered! 🎉", message:`Added "${calendarItem.title.slice(0,40)}…" to your schedule.` });
+            setCalendarItem(null);
+          }}/>
+      )}
+
+      <div style={{ flex:1, minWidth:0, display:"flex", flexDirection:"column", gap:24 }}>
+
+        {/* ① PROGRESS HERO */}
+        <div className="db-hero" style={{ background:"linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #3b82f6 100%)", borderRadius:20, padding:"28px 36px", position:"relative", overflow:"hidden" }}>
+          <div style={{ position:"absolute", top:-30, right:-30, width:180, height:180, borderRadius:"50%", background:"rgba(255,255,255,0.07)", pointerEvents:"none" }}/>
+          <div style={{ position:"absolute", bottom:-50, right:100, width:130, height:130, borderRadius:"50%", background:"rgba(255,255,255,0.05)", pointerEvents:"none" }}/>
+          <div style={{ position:"relative" }}>
+            <div style={{ fontSize:12, fontWeight:700, color:"rgba(255,255,255,0.7)", letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>Your Learning Journey</div>
+            <h1 style={{ margin:"0 0 6px", fontSize:24, fontWeight:900, color:"#fff" }}>Keep up the great work!</h1>
+            <p style={{ margin:"0 0 20px", fontSize:14, color:"rgba(255,255,255,0.75)" }}>
+              {completed} of {totalEnrolled} sessions completed
+              {completed < totalEnrolled && ` · Complete ${totalEnrolled - completed} more to unlock all rewards`}
+            </p>
+            <div style={{ marginBottom:20, maxWidth:480 }}>
+              <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
+                <span style={{ fontSize:12, color:"rgba(255,255,255,0.7)", fontWeight:600 }}>{pct}% complete</span>
+                <span style={{ fontSize:12, color:"rgba(255,255,255,0.5)" }}>{totalEnrolled - completed} session{totalEnrolled - completed !== 1 ? "s" : ""} left</span>
+              </div>
+              <div style={{ height:8, background:"rgba(255,255,255,0.2)", borderRadius:99, overflow:"hidden" }}>
+                <div className="db-hero-progress-fill" style={{ width:`${pct}%` }}/>
+              </div>
+            </div>
+            <div style={{ display:"flex", gap:10 }}>
+              {continueSession && (
+                <button className="db-btn-primary" style={{ background:"#fff", color:"#1e40af", fontWeight:800, fontSize:14 }}
+                  onClick={() => onOpenSession(continueSession)}>
+                  <Icon name="play" size={16} color="#1e40af"/> Continue Learning
+                </button>
+              )}
+              <button className="db-btn-outline" onClick={() => onNavigate("sessions")}>All Sessions</button>
+            </div>
+          </div>
+        </div>
+
+        {/* ② CONTINUE WHERE YOU LEFT OFF */}
+        {continueSession && (
+          <div className="db-section db-section-1">
+            <div style={{ fontSize:11, fontWeight:700, color:C.primary, letterSpacing:1, textTransform:"uppercase", marginBottom:10 }}>Continue Watching</div>
+            <div className="db-card" style={{ overflow:"hidden" }}>
+              <div style={{ display:"flex" }}>
+                <div style={{ width:280, flexShrink:0, position:"relative" }}>
+                  <SessionThumb id={continueSession.id} height={195} vimeoUrl={continueSession.vimeoUrl}/>
+                  <div style={{ position:"absolute", bottom:0, left:0, right:0, height:4, background:"rgba(0,0,0,0.3)" }}>
+                    <div className="db-progress-bar-fill" style={{ width:`${continueSession.progress || 0}%` }}/>
+                  </div>
+                  <div style={{ position:"absolute", top:12, left:12, background:"rgba(0,0,0,0.58)", backdropFilter:"blur(6px)", padding:"4px 10px", borderRadius:99, display:"flex", alignItems:"center", gap:5 }}>
+                    <Icon name="timer" size={11} color="#fbbf24"/>
+                    <span style={{ fontSize:11, fontWeight:700, color:"#fbbf24" }}>{continueSession.progress || 0}% watched</span>
+                  </div>
+                </div>
+                <div style={{ flex:1, padding:"22px 24px", display:"flex", flexDirection:"column", gap:10 }}>
+                  <span style={{ fontSize:11, fontWeight:700, color:C.primary, background:C.primaryLight, padding:"3px 9px", borderRadius:99, alignSelf:"flex-start" }}>IN PROGRESS</span>
+                  <div style={{ fontSize:17, fontWeight:800, color:C.gray900, lineHeight:1.35 }}>{continueSession.title}</div>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, fontSize:13, color:C.gray500 }}>
+                    <Avatar name={continueSession.instructor} size={22}/>
+                    <span>{continueSession.instructor}</span>
+                    <span style={{ color:C.gray300 }}>·</span>
+                    <Icon name="clock" size={13} color={C.gray400}/>
+                    <span>{continueSession.duration}</span>
+                  </div>
+                  <div>
+                    <div style={{ height:5, background:C.gray200, borderRadius:99, overflow:"hidden" }}>
+                      <div className="db-progress-bar-fill" style={{ width:`${continueSession.progress || 0}%` }}/>
+                    </div>
+                    <div style={{ display:"flex", justifyContent:"space-between", marginTop:4 }}>
+                      <span style={{ fontSize:11, color:C.gray400 }}>{continueSession.progress || 0}% complete</span>
+                      <span style={{ fontSize:11, color:C.gray400 }}>~{Math.round((1 - (continueSession.progress || 0) / 100) * parseInt(continueSession.duration))} mins left</span>
+                    </div>
+                  </div>
+                  <button className="db-btn-primary" style={{ alignSelf:"flex-start" }}
+                    onClick={() => onOpenSession(continueSession)}>
+                    <Icon name="play" size={15} color="#fff"/> Resume Session
+                  </button>
+                  <div style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 12px", background:C.gray50, borderRadius:9, marginTop:2 }}>
+                    <Icon name="caret-right" size={13} color={C.primary}/>
+                    <span style={{ fontSize:12, color:C.gray600, fontWeight:500 }}>Next: Quiz → Earn Certificate</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ③ LEARNING PATH */}
+        <LearningPathSection showProgress={true}/>
+
+        {/* ④ REWARDS */}
+        <div className="db-card db-section db-section-3" style={{ overflow:"hidden" }}>
+          <div style={{ padding:"18px 22px 14px", borderBottom:`1px solid ${C.gray100}` }}>
+            <div style={{ fontSize:11, fontWeight:700, color:"#f59e0b", letterSpacing:1, textTransform:"uppercase", marginBottom:2 }}>Motivation</div>
+            <div style={{ fontSize:16, fontWeight:800, color:C.gray900 }}>Your Progress & Rewards</div>
+          </div>
+          <div style={{ padding:"20px 22px", display:"flex", gap:12 }}>
+            {[
+              { icon:"certificate", color:"#f59e0b", bg:"rgba(245,158,11,0.1)",  label:"Certificates",  val: certsEarned, sub:"earned",           cls:"db-stagger-1" },
+              { icon:"timer",       color:C.success,  bg:C.successLight,          label:"Hours Learned", val: "2.5h",      sub:"this quarter",      cls:"db-stagger-2" },
+              { icon:"play-circle", color:C.primary,  bg:C.primaryLight,          label:"Sessions Done", val: completed,   sub:`of ${totalEnrolled}`, cls:"db-stagger-3" },
+            ].map((stat, i) => (
+              <div key={i} className={`db-stat-tile ${stat.cls}`}>
+                <div style={{ width:40, height:40, borderRadius:11, background:stat.bg, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 10px" }}>
+                  <Icon name={stat.icon} size={20} color={stat.color}/>
+                </div>
+                <div style={{ fontSize:22, fontWeight:900, color:C.gray900, lineHeight:1 }}>{stat.val}</div>
+                <div style={{ fontSize:11, fontWeight:700, color:C.gray700, marginTop:3 }}>{stat.label}</div>
+                <div style={{ fontSize:10, color:C.gray400 }}>{stat.sub}</div>
+              </div>
+            ))}
+          </div>
+          {completed < totalEnrolled && (
+            <div style={{ margin:"0 22px 20px", padding:"14px 16px", background:"linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(59,130,246,0.08) 100%)", border:"1.5px solid rgba(99,102,241,0.2)", borderRadius:12 }}>
+              <div style={{ fontSize:13, fontWeight:700, color:C.gray900, marginBottom:8 }}>
+                Complete {totalEnrolled - completed} more session{totalEnrolled - completed !== 1 ? "s" : ""} to unlock:
+              </div>
+              <div style={{ display:"flex", gap:16 }}>
+                {[
+                  { icon:"trophy", color:"#f59e0b", label:"Quiz Challenge Game" },
+                  { icon:"star",   color:"#6366f1", label:"Win Pro Membership"  },
+                ].map((r, i) => (
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:7 }}>
+                    <div style={{ width:28, height:28, borderRadius:8, background:`color-mix(in srgb, ${r.color} 15%, transparent)`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      <Icon name={r.icon} size={14} color={r.color}/>
+                    </div>
+                    <span style={{ fontSize:12, fontWeight:600, color:C.gray700 }}>{r.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ⑤ UPCOMING */}
+        <UpcomingSessionsSection sectionClass="db-section-4"/>
 
       </div>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+
+      <RightSidebar/>
     </div>
   );
 }
+
 
 /* ─────────────────────────────────────────────────────────────────────────────
    SESSIONS PAGE
@@ -6459,6 +6916,103 @@ const DISPLAY_FONT = "'Outfit','Helvetica Neue',Helvetica,Arial,sans-serif";
 const SERIF_FONT   = "'Playfair Display', Georgia, serif";
 const CTA_ORANGE   = "#fe4d01";
 
+/* ── Hero overlay: Watch card with live progress counter ── */
+function WatchOverlay({ T }) {
+  const [pct, setPct] = useState(0);
+  useEffect(() => {
+    if (pct >= 100) return;
+    const t = setTimeout(() => setPct(p => p + 1), 30);
+    return () => clearTimeout(t);
+  }, [pct]);
+  const done = pct >= 100;
+  return (
+    <div className="animate-slide-up-overlay" style={{ opacity:0, position:"absolute", top:"50%", left:"50%", width:340, background:"#fff", borderRadius:18, padding:26, boxShadow:"0 24px 64px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.25)" }}>
+      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
+        <div className="pulse-dot" style={{ width:8, height:8, borderRadius:"50%", background: done ? "#059669" : "#ef4444" }}/>
+        <span style={{ fontSize:11, fontWeight:700, color: done ? "#059669" : "#ef4444", textTransform:"uppercase", letterSpacing:.8 }}>
+          {done ? "Session Complete" : "Live Now"}
+        </span>
+      </div>
+      <div style={{ fontSize:16, fontWeight:700, color:T.text, marginBottom:5, lineHeight:1.35 }}>Mindfulness for SPED Educators</div>
+      <div style={{ fontSize:13, color:T.muted, marginBottom:18 }}>Tara Roehl · SPED Wellness Institute</div>
+      <div style={{ marginBottom:18 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:7, fontSize:12, color:T.muted }}>
+          <span>Session progress</span>
+          <span style={{ fontWeight:700, color: done ? "#059669" : T.text, transition:"color .3s" }}>{pct}%</span>
+        </div>
+        <div style={{ height:6, background:"#f1f0ef", borderRadius:3, overflow:"hidden" }}>
+          <div style={{ height:"100%", width:`${pct}%`, borderRadius:3, transition:"width 0.025s linear",
+            background: done ? "linear-gradient(90deg,#059669,#10b981)" : "linear-gradient(90deg,#8a46ff,#e83e8c)" }}/>
+        </div>
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+        <div style={{ background:T.hover, borderRadius:10, padding:"10px 14px" }}>
+          <div style={{ fontSize:11, color:T.muted, marginBottom:3 }}>Duration</div>
+          <div style={{ fontSize:15, fontWeight:700, color:T.text }}>52 min</div>
+        </div>
+        <div style={{ background:T.hover, borderRadius:10, padding:"10px 14px" }}>
+          <div style={{ fontSize:11, color:T.muted, marginBottom:3 }}>Watching</div>
+          <div style={{ fontSize:15, fontWeight:700, color:T.text }}>1,204</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Hero overlay: Quiz card — fills to 100% then advances to cert tab ── */
+function QuizOverlay({ T, onComplete }) {
+  const [pct, setPct] = useState(0);
+  useEffect(() => {
+    if (pct >= 100) {
+      const done = setTimeout(onComplete, 700);
+      return () => clearTimeout(done);
+    }
+    const t = setTimeout(() => setPct(p => p + 1), 30);
+    return () => clearTimeout(t);
+  }, [pct, onComplete]);
+  const done = pct >= 100;
+  return (
+    <div className="animate-slide-up-overlay" style={{ opacity:0, position:"absolute", top:"50%", left:"50%", width:360, background:"#fff", borderRadius:18, padding:26, boxShadow:"0 24px 64px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.25)" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+        <span style={{ fontSize:11, fontWeight:700, color: done ? "#059669" : "#8a46ff", textTransform:"uppercase", letterSpacing:.8 }}>
+          {done ? "Quiz Complete!" : "Question 3 of 10"}
+        </span>
+        <span style={{ fontSize:13, fontWeight:600, color: done ? "#059669" : T.muted, display:"flex", alignItems:"center", gap:4 }}>
+          {done
+            ? <><Icon name="check-circle" size={14} color="#059669"/> Done</>
+            : <><Icon name="timer" size={13} color={T.muted}/> 0:{String(Math.round((100-pct)/100*30)).padStart(2,"0")}</>
+          }
+        </span>
+      </div>
+      <div style={{ height:4, background:"#f1f0ef", borderRadius:2, overflow:"hidden", marginBottom:18 }}>
+        <div style={{ height:"100%", width:`${pct}%`, borderRadius:2, transition:"width 0.02s linear",
+          background: done ? "linear-gradient(90deg,#059669,#10b981)" : "linear-gradient(90deg,#8a46ff,#e83e8c)" }}/>
+      </div>
+      <div style={{ fontSize:15, fontWeight:600, color:T.text, marginBottom:16, lineHeight:1.45 }}>
+        What does the abbreviation "IEP" stand for?
+      </div>
+      {[
+        { label:"A", text:"Individual Education Plan",        correct:false },
+        { label:"B", text:"Individualized Education Program", correct:true  },
+        { label:"C", text:"Integrated Enhancement Program",   correct:false },
+        { label:"D", text:"Independent Evaluation Protocol",  correct:false },
+      ].map((opt,oi)=>(
+        <div key={opt.label} className="stagger-in" style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 14px", borderRadius:8, marginBottom:7,
+          border:`1px solid ${opt.correct ? "#8a46ff" : T.border}`,
+          background: opt.correct ? "#f5f0ff" : T.bg,
+          animationDelay:`${oi*0.08+0.3}s` }}>
+          <span style={{ width:24, height:24, borderRadius:6, flexShrink:0, display:"inline-flex", alignItems:"center", justifyContent:"center",
+            fontSize:11, fontWeight:700,
+            background: opt.correct ? "#8a46ff" : "#f1f0ef",
+            color:      opt.correct ? "#fff"    : T.muted }}>{opt.label}</span>
+          <span style={{ fontSize:13, color: opt.correct ? "#7c3aed" : T.text, fontWeight: opt.correct ? 600 : 400 }}>{opt.text}</span>
+          {opt.correct && <Icon name="check-circle" size={15} color="#8a46ff" style={{ marginLeft:"auto" }}/>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function LandingPage({ onGetStarted }) {
   const [showAuth, setShowAuth] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
@@ -6466,6 +7020,21 @@ function LandingPage({ onGetStarted }) {
   const [scheduleTab, setScheduleTab] = useState("upcoming");
   const [instructorPage, setInstructorPage] = useState(0);
   const [testimonialPage, setTestimonialPage] = useState(0);
+  const [heroTab, setHeroTab] = useState("watch");
+  const [navOpen, setNavOpen] = useState(false);
+  const [navScrolled, setNavScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setNavScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = navOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [navOpen]);
 
   const experts = [
     { name:"Tara Roehl",         role:"Mindfulness & Wellness Specialist",   org:"SPED Wellness Institute",         img:"https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=300&fit=crop&auto=format",
@@ -6521,6 +7090,12 @@ function LandingPage({ onGetStarted }) {
     { q:"Can I retake quizzes if I don't pass?",         a:"Absolutely. You can retake any quiz as many times as needed until you feel confident." },
     { q:"What topics are covered at SPED Summit?",       a:"We cover mindfulness, inclusion, AAC, behavior strategies, AI in SPED, literacy, IEP planning, and much more." },
   ];
+
+  useEffect(()=>{
+    const TABS = ["watch","quiz","cert","win"];
+    const t = setTimeout(()=>setHeroTab(cur=>TABS[(TABS.indexOf(cur)+1)%TABS.length]),4000);
+    return ()=>clearTimeout(t);
+  },[heroTab]);
 
   if (selectedInstructor) {
     const instr = selectedInstructor;
@@ -6629,7 +7204,7 @@ function LandingPage({ onGetStarted }) {
   };
 
   return (
-    <div style={{ minHeight:"100vh", fontFamily:"Inter,'Segoe UI',system-ui,sans-serif", background:T.bg, overflowX:"hidden", color:T.text }}>
+    <div style={{ minHeight:"100vh", fontFamily:"Inter,'Segoe UI',system-ui,sans-serif", background:T.bg, overflowX:"clip", color:T.text }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         * { box-sizing: border-box; }
@@ -6637,115 +7212,228 @@ function LandingPage({ onGetStarted }) {
       `}</style>
 
       {/* ── Nav ── */}
-      <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:100, background:"rgba(255,255,255,0.95)", backdropFilter:"blur(8px)", borderBottom:`1px solid ${T.border}`, height:60, display:"flex", alignItems:"center", padding:"0 24px" }}>
-        <div style={{ maxWidth:1024, margin:"0 auto", width:"100%", display:"flex", alignItems:"center", gap:4 }}>
-          <div style={{ display:"flex", alignItems:"center", cursor:"pointer", marginRight:"auto" }}
-            onClick={()=>window.scrollTo({ top:0, behavior:"smooth" })}>
-            <img src="/Container.png" alt="SPED Summit" style={{ height:28, width:"auto", display:"block" }}/>
+      <header style={{ position:"sticky", top:0, zIndex:100, width:"100%", borderBottom: navScrolled ? `1px solid ${T.border}` : "1px solid transparent", background: navScrolled ? "rgba(255,255,255,0.95)" : "transparent", backdropFilter: navScrolled ? "blur(12px)" : "none", transition:"background 0.2s, border-color 0.2s, backdrop-filter 0.2s" }}>
+        <nav style={{ maxWidth:1024, margin:"0 auto", height:56, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 24px" }}>
+          <div style={{ display:"flex", alignItems:"center", cursor:"pointer", borderRadius:8, padding:"6px 8px", transition:"background .12s" }}
+            onClick={()=>window.scrollTo({ top:0, behavior:"smooth" })}
+            onMouseEnter={e=>e.currentTarget.style.background=T.hover}
+            onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+            <img src="/Container.png" alt="SPED Summit" style={{ height:26, width:"auto", display:"block" }}/>
           </div>
-          {[["Sessions","sessions"],["Instructors","instructors"],["FAQ","help"]].map(([l,id])=>(
-            <button key={l} onClick={()=>document.getElementById(id)?.scrollIntoView({ behavior:"smooth" })}
-              style={{ background:"none", border:"none", fontSize:14, color:T.muted, fontWeight:400, cursor:"pointer", padding:"4px 12px", borderRadius:7, height:32, transition:"background .12s, color .12s" }}
-              onMouseEnter={e=>{ e.currentTarget.style.background=T.hover; e.currentTarget.style.color=T.text; }}
-              onMouseLeave={e=>{ e.currentTarget.style.background="none"; e.currentTarget.style.color=T.muted; }}>{l}</button>
-          ))}
-          <button onClick={()=>setShowAuth(true)}
-            style={{ marginLeft:8, padding:"0 16px", height:36, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
-            onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
-            onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
+          {/* Desktop links */}
+          <div style={{ display:"flex", alignItems:"center", gap:4 }} className="v1-nav-desktop">
+            {[["Sessions","sessions"],["Instructors","instructors"],["FAQ","help"]].map(([l,id])=>(
+              <button key={l} onClick={()=>document.getElementById(id)?.scrollIntoView({ behavior:"smooth" })}
+                style={{ background:"none", border:"none", fontSize:14, color:T.muted, fontWeight:500, cursor:"pointer", padding:"6px 14px", borderRadius:8, height:36, transition:"background .12s, color .12s" }}
+                onMouseEnter={e=>{ e.currentTarget.style.background=T.hover; e.currentTarget.style.color=T.text; }}
+                onMouseLeave={e=>{ e.currentTarget.style.background="none"; e.currentTarget.style.color=T.muted; }}>{l}</button>
+            ))}
+            <button onClick={()=>setShowAuth(true)}
+              style={{ marginLeft:8, padding:"0 16px", height:36, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
+              onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
+              onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
+              Get started free
+            </button>
+          </div>
+          {/* Mobile hamburger */}
+          <button onClick={()=>setNavOpen(o=>!o)} className="v1-nav-hamburger"
+            style={{ display:"none", alignItems:"center", justifyContent:"center", width:36, height:36, borderRadius:8, border:`1px solid ${T.border}`, background:"#fff", cursor:"pointer", color:T.text }}>
+            <svg width="18" height="18" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+              style={{ transition:"transform 300ms ease-in-out", transform: navOpen ? "rotate(-45deg)" : "rotate(0deg)" }}>
+              <path d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"
+                style={{ transition:"stroke-dasharray 300ms ease-in-out, stroke-dashoffset 300ms ease-in-out", strokeDasharray: navOpen ? "20 300" : "12 63", strokeDashoffset: navOpen ? "-32.42px" : "0" }}/>
+              <path d="M7 16 27 16"/>
+            </svg>
+          </button>
+        </nav>
+        <style>{`
+          @media (max-width: 767px) { .v1-nav-hamburger { display: flex !important; } .v1-nav-desktop { display: none !important; } }
+          @media (min-width: 768px) { .v1-nav-hamburger { display: none !important; } .v1-nav-desktop { display: flex !important; } }
+        `}</style>
+      </header>
+      {/* Mobile menu portal */}
+      {navOpen && createPortal(
+        <div style={{ position:"fixed", top:56, left:0, right:0, bottom:0, zIndex:99, background:"rgba(255,255,255,0.97)", backdropFilter:"blur(12px)", borderTop:`1px solid ${T.border}`, display:"flex", flexDirection:"column", padding:"16px 24px 32px" }}>
+          <div style={{ display:"flex", flexDirection:"column", gap:4, flex:1 }}>
+            {[["Sessions","sessions"],["Instructors","instructors"],["FAQ","help"]].map(([l,id])=>(
+              <button key={l} onClick={()=>{ document.getElementById(id)?.scrollIntoView({ behavior:"smooth" }); setNavOpen(false); }}
+                style={{ background:"none", border:"none", fontSize:16, color:T.text, fontWeight:600, cursor:"pointer", padding:"12px 16px", borderRadius:10, textAlign:"left", transition:"background .15s" }}
+                onMouseEnter={e=>e.currentTarget.style.background=T.hover}
+                onMouseLeave={e=>e.currentTarget.style.background="none"}>{l}</button>
+            ))}
+          </div>
+          <button onClick={()=>{ setNavOpen(false); setShowAuth(true); }}
+            style={{ width:"100%", padding:"14px", fontSize:15, fontWeight:700, background:T.blue, color:"#fff", border:"none", borderRadius:12, cursor:"pointer" }}>
             Get started free
           </button>
-        </div>
-      </nav>
+        </div>,
+        document.body
+      )}
 
       {/* ── Hero ── */}
-      <section style={{ paddingTop:60, background:T.bg, position:"relative", overflow:"hidden" }}>
-        {/* Floating decorative Phosphor icons */}
-        {[
-          { icon:"student",       top:100, left:"8%",   size:40, rotate:-12, color:"#8a46ff" },
-          { icon:"book-open",     top:160, left:"14%",  size:32, rotate:8,   color:"#e83e8c" },
-          { icon:"pencil-simple", top:80,  left:"18%",  size:28, rotate:-6,  color:"#f59e0b" },
-          { icon:"trophy",        top:130, right:"9%",  size:38, rotate:10,  color:"#f59e0b" },
-          { icon:"lightning",     top:90,  right:"15%", size:30, rotate:-8,  color:"#fbbf24" },
-          { icon:"star",          top:190, right:"20%", size:26, rotate:14,  color:"#f59e0b" },
-          { icon:"target",        top:220, left:"6%",   size:28, rotate:-4,  color:"#ef4444" },
-          { icon:"note-pencil",   top:200, right:"7%",  size:32, rotate:6,   color:"#6366f1" },
-        ].map((d,i)=>(
-          <div key={i} style={{ position:"absolute", top:d.top, left:d.left, right:d.right, transform:`rotate(${d.rotate}deg)`, pointerEvents:"none", userSelect:"none", opacity:.6 }}>
-            <Icon name={d.icon} size={d.size} color={d.color}/>
-          </div>
-        ))}
+      <section style={{ paddingTop:0, paddingBottom:72, background:T.bg, position:"relative" }}>
 
-        <div style={{ maxWidth:780, margin:"0 auto", padding:"80px 24px 64px", textAlign:"center", position:"relative" }}>
-          <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"#f1f0ef", borderRadius:6, padding:"4px 10px", fontSize:13, fontWeight:500, color:T.muted, marginBottom:24 }}>
-            <Icon name="star" size={14} color="#f59e0b"/> 100% free · Jan 2026 · 9 Expert Sessions
+        {/* ── Text block ── */}
+        <div style={{ maxWidth:780, margin:"0 auto", padding:"80px 24px 48px", textAlign:"center", position:"relative" }}>
+
+          {/* Rating badge */}
+          <div className="animate-fade-in-up" style={{ opacity:0, animationDelay:"0.2s", marginBottom:24 }}>
+            <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"#f1f0ef", border:`1px solid ${T.border}`, borderRadius:8, padding:"5px 14px" }}>
+              <div style={{ width:22, height:22, border:`1px solid ${T.border}`, borderRadius:5, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <Icon name="star" size={12} color="#f59e0b" weight="fill"/>
+              </div>
+              <span style={{ fontSize:13, fontWeight:500, color:T.text }}>4.9 rating from 4,200+ educators</span>
+            </div>
           </div>
-          <h1 style={{ margin:"0 0 20px", fontSize:64, fontWeight:800, color:T.text, lineHeight:1.15, letterSpacing:-2.5 }}>
-            The simplest way to learn<br/>
-            <span style={{ background:"linear-gradient(90deg,#8a46ff,#e83e8c)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>
-              Special Education
+
+          {/* Main heading */}
+          <h1 className="animate-fade-in-up" style={{ opacity:0, animationDelay:"0.3s", margin:"0 0 20px", fontSize:72, fontWeight:800, color:T.text, lineHeight:1.08, letterSpacing:-3 }}>
+            Watch. Learn. Earn.<br/>
+            <span style={{ background:"linear-gradient(90deg,#8a46ff 0%,#c026d3 50%,#e83e8c 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>
+              Get Certified.
             </span>
           </h1>
-          <p style={{ margin:"0 0 32px", fontSize:18, color:T.muted, lineHeight:1.6 }}>
-            Expert-led sessions, interactive assessments, and real certificates.<br/>No credit card required.
+
+          {/* Sub heading */}
+          <p className="animate-fade-in-up" style={{ opacity:0, animationDelay:"0.4s", margin:"0 0 32px", fontSize:18, color:T.muted, lineHeight:1.65, maxWidth:560, marginLeft:"auto", marginRight:"auto" }}>
+            Expert-led SPED sessions, interactive quizzes, and real downloadable certificates — plus a chance to win an Ablespace Pro subscription.
           </p>
-          <div style={{ display:"flex", gap:12, justifyContent:"center", alignItems:"center" }}>
+
+          {/* CTAs */}
+          <div className="animate-fade-in-up" style={{ opacity:0, animationDelay:"0.5s", display:"flex", gap:12, justifyContent:"center", alignItems:"center", flexWrap:"wrap" }}>
             <button onClick={()=>setShowAuth(true)}
-              style={{ padding:"0 20px", height:40, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:15, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
+              style={{ padding:"0 26px", height:44, background:T.blue, color:"#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
               onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
               onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
               Start learning — it's free
             </button>
             <button onClick={()=>document.getElementById("sessions")?.scrollIntoView({ behavior:"smooth" })}
-              style={{ padding:"0 20px", height:40, background:"transparent", color:T.text, border:`1px solid ${T.border}`, borderRadius:8, fontSize:15, fontWeight:500, cursor:"pointer", transition:"background .12s" }}
+              style={{ padding:"0 26px", height:44, background:"transparent", color:T.text, border:`1px solid rgba(55,53,47,0.2)`, borderRadius:10, fontSize:15, fontWeight:500, cursor:"pointer", transition:"background .12s" }}
               onMouseEnter={e=>e.currentTarget.style.background=T.hover}
               onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
               View sessions
             </button>
           </div>
-          <p style={{ margin:"20px 0 0", fontSize:13, color:T.muted }}>No signup required to preview sessions</p>
+          <p style={{ margin:"16px 0 0", fontSize:13, color:T.muted }}>No signup required to preview sessions</p>
         </div>
 
-        {/* Staggered collage — crops at bottom */}
-        {(()=>{
-          const cols = [
-            { mt:60  },
-            { mt:0   },
-            { mt:80  },
-            { mt:20  },
-            { mt:40  },
-            { mt:70  },
-            { mt:10  },
-            { mt:50  },
-            { mt:30  },
-          ];
-          const CARD_W = 170, CARD_H = 210;
-          const n = experts.length;
-          return (
-            <div style={{ position:"relative", height:300, overflow:"hidden", marginTop:32 }}>
-              <div style={{ display:"flex", justifyContent:"center", gap:10 }}>
-                {cols.map((col, ci) => {
-                  const top = experts[ci % n];
-                  const bot = experts[(ci + 5) % n];
-                  return (
-                    <div key={ci} style={{ flexShrink:0, display:"flex", flexDirection:"column", gap:10, marginTop:col.mt }}>
-                      <div style={{ width:CARD_W, height:CARD_H, borderRadius:16, overflow:"hidden", boxShadow:"0 6px 24px rgba(0,0,0,0.10)", cursor:"pointer" }}
-                        onMouseEnter={e=>e.currentTarget.querySelector("img").style.transform="scale(1.08)"}
-                        onMouseLeave={e=>e.currentTarget.querySelector("img").style.transform="scale(1)"}>
-                        <img src={top.img} alt={top.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%", display:"block", transition:"transform 0.4s ease" }}/>
-                      </div>
-                      <div style={{ width:CARD_W, height:CARD_H, borderRadius:16, overflow:"hidden", boxShadow:"0 6px 24px rgba(0,0,0,0.10)", cursor:"pointer" }}
-                        onMouseEnter={e=>e.currentTarget.querySelector("img").style.transform="scale(1.08)"}
-                        onMouseLeave={e=>e.currentTarget.querySelector("img").style.transform="scale(1)"}>
-                        <img src={bot.img} alt={bot.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%", display:"block", transition:"transform 0.4s ease" }}/>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+        {/* ── Tab bar + demo area ── */}
+        <div className="animate-fade-in-up" style={{ opacity:0, animationDelay:"0.6s", maxWidth:900, margin:"0 auto", padding:"0 24px" }}>
+
+          {/* Tab bar */}
+          <div style={{ display:"flex", justifyContent:"center", marginBottom:14 }}>
+            <div style={{ background:"#f1f0ef", borderRadius:10, padding:4, display:"inline-flex", gap:2 }}>
+              {[
+                { id:"watch", icon:"play-circle", label:"Watch Sessions"   },
+                { id:"quiz",  icon:"question",    label:"Take Quiz"        },
+                { id:"cert",  icon:"certificate", label:"Get Certificate"  },
+                { id:"win",   icon:"gift",        label:"Win Prizes"       },
+              ].map(tab=>(
+                <button key={tab.id} onClick={()=>setHeroTab(tab.id)}
+                  style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 18px", borderRadius:7, border:"none", fontSize:13, fontWeight:500, cursor:"pointer", transition:"all .15s", whiteSpace:"nowrap",
+                    background: heroTab===tab.id ? "#fff"   : "transparent",
+                    color:      heroTab===tab.id ? T.text   : T.muted,
+                    boxShadow:  heroTab===tab.id ? "0 1px 4px rgba(0,0,0,0.08)" : "none" }}>
+                  <Icon name={tab.icon} size={15} color="currentColor"/>
+                  {tab.label}
+                </button>
+              ))}
             </div>
-          );
-        })()}
+          </div>
+
+          {/* Demo area */}
+          <div style={{ position:"relative", borderRadius:24, overflow:"hidden", height:460 }}>
+            {/* Instructor photo collage */}
+            {(()=>{
+              const IMG_H = 200, GAP = 8;
+              const cols = [
+                { idxs:[0,3,6], mt:-60 },
+                { idxs:[1,4,7], mt:-10 },
+                { idxs:[2,5,8], mt:-80 },
+                { idxs:[3,6,1], mt:-30 },
+                { idxs:[4,7,2], mt:-55 },
+                { idxs:[5,8,0], mt:-20 },
+              ];
+              return (
+                <div style={{ position:"absolute", inset:0, display:"flex", gap:GAP, overflow:"hidden", pointerEvents:"none" }}>
+                  {cols.map((col,ci)=>(
+                    <div key={ci} style={{ flex:"1 1 0", display:"flex", flexDirection:"column", gap:GAP, marginTop:col.mt,
+                      animation:`${ci%2===0?"colUp":"colDown"} 8s ease-in-out ${ci*-1.3}s infinite alternate` }}>
+                      {col.idxs.map((idx,ii)=>(
+                        <img key={ii} src={experts[idx].img} alt=""
+                          style={{ width:"100%", height:IMG_H, objectFit:"cover", objectPosition:"center 15%", display:"block", borderRadius:8, flexShrink:0 }}/>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+
+            {/* WATCH overlay */}
+            {heroTab==="watch" && (
+              <div key="watch" className="animate-fade-in-overlay" style={{ opacity:0, position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <WatchOverlay T={T}/>
+              </div>
+            )}
+
+            {/* QUIZ overlay */}
+            {heroTab==="quiz" && (
+              <div key="quiz" className="animate-fade-in-overlay" style={{ opacity:0, position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <QuizOverlay T={T} onComplete={()=>setHeroTab("cert")}/>
+              </div>
+            )}
+
+            {/* CERTIFICATE overlay */}
+            {heroTab==="cert" && (
+              <div key="cert" className="animate-fade-in-overlay" style={{ opacity:0, position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <div className="animate-slide-up-overlay" style={{ opacity:0, position:"absolute", top:"50%", left:"50%", width:340, background:"#fff", borderRadius:18, padding:30, boxShadow:"0 24px 64px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.25)", textAlign:"center" }}>
+                  <div className="bounce-in" style={{ width:60, height:60, borderRadius:18, background:"linear-gradient(135deg,#8a46ff,#e83e8c)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 18px" }}>
+                    <Icon name="certificate" size={30} color="#fff"/>
+                  </div>
+                  <div style={{ fontSize:10, fontWeight:700, color:T.muted, textTransform:"uppercase", letterSpacing:1.5, marginBottom:10 }}>Certificate of Completion</div>
+                  <div style={{ fontSize:22, fontWeight:800, color:T.text, letterSpacing:-.5, marginBottom:5 }}>Sarah Johnson</div>
+                  <div style={{ fontSize:13, color:T.muted, lineHeight:1.6, marginBottom:22 }}>
+                    Successfully completed all 9 sessions of<br/>
+                    <strong style={{ color:T.text }}>SPED Summit 2026</strong>
+                  </div>
+                  <div style={{ display:"flex", gap:8 }}>
+                    <button style={{ flex:1, padding:"11px 0", background:"#0070d7", color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+                      <Icon name="download" size={14} color="#fff"/> Download PDF
+                    </button>
+                    <button style={{ flex:1, padding:"11px 0", background:T.bg, color:T.text, border:`1px solid ${T.border}`, borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+                      <Icon name="share-network" size={14} color={T.text}/> Share
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* WIN overlay */}
+            {heroTab==="win" && (
+              <div key="win" className="animate-fade-in-overlay" style={{ opacity:0, position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <div className="animate-slide-up-overlay" style={{ opacity:0, position:"absolute", top:"50%", left:"50%", width:340, background:"#fff", borderRadius:18, padding:28, boxShadow:"0 24px 64px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.25)", textAlign:"center" }}>
+                  <div className="bounce-in" style={{ width:60, height:60, borderRadius:18, background:"linear-gradient(135deg,#8a46ff,#e83e8c)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 18px" }}>
+                    <Icon name="trophy" size={30} color="#fff"/>
+                  </div>
+                  <div style={{ fontSize:17, fontWeight:800, color:T.text, marginBottom:6, letterSpacing:-.3 }}>Win Ablespace Pro</div>
+                  <div style={{ fontSize:13, color:T.muted, lineHeight:1.65, marginBottom:20 }}>
+                    Complete all sessions and pass the quizzes to enter the prize draw for a full year of Ablespace Pro.
+                  </div>
+                  <div style={{ background:"rgba(138,70,255,0.07)", border:`1px solid rgba(138,70,255,0.2)`, borderRadius:12, padding:"14px 18px", marginBottom:16, textAlign:"left" }}>
+                    <div style={{ fontSize:12, fontWeight:700, color:"#5b21b6", marginBottom:10 }}>How to enter:</div>
+                    {["Watch all 9 expert sessions","Pass every knowledge check quiz","Your certificate is your entry ticket"].map((s,i)=>(
+                      <div key={i} className="stagger-in" style={{ display:"flex", alignItems:"center", gap:8, fontSize:13, color:T.text, marginBottom:i<2?8:0, animationDelay:`${i*0.1+0.3}s` }}>
+                        <Icon name="check-circle" size={15} color="#8a46ff"/> {s}
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ fontSize:12, color:T.muted }}>Draw date: Jan 31, 2026 · Multiple winners</div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
       </section>
 
       {/* ── Social proof strip ── */}
@@ -6784,118 +7472,310 @@ function LandingPage({ onGetStarted }) {
         </div>
       </section>
 
-      {/* ── For You ── */}
-      <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#fafafa" }}>
-        <div style={{ maxWidth:1024, margin:"0 auto" }}>
-          <div style={{ textAlign:"center", marginBottom:40 }}>
-            <h2 style={{ margin:"0 0 10px", fontSize:26, fontWeight:700, color:T.text, letterSpacing:-.5 }}>
-              Are you a Sped Professional? This is for you!
+      {/* ── Bento Features ── */}
+      <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#ffffff" }}>
+        <div style={{ maxWidth:1100, margin:"0 auto" }}>
+
+          {/* Header */}
+          <div style={{ textAlign:"center", marginBottom:48 }}>
+            <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:700, color:T.muted, letterSpacing:1, textTransform:"uppercase" }}>Platform</p>
+            <h2 style={{ margin:"0 0 10px", fontSize:"clamp(26px,4vw,40px)", fontWeight:900, color:T.text, letterSpacing:-1, lineHeight:1.15 }}>
+              Built for SPED Professionals
             </h2>
-            <p style={{ margin:0, fontSize:15, color:T.muted }}>
-              Special Education Teachers, SLPs, PTs, OTs, ABA Professionals and more…
+            <p style={{ margin:0, fontSize:16, color:T.muted, maxWidth:480, marginInline:"auto", lineHeight:1.65 }}>
+              Organize, track, and grow your expertise — completely free for educators.
             </p>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12 }}>
-            {[
-              { icon:"calendar",    label:"Sessions starts",       detail:"05th Jan 2026"          },
-              { icon:"users",       label:"4-day virtual",         detail:"conference"              },
-              { icon:"student",     label:"9 speakers and",        detail:"9 sessions"             },
-              { icon:"play-circle", label:"Completely Virtual",    detail:"and online"             },
-              { icon:"play",        label:"Replays available",     detail:"throughout January"     },
-              { icon:"gift",        label:"Absolutely free",       detail:"at no extra cost"       },
-            ].map((item,i)=>(
-              <div key={i} style={{ display:"flex", alignItems:"center", gap:14, padding:"20px 22px", background:T.bg, border:`1px solid ${T.border}`, borderRadius:12 }}>
-                <div style={{ width:40, height:40, borderRadius:10, background:"#fff0eb", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                  <Icon name={item.icon} size={20} color="#e07a5f"/>
-                </div>
-                <div>
-                  <div style={{ fontSize:14, fontWeight:600, color:T.text, lineHeight:1.3 }}>{item.label}</div>
-                  <div style={{ fontSize:13, color:T.muted, marginTop:2 }}>{item.detail}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* ── Instructors ── */}
-      <section id="instructors" style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}` }}>
-        <div style={{ maxWidth:1200, margin:"0 auto" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:40 }}>
-            <div>
-              <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Speakers</p>
-              <h2 style={{ margin:"0 0 12px", fontSize:36, fontWeight:800, color:T.text, letterSpacing:-1 }}>9 experts. Real strategies.</h2>
-              <p style={{ margin:0, fontSize:16, color:T.muted }}>People who have been there and done that. Practical tips at the comfort of your home.</p>
-            </div>
-            <div style={{ display:"flex", gap:8, flexShrink:0 }}>
-              <button onClick={()=>setInstructorPage(p=>Math.max(0,p-1))} disabled={instructorPage===0}
-                style={{ width:36, height:36, borderRadius:8, border:`1px solid ${T.border}`, background:T.bg, cursor:instructorPage===0?"not-allowed":"pointer", display:"flex", alignItems:"center", justifyContent:"center", opacity:instructorPage===0?0.4:1, transition:"background .15s" }}
-                onMouseEnter={e=>{ if(instructorPage>0) e.currentTarget.style.background=T.hover; }}
-                onMouseLeave={e=>e.currentTarget.style.background=T.bg}>
-                <Icon name="chevron-left" size={16} color={T.text}/>
-              </button>
-              <button onClick={()=>setInstructorPage(p=>Math.min(Math.ceil(experts.length/4)-1,p+1))} disabled={instructorPage===Math.ceil(experts.length/4)-1}
-                style={{ width:36, height:36, borderRadius:8, border:`1px solid ${T.border}`, background:T.bg, cursor:instructorPage===Math.ceil(experts.length/4)-1?"not-allowed":"pointer", display:"flex", alignItems:"center", justifyContent:"center", opacity:instructorPage===Math.ceil(experts.length/4)-1?0.4:1, transition:"background .15s" }}
-                onMouseEnter={e=>{ if(instructorPage<Math.ceil(experts.length/4)-1) e.currentTarget.style.background=T.hover; }}
-                onMouseLeave={e=>e.currentTarget.style.background=T.bg}>
-                <Icon name="chevron-right" size={16} color={T.text}/>
-              </button>
-            </div>
-          </div>
+          {/* Bento Grid */}
           {(() => {
-            const bgs = ["#d8d4f5","#f7cfd8","#fde68a","#a7f3d0","#fed7aa","#c7d2fe","#fca5a5","#6ee7b7","#e9d5ff"];
-            const PER_PAGE = 4;
-            const totalPages = Math.ceil(experts.length / PER_PAGE);
-            const visible = experts.slice(instructorPage * PER_PAGE, instructorPage * PER_PAGE + PER_PAGE);
-            const Card = ({e,i}) => (
-              <div style={{ cursor:"pointer", borderRadius:20, border:`1px solid ${T.border}`, overflow:"hidden", background:T.bg }}
-                onClick={()=>{ setSelectedInstructor(e); window.scrollTo(0,0); }}
-                onMouseEnter={ev=>{ ev.currentTarget.querySelector("img").style.transform="scale(1.08)"; ev.currentTarget.querySelector(".arrow-btn").style.background=T.blue; ev.currentTarget.querySelector(".arrow-btn").style.color="#fff"; }}
-                onMouseLeave={ev=>{ ev.currentTarget.querySelector("img").style.transform="scale(1)"; ev.currentTarget.querySelector(".arrow-btn").style.background=T.hover; ev.currentTarget.querySelector(".arrow-btn").style.color=T.text; }}>
-                <div style={{ background:bgs[i % bgs.length], overflow:"hidden", aspectRatio:"3/4" }}>
-                  <img src={e.img} alt={e.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 20%", display:"block", transition:"transform 0.4s ease" }}/>
-                </div>
-                <div style={{ padding:"14px 16px", display:"flex", alignItems:"center", gap:10 }}>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontWeight:700, fontSize:14, color:T.text, lineHeight:1.3, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{e.name}</div>
-                    <div style={{ fontSize:12, color:T.muted, marginTop:2, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{e.role}</div>
-                  </div>
-                  <div className="arrow-btn" style={{ width:30, height:30, borderRadius:8, background:T.hover, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background .15s, color .15s", color:T.text }}>
-                    <Icon name="arrow-right" size={14} color="currentColor"/>
-                  </div>
-                </div>
-              </div>
-            );
+            const cardBase = {
+              background: T.bg,
+              border: `1px solid ${T.border}`,
+              borderRadius: 16,
+              overflow: "hidden",
+              height: "100%",
+            };
+            const containerVariants = {
+              hidden: { opacity: 0 },
+              visible: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+            };
+            const itemVariants = {
+              hidden: { opacity: 0, y: 18 },
+              visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120, damping: 14 } },
+            };
+
             return (
-              <>
-                <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:24, marginBottom:48 }}>
-                  {visible.map((e,i)=><Card key={instructorPage*PER_PAGE+i} e={e} i={instructorPage*PER_PAGE+i}/>)}
-                </div>
-                {/* Become an Instructor banner */}
-                <div style={{ marginTop:48, borderRadius:16, border:`1px solid ${T.border}`, background:"rgba(250, 250, 250, 1)", padding:24, display:"flex", alignItems:"center", gap:24 }}>
-                  <div style={{ width:56, height:56, borderRadius:12, background:"#ede9fe", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                    <Icon name="student" size={28} color="#7c3aed"/>
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-60px" }}
+                style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gridTemplateRows:"repeat(3, minmax(160px,auto))", gap:20 }}
+              >
+                {/* Slot 1 — Certificate System (tall, col 1, rows 1-3) */}
+                <motion.div variants={itemVariants} style={{ gridColumn:"1", gridRow:"1 / 4" }}>
+                  <div style={{ ...cardBase, display:"flex", flexDirection:"column", height:"100%" }}>
+                    <div style={{ padding:"24px 24px 0" }}>
+                      <div style={{ width:48, height:48, borderRadius:12, background:"rgba(245,158,11,0.12)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>
+                        <Icon name="certificate" size={24} color="#f59e0b"/>
+                      </div>
+                      <div style={{ fontSize:18, fontWeight:800, color:T.text, marginBottom:8, lineHeight:1.3 }}>Instant Certificates</div>
+                      <div style={{ fontSize:14, color:T.muted, lineHeight:1.65 }}>
+                        Complete a session, pass the quiz, and download a verified PDF certificate — instantly. No waiting, no chasing approvals.
+                      </div>
+                    </div>
+                    <div style={{ marginTop:"auto", padding:"0 24px 24px" }}>
+                      {/* Mini certificate preview */}
+                      <div style={{ marginTop:24, borderRadius:12, border:`1px solid ${T.border}`, padding:"14px 16px", background:"#fffbeb" }}>
+                        <div style={{ fontSize:10, fontWeight:700, color:"#92400e", letterSpacing:1.5, textTransform:"uppercase", marginBottom:6 }}>Certificate of Completion</div>
+                        <div style={{ fontSize:13, fontWeight:700, color:"#78350f", marginBottom:2 }}>Alex Johnson</div>
+                        <div style={{ fontSize:11, color:"#a16207" }}>Foundations of Inclusion · SPED Summit</div>
+                        <div style={{ marginTop:10, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                          <div style={{ fontSize:10, color:"#a16207" }}>Spring 2026</div>
+                          <div style={{ width:28, height:28, borderRadius:"50%", background:"rgba(245,158,11,0.2)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                            <Icon name="check" size={13} color="#f59e0b"/>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
                   </div>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontWeight:700, fontSize:17, color:T.text, marginBottom:4 }}>Want to share your expertise in special education?</div>
-                    <div style={{ fontSize:14, color:T.muted, lineHeight:1.5 }}>Apply to be a speaker at SPED Summit!</div>
+                </motion.div>
+
+                {/* Slot 2 — Learners Connected (col 2, row 1) */}
+                <motion.div variants={itemVariants} style={{ gridColumn:"2", gridRow:"1" }}>
+                  <div style={{ ...cardBase, padding:"22px 22px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
+                    <div>
+                      <div style={{ fontSize:15, fontWeight:700, color:T.text, marginBottom:3 }}>Learners Connected</div>
+                      <div style={{ fontSize:13, color:T.muted }}>4,200+ Active Educators</div>
+                    </div>
+                    <div style={{ display:"flex", marginTop:16 }}>
+                      {[
+                        "photo-1573497491208-6b1acb260507",
+                        "photo-1531746020798-e6953c6e8e04",
+                        "photo-1580489944761-15a19d654956",
+                        "photo-1560250097-0b93528c311a",
+                        "photo-1494790108377-be9c29b29330",
+                      ].map((id, i) => (
+                        <img key={i} src={`https://images.unsplash.com/${id}?w=80&h=80&fit=crop&auto=format`}
+                          style={{ width:34, height:34, borderRadius:"50%", objectFit:"cover", marginLeft: i === 0 ? 0 : -10, border:"2px solid #fff", flexShrink:0 }}/>
+                      ))}
+                      <div style={{ width:34, height:34, borderRadius:"50%", background:"#e0e7ff", border:"2px solid #fff", marginLeft:-10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"#4338ca" }}>+4k</div>
+                    </div>
                   </div>
-                  <button onClick={()=>setShowAuth(true)}
-                    style={{ flexShrink:0, display:"flex", alignItems:"center", gap:8, padding:"0 20px", height:40, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .15s", whiteSpace:"nowrap" }}
-                    onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
-                    onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-                    <Icon name="paper-plane-tilt" size={15} color="#fff"/>
-                    Apply
-                  </button>
-                </div>
-              </>
+                </motion.div>
+
+                {/* Slot 3 — Big stat (col 3, row 1) */}
+                <motion.div variants={itemVariants} style={{ gridColumn:"3", gridRow:"1" }}>
+                  <div style={{ ...cardBase, position:"relative", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    {/* Dot grid background */}
+                    <div style={{ position:"absolute", inset:0, backgroundImage:"radial-gradient(rgba(0,0,0,0.12) 1px, transparent 1px)", backgroundSize:"16px 16px", opacity:0.5 }}/>
+                    <div style={{ position:"relative", textAlign:"center" }}>
+                      <div style={{ fontSize:64, fontWeight:900, color:T.text, letterSpacing:-3, lineHeight:1 }}>100%</div>
+                      <div style={{ fontSize:13, color:T.muted, marginTop:4, fontWeight:500 }}>Free to attend</div>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Slot 4 — Progress (col 2, row 2) */}
+                <motion.div variants={itemVariants} style={{ gridColumn:"2", gridRow:"2" }}>
+                  <div style={{ ...cardBase, padding:"22px 22px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
+                    <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
+                      <div>
+                        <div style={{ fontSize:15, fontWeight:700, color:T.text, marginBottom:2 }}>Completion Rate</div>
+                        <div style={{ fontSize:13, color:T.muted }}>Summit-wide average</div>
+                      </div>
+                      <span style={{ fontSize:11, fontWeight:700, color:"#2563eb", background:"rgba(37,99,235,0.1)", padding:"3px 9px", borderRadius:99 }}>Live</span>
+                    </div>
+                    <div>
+                      <div style={{ fontSize:52, fontWeight:900, color:T.text, lineHeight:1, letterSpacing:-2 }}>78%</div>
+                      <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, color:T.muted, marginTop:6 }}>
+                        <span>Sessions finished</span><span>This quarter</span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Slot 5 — Self-paced (col 3, row 2) */}
+                <motion.div variants={itemVariants} style={{ gridColumn:"3", gridRow:"2" }}>
+                  <div style={{ ...cardBase, padding:"22px 22px", display:"flex", flexDirection:"column", justifyContent:"flex-end" }}>
+                    <div style={{ width:40, height:40, borderRadius:10, background:"rgba(16,185,129,0.1)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:14 }}>
+                      <Icon name="play-circle" size={20} color="#10b981"/>
+                    </div>
+                    <div style={{ fontSize:15, fontWeight:700, color:T.text, marginBottom:6 }}>Learn at Your Pace</div>
+                    <div style={{ fontSize:13, color:T.muted, lineHeight:1.55 }}>
+                      All sessions recorded. Rewatch anytime, on any device.
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Slot 6 — Quick Access (col 2-3, row 3) */}
+                <motion.div variants={itemVariants} style={{ gridColumn:"2 / 4", gridRow:"3" }}>
+                  <div style={{ ...cardBase, padding:"22px 24px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:24, flexWrap:"wrap" }}>
+                    <div>
+                      <div style={{ fontSize:15, fontWeight:700, color:T.text, marginBottom:4 }}>Everything Included</div>
+                      <div style={{ fontSize:13, color:T.muted }}>Sessions · Quizzes · Certificates · Community · Replays · Giveaways</div>
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
+                      {["Sessions", "Quizzes", "Certs"].map((label, i) => (
+                        <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"center", height:32, padding:"0 12px", borderRadius:8, border:`1px solid ${T.border}`, background:T.bg, fontSize:12, fontWeight:600, color:T.muted }}>
+                          {label}
+                        </div>
+                      ))}
+
+                    </div>
+                  </div>
+                </motion.div>
+
+              </motion.div>
             );
           })()}
         </div>
       </section>
 
+      {/* ── Instructors ── */}
+      <section id="instructors" style={{ padding:"80px 0", borderBottom:`1px solid ${T.border}`, overflow:"hidden", position:"relative" }}>
+        <style>{`
+          @keyframes spk-marquee {
+            from { transform: translateX(0); }
+            to   { transform: translateX(calc(-50% - 12px)); }
+          }
+          .spk-track {
+            display: flex;
+            gap: 20px;
+            width: max-content;
+            animation: spk-marquee 36s linear infinite;
+          }
+          .spk-track:hover { animation-play-state: paused; }
+
+          /* Card = just the image container, no separate plate */
+          .spk-card {
+            width: 256px;
+            flex-shrink: 0;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #e5e7eb;
+            cursor: pointer;
+            position: relative;
+            transition: transform 220ms cubic-bezier(0.23,1,0.32,1), box-shadow 220ms cubic-bezier(0.23,1,0.32,1);
+          }
+          @media (hover: hover) and (pointer: fine) {
+            .spk-card:hover {
+              
+              
+            }
+            /* Reveal full color on hover */
+            .spk-card:hover .spk-img { filter: grayscale(0%);  }
+            /* Overlay always visible, slightly more opaque on hover */
+            .spk-card:hover .spk-overlay { background: rgba(245,245,245,0.92); }
+          }
+          .spk-card:active { transform: scale(0.97); }
+
+          /* Full grayscale by default */
+          .spk-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 15%;
+            display: block;
+            filter: grayscale(100%);
+            transition: filter 350ms ease, transform 400ms cubic-bezier(0.23,1,0.32,1);
+          }
+
+          /* Name/role overlay pinned to the bottom of the image */
+          .spk-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 10px 14px 12px;
+            background: rgba(245,245,245,0.88);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border-radius: 0 0 20px 20px;
+            transition: background 200ms ease;
+          }
+
+          .spk-fade-l {
+            position: absolute; top: 0; left: 0; z-index: 10;
+            height: 100%; width: 120px;
+            background: linear-gradient(to right, var(--spk-bg-fade), transparent);
+            pointer-events: none;
+          }
+          .spk-fade-r {
+            position: absolute; top: 0; right: 0; z-index: 10;
+            height: 100%; width: 120px;
+            background: linear-gradient(to left, var(--spk-bg-fade), transparent);
+            pointer-events: none;
+          }
+        `}</style>
+
+        {/* CSS vars for theme */}
+        <div style={{ "--spk-border": T.border, "--spk-bg": T.bg, "--spk-bg-fade": T.bg }}>
+
+          {/* Header */}
+          <div style={{ maxWidth:1200, margin:"0 auto 56px", padding:"0 24px", display:"flex", flexDirection:"column", alignItems:"center", textAlign:"center", gap:12 }}>
+            <p style={{ margin:0, fontSize:13, fontWeight:700, color:T.muted, letterSpacing:1, textTransform:"uppercase" }}>Speakers</p>
+            <h2 style={{ margin:0, fontSize:"clamp(28px,4vw,42px)", fontWeight:900, color:T.text, letterSpacing:-1, lineHeight:1.15 }}>
+              9 experts. Real strategies.
+            </h2>
+            <p style={{ margin:0, fontSize:16, color:T.muted, maxWidth:520, lineHeight:1.65 }}>
+              People who have been there and done that — sharing practical tips you can use from the comfort of your home.
+            </p>
+          </div>
+
+          {/* Marquee track */}
+          <div style={{ position:"relative" }}>
+            <div className="spk-fade-l"/>
+            <div className="spk-fade-r"/>
+            <div style={{ overflow:"hidden", padding:"8px 0 16px" }}>
+              <div className="spk-track">
+                {/* Duplicate cards for seamless loop */}
+                {[...experts, ...experts].map((e, i) => (
+                  <div key={i} className="spk-card"
+                    onClick={() => { setSelectedInstructor(e); window.scrollTo(0, 0); }}>
+                    {/* Full-height portrait image */}
+                    <div style={{ height:"368px", overflow:"hidden" }}>
+                      <img className="spk-img" src={e.img} alt={e.name}/>
+                    </div>
+                    {/* Name/role as overlay at bottom of image */}
+                    <div className="spk-overlay">
+                      <div style={{ fontWeight:700, fontSize:14, color:"#111", lineHeight:1.3, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{e.name}</div>
+                      <div style={{ fontSize:12, color:"#555", marginTop:2, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{e.role}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Apply banner */}
+          <div style={{ maxWidth:1200, margin:"48px auto 0", padding:"0 24px" }}>
+            <div style={{ borderRadius:16, border:`1px solid ${T.border}`, background:"rgba(250,250,250,1)", padding:24, display:"flex", alignItems:"center", gap:24 }}>
+              <div style={{ width:56, height:56, borderRadius:12, background:"#ede9fe", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <Icon name="student" size={28} color="#7c3aed"/>
+              </div>
+              <div style={{ flex:1 }}>
+                <div style={{ fontWeight:700, fontSize:17, color:T.text, marginBottom:4 }}>Want to share your expertise in special education?</div>
+                <div style={{ fontSize:14, color:T.muted, lineHeight:1.5 }}>Apply to be a speaker at SPED Summit!</div>
+              </div>
+              <button onClick={()=>setShowAuth(true)}
+                style={{ flexShrink:0, display:"flex", alignItems:"center", gap:8, padding:"0 20px", height:40, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background 150ms ease, transform 160ms cubic-bezier(0.23,1,0.32,1)", whiteSpace:"nowrap" }}
+                onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
+                onMouseLeave={e=>e.currentTarget.style.background=T.blue}
+                onMouseDown={e=>e.currentTarget.style.transform="scale(0.97)"}
+                onMouseUp={e=>e.currentTarget.style.transform=""}>
+                <Icon name="paper-plane-tilt" size={15} color="#fff"/>
+                Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Giveaways ── */}
-      <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#fafafa" }}>
+      <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#ffffff" }}>
         <div style={{ maxWidth:1024, margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 1fr", gap:80, alignItems:"center" }}>
           <div>
             <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Prizes & Giveaways</p>
@@ -7001,7 +7881,6 @@ function LandingPage({ onGetStarted }) {
               "KEYNOTE":         { bg:"#ede9fe", color:"#6d28d9" },
             };
             const AVATAR_COLORS = ["#0070d7","#8a46ff","#e83e8c","#059669","#f59e0b","#ef4444"];
-            const now = new Date();
             const filtered = SESSIONS.filter(s => SD[s.id]?.tab === scheduleTab);
             const groups = {};
             filtered.forEach(s => {
@@ -7069,7 +7948,7 @@ function LandingPage({ onGetStarted }) {
       </section>
 
       {/* ── Community ── */}
-      <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#fafafa", textAlign:"center" }}>
+      <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#ffffff", textAlign:"center" }}>
         <div style={{ maxWidth:560, margin:"0 auto" }}>
           <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Community</p>
           <h2 style={{ margin:"0 0 12px", fontSize:32, fontWeight:800, color:T.text, letterSpacing:-1, lineHeight:1.2 }}>Connect with educators across the country</h2>
@@ -7094,50 +7973,92 @@ function LandingPage({ onGetStarted }) {
       </section>
 
       {/* ── Testimonials ── */}
-      <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}` }}>
-        <div style={{ maxWidth:1024, margin:"0 auto" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:40 }}>
-            <div>
-              <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Testimonials</p>
-              <h2 style={{ margin:0, fontSize:36, fontWeight:800, color:T.text, letterSpacing:-1 }}>Loved by educators</h2>
-            </div>
-            <div style={{ display:"flex", gap:8, flexShrink:0 }}>
-              <button onClick={()=>setTestimonialPage(p=>Math.max(0,p-1))} disabled={testimonialPage===0}
-                style={{ width:36, height:36, borderRadius:8, border:`1px solid ${T.border}`, background:T.bg, cursor:testimonialPage===0?"not-allowed":"pointer", display:"flex", alignItems:"center", justifyContent:"center", opacity:testimonialPage===0?0.4:1, transition:"background .15s" }}
-                onMouseEnter={e=>{ if(testimonialPage>0) e.currentTarget.style.background=T.hover; }}
-                onMouseLeave={e=>e.currentTarget.style.background=T.bg}>
-                <Icon name="chevron-left" size={16} color={T.text}/>
-              </button>
-              <button onClick={()=>setTestimonialPage(p=>Math.min(Math.ceil(testimonials.length/2)-1,p+1))} disabled={testimonialPage===Math.ceil(testimonials.length/2)-1}
-                style={{ width:36, height:36, borderRadius:8, border:`1px solid ${T.border}`, background:T.bg, cursor:testimonialPage===Math.ceil(testimonials.length/2)-1?"not-allowed":"pointer", display:"flex", alignItems:"center", justifyContent:"center", opacity:testimonialPage===Math.ceil(testimonials.length/2)-1?0.4:1, transition:"background .15s" }}
-                onMouseEnter={e=>{ if(testimonialPage<Math.ceil(testimonials.length/2)-1) e.currentTarget.style.background=T.hover; }}
-                onMouseLeave={e=>e.currentTarget.style.background=T.bg}>
-                <Icon name="chevron-right" size={16} color={T.text}/>
-              </button>
-            </div>
-          </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:16 }}>
-            {testimonials.slice(testimonialPage*2, testimonialPage*2+2).map((t,i)=>(
-              <div key={testimonialPage*2+i} style={{ padding:"28px", border:`1px solid ${T.border}`, borderRadius:12, background:T.bg }}>
-                <div style={{ display:"flex", gap:2, marginBottom:16 }}>
-                  {Array(t.stars).fill(0).map((_,j)=><span key={j} style={{ color:"#f59e0b", fontSize:15 }}>★</span>)}
-                </div>
-                <p style={{ margin:"0 0 20px", fontSize:15, color:T.text, lineHeight:1.65 }}>"{t.text}"</p>
-                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                  <img src={t.img} alt={t.name} style={{ width:36, height:36, borderRadius:"50%", objectFit:"cover", flexShrink:0 }}/>
-                  <div>
-                    <div style={{ fontWeight:600, fontSize:14, color:T.text }}>{t.name}</div>
-                    <div style={{ fontSize:12, color:T.muted, marginTop:1 }}>{t.role}</div>
-                  </div>
+      {(()=>{
+        const ALL_T = [
+          { text:"SPED Summit gave me the practical tools I could use in my classroom the very next day. The sessions are so mindful and packed with the right content.", name:"Maria Gonzalez", role:"Special Ed Teacher", img:"https://images.unsplash.com/photo-1573497491208-6b1acb260507?w=80&h=80&fit=crop&auto=format" },
+          { text:"The quality of speakers is outstanding. I learned strategies for supporting DHH students that I had not encountered in years of professional development.", name:"Jordan Brooks", role:"Resource Room Specialist", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&auto=format" },
+          { text:"The AAC module changed how I work with my non-verbal students. Practical, research-backed, and delivered by someone who truly understands the classroom.", name:"Priya Nair", role:"AAC Specialist, BCBA", img:"https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=80&h=80&fit=crop&auto=format" },
+          { text:"I loved how each session was structured — easy to follow, visually clear, and immediately applicable. This is the PD I have always wished existed.", name:"Devon Castillo", role:"Inclusion Facilitator", img:"https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=80&h=80&fit=crop&auto=format" },
+          { text:"The IEP writing session alone was worth it. I finally have a framework I can use with confidence for every student on my caseload.", name:"Sandra Kim", role:"SPED Coordinator", img:"https://images.unsplash.com/photo-1580489944761-15a19d654956?w=80&h=80&fit=crop&auto=format" },
+          { text:"I appreciated that every session was free. No hidden fees, no upsells — just incredibly valuable professional development for educators who need it.", name:"Tyrone Washington", role:"Behavior Interventionist", img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&auto=format" },
+          { text:"The certificate gave me something concrete to show my district. It opened the door to a conversation about expanding our inclusive practices school-wide.", name:"Anita Patel", role:"Instructional Coach", img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&auto=format" },
+          { text:"Watching on-demand meant I could fit it around my schedule. I finished all 9 sessions in two weeks and immediately started applying what I learned.", name:"Luke Ramirez", role:"Para-educator", img:"https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=80&h=80&fit=crop&auto=format" },
+          { text:"The mindfulness session was transformative. I was sceptical at first, but the research-backed techniques helped me stay regulated even on the hardest days.", name:"Claire Nguyen", role:"Early Intervention Specialist", img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&auto=format" },
+        ];
+        const col1 = ALL_T.slice(0,3), col2 = ALL_T.slice(3,6), col3 = ALL_T.slice(6,9);
+
+        function TCard({ t }) {
+          return (
+            <motion.div
+              whileHover={{ scale:1.03, y:-8, boxShadow:"0 25px 50px -12px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.05)", transition:{ type:"spring", stiffness:400, damping:17 } }}
+              style={{ padding:32, borderRadius:24, border:`1px solid ${T.border}`, boxShadow:"0 2px 12px rgba(0,0,0,0.05)", background:"#ffffff", maxWidth:300, width:"100%", cursor:"default", userSelect:"none" }}
+            >
+              <p style={{ margin:"0 0 24px", fontSize:14, color:T.text, lineHeight:1.75 }}>{t.text}</p>
+              <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                <img src={t.img} alt={t.name} width={40} height={40} style={{ width:40, height:40, borderRadius:"50%", objectFit:"cover", border:`2px solid ${T.border}`, flexShrink:0 }}/>
+                <div>
+                  <div style={{ fontWeight:700, fontSize:14, color:T.text, lineHeight:1.2 }}>{t.name}</div>
+                  <div style={{ fontSize:12, color:T.muted, marginTop:2 }}>{t.role}</div>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            </motion.div>
+          );
+        }
+
+        function TCol({ items, duration }) {
+          return (
+            <div style={{ overflow:"hidden" }}>
+              <motion.div
+                animate={{ translateY:"-50%" }}
+                transition={{ duration, repeat:Infinity, ease:"linear", repeatType:"loop" }}
+                style={{ display:"flex", flexDirection:"column", gap:24, paddingBottom:24 }}
+              >
+                {[0,1].map(pass=>(
+                  <div key={pass} style={{ display:"flex", flexDirection:"column", gap:24 }}>
+                    {items.map((t,i)=><TCard key={`${pass}-${i}`} t={t}/>)}
+                  </div>
+                ))}
+              </motion.div>
+            </div>
+          );
+        }
+
+        return (
+          <section style={{ padding:"96px 24px", borderBottom:`1px solid ${T.border}` }}>
+            <motion.div
+              initial={{ opacity:0, y:40 }}
+              whileInView={{ opacity:1, y:0 }}
+              viewport={{ once:true, amount:0.15 }}
+              transition={{ duration:1, ease:[0.16,1,0.3,1] }}
+              style={{ maxWidth:1100, margin:"0 auto" }}
+            >
+              {/* Header */}
+              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", maxWidth:540, margin:"0 auto 64px", textAlign:"center" }}>
+                <div style={{ border:`1px solid ${T.border}`, padding:"4px 16px", borderRadius:999, fontSize:12, fontWeight:700, letterSpacing:1, textTransform:"uppercase", color:T.muted, background:"#f9fafb", marginBottom:24 }}>
+                  Testimonials
+                </div>
+                <h2 style={{ margin:"0 0 16px", fontSize:"clamp(32px,4vw,48px)", fontWeight:800, color:T.text, letterSpacing:-1.5, lineHeight:1.1 }}>
+                  Loved by educators
+                </h2>
+                <p style={{ margin:0, fontSize:17, color:T.muted, lineHeight:1.7 }}>
+                  Hear from thousands of SPED educators who have already transformed their practice.
+                </p>
+              </div>
+
+              {/* Scrolling columns */}
+              <style>{`.tcol2{display:none} .tcol3{display:none} @media(min-width:768px){.tcol2{display:block}} @media(min-width:1024px){.tcol3{display:block}}`}</style>
+              <div style={{ display:"flex", justifyContent:"center", gap:24, maxHeight:740, overflow:"hidden", WebkitMaskImage:"linear-gradient(to bottom,transparent,black 10%,black 90%,transparent)", maskImage:"linear-gradient(to bottom,transparent,black 10%,black 90%,transparent)" }}>
+                <TCol items={col1} duration={15}/>
+                <div className="tcol2"><TCol items={col2} duration={19}/></div>
+                <div className="tcol3"><TCol items={col3} duration={17}/></div>
+              </div>
+            </motion.div>
+          </section>
+        );
+      })()}
 
       {/* ── FAQ ── */}
-      <section id="help" style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#fafafa" }}>
+      <section id="help" style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#ffffff" }}>
         <div style={{ maxWidth:680, margin:"0 auto" }}>
           <div style={{ textAlign:"center", marginBottom:40 }}>
             <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>FAQ</p>
@@ -7249,6 +8170,387 @@ function LandingPage({ onGetStarted }) {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
+   LANDING PAGE V2  ·  Bold + Animated  (askape.com-inspired for education)
+───────────────────────────────────────────────────────────────────────────── */
+function LandingPageV2({ onGetStarted }) {
+  const [showAuth, setShowAuth] = useState(false);
+
+  const T2 = {
+    bg:      "#fffdf7",
+    section: "#f0ece4",
+    dark:    "#120a24",
+    text:    "#1a1a1a",
+    muted:   "#6b6375",
+    border:  "rgba(0,0,0,0.08)",
+    hover:   "rgba(0,0,0,0.04)",
+    accent:  "#8a46ff",
+    pink:    "#e83e8c",
+    blue:    "#0070d7",
+  };
+
+  const experts = [
+    { name:"Tara Roehl",       role:"Mindfulness & Wellness", img:"https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&auto=format" },
+    { name:"Casey Harrison",   role:"Inclusion Specialist",   img:"https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=400&fit=crop&auto=format" },
+    { name:"Sydney Bassard",   role:"Dyslexia & Literacy",    img:"https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop&auto=format" },
+    { name:"Diana Williams",   role:"SPED Leadership Coach",  img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop&auto=format" },
+    { name:"Farwa Husain",     role:"IEP Designer",           img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&auto=format" },
+    { name:"Jordan Smith",     role:"Speech-Language Path.",  img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&auto=format" },
+    { name:"Sam Parmelee",     role:"AAC Specialist",         img:"https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=400&h=400&fit=crop&auto=format" },
+    { name:"Natasha Schaumburg",role:"BCBA",                  img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&auto=format" },
+    { name:"Rose Karentina",   role:"Data & Assessment",      img:"https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=400&h=400&fit=crop&auto=format" },
+  ];
+
+  const BUBBLES = [
+    { icon:"student",      size:70, bg:"linear-gradient(135deg,#8a46ff,#a855f7)", top:"14%", left:"7%",   dur:4.5, del:0    },
+    { icon:"book-open",    size:52, bg:"linear-gradient(135deg,#0070d7,#3b82f6)", top:"32%", left:"4%",   dur:5.2, del:0.8  },
+    { icon:"star",         size:42, bg:"linear-gradient(135deg,#f59e0b,#fbbf24)", top:"58%", left:"8%",   dur:3.8, del:1.5  },
+    { icon:"certificate",  size:56, bg:"linear-gradient(135deg,#059669,#10b981)", top:"74%", left:"5%",   dur:4.2, del:0.3  },
+    { icon:"trophy",       size:62, bg:"linear-gradient(135deg,#f59e0b,#f97316)", top:"15%", right:"7%",  dur:3.9, del:1.2  },
+    { icon:"lightning",    size:42, bg:"linear-gradient(135deg,#e83e8c,#ec4899)", top:"38%", right:"4%",  dur:5.5, del:0.5  },
+    { icon:"gift",         size:50, bg:"linear-gradient(135deg,#6366f1,#8b5cf6)", top:"62%", right:"6%",  dur:4.0, del:2.0  },
+    { icon:"medal",        size:46, bg:"linear-gradient(135deg,#0891b2,#06b6d4)", top:"80%", right:"8%",  dur:4.7, del:0.9  },
+    { icon:"check-circle", size:30, bg:"linear-gradient(135deg,#059669,#0070d7)", top:"88%", left:"14%",  dur:3.5, del:0.4  },
+    { icon:"users",        size:34, bg:"linear-gradient(135deg,#8a46ff,#e83e8c)", top:"8%",  right:"18%", dur:6.0, del:1.8  },
+  ];
+
+  const MARQUEE = ["9 Expert Sessions","Free Certificates","Win Ablespace Pro","Interactive Quizzes","SPED Specialists","4,200+ Educators","IEP Strategies","AAC Implementation","Behavior Support","Structured Literacy"];
+
+  const FEATURES = [
+    { icon:"play-circle",  title:"9 Expert Sessions",       desc:"Live and on-demand video from certified SPED specialists you can rewatch anytime." },
+    { icon:"question",     title:"Interactive Quizzes",     desc:"Knowledge checks after every session to reinforce learning and track your progress." },
+    { icon:"certificate",  title:"Real Certificates",       desc:"Downloadable completion certificates, automatically generated when you finish." },
+    { icon:"gift",         title:"Win Prizes",              desc:"Pass all quizzes and your certificate enters you in the Ablespace Pro prize draw." },
+    { icon:"users",        title:"9 SPED Experts",          desc:"Practitioners from mindfulness, AAC, behavior analysis, IEP design, and more." },
+    { icon:"clock",        title:"Learn at Your Pace",      desc:"All sessions are recorded. Watch live or replay — no pressure, no deadlines." },
+  ];
+
+  const TESTIMONIALS = [
+    { text:"SPED Summit gave me practical tools I could use the very next day.", name:"Maria Gonzalez", role:"Special Ed Teacher", img:"https://images.unsplash.com/photo-1573497491208-6b1acb260507?w=80&h=80&fit=crop&auto=format" },
+    { text:"The AAC module changed how I work with my non-verbal students.", name:"Priya Nair", role:"AAC Specialist, BCBA", img:"https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=80&h=80&fit=crop&auto=format" },
+    { text:"Best professional development I've ever attended. And it was free!", name:"Devon Castillo", role:"Inclusion Facilitator", img:"https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=80&h=80&fit=crop&auto=format" },
+  ];
+
+  const S = { /* inline style helpers */
+    section: (extra={}) => ({ padding:"96px 24px", ...extra }),
+    inner:   (mw=1024)  => ({ maxWidth:mw, margin:"0 auto" }),
+  };
+
+  return (
+    <div style={{ minHeight:"100vh", fontFamily:"Inter,'Segoe UI',system-ui,sans-serif", background:T2.bg, overflowX:"hidden", color:T2.text }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        * { box-sizing: border-box; } a { text-decoration: none; color: inherit; }
+      `}</style>
+
+      {/* ── NAV ── */}
+      <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:100, background:"rgba(255,253,247,0.95)", backdropFilter:"blur(8px)", borderBottom:`1px solid ${T2.border}`, height:60, display:"flex", alignItems:"center", padding:"0 24px" }}>
+        <div style={{ maxWidth:1024, margin:"0 auto", width:"100%", display:"flex", alignItems:"center", gap:4 }}>
+          <div style={{ marginRight:"auto", cursor:"pointer" }} onClick={()=>window.scrollTo({top:0,behavior:"smooth"})}>
+            <img src="/Container.png" alt="SPED Summit" style={{ height:28, display:"block" }}/>
+          </div>
+          {[["Sessions","sessions"],["Instructors","instructors-v2"],["FAQ","faq-v2"]].map(([l,id])=>(
+            <button key={l} onClick={()=>document.getElementById(id)?.scrollIntoView({behavior:"smooth"})}
+              style={{ background:"none", border:"none", fontSize:14, color:T2.muted, cursor:"pointer", padding:"4px 12px", borderRadius:7, height:32, transition:"all .12s" }}
+              onMouseEnter={e=>{ e.currentTarget.style.background=T2.hover; e.currentTarget.style.color=T2.text; }}
+              onMouseLeave={e=>{ e.currentTarget.style.background="none"; e.currentTarget.style.color=T2.muted; }}>{l}</button>
+          ))}
+          <button onClick={()=>setShowAuth(true)}
+            style={{ marginLeft:8, padding:"0 18px", height:38, background:T2.accent, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:700, cursor:"pointer", transition:"all .15s", boxShadow:`0 2px 0 0 #5b21b6` }}
+            onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 4px 0 0 #5b21b6"; }}
+            onMouseLeave={e=>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="0 2px 0 0 #5b21b6"; }}>
+            Get started free
+          </button>
+        </div>
+      </nav>
+
+      {/* ── HERO ── */}
+      <section style={{ paddingTop:60, minHeight:"100vh", background:T2.bg, position:"relative", overflow:"hidden", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
+
+        {/* Floating bubbles */}
+        {BUBBLES.map((b,i)=>(
+          <div key={i} style={{ position:"absolute", top:b.top, left:b.left||undefined, right:b.right||undefined, pointerEvents:"none", zIndex:0, animation:`floatBob ${b.dur}s ease-in-out ${b.del}s infinite` }}>
+            <div style={{ width:b.size, height:b.size, borderRadius:"50%", background:b.bg, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 8px 28px rgba(0,0,0,0.18)", border:"3px solid rgba(255,255,255,0.7)" }}>
+              <Icon name={b.icon} size={Math.round(b.size*0.44)} color="#fff" weight="fill"/>
+            </div>
+          </div>
+        ))}
+
+        {/* Content */}
+        <div style={{ maxWidth:820, margin:"0 auto", padding:"100px 24px 80px", textAlign:"center", position:"relative", zIndex:1 }}>
+          {/* Pill badge */}
+          <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"rgba(138,70,255,0.1)", border:"1px solid rgba(138,70,255,0.22)", borderRadius:999, padding:"6px 18px", fontSize:13, fontWeight:600, color:T2.accent, marginBottom:36, animation:"v2FadeSlideUp 0.6s ease-out 0.1s both", opacity:0 }}>
+            <Icon name="star" size={13} color={T2.accent} weight="fill"/> 100% Free · SPED Summit 2026
+          </div>
+
+          {/* Big headline */}
+          <h1 style={{ margin:"0 0 28px", fontSize:"clamp(48px,7.5vw,84px)", fontWeight:900, color:T2.text, lineHeight:1.03, letterSpacing:-3.5, animation:"v2FadeSlideUp 0.7s ease-out 0.2s both", opacity:0 }}>
+            The Best SPED<br/>
+            Training.<br/>
+            <span style={{ background:"linear-gradient(90deg,#8a46ff 0%,#c026d3 50%,#e83e8c 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>
+              All Free.
+            </span>
+          </h1>
+
+          {/* Sub */}
+          <p style={{ margin:"0 0 44px", fontSize:19, color:T2.muted, lineHeight:1.65, maxWidth:540, marginLeft:"auto", marginRight:"auto", animation:"v2FadeSlideUp 0.7s ease-out 0.35s both", opacity:0 }}>
+            9 expert sessions, interactive quizzes, real certificates, and a chance to win Ablespace Pro — completely free for SPED professionals.
+          </p>
+
+          {/* CTAs */}
+          <div style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap", marginBottom:32, animation:"v2FadeSlideUp 0.7s ease-out 0.5s both", opacity:0 }}>
+            <button onClick={()=>setShowAuth(true)}
+              style={{ padding:"0 36px", height:54, background:T2.accent, color:"#fff", border:"none", borderRadius:12, fontSize:16, fontWeight:700, cursor:"pointer", transition:"all .15s", boxShadow:`0 4px 0 0 #5b21b6, 0 8px 24px rgba(138,70,255,0.3)` }}
+              onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.boxShadow="0 6px 0 0 #5b21b6, 0 12px 32px rgba(138,70,255,0.4)"; }}
+              onMouseLeave={e=>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="0 4px 0 0 #5b21b6, 0 8px 24px rgba(138,70,255,0.3)"; }}>
+              Start learning for free →
+            </button>
+            <button onClick={()=>document.getElementById("sessions")?.scrollIntoView({behavior:"smooth"})}
+              style={{ padding:"0 32px", height:54, background:"transparent", color:T2.text, border:"2px solid rgba(0,0,0,0.14)", borderRadius:12, fontSize:16, fontWeight:600, cursor:"pointer", transition:"all .15s" }}
+              onMouseEnter={e=>{ e.currentTarget.style.background=T2.hover; e.currentTarget.style.borderColor="rgba(0,0,0,0.28)"; }}
+              onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor="rgba(0,0,0,0.14)"; }}>
+              View sessions
+            </button>
+          </div>
+
+          {/* Stacked avatars */}
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, animation:"v2FadeSlideUp 0.7s ease-out 0.65s both", opacity:0 }}>
+            <div style={{ display:"flex" }}>
+              {experts.slice(0,4).map((e,i)=>(
+                <div key={i} style={{ width:34, height:34, borderRadius:"50%", overflow:"hidden", border:"2.5px solid #fff", marginLeft:i>0?-11:0, boxShadow:"0 2px 8px rgba(0,0,0,0.14)" }}>
+                  <img src={e.img} alt={e.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%" }}/>
+                </div>
+              ))}
+            </div>
+            <span style={{ fontSize:14, color:T2.muted, fontWeight:500 }}>4,200+ educators enrolled</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ── MARQUEE ── */}
+      <div style={{ background:T2.dark, padding:"18px 0", overflow:"hidden" }}>
+        <div style={{ display:"flex", animation:"marqueeLeft 25s linear infinite", width:"fit-content" }}>
+          {[...MARQUEE,...MARQUEE].map((item,i)=>(
+            <span key={i} style={{ display:"inline-flex", alignItems:"center", gap:10, padding:"0 28px", fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.7)", whiteSpace:"nowrap" }}>
+              <span style={{ color:T2.accent, fontSize:16 }}>✦</span> {item}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* ── VALUE PROP ── */}
+      <section style={{ ...S.section(), background:T2.section }}>
+        <div style={{ ...S.inner(), display:"grid", gridTemplateColumns:"1fr 1fr", gap:80, alignItems:"center" }}>
+          <div>
+            <p style={{ margin:"0 0 12px", fontSize:13, fontWeight:700, color:T2.accent, textTransform:"uppercase", letterSpacing:1 }}>Why SPED Summit</p>
+            <h2 style={{ margin:"0 0 20px", fontSize:"clamp(32px,4vw,52px)", fontWeight:900, color:T2.text, lineHeight:1.1, letterSpacing:-1.5 }}>
+              Expert knowledge.<br/>Right here, right now.
+            </h2>
+            <p style={{ margin:"0 0 32px", fontSize:16, color:T2.muted, lineHeight:1.7 }}>
+              Stop searching YouTube and Pinterest for SPED strategies. Get structured, evidence-based training from certified professionals who have spent careers in special education classrooms.
+            </p>
+            {["Watch 9 sessions from certified SPED specialists","Take quizzes to lock in your learning","Download your certificate of completion","Enter the Ablespace Pro prize draw automatically"].map((pt,i)=>(
+              <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:12, marginBottom:14 }}>
+                <div style={{ width:22, height:22, borderRadius:"50%", background:T2.accent, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:1 }}>
+                  <Icon name="check" size={12} color="#fff" weight="bold"/>
+                </div>
+                <span style={{ fontSize:15, color:T2.text, lineHeight:1.5 }}>{pt}</span>
+              </div>
+            ))}
+          </div>
+          {/* Visual: stacked feature cards */}
+          <div style={{ position:"relative", height:420 }}>
+            {[
+              { top:0,   left:0,   right:40, bg:"#8a46ff", icon:"play-circle", label:"Session in progress", sub:"Mindfulness for SPED Educators", pct:65 },
+              { top:160, left:40,  right:0,  bg:"#0070d7", icon:"certificate",  label:"Certificate earned",  sub:"Sarah Johnson · SPED Summit 2026", pct:100 },
+              { top:290, left:0,   right:60, bg:"#059669", icon:"trophy",       label:"Prize draw entered",  sub:"Ablespace Pro · Jan 31 2026", pct:null },
+            ].map((card,i)=>(
+              <div key={i} style={{ position:"absolute", top:card.top, left:card.left, right:card.right, background:"#fff", borderRadius:18, padding:"18px 20px", boxShadow:"0 12px 40px rgba(0,0,0,0.1)", border:"1px solid rgba(0,0,0,0.05)" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:card.pct!==null?12:0 }}>
+                  <div style={{ width:40, height:40, borderRadius:12, background:card.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    <Icon name={card.icon} size={20} color="#fff"/>
+                  </div>
+                  <div>
+                    <div style={{ fontSize:13, fontWeight:700, color:T2.text }}>{card.label}</div>
+                    <div style={{ fontSize:12, color:T2.muted }}>{card.sub}</div>
+                  </div>
+                </div>
+                {card.pct !== null && (
+                  <div style={{ height:4, background:"#f1f0ef", borderRadius:2, overflow:"hidden" }}>
+                    <div style={{ height:"100%", width:`${card.pct}%`, background:card.bg, borderRadius:2 }}/>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── STATS ── */}
+      <section style={{ ...S.section({ padding:"60px 24px" }), background:T2.bg, borderTop:`1px solid ${T2.border}`, borderBottom:`1px solid ${T2.border}` }}>
+        <div style={{ ...S.inner(), display:"flex", justifyContent:"center", gap:80, flexWrap:"wrap" }}>
+          {[{n:"4,200+",l:"educators enrolled"},{n:"9",l:"expert sessions"},{n:"100%",l:"free to attend"},{n:"$10k+",l:"in prizes"}].map((s,i)=>(
+            <div key={i} style={{ textAlign:"center" }}>
+              <div style={{ fontSize:48, fontWeight:900, color:T2.text, letterSpacing:-2, lineHeight:1 }}>{s.n}</div>
+              <div style={{ fontSize:14, color:T2.muted, marginTop:6 }}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── INSTRUCTORS ── */}
+      <section id="instructors-v2" style={{ ...S.section(), background:T2.section }}>
+        <div style={{ ...S.inner(1200) }}>
+          <div style={{ textAlign:"center", marginBottom:52 }}>
+            <p style={{ margin:"0 0 12px", fontSize:13, fontWeight:700, color:T2.accent, textTransform:"uppercase", letterSpacing:1 }}>Speakers</p>
+            <h2 style={{ margin:"0 0 14px", fontSize:"clamp(28px,4vw,48px)", fontWeight:900, color:T2.text, letterSpacing:-1.5, lineHeight:1.1 }}>
+              Learn from the best.
+            </h2>
+            <p style={{ margin:0, fontSize:16, color:T2.muted }}>9 certified specialists who have spent careers in special education.</p>
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20 }}>
+            {experts.slice(0,6).map((e,i)=>(
+              <div key={i} style={{ background:"#fff", borderRadius:20, overflow:"hidden", border:`1px solid ${T2.border}` }}>
+                <div style={{ height:220, overflow:"hidden", background:"#f0ece4" }}>
+                  <img src={e.img} alt={e.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%", display:"block", transition:"transform 0.4s ease" }}
+                    onMouseEnter={e=>e.currentTarget.style.transform="scale(1.06)"}
+                    onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}/>
+                </div>
+                <div style={{ padding:"16px 18px" }}>
+                  <div style={{ fontWeight:700, fontSize:15, color:T2.text }}>{e.name}</div>
+                  <div style={{ fontSize:13, color:T2.muted, marginTop:3 }}>{e.role}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign:"center", marginTop:32 }}>
+            <button onClick={()=>setShowAuth(true)}
+              style={{ padding:"0 28px", height:46, background:T2.accent, color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer", transition:"all .15s", boxShadow:"0 2px 0 0 #5b21b6" }}
+              onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 4px 0 0 #5b21b6"; }}
+              onMouseLeave={e=>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="0 2px 0 0 #5b21b6"; }}>
+              Meet all 9 speakers →
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FEATURES ── */}
+      <section style={{ ...S.section(), background:T2.bg }}>
+        <div style={{ ...S.inner() }}>
+          <div style={{ textAlign:"center", marginBottom:52 }}>
+            <p style={{ margin:"0 0 12px", fontSize:13, fontWeight:700, color:T2.accent, textTransform:"uppercase", letterSpacing:1 }}>Platform</p>
+            <h2 style={{ margin:"0 0 14px", fontSize:"clamp(28px,4vw,48px)", fontWeight:900, color:T2.text, letterSpacing:-1.5 }}>Everything SPED teachers need.</h2>
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20 }}>
+            {FEATURES.map((f,i)=>(
+              <div key={i} style={{ background:T2.bg, border:`1.5px solid ${T2.border}`, borderRadius:18, padding:"28px 24px", transition:"all .2s" }}
+                onMouseEnter={e=>{ e.currentTarget.style.border=`1.5px solid rgba(138,70,255,0.3)`; e.currentTarget.style.boxShadow="0 8px 32px rgba(138,70,255,0.1)"; e.currentTarget.style.transform="translateY(-4px)"; }}
+                onMouseLeave={e=>{ e.currentTarget.style.border=`1.5px solid ${T2.border}`; e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; }}>
+                <div style={{ width:48, height:48, borderRadius:14, background:"rgba(138,70,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:18 }}>
+                  <Icon name={f.icon} size={24} color={T2.accent}/>
+                </div>
+                <div style={{ fontSize:16, fontWeight:700, color:T2.text, marginBottom:8 }}>{f.title}</div>
+                <div style={{ fontSize:14, color:T2.muted, lineHeight:1.65 }}>{f.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── DARK CTA SECTION ── */}
+      <section style={{ ...S.section(), background:T2.dark, position:"relative", overflow:"hidden" }}>
+        <div style={{ position:"absolute", top:"-30%", left:"50%", transform:"translateX(-50%)", width:600, height:600, borderRadius:"50%", background:"radial-gradient(circle,rgba(138,70,255,0.18) 0%,transparent 70%)", pointerEvents:"none" }}/>
+        <div style={{ ...S.inner(800), textAlign:"center", position:"relative", zIndex:1 }}>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"rgba(138,70,255,0.2)", border:"1px solid rgba(138,70,255,0.35)", borderRadius:999, padding:"6px 18px", fontSize:13, fontWeight:600, color:"#c084fc", marginBottom:32 }}>
+            <Icon name="gift" size={13} color="#c084fc"/> Win Ablespace Pro
+          </div>
+          <h2 style={{ margin:"0 0 20px", fontSize:"clamp(36px,5vw,64px)", fontWeight:900, color:"#fff", letterSpacing:-2, lineHeight:1.05 }}>
+            Level up your<br/>
+            <span style={{ background:"linear-gradient(90deg,#c084fc,#e83e8c)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>SPED game.</span>
+          </h2>
+          <p style={{ margin:"0 0 40px", fontSize:17, color:"rgba(255,255,255,0.6)", lineHeight:1.65 }}>
+            Complete all sessions, pass the quizzes, and your certificate automatically enters you into the Ablespace Pro prize draw. No extra steps.
+          </p>
+          <button onClick={()=>setShowAuth(true)}
+            style={{ padding:"0 40px", height:56, background:"#fff", color:T2.dark, border:"none", borderRadius:12, fontSize:16, fontWeight:800, cursor:"pointer", transition:"all .15s" }}
+            onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.boxShadow="0 12px 32px rgba(0,0,0,0.3)"; }}
+            onMouseLeave={e=>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="none"; }}>
+            Start for free — it only takes 30 seconds
+          </button>
+        </div>
+      </section>
+
+      {/* ── TESTIMONIALS ── */}
+      <section style={{ ...S.section(), background:T2.section }}>
+        <div style={{ ...S.inner() }}>
+          <div style={{ textAlign:"center", marginBottom:48 }}>
+            <h2 style={{ margin:0, fontSize:"clamp(28px,4vw,44px)", fontWeight:900, color:T2.text, letterSpacing:-1.5 }}>What educators are saying.</h2>
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20 }}>
+            {TESTIMONIALS.map((t,i)=>(
+              <div key={i} style={{ background:"#fff", borderRadius:20, padding:"28px 24px", border:`1px solid ${T2.border}` }}>
+                <div style={{ display:"flex", gap:2, marginBottom:16 }}>
+                  {Array(5).fill(0).map((_,j)=><Icon key={j} name="star" size={16} color="#f59e0b" weight="fill"/>)}
+                </div>
+                <p style={{ margin:"0 0 20px", fontSize:15, color:T2.text, lineHeight:1.7 }}>"{t.text}"</p>
+                <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                  <img src={t.img} alt={t.name} style={{ width:40, height:40, borderRadius:"50%", objectFit:"cover" }}/>
+                  <div>
+                    <div style={{ fontSize:14, fontWeight:700, color:T2.text }}>{t.name}</div>
+                    <div style={{ fontSize:12, color:T2.muted }}>{t.role}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section id="faq-v2" style={{ ...S.section(), background:T2.bg }}>
+        <div style={{ ...S.inner(720) }}>
+          <div style={{ textAlign:"center", marginBottom:48 }}>
+            <h2 style={{ margin:0, fontSize:"clamp(28px,4vw,44px)", fontWeight:900, color:T2.text, letterSpacing:-1.5 }}>Frequently asked questions.</h2>
+          </div>
+          {[
+            {q:"Is SPED Summit completely free?", a:"Yes — 100% free. Watch all sessions, take quizzes, and download your certificate at no cost."},
+            {q:"Can I rewatch if I miss a live session?", a:"Absolutely. All sessions are recorded and available on-demand throughout January 2026."},
+            {q:"How do I get my certificate?", a:"Complete all sessions and pass the assessments. Your certificate is generated automatically and ready to download."},
+            {q:"How does the prize draw work?", a:"Your completion certificate is your entry. Pass all quizzes and you're automatically entered to win Ablespace Pro."},
+            {q:"Who is this for?", a:"Special Ed teachers, SLPs, OTs, PTs, ABA professionals, SPED coordinators — anyone working in special education."},
+          ].map((faq,i)=>(
+            <details key={i} style={{ borderBottom:`1px solid ${T2.border}`, padding:"20px 0" }}>
+              <summary style={{ fontSize:16, fontWeight:700, color:T2.text, cursor:"pointer", listStyle:"none", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                {faq.q} <Icon name="caret-down" size={18} color={T2.muted}/>
+              </summary>
+              <p style={{ margin:"12px 0 0", fontSize:15, color:T2.muted, lineHeight:1.7 }}>{faq.a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      {/* ── FINAL CTA ── */}
+      <section style={{ ...S.section({ padding:"80px 24px" }), background:T2.dark }}>
+        <div style={{ ...S.inner(640), textAlign:"center" }}>
+          <div style={{ width:72, height:72, borderRadius:20, background:"linear-gradient(135deg,#8a46ff,#e83e8c)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 28px" }}>
+            <Icon name="certificate" size={36} color="#fff"/>
+          </div>
+          <h2 style={{ margin:"0 0 16px", fontSize:"clamp(32px,4vw,52px)", fontWeight:900, color:"#fff", letterSpacing:-1.5 }}>Your SPED journey starts here.</h2>
+          <p style={{ margin:"0 0 36px", fontSize:17, color:"rgba(255,255,255,0.55)", lineHeight:1.65 }}>Join 4,200+ educators. Watch, learn, earn your certificate — and maybe win Ablespace Pro.</p>
+          <button onClick={()=>setShowAuth(true)}
+            style={{ padding:"0 40px", height:54, background:T2.accent, color:"#fff", border:"none", borderRadius:12, fontSize:16, fontWeight:700, cursor:"pointer", transition:"all .15s", boxShadow:"0 4px 0 0 #5b21b6" }}
+            onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.boxShadow="0 6px 0 0 #5b21b6"; }}
+            onMouseLeave={e=>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="0 4px 0 0 #5b21b6"; }}>
+            Get started free →
+          </button>
+        </div>
+      </section>
+
+      {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={()=>onGetStarted(null)}/>}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
    APP
 ───────────────────────────────────────────────────────────────────────────── */
 export default function App() {
@@ -7256,6 +8558,7 @@ export default function App() {
   const [page, setPage] = useState(() => sessionStorage.getItem("page") || "dashboard");
   const [isAdmin, setIsAdmin] = useState(() => sessionStorage.getItem("isAdmin") === "1");
   const [isDark, setIsDark] = useState(false);
+  const [landingV, setLandingV] = useState(1);
   const [activeSession,   setActiveSession]   = useState(null);
   const [sessionSource,   setSessionSource]   = useState("sessions");
   const [sessionBackLabel, setSessionBackLabel] = useState(null);
@@ -7346,7 +8649,7 @@ export default function App() {
   const [assessmentSession, setAssessmentSession] = useState(null);
   const [certSession,       setCertSession]       = useState(null);
   const [reviewSession,     setReviewSession]     = useState(null);
-  const [reviews,           setReviews]           = useState({});
+  const [,                  setReviews]           = useState({});
 
   function updateQuizState(sessionId, updates) {
     setQuizStates(prev => ({ ...prev, [sessionId]: { ...(prev[sessionId] || { status:"not-taken" }), ...updates } }));
@@ -7450,14 +8753,29 @@ export default function App() {
   const activePage = page==="session-detail" ? (isAdmin?"admin-sessions":"sessions") : page;
 
   if (!isLoggedIn) {
+    const handleGetStarted = (sessionId) => {
+      setIsLoggedIn(true);
+      sessionStorage.setItem("loggedIn", "1");
+      if (sessionId) enroll(sessionId);
+    };
     return (
       <>
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet"/>
-        <LandingPage onGetStarted={(sessionId) => {
-          setIsLoggedIn(true);
-          sessionStorage.setItem("loggedIn", "1");
-          if (sessionId) enroll(sessionId);
-        }}/>
+        {landingV === 1
+          ? <LandingPage onGetStarted={handleGetStarted}/>
+          : <LandingV2 onGetStarted={handleGetStarted}/>
+        }
+        {/* Version switcher */}
+        <div style={{ position:"fixed", bottom:24, right:24, zIndex:9999, display:"flex", gap:6, background:"rgba(26,10,36,0.92)", backdropFilter:"blur(8px)", borderRadius:100, padding:"5px 6px", boxShadow:"0 8px 32px rgba(0,0,0,0.25)", border:"1px solid rgba(255,255,255,0.1)" }}>
+          {[1,2].map(v=>(
+            <button key={v} onClick={()=>setLandingV(v)}
+              style={{ width:80, height:34, borderRadius:100, border:"none", fontSize:13, fontWeight:700, cursor:"pointer", transition:"all .2s",
+                background: landingV===v ? "#8a46ff" : "transparent",
+                color:      landingV===v ? "#fff"    : "rgba(255,255,255,0.45)" }}>
+              {v === 1 ? "Version 1" : "Version 2 ✨"}
+            </button>
+          ))}
+        </div>
       </>
     );
   }
