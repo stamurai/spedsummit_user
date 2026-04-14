@@ -10051,7 +10051,7 @@ export default function App() {
         onBrowseSelect={(season, year) => { setDashFilter({ season, year }); nav("dashboard"); }}
       />
       <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-        {activePage !== "profile" && <TabBar
+        {activePage !== "profile" && page !== "session-detail" && <TabBar
           active={activePage}
           onChange={nav}
           isAdmin={isAdmin}
