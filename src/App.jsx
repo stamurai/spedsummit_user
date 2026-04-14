@@ -4281,35 +4281,40 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
                   const lessonDoneCount = (s.lessons || []).filter(l => l.type === "quiz" && l.status === "completed").length;
 
                   return (
-                    <div key={s.id} onClick={() => { setActiveSeason(season.id); setActiveSession(s.id); }}
-                      style={{ display:"flex", alignItems:"center", gap:14, padding:"16px 20px", borderBottom: i < sessions.length - 1 ? `1px solid ${C.gray100}` : "none", cursor:"pointer", transition:"background 0.12s" }}
-                      onMouseEnter={e => e.currentTarget.style.background = C.gray50}
-                      onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    <div key={s.id}
+                      style={{ display:"flex", alignItems:"center", gap:14, padding:"16px 20px", borderBottom: i < sessions.length - 1 ? `1px solid ${C.gray100}` : "none" }}>
 
-                      {/* Status dot */}
-                      <div style={{ width:36, height:36, borderRadius:10, flexShrink:0, background: passed ? "rgba(16,185,129,0.1)" : "rgba(37,99,235,0.07)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                        <Icon name={passed ? "medal" : "certificate"} size={18} color={passed ? C.success : C.gray400}/>
+                      {/* Status icon */}
+                      <div style={{ width:36, height:36, borderRadius:10, flexShrink:0, background:"rgba(37,99,235,0.07)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        <Icon name="certificate" size={18} color={C.gray400}/>
                       </div>
 
                       {/* Text */}
                       <div style={{ flex:1, minWidth:0 }}>
                         <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
                         <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{s.instructor}</div>
-                        {lessonQuizCount > 0 && (
-                          <div style={{ fontSize:11, color:C.gray400, marginTop:3 }}>
-                            {lessonDoneCount}/{lessonQuizCount} knowledge checks · {passed ? "Certificate earned" : hasQuiz ? "Final assessment pending" : "No final assessment"}
-                          </div>
-                        )}
+                        <div style={{ fontSize:11, color: C.gray400, marginTop:3 }}>
+                          {passed ? "Certificate earned" : hasQuiz ? "Final assessment pending" : "No final assessment"}
+                        </div>
                       </div>
 
-                      {/* Badge */}
+                      {/* Actions */}
                       {passed ? (
-                        <span style={{ fontSize:11, fontWeight:700, color:C.success, background:"rgba(16,185,129,0.1)", borderRadius:99, padding:"4px 12px", whiteSpace:"nowrap", flexShrink:0 }}>Earned</span>
+                        <div style={{ display:"flex", gap:8, flexShrink:0 }}>
+                          <button
+                            onClick={() => { const certId = `SS-${s.id}-${qs?.score}-2026`; setShareCert({ certUrl:`spedsummit.com/cert/${certId.toLowerCase()}`, sessionTitle:s.title }); }}
+                            style={{ padding:"6px 12px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray600, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
+                            <Icon name="share-network" size={13} color={C.gray500}/> Share
+                          </button>
+                          <button
+                            onClick={() => downloadCertificate({ recipientName:userName, sessionTitle:s.title, instructor:s.instructor, duration:s.duration, score:qs?.score, description:s.description })}
+                            style={{ padding:"6px 12px", borderRadius:8, border:"none", background:C.primary, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
+                            <Icon name="download" size={13} color="#fff"/> Download
+                          </button>
+                        </div>
                       ) : (
                         <span style={{ fontSize:11, fontWeight:600, color:C.gray400, background:C.gray100, borderRadius:99, padding:"4px 12px", whiteSpace:"nowrap", flexShrink:0 }}>Pending</span>
                       )}
-
-                      <Icon name="caret-right" size={15} color={C.gray300}/>
                     </div>
                   );
                 })}
@@ -9524,7 +9529,7 @@ export default function App() {
   }
 
   /* ── Quiz state: { [sessionId]: { status, score, currentQ, answers } } ── */
-  const [quizStates,        setQuizStates]        = useState({});
+  const [quizStates,        setQuizStates]        = useState({ 1: { status:"passed", score:92 } });
   const [assessmentSession, setAssessmentSession] = useState(null);
   const [certSession,       setCertSession]       = useState(null);
   const [reviewSession,     setReviewSession]     = useState(null);
