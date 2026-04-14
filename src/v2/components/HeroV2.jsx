@@ -1,18 +1,23 @@
 import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { ChalkboardTeacher, PlayCircle, Certificate } from '@phosphor-icons/react';
 import { Button } from './Button';
 
-const IMAGES = [
-  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1588072432836-e10032774350?w=800&auto=format&fit=crop',
+const SPEAKERS = [
+  { name:"Tara Roehl",      img:"https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300&h=360&fit=crop&auto=format" },
+  { name:"Casey Harrison",  img:"https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=300&h=360&fit=crop&auto=format" },
+  { name:"Sydney Bassard",  img:"https://images.unsplash.com/photo-1580489944761-15a19d654956?w=300&h=360&fit=crop&auto=format" },
+  { name:"Diana Williams",  img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&h=360&fit=crop&auto=format" },
+  { name:"Farwa Husain",    img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&h=360&fit=crop&auto=format" },
+  { name:"Jordan Smith",    img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=360&fit=crop&auto=format" },
+  { name:"Sam Parmelee",    img:"https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=300&h=360&fit=crop&auto=format" },
+  { name:"Natasha S.",      img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=360&fit=crop&auto=format" },
+  { name:"Rose Karentina",  img:"https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=300&h=360&fit=crop&auto=format" },
 ];
 
 const STATS = [
-  { value: '4,200+', label: 'Active educators', Icon: ChalkboardTeacher },
-  { value: '9',      label: 'Expert sessions',  Icon: PlayCircle },
-  { value: 'Free',   label: 'Certificate',       Icon: Certificate },
+  { value: '4,200+', label: 'Active educators' },
+  { value: '9',      label: 'Expert sessions'  },
+  { value: 'Free',   label: 'Certificate'       },
 ];
 
 const containerVariants = {
@@ -111,70 +116,49 @@ export default function HeroV2({ onGetStarted }) {
 
           {/* Stats */}
           <motion.div variants={itemVariants} style={{ display: 'flex', flexWrap: 'wrap', gap: 32 }}>
-            {STATS.map(({ value, label, Icon }, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#fffbeb', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Icon size={20} color="#d97706" weight="duotone" />
-                </div>
-                <div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: '#262626', lineHeight: 1.2 }}>{value}</div>
-                  <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>{label}</div>
-                </div>
+            {STATS.map(({ value, label }, i) => (
+              <div key={i}>
+                <div style={{ fontSize: 18, fontWeight: 800, color: '#262626', lineHeight: 1.2 }}>{value}</div>
+                <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>{label}</div>
               </div>
             ))}
           </motion.div>
         </motion.div>
 
-        {/* ── Right: image collage ── */}
+        {/* ── Right: speaker mosaic ── */}
         <motion.div
           className="hero-collage"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          style={{ position: 'relative', height: 480, width: '100%' }}
+          style={{ display: 'flex', flexDirection: 'column', gap: 10, alignSelf: 'center' }}
         >
-          {/* Floating decorative blobs */}
-          <motion.div variants={floatVariants} animate="animate"
-            style={{ position: 'absolute', top: -16, left: '20%', width: 64, height: 64, borderRadius: '50%', background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.25)' }}
-          />
-          <motion.div variants={floatVariants} animate="animate"
-            style={{ position: 'absolute', bottom: 16, right: '20%', width: 48, height: 48, borderRadius: 12, background: 'rgba(217,119,6,0.12)', border: '1px solid rgba(217,119,6,0.2)' }}
-          />
-          <motion.div variants={floatVariants} animate="animate"
-            style={{ position: 'absolute', bottom: '30%', left: 0, width: 28, height: 28, borderRadius: '50%', background: 'rgba(245,158,11,0.18)' }}
-          />
+          <style>{`
+            .spk-mosaic-row { display: flex; gap: 10px; }
+            .spk-mosaic-card { border-radius: 16px; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 16px rgba(0,0,0,0.10); }
+            .spk-mosaic-card img { width: 100%; height: 100%; object-fit: cover; object-position: center 10%; display: block; transition: transform 0.4s ease; }
+            .spk-mosaic-card:hover img { transform: scale(1.06); }
+          `}</style>
 
-          {/* Top-center image */}
-          <motion.div variants={imageVariants}
-            style={{ position: 'absolute', left: '50%', top: 0, transform: 'translateX(-50%)', width: 220, height: 220, borderRadius: 24, background: '#f9fafb', border: '1px solid #e5e7eb', padding: 6, boxShadow: '0 16px 48px rgba(0,0,0,0.1)' }}
-          >
-            <img src={IMAGES[0]} alt="Collaborative learning" style={{ width: '100%', height: '100%', borderRadius: 20, objectFit: 'cover' }} />
-          </motion.div>
+          {/* Row 1 — 5 cards, taller */}
+          <div className="spk-mosaic-row">
+            {SPEAKERS.slice(0, 5).map((s, i) => (
+              <motion.div key={i} variants={imageVariants} className="spk-mosaic-card"
+                style={{ width: i === 0 || i === 4 ? 88 : 76, height: 116 }}>
+                <img src={s.img} alt={s.name} />
+              </motion.div>
+            ))}
+          </div>
 
-          {/* Right-center image */}
-          <motion.div variants={imageVariants}
-            style={{ position: 'absolute', right: 0, top: '30%', width: 190, height: 190, borderRadius: 24, background: '#f9fafb', border: '1px solid #e5e7eb', padding: 6, boxShadow: '0 16px 48px rgba(0,0,0,0.1)' }}
-          >
-            <img src={IMAGES[1]} alt="SPED classroom" style={{ width: '100%', height: '100%', borderRadius: 20, objectFit: 'cover' }} />
-          </motion.div>
-
-          {/* Bottom-left image */}
-          <motion.div variants={imageVariants}
-            style={{ position: 'absolute', left: 0, bottom: 0, width: 160, height: 160, borderRadius: 24, background: '#f9fafb', border: '1px solid #e5e7eb', padding: 6, boxShadow: '0 16px 48px rgba(0,0,0,0.1)' }}
-          >
-            <img src={IMAGES[2]} alt="Students" style={{ width: '100%', height: '100%', borderRadius: 20, objectFit: 'cover' }} />
-          </motion.div>
-
-          {/* Floating badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 1.0, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            style={{ position: 'absolute', left: '28%', bottom: '18%', background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 16, padding: '12px 20px', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}
-          >
-            <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.8 }}>Next session</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: '#262626' }}>IEP Strategies</div>
-            <div style={{ fontSize: 12, color: '#d97706', marginTop: 2 }}>Starting soon →</div>
-          </motion.div>
+          {/* Row 2 — 4 cards, slightly shorter, offset right */}
+          <div className="spk-mosaic-row" style={{ paddingLeft: 42 }}>
+            {SPEAKERS.slice(5).map((s, i) => (
+              <motion.div key={i} variants={imageVariants} className="spk-mosaic-card"
+                style={{ width: i === 0 || i === 3 ? 88 : 76, height: 100 }}>
+                <img src={s.img} alt={s.name} />
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
       </motion.div>
     </section>

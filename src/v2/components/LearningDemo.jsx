@@ -78,9 +78,26 @@ export default function LearningDemo() {
           </p>
         </div>
 
-        {/* ── Bento card ── */}
+        {/* ── Bento card + Stats ── */}
+        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', alignItems: 'flex-start', gap: 20 }}>
+
+        {/* Stats panel */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: 148, flexShrink: 0, paddingTop: 12 }}>
+          {[
+            { value: `${doneCount * 47 + 12}`, label: 'total minutes', sub: 'of PD completed' },
+            { value: `${doneCount} of 9`, label: 'sessions', sub: 'completed' },
+            { value: `${Math.min(doneCount + 1, 7)} day`, label: 'streak', sub: 'keep it up!' },
+          ].map(({ value, label, sub }) => (
+            <div key={label} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, padding: '14px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+              <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: '#262626', lineHeight: 1.1, letterSpacing: '-0.5px' }}>{value}</p>
+              <p style={{ margin: '2px 0 0', fontSize: 11, fontWeight: 600, color: '#374151' }}>{label}</p>
+              <p style={{ margin: '1px 0 0', fontSize: 10, color: '#9ca3af' }}>{sub}</p>
+            </div>
+          ))}
+        </div>
+
         {/* Outer wrapper has padding-bottom + right to reveal the stacked bg safely */}
-        <div style={{ maxWidth: 960, margin: '0 auto', paddingBottom: 12, paddingRight: 12 }}>
+        <div style={{ flex: 1, paddingBottom: 12, paddingRight: 12 }}>
           <div style={{ position: 'relative' }}>
 
             {/* Stacked bg layer — contained within padding */}
@@ -367,6 +384,8 @@ export default function LearningDemo() {
             </div>
           </div>
         </div>
+
+        </div>{/* end flex row */}
 
       </div>
     </section>

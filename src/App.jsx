@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useReducer } from "react";
+import React, { useState, useRef, useEffect, useCallback, useReducer } from "react";
 import { createPortal } from "react-dom";
 import * as PhosphorIcons from "@phosphor-icons/react";
 import jsPDF from "jspdf";
@@ -796,9 +796,10 @@ function Footer() {
   const hover = "rgba(0,0,0,0.04)";
   return (
     <footer style={{ background:bg, borderTop:`1px solid ${border}`, fontFamily:"inherit", flexShrink:0 }}>
-      <div style={{ maxWidth:1024, margin:"0 auto", padding:"56px 24px 48px", display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:48, borderBottom:`1px solid ${border}` }}>
+      <style>{`@media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr !important;}.footer-brand{grid-column:1/-1 !important;}}`}</style>
+      <div className="footer-grid" style={{ maxWidth:1024, margin:"0 auto", padding:"56px 24px 48px", display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:40, borderBottom:`1px solid ${border}` }}>
         {/* Brand */}
-        <div>
+        <div className="footer-brand">
           <img src="/Container.png" alt="SPED Summit" style={{ height:26, display:"block", marginBottom:16 }}/>
           <p style={{ margin:"0 0 24px", fontSize:14, color:muted, lineHeight:1.7, maxWidth:280 }}>
             SPED Summit is a free professional development platform for Special Education professionals — built by educators, for educators.
@@ -1100,8 +1101,8 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
         <img src="/Container.png" alt="SPED Summit" style={{ height:28, width:"auto", display:"block" }}/>
       </div>
 
-      {/* Browse button */}
-      <div style={{ position:"relative", marginLeft:16, flexShrink:0 }} ref={browseRef}>
+      {/* Browse button — user only */}
+      <div style={{ position:"relative", marginLeft:16, flexShrink:0, display: isAdmin ? "none" : "block" }} ref={browseRef}>
         <button
           onClick={() => setShowBrowse(v => !v)}
           style={{ display:"inline-flex", alignItems:"center", gap:5, background:"none", border:"none", cursor:"pointer", fontSize:14, fontWeight:600, color: showBrowse ? C.primary : C.gray700, padding:"6px 10px", borderRadius:8, fontFamily:"inherit", transition:"color .15s" }}
@@ -1192,11 +1193,6 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
                   icon: "user-circle",
                   label: "My Profile",
                   action: () => { setShowProfileMenu(false); onNavigateProfile?.(); },
-                },
-                {
-                  icon: isAdmin ? "house" : "gear",
-                  label: isAdmin ? "Switch to User View" : "Switch to Admin Panel",
-                  action: () => { onToggleAdmin(); setShowProfileMenu(false); },
                 },
                 {
                   icon: isDark ? "sun" : "moon",
@@ -1563,7 +1559,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 /* ─────────────────────────────────────────────────────────────────────────────
    DASHBOARD
 ───────────────────────────────────────────────────────────────────────────── */
-function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS, externalFilter, onFilterChange }) {
+function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS, externalFilter, onFilterChange }) {
   const [calendarItem, setCalendarItem] = useState(null);
   const [calDaySession, setCalDaySession] = useState(null);
   const [previewSession, setPreviewSession] = useState(null);
@@ -2142,7 +2138,8 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
       )}
 
       {/* ── MAIN CONTENT ── */}
-      <div style={{ flex:1, minWidth:0, padding:"28px 32px" }}>
+      <div style={{ display:"flex", alignItems:"flex-start", gap:20, padding:"28px 32px" }}>
+      <div style={{ flex:1, minWidth:0 }}>
 
         {/* Greeting header */}
         <div style={{ marginBottom:20 }}>
@@ -2150,46 +2147,6 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
           <div style={{ fontSize:13, color:C.gray500 }}>SPED Summit · Spring 2026</div>
         </div>
 
-        {/* ── MY PROGRESS BANNER ── */}
-        {(() => {
-          const ringR = 28; const ringCirc = 2 * Math.PI * ringR;
-          const ringColor = pct === 100 ? "#10b981" : C.primary;
-          const sessionsLeft = Math.max(0, 2 - completed);
-          const STATS = [
-            { icon:"play-circle", label:"Sessions Watched",    val: completed,                            color:C.primary, bg:"rgba(37,99,235,0.08)"   },
-            { icon:"certificate", label:"Certificates Earned", val: certsEarned,                         color:"#f59e0b", bg:"rgba(245,158,11,0.08)"   },
-            { icon:"timer",       label:"Hours Learned",       val: `${(completed*0.75).toFixed(1)}h`,   color:"#10b981", bg:"rgba(16,185,129,0.08)"   },
-          ];
-          return (
-            <div style={{ background:"#fff", border:`1px solid ${C.gray200}`, borderRadius:18, marginBottom:28, display:"flex", alignItems:"stretch", overflow:"hidden", boxShadow:"0 1px 4px rgba(0,0,0,0.04)" }}>
-
-              {/* ① Progress block */}
-              <div style={{ flex:1, padding:"22px 28px", display:"flex", alignItems:"center", gap:18, background:"#fafbff", borderRight:`1px solid ${C.gray100}` }}>
-                <div style={{ width:"100%" }}>
-                  <div style={{ fontSize:15, fontWeight:800, color:C.gray900, marginBottom:3 }}>My Progress</div>
-                  <div style={{ fontSize:12, color:C.gray500, marginBottom:8 }}>{completed} of {totalEnrolled} sessions</div>
-                  {/* Progress bar */}
-                  <div style={{ width:"100%", height:6, background:"#eef0f6", borderRadius:99, overflow:"hidden" }}>
-                    <div style={{ width:`${pct}%`, height:"100%", background:ringColor, borderRadius:99, transition:"width 0.8s cubic-bezier(0.23,1,0.32,1)" }}/>
-                  </div>
-                  <div style={{ fontSize:12, fontWeight:700, color:ringColor, marginTop:5 }}>{pct}% complete</div>
-                </div>
-              </div>
-
-              {/* ② Stats */}
-              <div style={{ display:"flex", alignItems:"center", flex:1, justifyContent:"space-around", padding:"0 32px" }}>
-                {STATS.map((row, i) => (
-                  <div key={i} style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", gap:4 }}>
-                    <div style={{ fontSize:28, fontWeight:900, color:C.gray900, lineHeight:1 }}>{row.val}</div>
-                    <div style={{ fontSize:11, fontWeight:600, color:C.gray500, whiteSpace:"nowrap" }}>{row.label}</div>
-                  </div>
-                ))}
-              </div>
-
-
-            </div>
-          );
-        })()}
 
         {/* ── shared card badge map ── */}
         {(()=>{
@@ -2320,30 +2277,6 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
               <div style={{ marginBottom:32 }}>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16, gap:10 }}>
                   <div style={{ fontSize:16, fontWeight:800, color:C.gray900 }}>Continue Learning</div>
-                  <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                    {/* Season dropdown */}
-                    <div style={{ position:"relative", display:"inline-flex", alignItems:"center" }}>
-                      <select
-                        value={filterSeason}
-                        onChange={e => { setFilterSeason(e.target.value); onFilterChange?.({ season: e.target.value, year: filterYear }); }}
-                        style={{ appearance:"none", WebkitAppearance:"none", background:"#fff", border:"1px solid #e4e4e7", borderRadius:8, padding:"5px 28px 5px 10px", fontSize:13, fontWeight:500, color:"#18181b", cursor:"pointer", outline:"none", fontFamily:"inherit" }}>
-                        <option value="all">All Seasons</option>
-                        {seasonOptions.map(s => <option key={s} value={s}>{s}</option>)}
-                      </select>
-                      <Icon name="caret-down" size={13} color="#71717a" style={{ position:"absolute", right:8, pointerEvents:"none" }}/>
-                    </div>
-                    {/* Year dropdown */}
-                    <div style={{ position:"relative", display:"inline-flex", alignItems:"center" }}>
-                      <select
-                        value={filterYear}
-                        onChange={e => { setFilterYear(e.target.value); onFilterChange?.({ season: filterSeason, year: e.target.value }); }}
-                        style={{ appearance:"none", WebkitAppearance:"none", background:"#fff", border:"1px solid #e4e4e7", borderRadius:8, padding:"5px 28px 5px 10px", fontSize:13, fontWeight:500, color:"#18181b", cursor:"pointer", outline:"none", fontFamily:"inherit" }}>
-                        <option value="all">All Years</option>
-                        {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
-                      </select>
-                      <Icon name="caret-down" size={13} color="#71717a" style={{ position:"absolute", right:8, pointerEvents:"none" }}/>
-                    </div>
-                  </div>
                 </div>
                 {filteredInProgress.length > 0 ? (
                   <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
@@ -2361,20 +2294,105 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
                 )}
               </div>
 
-              {/* ── PAST SESSIONS ── */}
+              {/* ── PAST SESSIONS — season folder cards ── */}
               {filteredCompleted.length > 0 && (
-                <div>
-                  <div style={{ fontSize:16, fontWeight:800, color:C.gray900, marginBottom:16 }}>Past Sessions</div>
-                  <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-                    {filteredCompleted.map(s => renderSessionCard(s, "Watch Again"))}
+                <>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16, gap:10 }}>
+                    <div style={{ fontSize:16, fontWeight:800, color:C.gray900 }}>Past Sessions</div>
+                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                      <div style={{ position:"relative", display:"inline-flex", alignItems:"center" }}>
+                        <select value={filterSeason} onChange={e=>{ setFilterSeason(e.target.value); onFilterChange?.({ season:e.target.value, year:filterYear }); }}
+                          style={{ appearance:"none", WebkitAppearance:"none", background:"#fff", border:"1px solid #e4e4e7", borderRadius:8, padding:"5px 28px 5px 10px", fontSize:13, fontWeight:500, color:"#18181b", cursor:"pointer", outline:"none", fontFamily:"inherit" }}>
+                          <option value="all">All Seasons</option>
+                          {seasonOptions.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                        <Icon name="caret-down" size={13} color="#71717a" style={{ position:"absolute", right:8, pointerEvents:"none" }}/>
+                      </div>
+                      <div style={{ position:"relative", display:"inline-flex", alignItems:"center" }}>
+                        <select value={filterYear} onChange={e=>{ setFilterYear(e.target.value); onFilterChange?.({ season:filterSeason, year:e.target.value }); }}
+                          style={{ appearance:"none", WebkitAppearance:"none", background:"#fff", border:"1px solid #e4e4e7", borderRadius:8, padding:"5px 28px 5px 10px", fontSize:13, fontWeight:500, color:"#18181b", cursor:"pointer", outline:"none", fontFamily:"inherit" }}>
+                          <option value="all">All Years</option>
+                          {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                        </select>
+                        <Icon name="caret-down" size={13} color="#71717a" style={{ position:"absolute", right:8, pointerEvents:"none" }}/>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16 }}>
+                    {SEASONS.map(season => {
+                      const seasonCompleted = filteredCompleted.filter(s => season.sessionIds.includes(s.id));
+                      if (!seasonCompleted.length) return null;
+                      const thumb = seasonCompleted[0];
+                      const thumbSrc = thumb ? `https://vumbnail.com/${thumb.id}.jpg` : "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&h=340&fit=crop";
+                      return (
+                        <motion.div key={season.id}
+                          onClick={()=>onOpenPastSeason?.(season.id)}
+                          whileHover={{ y:-4, boxShadow:"0 12px 32px rgba(0,0,0,0.10)" }}
+                          transition={{ duration:0.25, ease:[0.25,1,0.5,1] }}
+                          style={{ cursor:"pointer", borderRadius:14, border:`1px solid ${C.gray200}`, background:C.white, overflow:"hidden", boxShadow:"0 2px 6px rgba(0,0,0,0.05)" }}
+                        >
+                          <div style={{ position:"relative", height:120, overflow:"hidden", background:"#1f2937" }}>
+                            <img src={thumbSrc} alt={season.name}
+                              style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 20%" }}
+                              onError={e=>e.currentTarget.src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=340&fit=crop"}/>
+                            <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top,rgba(0,0,0,0.25) 0%,transparent 60%)" }}/>
+                            <div style={{ position:"absolute", top:8, right:8, background:"rgba(0,0,0,0.6)", backdropFilter:"blur(4px)", borderRadius:6, padding:"3px 8px", display:"flex", alignItems:"center", gap:4 }}>
+                              <Icon name="list" size={10} color="#fff"/>
+                              <span style={{ fontSize:11, fontWeight:700, color:"#fff" }}>{seasonCompleted.length}</span>
+                            </div>
+                          </div>
+                          <div style={{ padding:"12px 14px" }}>
+                            <span style={{ fontSize:10, fontWeight:700, color:"#6b7280", background:"#f3f4f6", padding:"2px 7px", borderRadius:99 }}>Past Season</span>
+                            <div style={{ fontSize:15, fontWeight:800, color:C.gray900, lineHeight:1.3, marginTop:6 }}>{season.name}</div>
+                            <div style={{ fontSize:12, color:C.gray500, marginTop:3 }}>{seasonCompleted.length} completed session{seasonCompleted.length!==1?"s":""}</div>
+                          </div>
+                          <div style={{ padding:"8px 14px", borderTop:`1px solid ${C.gray100}`, display:"flex", justifyContent:"flex-end" }}>
+                            <span style={{ fontSize:12, fontWeight:600, color:C.primary }}>View all →</span>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </>
               )}
             </>
           );
         })()}
 
-      </div>
+      </div>{/* end main col */}
+
+      {/* ── RIGHT PANEL ── */}
+      {(()=>{
+        const ringColor = pct === 100 ? "#10b981" : C.primary;
+        return (
+          <div style={{ width:200, flexShrink:0, display:"flex", flexDirection:"column", gap:0, paddingTop:4 }}>
+            {/* Progress card */}
+            <div style={{ background:"#fff", border:`1px solid ${C.gray200}`, borderRadius:14, padding:"16px 18px", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", marginBottom:20 }}>
+              <div style={{ fontSize:13, fontWeight:800, color:C.gray900, marginBottom:2 }}>My Progress</div>
+              <div style={{ fontSize:11, color:C.gray500, marginBottom:8 }}>{completed} of {totalEnrolled} sessions</div>
+              <div style={{ width:"100%", height:5, background:"#eef0f6", borderRadius:99, overflow:"hidden" }}>
+                <div style={{ width:`${pct}%`, height:"100%", background:ringColor, borderRadius:99, transition:"width 0.8s cubic-bezier(0.23,1,0.32,1)" }}/>
+              </div>
+              <div style={{ fontSize:11, fontWeight:700, color:ringColor, marginTop:5 }}>{pct}% complete</div>
+            </div>
+            {/* Stats */}
+            <div style={{ background:"#fff", border:`1px solid ${C.gray200}`, borderRadius:14, boxShadow:"0 1px 4px rgba(0,0,0,0.04)", overflow:"hidden" }}>
+              {[
+                { label:"Sessions Watched",    val: completed },
+                { label:"Certificates Earned", val: certsEarned },
+                { label:"Hours Learned",       val: `${(completed*0.75).toFixed(1)}h` },
+              ].map((row, i, arr) => (
+                <div key={i} style={{ padding:"14px 18px", borderBottom: i < arr.length-1 ? `1px solid ${C.gray100}` : "none" }}>
+                  <div style={{ fontSize:24, fontWeight:900, color:C.gray900, lineHeight:1, letterSpacing:"-0.5px" }}>{row.val}</div>
+                  <div style={{ fontSize:11, fontWeight:600, color:C.gray500, marginTop:3 }}>{row.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+      </div>{/* end flex row */}
 
       {/* ── dead section banners removed (hero/instructors/testimonials/challenges/community now replaced by this layout) ── */}
       <div style={{ display:"none" }}>
@@ -2765,69 +2783,91 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
         );
       })()}
 
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))", gap:20 }}>
-        {seasons.map(season => {
-          const seasonSessions = sessions.filter(s => season.sessionIds.includes(s.id));
-          const liveCount     = seasonSessions.filter(s => getSessionState(s.id) === "live").length;
-          const upcomingCount = seasonSessions.filter(s => getSessionState(s.id) === "upcoming").length;
-          const pastCount     = seasonSessions.filter(s => getSessionState(s.id) === "past").length;
-          const statusLabel   = liveCount > 0     ? { label:"● LIVE NOW", color:"#fff",    bg:"#10b981" }
-                              : upcomingCount > 0 ? { label:"UPCOMING",   color:"#2563eb", bg:"#dbeafe" }
-                              : { label:"PAST SEASON", color:"#6b7280", bg:"#f3f4f6" };
-          const firstSession  = seasonSessions[0];
-
-          const hov = hoveredSeason === season.id;
-          return (
-            <div key={season.id}
-              onClick={()=>changeSeason(season.id)}
-              onMouseEnter={()=>setHoveredSeason(season.id)}
-              onMouseLeave={()=>setHoveredSeason(null)}
-              style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, overflow:"hidden", cursor:"pointer" }}>
-
-              {/* ── Stacked playlist thumbnail ── */}
-              <div style={{ position:"relative", width:"100%", paddingBottom:"56.25%", background:"#1f2937" }}>
-                {/* Back stack layers */}
-                {seasonSessions.length > 1 && (
-                  <div style={{ position:"absolute", bottom:-4, left:"6%", right:"6%", height:"100%", borderRadius:10, overflow:"hidden", opacity:0.5, transform:"scale(0.94)" }}>
-                    <SessionThumb id={seasonSessions[1]?.id || seasonSessions[0].id} height="100%" noPlayHover/>
-                  </div>
-                )}
-                {/* Main thumbnail */}
-                <div style={{ position:"absolute", inset:0, borderRadius:0, overflow:"hidden" }}>
-                  {firstSession && <SessionThumb id={firstSession.id} height="100%" noPlayHover/>}
-                  {/* Dark overlay */}
-                  <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.15) 55%, transparent 100%)" }}/>
-                  {/* Status badge top-left */}
-                  <div style={{ position:"absolute", top:10, left:10 }}>
-                    <span style={{ fontSize:11, fontWeight:700, color:statusLabel.color, background:statusLabel.bg, padding:"3px 9px", borderRadius:99 }}>{statusLabel.label}</span>
-                  </div>
-                  {/* Session count pill top-right (YouTube style) */}
-                  <div style={{ position:"absolute", top:10, right:10, background:"rgba(0,0,0,0.65)", backdropFilter:"blur(4px)", borderRadius:8, padding:"4px 10px", display:"flex", alignItems:"center", gap:5 }}>
-                    <Icon name="list" size={12} color="#fff"/>
-                    <span style={{ fontSize:12, fontWeight:700, color:"#fff" }}>{seasonSessions.length}</span>
-                  </div>
-                  {/* Season name bottom overlay */}
-                  <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"12px 14px" }}>
-                    <div style={{ fontSize:18, fontWeight:900, color:"#fff", letterSpacing:-.2, textShadow:"0 1px 4px rgba(0,0,0,0.5)" }}>{season.name}</div>
-                    <div style={{ fontSize:12, color:"rgba(255,255,255,0.75)", marginTop:2 }}>{season.tagline}</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* ── Card footer ── */}
-              <div style={{ padding:"14px 16px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                <div style={{ fontSize:12, color:C.gray600 }}>
-                  {seasonSessions.length > 0 ? <span>{seasonSessions.length} recorded</span> : <span>No sessions yet</span>}
-                </div>
-                <div style={{ display:"flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, color:C.primary, textDecoration: hov ? "underline" : "none" }}>
-                  View all <Icon name="caret-right" size={13} color={C.primary}/>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+      {/* ── Season folder cards ── */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px, 1fr))", gap:20 }}>
+        {seasons.map(season => <SeasonFolderCard key={season.id} season={season} sessions={sessions} onOpen={()=>changeSeason(season.id)}/>)}
       </div>
     </div>
+  );
+}
+
+function SeasonFolderCard({ season, sessions, onOpen }) {
+  const [hovered, setHovered] = useState(false);
+  const seasonSessions = sessions.filter(s => season.sessionIds.includes(s.id));
+  const liveCount = seasonSessions.filter(s => getSessionState(s.id) === "live").length;
+  const upcomingCount = seasonSessions.filter(s => getSessionState(s.id) === "upcoming").length;
+  const isPast = liveCount === 0 && upcomingCount === 0;
+  const statusLabel = liveCount > 0 ? { label:"● Live Now", color:"#fff", bg:"#10b981" }
+                    : upcomingCount > 0 ? { label:"Upcoming", color:"#2563eb", bg:"#dbeafe" }
+                    : { label:"Past Season", color:"#6b7280", bg:"#f3f4f6" };
+  const thumb = seasonSessions[0];
+  const thumbSrc = thumb
+    ? `https://vumbnail.com/${thumb.id}.jpg`
+    : "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&h=340&fit=crop";
+
+  return (
+    <motion.div
+      onClick={onOpen}
+      onHoverStart={()=>setHovered(true)}
+      onHoverEnd={()=>setHovered(false)}
+      whileHover={{ y:-6, boxShadow:"0 16px 40px rgba(0,0,0,0.12)" }}
+      transition={{ duration:0.3, ease:[0.25,1,0.5,1] }}
+      style={{ cursor:"pointer", borderRadius:16, border:`1px solid ${C.gray200}`, background:C.white, overflow:"hidden", boxShadow:"0 2px 8px rgba(0,0,0,0.06)" }}
+    >
+      {/* Top image */}
+      <div style={{ position:"relative", height:144, overflow:"hidden", background:"#1f2937" }}>
+        <img src={thumbSrc} alt={season.name}
+          style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 20%" }}
+          onError={e => e.currentTarget.src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=340&fit=crop"}/>
+        <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top,rgba(0,0,0,0.2) 0%,transparent 60%)" }}/>
+        <div style={{ position:"absolute", top:10, right:10, background:"rgba(0,0,0,0.65)", backdropFilter:"blur(4px)", borderRadius:8, padding:"4px 10px", display:"flex", alignItems:"center", gap:5 }}>
+          <Icon name="list" size={11} color="#fff"/>
+          <span style={{ fontSize:12, fontWeight:700, color:"#fff" }}>{seasonSessions.length}</span>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div style={{ padding:"16px 16px 10px" }}>
+        <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
+          <div>
+            <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:6 }}>
+              <span style={{ fontSize:10, fontWeight:700, color:statusLabel.color, background:statusLabel.bg, padding:"2px 8px", borderRadius:99 }}>{statusLabel.label}</span>
+              <span style={{ fontSize:11, color:C.gray400 }}>Updated recently</span>
+            </div>
+            <div style={{ fontSize:17, fontWeight:800, color:C.gray900, lineHeight:1.3 }}>{season.name}</div>
+          </div>
+          <Icon name="caret-right" size={16} color={C.gray300}/>
+        </div>
+
+        {/* Animated description on hover */}
+        <motion.div
+          initial={{ opacity:0, height:0, marginTop:0 }}
+          animate={hovered ? { opacity:1, height:"auto", marginTop:10 } : { opacity:0, height:0, marginTop:0 }}
+          transition={{ duration:0.25, ease:"easeInOut" }}
+          style={{ overflow:"hidden" }}
+        >
+          <p style={{ margin:"0 0 10px", fontSize:13, color:C.gray500, lineHeight:1.6 }}>{season.description}</p>
+          <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+            {isPast && <span style={{ fontSize:11, fontWeight:600, color:C.gray600, background:C.gray100, borderRadius:99, padding:"2px 10px" }}>Recorded</span>}
+            <span style={{ fontSize:11, fontWeight:600, color:C.gray600, background:C.gray100, borderRadius:99, padding:"2px 10px" }}>{seasonSessions.length} sessions</span>
+            <span style={{ fontSize:11, fontWeight:600, color:C.gray600, background:C.gray100, borderRadius:99, padding:"2px 10px" }}>Free certificate</span>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Footer */}
+      <div style={{ padding:"10px 16px", borderTop:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <div style={{ display:"flex", alignItems:"center" }}>
+          {seasonSessions.slice(0,3).map((s,i) => (
+            <div key={i} style={{ width:26, height:26, borderRadius:"50%", border:"2px solid #fff", overflow:"hidden", background:C.gray200, marginLeft:i>0?-8:0 }}>
+              <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=40&h=40&fit=crop" alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
+            </div>
+          ))}
+          <span style={{ fontSize:12, color:C.gray500, marginLeft:8 }}>{seasonSessions.length} sessions</span>
+        </div>
+        <span style={{ fontSize:12, fontWeight:600, color:C.primary }}>View all →</span>
+      </div>
+    </motion.div>
   );
 }
 
@@ -4323,6 +4363,13 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
           );
         })}
       </div>
+      {shareCert && (
+        <ShareCertificateModal
+          certUrl={shareCert.certUrl}
+          sessionTitle={shareCert.sessionTitle}
+          onClose={() => setShareCert(null)}
+        />
+      )}
     </div>
   );
 }
@@ -7070,90 +7117,143 @@ function LegalModal({ type, onClose }) {
 }
 
 function AuthModal({ onClose, onLogin }) {
-  const [mode, setMode] = useState("signup");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [legalModal, setLegalModal] = useState(null);
+  // step: "role-select" | "user-auth" | "admin-auth"
+  const [step,       setStep]      = useState("role-select");
+  const [mode,       setMode]      = useState("signup");
+  const [email,      setEmail]     = useState("");
+  const [password,   setPassword]  = useState("");
+  const [firstName,  setFirstName] = useState("");
+  const [lastName,   setLastName]  = useState("");
+  const [keepSigned, setKeepSigned]= useState(true);
+  const [legalModal, setLegalModal]= useState(null);
+
+  const isAdmin = step === "admin-auth";
 
   function handleSubmit(e) {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
-    onLogin();
+    onLogin(isAdmin ? "admin" : "user");
   }
 
-  function handleGoogle() {
-    onLogin();
-  }
+  const inp = {
+    width:"100%", padding:"10px 14px", border:"1px solid #e2e8f0", borderRadius:8,
+    fontSize:14, color:"#0f172a", outline:"none", boxSizing:"border-box",
+    background:"#fff", fontFamily:"inherit", transition:"border-color .15s",
+  };
 
   return (
-    <div style={{ position:"fixed", inset:0, zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(75,82,99,0.7)", padding:20 }}>
-      <div style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:480, padding:"36px 40px 28px", position:"relative", boxShadow:"0 24px 64px rgba(0,0,0,0.18)" }}>
-        <button onClick={onClose} style={{ position:"absolute", top:16, right:16, background:"none", border:"none", cursor:"pointer", color:"#9ca3af", fontSize:18, lineHeight:1, padding:4 }}>✕</button>
+    <div style={{ position:"fixed", inset:0, zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(15,23,42,0.55)", backdropFilter:"blur(4px)", padding:20 }}>
+      <div style={{ background:"#fff", borderRadius:16, width:"100%", maxWidth:420, position:"relative", boxShadow:"0 20px 60px rgba(0,0,0,0.15), 0 1px 0 rgba(255,255,255,0.8) inset" }}>
 
-        <h2 style={{ margin:"0 0 24px", fontSize:20, fontWeight:800, color:"#181c32", textAlign:"center" }}>
-          {mode === "signup" ? "Create your account" : "Welcome back"}
-        </h2>
-
-        {/* Google */}
-        <button onClick={handleGoogle}
-          style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:12, padding:"13px 16px", border:"1.5px solid #e4e6ef", borderRadius:12, background:"#fff", fontSize:14, fontWeight:500, color:"#181c32", cursor:"pointer", marginBottom:10, transition:"border-color .15s" }}
-          onMouseEnter={e=>e.currentTarget.style.borderColor="#3699ff"}
-          onMouseLeave={e=>e.currentTarget.style.borderColor="#e4e6ef"}>
-          <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-3.59-13.46-8.71l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
-          Continue with Google
-        </button>
-
-        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20 }}>
-          <div style={{ flex:1, height:1, background:"#e4e6ef" }}/>
-          <span style={{ fontSize:12, color:"#a1a5b7", fontWeight:500 }}>or</span>
-          <div style={{ flex:1, height:1, background:"#e4e6ef" }}/>
-        </div>
-
-        <form onSubmit={handleSubmit}>
-          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email address" type="email" required
-            style={{ width:"100%", padding:"13px 16px", border:"1.5px solid #e4e6ef", borderRadius:12, fontSize:14, color:"#181c32", outline:"none", marginBottom:10, boxSizing:"border-box", background:"#fff" }}
-            onFocus={e=>e.target.style.borderColor="#3699ff"} onBlur={e=>e.target.style.borderColor="#e4e6ef"}/>
-          <div style={{ marginBottom:6 }}>
-            <input value={password} onChange={e=>setPassword(e.target.value)} placeholder={mode==="signup"?"Create password":"Password"} type="password" required
-              style={{ width:"100%", padding:"13px 16px", border:"1.5px solid #e4e6ef", borderRadius:12, fontSize:14, color:"#181c32", outline:"none", boxSizing:"border-box", background:"#fff" }}
-              onFocus={e=>e.target.style.borderColor="#3699ff"} onBlur={e=>e.target.style.borderColor="#e4e6ef"}/>
-            {mode==="signup" && <div style={{ fontSize:12, color:"#a1a5b7", marginTop:5, marginLeft:4 }}>Password must be at least 6 characters long.</div>}
-          </div>
-          {mode==="signup" && (
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:10 }}>
-              <input value={firstName} onChange={e=>setFirstName(e.target.value)} placeholder="First name"
-                style={{ padding:"13px 16px", border:"1.5px solid #e4e6ef", borderRadius:12, fontSize:14, color:"#181c32", outline:"none", boxSizing:"border-box", background:"#fff" }}
-                onFocus={e=>e.target.style.borderColor="#3699ff"} onBlur={e=>e.target.style.borderColor="#e4e6ef"}/>
-              <input value={lastName} onChange={e=>setLastName(e.target.value)} placeholder="Last name"
-                style={{ padding:"13px 16px", border:"1.5px solid #e4e6ef", borderRadius:12, fontSize:14, color:"#181c32", outline:"none", boxSizing:"border-box", background:"#fff" }}
-                onFocus={e=>e.target.style.borderColor="#3699ff"} onBlur={e=>e.target.style.borderColor="#e4e6ef"}/>
+        {/* ── ROLE SELECT ── */}
+        {step === "role-select" && (
+          <div style={{ padding:"32px 32px 28px" }}>
+            {/* Logo + close row */}
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:28 }}>
+              <img src="/Container.png" alt="SPED Summit" style={{ height:20, display:"block" }}/>
+              <button onClick={onClose} style={{ width:28, height:28, borderRadius:7, border:"1px solid #e2e8f0", background:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <Icon name="x" size={13} color="#64748b"/>
+              </button>
             </div>
-          )}
-          <button type="submit"
-            style={{ width:"100%", padding:"15px", borderRadius:12, border:"none", background:"#50cd89", color:"#fff", fontSize:16, fontWeight:800, cursor:"pointer", marginTop:10, marginBottom:16, transition:"background .15s" }}
-            onMouseEnter={e=>e.currentTarget.style.background="#3cb97a"}
-            onMouseLeave={e=>e.currentTarget.style.background="#50cd89"}>
-            {mode==="signup" ? "Sign Up" : "Sign In"}
-          </button>
-        </form>
+            <div style={{ marginBottom:16 }}>
+              <h2 style={{ margin:"0 0 3px", fontSize:20, fontWeight:800, color:"#0f172a", letterSpacing:"-0.4px" }}>Welcome back</h2>
+              <p style={{ margin:0, fontSize:13, color:"#64748b" }}>Choose how you'd like to continue</p>
+            </div>
 
-        <p style={{ textAlign:"center", fontSize:14, color:"#5e6278", margin:"0 0 16px" }}>
-          {mode==="signup" ? "Already a member? " : "Don't have an account? "}
-          <button onClick={()=>setMode(mode==="signup"?"login":"signup")}
-            style={{ background:"none", border:"none", color:"#3699ff", fontWeight:700, fontSize:14, cursor:"pointer", padding:0 }}>
-            {mode==="signup" ? "Sign In" : "Sign Up"}
-          </button>
-        </p>
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              <button onClick={() => { setStep("user-auth"); setMode("signup"); }}
+                style={{ width:"100%", padding:"14px 18px", borderRadius:10, border:"1px solid #e2e8f0", background:"#fff", cursor:"pointer", textAlign:"left", fontFamily:"inherit", transition:"all .15s" }}
+                onMouseEnter={e=>{ e.currentTarget.style.borderColor="#2563eb"; e.currentTarget.style.background="#f8faff"; }}
+                onMouseLeave={e=>{ e.currentTarget.style.borderColor="#e2e8f0"; e.currentTarget.style.background="#fff"; }}>
+                <div style={{ fontSize:14, fontWeight:700, color:"#0f172a" }}>Continue as User</div>
+                <div style={{ fontSize:12, color:"#94a3b8", marginTop:2 }}>Create a new learner account</div>
+              </button>
 
-        {mode==="signup" && (
-          <p style={{ textAlign:"center", fontSize:12, color:"#a1a5b7", margin:0, lineHeight:1.6 }}>
-            By signing up you agree to Sped Summit's{" "}
-            <span onClick={()=>setLegalModal("terms")} style={{ fontWeight:700, color:"#181c32", cursor:"pointer", textDecoration:"underline" }}>Terms of Service</span>
-            {" "}and{" "}
-            <span onClick={()=>setLegalModal("privacy")} style={{ fontWeight:700, color:"#181c32", cursor:"pointer", textDecoration:"underline" }}>Privacy Policy</span>.
-          </p>
+              <button onClick={() => { setStep("admin-auth"); setMode("login"); }}
+                style={{ width:"100%", padding:"14px 18px", borderRadius:10, border:"1px solid #e2e8f0", background:"#fff", cursor:"pointer", textAlign:"left", fontFamily:"inherit", transition:"all .15s" }}
+                onMouseEnter={e=>{ e.currentTarget.style.borderColor="#2563eb"; e.currentTarget.style.background="#f8faff"; }}
+                onMouseLeave={e=>{ e.currentTarget.style.borderColor="#e2e8f0"; e.currentTarget.style.background="#fff"; }}>
+                <div style={{ fontSize:14, fontWeight:700, color:"#0f172a" }}>Continue as Admin</div>
+                <div style={{ fontSize:12, color:"#94a3b8", marginTop:2 }}>Sign in to manage the platform</div>
+              </button>
+            </div>
+
+            <p style={{ textAlign:"center", fontSize:12, color:"#94a3b8", margin:"24px 0 0", lineHeight:1.6 }}>
+              By continuing you agree to our{" "}
+              <span onClick={()=>setLegalModal("terms")} style={{ color:"#2563eb", cursor:"pointer", fontWeight:600 }}>Terms</span>
+              {" "}and{" "}
+              <span onClick={()=>setLegalModal("privacy")} style={{ color:"#2563eb", cursor:"pointer", fontWeight:600 }}>Privacy Policy</span>
+            </p>
+          </div>
+        )}
+
+        {/* ── AUTH FORM ── */}
+        {step !== "role-select" && (
+          <>
+
+            <div style={{ padding: isAdmin ? "28px 32px 28px" : "24px 32px 28px" }}>
+              {/* Back */}
+              <button onClick={() => setStep("role-select")}
+                style={{ background:"none", border:"none", cursor:"pointer", color:"#64748b", fontSize:13, fontWeight:500, padding:"0 0 20px", display:"flex", alignItems:"center", gap:4, fontFamily:"inherit" }}>
+                <Icon name="caret-left" size={12} color="#64748b"/> Back
+              </button>
+
+              <h2 style={{ margin:"0 0 6px", fontSize:18, fontWeight:800, color:"#0f172a" }}>{isAdmin ? "Admin Sign In" : "Continue with email"}</h2>
+              {!isAdmin && <p style={{ margin:"0 0 20px", fontSize:13, color:"#94a3b8" }}>New users will be registered automatically.</p>}
+              {isAdmin && <div style={{ marginBottom:20 }}/>}
+
+              {/* Google (user only) */}
+              {!isAdmin && (
+                <>
+                  <button onClick={()=>onLogin("user")}
+                    style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"11px 16px", border:"1px solid #e2e8f0", borderRadius:8, background:"#fff", fontSize:14, fontWeight:500, color:"#0f172a", cursor:"pointer", marginBottom:16, fontFamily:"inherit", transition:"border-color .15s" }}
+                    onMouseEnter={e=>e.currentTarget.style.borderColor="#2563eb"}
+                    onMouseLeave={e=>e.currentTarget.style.borderColor="#e2e8f0"}>
+                    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-3.59-13.46-8.71l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+                    Continue with Google
+                  </button>
+                  <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:16 }}>
+                    <div style={{ flex:1, height:1, background:"#f1f5f9" }}/>
+                    <span style={{ fontSize:12, color:"#94a3b8", fontWeight:500 }}>or</span>
+                    <div style={{ flex:1, height:1, background:"#f1f5f9" }}/>
+                  </div>
+                </>
+              )}
+
+              <form onSubmit={handleSubmit}>
+                <div style={{ marginBottom:12 }}>
+                  <label style={{ display:"block", fontSize:12, fontWeight:600, color:"#374151", marginBottom:5 }}>Email</label>
+                  <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Work Email" type="email" required style={inp}
+                    onFocus={e=>e.target.style.borderColor="#2563eb"} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
+                </div>
+                <div style={{ marginBottom:16 }}>
+                  <label style={{ display:"block", fontSize:12, fontWeight:600, color:"#374151", marginBottom:5 }}>Password</label>
+                  <input value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your password" type="password" required style={inp}
+                    onFocus={e=>e.target.style.borderColor="#2563eb"} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
+                </div>
+                <button type="submit"
+                  style={{ width:"100%", padding:"12px", borderRadius:8, border:"none", background:"#2563eb", color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit", transition:"background .15s" }}
+                  onMouseEnter={e=>e.currentTarget.style.background="#1d4ed8"}
+                  onMouseLeave={e=>e.currentTarget.style.background="#2563eb"}>
+                  {isAdmin ? "Sign In" : "Continue"}
+                </button>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:12 }}>
+                  <label style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
+                    <input type="checkbox" checked={keepSigned} onChange={e=>setKeepSigned(e.target.checked)} style={{ width:14, height:14, accentColor:"#2563eb", cursor:"pointer" }}/>
+                    <span style={{ fontSize:13, color:"#374151" }}>Keep me signed in</span>
+                  </label>
+                  <span style={{ fontSize:13, color:"#2563eb", cursor:"pointer", fontWeight:500, textDecoration:"underline" }}>Forgot password?</span>
+                </div>
+              </form>
+
+              <p style={{ textAlign:"center", fontSize:12, color:"#94a3b8", margin:"20px 0 0", lineHeight:1.6 }}>
+                {new Date().getFullYear()} All Rights Reserved.{" "}
+                <span onClick={()=>setLegalModal("privacy")} style={{ color:"#2563eb", cursor:"pointer" }}>Privacy</span>
+                {" "}and{" "}
+                <span onClick={()=>setLegalModal("terms")} style={{ color:"#2563eb", cursor:"pointer" }}>Terms</span>.
+              </p>
+            </div>
+          </>
         )}
       </div>
       {legalModal && <LegalModal type={legalModal} onClose={()=>setLegalModal(null)}/>}
@@ -7793,9 +7893,6 @@ function HeroCardStack({ T }) {
         <div style={{ ...CARD_STYLE_BASE, padding: 24 }}>
           {/* header */}
           <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14, flexShrink:0 }}>
-            <div style={{ width:40, height:40, borderRadius:12, background:"linear-gradient(135deg,#6366f1,#8a46ff)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-              <Icon name="play-circle" size={20} color="#fff"/>
-            </div>
             <div>
               <div style={{ fontSize:10, fontWeight:700, color:"#8a46ff", letterSpacing:.5, textTransform:"uppercase" }}>Now Playing</div>
               <div style={{ fontSize:14, fontWeight:700, color:T.text, lineHeight:1.3 }}>Mindfulness for SPED Educators</div>
@@ -7826,9 +7923,6 @@ function HeroCardStack({ T }) {
         <div style={{ ...CARD_STYLE_BASE, padding: 24 }}>
           {/* header */}
           <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16, flexShrink:0 }}>
-            <div style={{ width:40, height:40, borderRadius:12, background:"linear-gradient(135deg,#0ea5e9,#6366f1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-              <Icon name="question" size={20} color="#fff"/>
-            </div>
             <div>
               <div style={{ fontSize:10, fontWeight:700, color:"#0ea5e9", letterSpacing:.5, textTransform:"uppercase" }}>Knowledge Check</div>
               <div style={{ fontSize:14, fontWeight:700, color:T.text }}>Question 2 of 5</div>
@@ -7865,10 +7959,6 @@ function HeroCardStack({ T }) {
       id: "cert",
       render: () => (
         <div style={{ ...CARD_STYLE_BASE, padding: 32, alignItems:"center", justifyContent:"center", textAlign:"center" }}>
-          {/* badge */}
-          <div style={{ width:72, height:72, borderRadius:22, background:"linear-gradient(135deg,#8a46ff,#e83e8c)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:18, flexShrink:0 }}>
-            <Icon name="certificate" size={36} color="#fff"/>
-          </div>
           <div style={{ fontSize:10, fontWeight:700, color:T.muted, textTransform:"uppercase", letterSpacing:1.5, marginBottom:10, flexShrink:0 }}>Certificate of Completion</div>
           <div style={{ fontSize:26, fontWeight:800, color:T.text, letterSpacing:-.5, marginBottom:6, flexShrink:0 }}>Sarah Johnson</div>
           <div style={{ fontSize:13, color:T.muted, lineHeight:1.7, marginBottom:24, flexShrink:0 }}>
@@ -7897,10 +7987,6 @@ function HeroCardStack({ T }) {
       id: "win",
       render: () => (
         <div style={{ ...CARD_STYLE_BASE, padding: 28, alignItems:"center", justifyContent:"center", textAlign:"center" }}>
-          {/* trophy */}
-          <div style={{ width:72, height:72, borderRadius:22, background:"linear-gradient(135deg,#f59e0b,#f97316)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:18, flexShrink:0 }}>
-            <Icon name="trophy" size={36} color="#fff"/>
-          </div>
           <div style={{ fontSize:20, fontWeight:800, color:T.text, marginBottom:8, letterSpacing:-.3, flexShrink:0 }}>You're in the Draw!</div>
           <div style={{ fontSize:13, color:T.muted, lineHeight:1.7, marginBottom:22, flexShrink:0 }}>
             Your certificate entered you in the <strong style={{ color:T.text }}>Ablespace Pro</strong> prize draw.<br/>Good luck! 🎉
@@ -7939,15 +8025,16 @@ function HeroCardStack({ T }) {
 
   // Back cards fan DOWNWARD — like a physical deck on a table
   // i=0 is front (highest zIndex), i=1,2,3 peek below it
+  const BASE_TOP = 40;   // nudge entire stack slightly downward
   const OFFSET   = 18;   // px each card shifts down
   const SCALE_S  = 0.055; // scale shrinks per step
   const spring = { type:"spring", stiffness:160, damping:24 };
 
   // Container height = card height + total bottom peek of all back cards
-  const containerH = CARD_H + OFFSET * (cards.length - 1);
+  const containerH = CARD_H + BASE_TOP + OFFSET * (cards.length - 1);
 
   return (
-    <div style={{ display:"flex", justifyContent:"center", paddingTop:16, paddingBottom:64 }}>
+    <div style={{ display:"flex", justifyContent:"center", paddingTop:16, paddingBottom:24 }}>
       <div style={{ position:"relative", width:CARD_W, height:containerH }}>
         {/* Render back-to-front so front card sits on top visually */}
         {[...cards].reverse().map(({ id, render }, ri) => {
@@ -7962,7 +8049,7 @@ function HeroCardStack({ T }) {
                 userSelect:"none",
               }}
               animate={{
-                top: i * OFFSET,                                   // back cards shift DOWN
+                top: BASE_TOP + i * OFFSET,                        // keep full stack slightly lower
                 scale: 1 - i * SCALE_S,                            // back cards shrink
                 filter: `brightness(${Math.max(0.55, 1 - i * 0.15)})`, // back cards dim
                 zIndex: cards.length - i,                          // front = highest zIndex
@@ -7978,6 +8065,59 @@ function HeroCardStack({ T }) {
             </motion.div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+/* ── Testimonial components defined at module level so Framer Motion never resets ── */
+const V1_TESTIMONIALS = [
+  { text:"The IEP session alone was worth it. I walked away with three new strategies I used that same week. The certificate was ready instantly — no chasing required.", name:"Sarah M.", role:"Resource Room Teacher, TX", img:"https://randomuser.me/api/portraits/women/1.jpg" },
+  { text:"I've paid hundreds for PD that wasn't as good as this. The AAC module was incredibly practical and the quizzes really locked in the learning.", name:"James K.", role:"Inclusion Specialist, NY", img:"https://randomuser.me/api/portraits/men/2.jpg" },
+  { text:"Recommended it to my entire department. Free, self-paced, and the quality rivals anything I've seen on paid platforms.", name:"Priya D.", role:"Special Ed Coordinator, CA", img:"https://randomuser.me/api/portraits/women/3.jpg" },
+  { text:"The mindfulness session shifted how I approach dysregulation in the classroom. Really well-presented, even after a long day.", name:"Tom R.", role:"Behavior Interventionist, FL", img:"https://randomuser.me/api/portraits/men/4.jpg" },
+  { text:"I was nervous about the quiz format but they're fair — multiple attempts allowed and instant feedback. I felt genuinely proud of my scores.", name:"Lisa H.", role:"SPED Paraprofessional, OH", img:"https://randomuser.me/api/portraits/women/5.jpg" },
+  { text:"The Ablespace giveaway was a bonus, but honestly the content itself kept me coming back. Nine sessions was the perfect amount.", name:"Deb A.", role:"Elementary SPED Teacher, WA", img:"https://randomuser.me/api/portraits/women/6.jpg" },
+  { text:"Every instructor had real classroom experience — not just theory. The behavior intervention session was immediately applicable.", name:"Marcus T.", role:"Behavioral Support Specialist, IL", img:"https://randomuser.me/api/portraits/men/7.jpg" },
+  { text:"Sharing my certificate on LinkedIn got more engagement than anything I've posted. Colleagues started asking where to sign up.", name:"Aisha N.", role:"Special Ed Department Head, GA", img:"https://randomuser.me/api/portraits/women/8.jpg" },
+  { text:"Finally, PD that doesn't feel like a checkbox. I replayed two sessions because the content was that good. Completely free is wild.", name:"Carlos B.", role:"Transition Planning Specialist, AZ", img:"https://randomuser.me/api/portraits/men/9.jpg" },
+];
+const V1_T_CARD_W = 320;
+
+function V1TestiCard({ t }) {
+  return (
+    <div style={{ background:"#ffffff", border:"1px solid #e5e7eb", borderRadius:20, padding:24, width:V1_T_CARD_W, boxSizing:"border-box", boxShadow:"0 2px 12px rgba(0,0,0,0.05)", flexShrink:0 }}>
+      <p style={{ margin:"0 0 18px", fontSize:14, color:"#4b5563", lineHeight:1.7 }}>"{t.text}"</p>
+      <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+        <img src={t.img} alt={t.name} style={{ width:40, height:40, borderRadius:"50%", objectFit:"cover", flexShrink:0 }}/>
+        <div>
+          <div style={{ fontSize:14, fontWeight:700, color:"#262626", lineHeight:1.3 }}>{t.name}</div>
+          <div style={{ fontSize:12, color:"#6b7280", marginTop:2 }}>{t.role}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function V1TestiCol({ items, duration }) {
+  const cls = `v1tcol-${duration}`;
+  return (
+    <div style={{ width:V1_T_CARD_W, flexShrink:0, overflow:"hidden" }}>
+      <style>{`
+        @keyframes ${cls} { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+        .${cls} { animation: ${cls} ${duration}s linear infinite; }
+        .${cls}:hover { animation-play-state: paused; }
+      `}</style>
+      <div className={cls} style={{ display:"flex", flexDirection:"column" }}>
+        {[0,1].map((_,pass)=>(
+          <React.Fragment key={pass}>
+            {items.map((t,i)=>(
+              <div key={i} style={{ paddingBottom:20 }}>
+                <V1TestiCard t={t}/>
+              </div>
+            ))}
+          </React.Fragment>
+        ))}
       </div>
     </div>
   );
@@ -8147,7 +8287,7 @@ function LandingPage({ onGetStarted }) {
             </button>
           </div>
         </div>
-        {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={()=>onGetStarted(null)}/>}
+        {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={(role)=>onGetStarted(null,role)}/>}
       </div>
     );
   }
@@ -8163,7 +8303,7 @@ function LandingPage({ onGetStarted }) {
           onRegister={() => setShowAuth(true)}
           registerLabel={_isPastSession ? "View Recording" : "Register"}
         />
-        {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={()=>onGetStarted(selectedSession?.id)}/>}
+        {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={(role)=>onGetStarted(selectedSession?.id,role)}/>}
       </>
     );
   }
@@ -8257,7 +8397,7 @@ function LandingPage({ onGetStarted }) {
       )}
 
       {/* ── Hero ── */}
-      <section style={{ paddingTop:0, paddingBottom:72, background:T.bg, position:"relative", overflow:"hidden" }}
+      <section style={{ paddingTop:0, paddingBottom:0, background:T.bg, position:"relative", overflow:"hidden", minHeight:"180vh", marginTop:56 }}
         onMouseMove={e=>{ heroMouseX.set(e.clientX); heroMouseY.set(e.clientY); }}>
 
         {/* ── Infinite grid background ── */}
@@ -8283,16 +8423,19 @@ function LandingPage({ onGetStarted }) {
           );
         })()}
 
+        {/* ── Centered content wrapper ── */}
+        <div style={{ position:"absolute", top:0, left:0, right:0, bottom:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", zIndex:1, paddingBottom:240 }}>
+
         {/* ── Text block ── */}
-        <div style={{ maxWidth:780, margin:"0 auto", padding:"80px 24px 48px", textAlign:"center", position:"relative", zIndex:1 }}>
+        <div style={{ maxWidth:780, width:"100%", padding:"0 24px", textAlign:"center" }}>
 
           {/* Rating badge */}
           <div className="animate-fade-in-up" style={{ opacity:0, animationDelay:"0.2s", marginBottom:24 }}>
             <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"#f1f0ef", border:`1px solid ${T.border}`, borderRadius:8, padding:"5px 14px" }}>
               <div style={{ width:22, height:22, border:`1px solid ${T.border}`, borderRadius:5, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <Icon name="star" size={12} color="#f59e0b"/>
+                <Icon name="calendar" size={12} color="#f59e0b"/>
               </div>
-              <span style={{ fontSize:13, fontWeight:500, color:T.text }}>4.9 rating from 4,200+ educators</span>
+              <span style={{ fontSize:13, fontWeight:500, color:T.text }}>05th Jan – 04th Feb 2026</span>
             </div>
           </div>
 
@@ -8329,6 +8472,49 @@ function LandingPage({ onGetStarted }) {
 
         {/* ── Card Stack ── */}
         <HeroCardStack T={T}/>
+
+        </div>{/* end centered content wrapper */}
+
+        {/* Staggered collage — absolutely pinned to bottom */}
+        {(()=>{
+          const cols = [
+            { mt:60  },
+            { mt:0   },
+            { mt:80  },
+            { mt:20  },
+            { mt:40  },
+            { mt:70  },
+            { mt:10  },
+            { mt:50  },
+            { mt:30  },
+          ];
+          const CARD_W = 150, CARD_H = 190;
+          const n = experts.length;
+          return (
+            <div style={{ position:"absolute", bottom:0, left:0, right:0, height:280, overflow:"hidden" }}>
+              <div style={{ display:"flex", justifyContent:"center", gap:10 }}>
+                {cols.map((col, ci) => {
+                  const top = experts[ci % n];
+                  const bot = experts[(ci + 5) % n];
+                  return (
+                    <div key={ci} style={{ flexShrink:0, display:"flex", flexDirection:"column", gap:10, marginTop:col.mt }}>
+                      <div style={{ width:CARD_W, height:CARD_H, borderRadius:16, overflow:"hidden", boxShadow:"0 6px 24px rgba(0,0,0,0.10)", cursor:"pointer" }}
+                        onMouseEnter={e=>e.currentTarget.querySelector("img").style.transform="scale(1.08)"}
+                        onMouseLeave={e=>e.currentTarget.querySelector("img").style.transform="scale(1)"}>
+                        <img src={top.img} alt={top.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%", display:"block", transition:"transform 0.4s ease" }}/>
+                      </div>
+                      <div style={{ width:CARD_W, height:CARD_H, borderRadius:16, overflow:"hidden", boxShadow:"0 6px 24px rgba(0,0,0,0.10)", cursor:"pointer" }}
+                        onMouseEnter={e=>e.currentTarget.querySelector("img").style.transform="scale(1.08)"}
+                        onMouseLeave={e=>e.currentTarget.querySelector("img").style.transform="scale(1)"}>
+                        <img src={bot.img} alt={bot.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%", display:"block", transition:"transform 0.4s ease" }}/>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
 
       </section>
 
@@ -8857,88 +9043,26 @@ function LandingPage({ onGetStarted }) {
         </div>
       </section>
 
-      {/* ── Testimonials ── */}
-      {(()=>{
-        const ALL_T = [
-          { text:"SPED Summit gave me the practical tools I could use in my classroom the very next day. The sessions are so mindful and packed with the right content.", name:"Maria Gonzalez", role:"Special Ed Teacher", img:"https://images.unsplash.com/photo-1573497491208-6b1acb260507?w=80&h=80&fit=crop&auto=format" },
-          { text:"The quality of speakers is outstanding. I learned strategies for supporting DHH students that I had not encountered in years of professional development.", name:"Jordan Brooks", role:"Resource Room Specialist", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&auto=format" },
-          { text:"The AAC module changed how I work with my non-verbal students. Practical, research-backed, and delivered by someone who truly understands the classroom.", name:"Priya Nair", role:"AAC Specialist, BCBA", img:"https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=80&h=80&fit=crop&auto=format" },
-          { text:"I loved how each session was structured — easy to follow, visually clear, and immediately applicable. This is the PD I have always wished existed.", name:"Devon Castillo", role:"Inclusion Facilitator", img:"https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=80&h=80&fit=crop&auto=format" },
-          { text:"The IEP writing session alone was worth it. I finally have a framework I can use with confidence for every student on my caseload.", name:"Sandra Kim", role:"SPED Coordinator", img:"https://images.unsplash.com/photo-1580489944761-15a19d654956?w=80&h=80&fit=crop&auto=format" },
-          { text:"I appreciated that every session was free. No hidden fees, no upsells — just incredibly valuable professional development for educators who need it.", name:"Tyrone Washington", role:"Behavior Interventionist", img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&auto=format" },
-          { text:"The certificate gave me something concrete to show my district. It opened the door to a conversation about expanding our inclusive practices school-wide.", name:"Anita Patel", role:"Instructional Coach", img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&auto=format" },
-          { text:"Watching on-demand meant I could fit it around my schedule. I finished all 9 sessions in two weeks and immediately started applying what I learned.", name:"Luke Ramirez", role:"Para-educator", img:"https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=80&h=80&fit=crop&auto=format" },
-          { text:"The mindfulness session was transformative. I was sceptical at first, but the research-backed techniques helped me stay regulated even on the hardest days.", name:"Claire Nguyen", role:"Early Intervention Specialist", img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&auto=format" },
-        ];
-        const col1 = ALL_T.slice(0,3), col2 = ALL_T.slice(3,6), col3 = ALL_T.slice(6,9);
-
-        function TCard({ t }) {
-          return (
-            <motion.div
-              whileHover={{ scale:1.03, y:-8, boxShadow:"0 25px 50px -12px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.05)", transition:{ type:"spring", stiffness:400, damping:17 } }}
-              style={{ padding:32, borderRadius:24, border:`1px solid ${T.border}`, boxShadow:"0 2px 12px rgba(0,0,0,0.05)", background:"#ffffff", maxWidth:300, width:"100%", cursor:"default", userSelect:"none" }}
-            >
-              <p style={{ margin:"0 0 24px", fontSize:14, color:T.text, lineHeight:1.75 }}>{t.text}</p>
-              <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-                <img src={t.img} alt={t.name} width={40} height={40} style={{ width:40, height:40, borderRadius:"50%", objectFit:"cover", border:`2px solid ${T.border}`, flexShrink:0 }}/>
-                <div>
-                  <div style={{ fontWeight:700, fontSize:14, color:T.text, lineHeight:1.2 }}>{t.name}</div>
-                  <div style={{ fontSize:12, color:T.muted, marginTop:2 }}>{t.role}</div>
-                </div>
-              </div>
-            </motion.div>
-          );
-        }
-
-        function TCol({ items, duration }) {
-          return (
-            <div style={{ overflow:"visible" }}>
-              <motion.div
-                animate={{ translateY:"-50%" }}
-                transition={{ duration, repeat:Infinity, ease:"linear", repeatType:"loop" }}
-                style={{ display:"flex", flexDirection:"column", gap:24, paddingBottom:24 }}
-              >
-                {[0,1].map(pass=>(
-                  <div key={pass} style={{ display:"flex", flexDirection:"column", gap:24 }}>
-                    {items.map((t,i)=><TCard key={`${pass}-${i}`} t={t}/>)}
-                  </div>
-                ))}
-              </motion.div>
-            </div>
-          );
-        }
-
-        return (
-          <section style={{ padding:"96px 24px", borderBottom:`1px solid ${T.border}` }}>
-            <motion.div
-              initial={{ opacity:0, y:40 }}
-              whileInView={{ opacity:1, y:0 }}
-              viewport={{ once:true, amount:0.15 }}
-              transition={{ duration:1, ease:[0.16,1,0.3,1] }}
-              style={{ maxWidth:1100, margin:"0 auto" }}
-            >
-              {/* Header */}
-              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", maxWidth:540, margin:"0 auto 64px", textAlign:"center" }}>
-                <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Testimonials</p>
-                <h2 style={{ margin:"0 0 16px", fontSize:"clamp(32px,4vw,48px)", fontWeight:800, color:T.text, letterSpacing:-1.5, lineHeight:1.1 }}>
-                  Loved by educators
-                </h2>
-                <p style={{ margin:0, fontSize:17, color:T.muted, lineHeight:1.7 }}>
-                  Hear from thousands of SPED educators who have already transformed their practice.
-                </p>
-              </div>
-
-              {/* Scrolling columns */}
-              <style>{`.tcol2{display:none} .tcol3{display:none} @media(min-width:768px){.tcol2{display:block}} @media(min-width:1024px){.tcol3{display:block}}`}</style>
-              <div style={{ display:"flex", justifyContent:"center", gap:24, maxHeight:740, overflow:"hidden", WebkitMaskImage:"linear-gradient(to bottom,transparent,black 10%,black 90%,transparent)", maskImage:"linear-gradient(to bottom,transparent,black 10%,black 90%,transparent)" }}>
-                <TCol items={col1} duration={15}/>
-                <div className="tcol2"><TCol items={col2} duration={19}/></div>
-                <div className="tcol3"><TCol items={col3} duration={17}/></div>
-              </div>
-            </motion.div>
-          </section>
-        );
-      })()}
+      {/* ── Testimonials (V2 style) ── */}
+      <section style={{ background:"#ffffff", padding:"80px 24px 48px", borderBottom:`1px solid ${T.border}` }}>
+        <style>{`.t1-col2{display:none}.t1-col3{display:none}@media(min-width:768px){.t1-col2{display:block}}@media(min-width:1100px){.t1-col3{display:block}}`}</style>
+        <div style={{ maxWidth:1100, margin:"0 auto" }}>
+          <div style={{ textAlign:"center", marginBottom:64 }}>
+            <p style={{ margin:"0 0 12px", fontSize:13, fontWeight:700, color:T.muted, letterSpacing:1, textTransform:"uppercase" }}>Testimonials</p>
+            <h2 style={{ margin:"0 0 16px", fontSize:"clamp(32px,4vw,52px)", fontWeight:900, color:T.text, letterSpacing:-1.5, lineHeight:1.1 }}>
+              What educators are saying
+            </h2>
+            <p style={{ margin:0, fontSize:17, color:T.muted, maxWidth:480, marginInline:"auto" }}>
+              Real feedback from SPED educators who completed the summit.
+            </p>
+          </div>
+          <div style={{ display:"flex", justifyContent:"center", gap:20, maxHeight:740, overflow:"hidden", maskImage:"linear-gradient(to bottom,transparent,black 15%,black 85%,transparent)", WebkitMaskImage:"linear-gradient(to bottom,transparent,black 15%,black 85%,transparent)" }}>
+            <V1TestiCol items={V1_TESTIMONIALS.slice(0,3)} duration={15}/>
+            <div className="t1-col2"><V1TestiCol items={V1_TESTIMONIALS.slice(3,6)} duration={19}/></div>
+            <div className="t1-col3"><V1TestiCol items={V1_TESTIMONIALS.slice(6,9)} duration={17}/></div>
+          </div>
+        </div>
+      </section>
 
       {/* ── FAQ ── */}
       <section id="help" style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#ffffff" }}>
@@ -9047,7 +9171,7 @@ function LandingPage({ onGetStarted }) {
 
       </footer>
 
-      {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={()=>onGetStarted(null)}/>}
+      {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={(role)=>onGetStarted(null,role)}/>}
     </div>
   );
 }
@@ -9290,28 +9414,26 @@ function LandingPageV2({ onGetStarted }) {
             </h2>
             <p style={{ margin:0, fontSize:16, color:T2.muted }}>9 certified specialists who have spent careers in special education.</p>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20 }}>
-            {experts.slice(0,6).map((e,i)=>(
-              <div key={i} style={{ background:"#fff", borderRadius:20, overflow:"hidden", border:`1px solid ${T2.border}` }}>
-                <div style={{ height:220, overflow:"hidden", background:"#f0ece4" }}>
-                  <img src={e.img} alt={e.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%", display:"block", transition:"transform 0.4s ease" }}
-                    onMouseEnter={e=>e.currentTarget.style.transform="scale(1.06)"}
-                    onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}/>
+          {/* All 9 speakers — edge-to-edge same-height cards */}
+          <div style={{ display:"flex", gap:0, overflowX:"auto", scrollbarWidth:"none", msOverflowStyle:"none", margin:"0 -24px", padding:"0 24px" }}>
+            <style>{`.spk-v2-row::-webkit-scrollbar{display:none} .spk-v2-card:hover .spk-v2-img{transform:scale(1.06)}`}</style>
+            <div className="spk-v2-row" style={{ display:"grid", gridTemplateColumns:`repeat(${experts.length},1fr)`, gap:0, width:"100%" }}>
+              {experts.map((e,i)=>(
+                <div key={i} className="spk-v2-card" style={{ position:"relative", overflow:"hidden", aspectRatio:"3/4", background:"#111", cursor:"pointer" }}
+                  onClick={()=>setShowAuth(true)}>
+                  <img className="spk-v2-img" src={e.img} alt={e.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%", display:"block", transition:"transform 0.5s ease" }}/>
+                  {/* gradient overlay */}
+                  <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.1) 55%, transparent 100%)" }}/>
+                  {/* name / role */}
+                  <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"14px 12px" }}>
+                    <div style={{ fontWeight:700, fontSize:13, color:"#fff", lineHeight:1.3, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{e.name}</div>
+                    <div style={{ fontSize:11, color:"rgba(255,255,255,0.7)", marginTop:2, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{e.role}</div>
+                  </div>
+                  {/* left divider except first */}
+                  {i > 0 && <div style={{ position:"absolute", top:0, left:0, bottom:0, width:1, background:"rgba(255,255,255,0.1)" }}/>}
                 </div>
-                <div style={{ padding:"16px 18px" }}>
-                  <div style={{ fontWeight:700, fontSize:15, color:T2.text }}>{e.name}</div>
-                  <div style={{ fontSize:13, color:T2.muted, marginTop:3 }}>{e.role}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div style={{ textAlign:"center", marginTop:32 }}>
-            <button onClick={()=>setShowAuth(true)}
-              style={{ padding:"0 28px", height:46, background:T2.accent, color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer", transition:"all .15s", boxShadow:"0 2px 0 0 #5b21b6" }}
-              onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 4px 0 0 #5b21b6"; }}
-              onMouseLeave={e=>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="0 2px 0 0 #5b21b6"; }}>
-              Meet all 9 speakers →
-            </button>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -9428,7 +9550,7 @@ function LandingPageV2({ onGetStarted }) {
         </div>
       </section>
 
-      {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={()=>onGetStarted(null)}/>}
+      {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={(role)=>onGetStarted(null,role)}/>}
     </div>
   );
 }
@@ -9453,6 +9575,7 @@ export default function App() {
   const [userName, setUserName] = useState("Alex Johnson");
   const [scheduleRegistrations, setScheduleRegistrations] = useState({});
   const [sessionsDeepLink, setSessionsDeepLink] = useState(null);
+  const [pastSeasonPageId, setPastSeasonPageId] = useState(null);
   const [dashFilter, setDashFilter] = useState({ season:"all", year:"all" });
   const [adminSessions, setAdminSessions] = useState(() => {
     try { const s = localStorage.getItem("adminSessions"); return s ? JSON.parse(s) : ADMIN_SESSIONS_DATA; } catch { return ADMIN_SESSIONS_DATA; }
@@ -9557,7 +9680,7 @@ export default function App() {
     }
   }
 
-  function nav(p) { setPage(p); sessionStorage.setItem("page", p); setActiveSession(null); setEditingSession(null); }
+  function nav(p) { setPage(p); sessionStorage.setItem("page", p); setActiveSession(null); setEditingSession(null); if (p === "sessions") setSessionsDeepLink(null); }
   function navToSeason(seasonId) { setSessionsDeepLink(seasonId); setPage("sessions"); setActiveSession(null); }
 
   function openEdit(s) {
@@ -9624,7 +9747,89 @@ export default function App() {
       if (page==="admin-edit" && editingSession) return <AdminEditSession session={editingSession} onBack={()=>nav("admin-sessions")} toast={toast} onSave={updateSession}/>;
       if (page==="admin-analytics") return <AnalyticsPage onEditSession={openEdit}/>;
     }
-    if (page==="dashboard") return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={sessions} externalFilter={dashFilter} onFilterChange={setDashFilter}/>;
+    if (page==="past-season" && pastSeasonPageId) {
+      const season = seasons.find(s => s.id === pastSeasonPageId);
+      const enrolledSessions = sessions.filter(s => enrolledIds.has(s.id));
+      const seasonSessions = enrolledSessions.filter(s => season?.sessionIds.includes(s.id) && s.status === "completed");
+      const INST_ROLES_PS = {
+        "Tara Roehl":"Occupational Therapist","Casey Harrison":"Dyslexia Specialist","Jordan Smith":"Speech-Language Pathologist",
+        "Morgan Lee":"Special Ed Educator","Dr. Emily Tran":"AI & Technology Educator","Dr. Sarah Kim":"AAC Specialist, BCBA",
+        "Alex Rivera":"Behavior Intervention Specialist","Sam Parmelee":"DHH Education Specialist","Natasha S.":"Transition Planning Expert",
+      };
+      const CAT_BADGE_PS = {
+        "MANAGEMENT":{"label":"Management","bg":"#dbeafe","color":"#1d4ed8"},
+        "LEADERSHIP":{"label":"Leadership","bg":"#d1fae5","color":"#065f46"},
+        "COMMUNICATION":{"label":"Communication","bg":"#fff7ed","color":"#c2410c"},
+        "TEAMWORK":{"label":"Teamwork","bg":"#fdf4ff","color":"#7e22ce"},
+        "TECHNOLOGY":{"label":"Technology","bg":"#fef3c7","color":"#b45309"},
+        "ACCESSIBILITY":{"label":"Accessibility","bg":"#ede9fe","color":"#6d28d9"},
+      };
+      return (
+        <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
+          {/* Breadcrumb */}
+          <div style={{ display:"flex", alignItems:"center", gap:4, marginBottom:24, fontSize:14, fontWeight:500, color:C.gray500 }}>
+            <button onClick={()=>{ setPastSeasonPageId(null); nav("dashboard"); }}
+              style={{ background:"none", border:"none", cursor:"pointer", padding:0, fontSize:14, fontWeight:500, color:C.gray500 }}
+              onMouseEnter={e=>e.currentTarget.style.color=C.gray900} onMouseLeave={e=>e.currentTarget.style.color=C.gray500}>
+              My Learnings
+            </button>
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="#CBD5E1"/></svg>
+            <span style={{ color:"#6366f1", fontWeight:600 }}>{season?.name}</span>
+          </div>
+          {/* Page title */}
+          <div style={{ marginBottom:20 }}>
+            <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900 }}>{season?.name}</h1>
+            <div style={{ fontSize:13, color:C.gray500 }}>Past Season · {seasonSessions.length} session{seasonSessions.length!==1?"s":""} completed</div>
+          </div>
+          <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+            {seasonSessions.map(s => {
+              const catBadge = CAT_BADGE_PS[s.category] || { label:s.category, bg:"#f3f4f6", color:"#374151" };
+              const instrRole = INST_ROLES_PS[s.instructor] || "Instructor";
+              return (
+                <div key={s.id}
+                  style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:12, display:"flex", alignItems:"stretch", overflow:"hidden", cursor:"pointer", minHeight:235 }}
+                  onClick={()=>openSession(s)}>
+                  <div style={{ flexShrink:0, width:200, position:"relative" }}>
+                    <img src={INSTRUCTOR_AVATARS[s.instructor]} alt={s.instructor}
+                      style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top center", display:"block" }}/>
+                    <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.25) 45%,transparent 75%)" }}/>
+                    <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"0 10px 10px" }}>
+                      <div style={{ fontSize:15, fontWeight:700, color:"#fff", lineHeight:1.25 }}>{s.instructor}</div>
+                      <div style={{ fontSize:13, color:"rgba(255,255,255,0.72)", marginTop:3, lineHeight:1.3 }}>{instrRole}</div>
+                    </div>
+                  </div>
+                  <div style={{ flex:1, minWidth:0, padding:20, display:"flex", flexDirection:"column" }}>
+                    <div style={{ marginBottom:8 }}>
+                      <span style={{ display:"inline-block", fontSize:11, fontWeight:600, padding:"2px 7px", borderRadius:4, background:catBadge.bg, color:catBadge.color, letterSpacing:.2 }}>
+                        {catBadge.label}
+                      </span>
+                    </div>
+                    <div style={{ fontSize:17, fontWeight:700, color:"#111827", lineHeight:1.3, marginBottom:6 }}>{s.title}</div>
+                    <div style={{ fontSize:12, color:"#6b7280", lineHeight:1.55, marginBottom:6, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
+                      {s.description}
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:12, marginTop:"auto", paddingTop:12 }}>
+                      <button onClick={e=>{ e.stopPropagation(); openSession(s); }}
+                        style={{ display:"inline-flex", alignItems:"center", padding:"7px 13px", background:"#6366f1", color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer" }}
+                        onMouseEnter={e=>e.currentTarget.style.background="#4f46e5"}
+                        onMouseLeave={e=>e.currentTarget.style.background="#6366f1"}>
+                        Watch Again
+                      </button>
+                      {s.status==="completed" && (
+                        <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, color:"#059669" }}>
+                          <Icon name="check-circle" size={13} color="#059669"/> Certificate earned
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+    if (page==="dashboard") return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenPastSeason={(id)=>{ setPastSeasonPageId(id); nav("past-season"); }} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={sessions} externalFilter={dashFilter} onFilterChange={setDashFilter}/>;
     if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={sessions} seasons={seasons}/>;
     if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
@@ -9637,10 +9842,16 @@ export default function App() {
   const activePage = page==="session-detail" ? (isAdmin?"admin-sessions":"sessions") : page;
 
   if (!isLoggedIn) {
-    const handleGetStarted = (sessionId) => {
+    const handleGetStarted = (sessionId, role = "user") => {
+      const admin = role === "admin";
       setIsLoggedIn(true);
       sessionStorage.setItem("loggedIn", "1");
-      if (sessionId) enroll(sessionId);
+      setIsAdmin(admin);
+      sessionStorage.setItem("isAdmin", admin ? "1" : "0");
+      const p = admin ? "admin-overview" : "dashboard";
+      setPage(p);
+      sessionStorage.setItem("page", p);
+      if (sessionId && !admin) enroll(sessionId);
     };
     return (
       <>
