@@ -5395,9 +5395,6 @@ function CurriculumBuilder({ toast, initialSections, onSectionsChange }) {
 
           {/* Card header — FormSection style */}
           <div style={{ display:"flex", gap:12, marginBottom:20, alignItems:"flex-start" }}>
-            <div style={{ width:36, height:36, borderRadius:10, background:"#ecfdf5", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-              <Icon name="file-pdf" size={18} color="#059669"/>
-            </div>
             <div style={{ flex:1 }}>
               <div style={{ fontWeight:800, fontSize:16, color:C.gray900 }}>Material</div>
               <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>Upload files for this lesson</div>
