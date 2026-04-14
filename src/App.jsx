@@ -4,7 +4,7 @@ import * as PhosphorIcons from "@phosphor-icons/react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import LandingV2 from "./v2/LandingV2";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useMotionTemplate, useAnimationFrame } from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PHOSPHOR ICONS  (inline SVG, consistent 20px/24px strokes)
@@ -22,6 +22,7 @@ const ICON_MAP = {
   "arrow-left": PhosphorIcons.ArrowLeft,
   "arrow-right": PhosphorIcons.ArrowRight,
   "caret-right": PhosphorIcons.CaretRight,
+  "caret-left":  PhosphorIcons.CaretLeft,
   lock: PhosphorIcons.Lock,
   check: PhosphorIcons.Check,
   "check-circle": PhosphorIcons.CheckCircle,
@@ -109,6 +110,10 @@ const ICON_MAP = {
   confetti:             PhosphorIcons.Confetti,
   brain:                PhosphorIcons.Brain,
   clipboard:            PhosphorIcons.Clipboard,
+  "twitter-logo":       PhosphorIcons.TwitterLogo,
+  "linkedin-logo":      PhosphorIcons.LinkedinLogo,
+  "youtube-logo":       PhosphorIcons.YoutubeLogo,
+  "instagram-logo":     PhosphorIcons.InstagramLogo,
 };
 
 const Icon = ({ name, size = 20, color = "currentColor", style: s = {} }) => {
@@ -431,6 +436,15 @@ const SESSIONS = [
   { id:6, title:"Understanding & Supporting Communication for Students with AAC", category:"ACCESSIBILITY", instructor:"Dr. Sarah Kim", instructorBio:"AAC specialist with 15+ years supporting students with complex communication needs in inclusive environments.", instructorQuote:"Communication is a human right — AAC makes it possible for everyone.", duration:"48 mins", resources:3, progress:0, status:"not-started", description:"Analyze the product for compliance with accessibility standards to ensure it serves all users regardless of ability.", lessons:[{id:1,title:"What is AAC?",duration:"10:00",status:"available",type:"video"},{id:2,title:"Device Selection",duration:"18:00",status:"locked",type:"video"},{id:"1q",title:"AAC Basics Quiz",questions:7,status:"locked",type:"quiz"},{id:3,title:"Implementation in Class",duration:"20:00",status:"locked",type:"video"}] },
 ];
 
+const INSTRUCTOR_AVATARS = {
+  "Tara Roehl":      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&auto=format",
+  "Casey Harrison":  "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=200&h=200&fit=crop&auto=format",
+  "Jordan Smith":    "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&auto=format",
+  "Morgan Lee":      "https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=200&h=200&fit=crop&auto=format",
+  "Dr. Emily Tran":  "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=200&h=200&fit=crop&auto=format",
+  "Dr. Sarah Kim":   "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&h=200&fit=crop&auto=format",
+};
+
 const SEASONS = [
   {
     id: "spring-2026",
@@ -514,11 +528,19 @@ function getCTA(s) {
   return { label:"Start Session", disabled:false };
 }
 
-function Avatar({ name, size=36 }) {
+function Avatar({ name, src, size=36 }) {
+  const [imgFailed, setImgFailed] = useState(false);
   const colors = ["#2563eb","#7c3aed","#059669","#d97706","#dc2626","#0891b2","#0d9488"];
   const c = colors[name.charCodeAt(0) % colors.length];
   const initials = name.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase();
-  return <div style={{ width:size, height:size, borderRadius:"50%", background:c, display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", fontWeight:700, fontSize:size*0.36, flexShrink:0, letterSpacing:0.5 }}>{initials}</div>;
+  const showImg = src && !imgFailed;
+  return (
+    <div style={{ width:size, height:size, borderRadius:"50%", background:showImg ? "transparent" : c, display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", fontWeight:700, fontSize:size*0.36, flexShrink:0, letterSpacing:0.5, overflow:"hidden" }}>
+      {showImg
+        ? <img src={src} alt={name} onError={()=>setImgFailed(true)} style={{ width:"100%", height:"100%", objectFit:"cover", borderRadius:"50%" }}/>
+        : initials}
+    </div>
+  );
 }
 
 function ProgressBar({ value, color=C.primary, height=4, trackColor=C.gray200 }) {
@@ -649,7 +671,7 @@ function NotificationPopover({ onClose }) {
   return (
     <div ref={ref} style={{
       position:"absolute", top:"calc(100% + 8px)", right:0,
-      width:360, background:C.white, borderRadius:16,
+      width:420, background:C.white, borderRadius:16,
       border:`1px solid ${C.gray200}`, boxShadow:"0 16px 40px rgba(0,0,0,0.14)",
       zIndex:300, overflow:"hidden", animation:"fadeIn .18s ease"
     }}>
@@ -763,6 +785,67 @@ const SEARCH_PAGES = [
   { id:"profile",          label:"My Profile",   icon:"user-circle", type:"page" },
 ];
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   FOOTER
+───────────────────────────────────────────────────────────────────────────── */
+function Footer() {
+  const muted = "#6b7280";
+  const text  = "#111827";
+  const border = "#e5e7eb";
+  const bg = "#fff";
+  const hover = "rgba(0,0,0,0.04)";
+  return (
+    <footer style={{ background:bg, borderTop:`1px solid ${border}`, fontFamily:"inherit", flexShrink:0 }}>
+      <div style={{ maxWidth:1024, margin:"0 auto", padding:"56px 24px 48px", display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:48, borderBottom:`1px solid ${border}` }}>
+        {/* Brand */}
+        <div>
+          <img src="/Container.png" alt="SPED Summit" style={{ height:26, display:"block", marginBottom:16 }}/>
+          <p style={{ margin:"0 0 24px", fontSize:14, color:muted, lineHeight:1.7, maxWidth:280 }}>
+            SPED Summit is a free professional development platform for Special Education professionals — built by educators, for educators.
+          </p>
+          <div style={{ display:"flex", gap:10 }}>
+            {[
+              { label:"YouTube",   svg:"M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z" },
+              { label:"Instagram", svg:"M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" },
+              { label:"Facebook",  svg:"M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" },
+            ].map(({ label, svg }) => (
+              <a key={label} href="#" aria-label={label}
+                style={{ width:32, height:32, borderRadius:8, border:`1px solid ${border}`, background:bg, display:"flex", alignItems:"center", justifyContent:"center", transition:"background .12s", textDecoration:"none" }}
+                onMouseEnter={e => e.currentTarget.style.background=hover}
+                onMouseLeave={e => e.currentTarget.style.background=bg}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill={muted}><path d={svg}/></svg>
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {/* Link columns */}
+        {[
+          { heading:"Platform", links:["Sessions","Instructors","Giveaways","Schedule","Community"] },
+          { heading:"Company",  links:["About","Blog","Careers","Press","Contact"] },
+          { heading:"Legal",    links:["Privacy Policy","Terms of Service","Cookie Policy","Accessibility"] },
+        ].map(({ heading, links }) => (
+          <div key={heading}>
+            <div style={{ fontSize:11, fontWeight:600, color:muted, letterSpacing:.8, textTransform:"uppercase", marginBottom:16 }}>{heading}</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              {links.map(l => (
+                <a key={l} href="#" style={{ fontSize:14, color:muted, textDecoration:"none", transition:"color .12s" }}
+                  onMouseEnter={e => e.currentTarget.style.color=text}
+                  onMouseLeave={e => e.currentTarget.style.color=muted}>{l}</a>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Copyright */}
+      <div style={{ padding:"16px 24px", display:"flex", justifyContent:"center" }}>
+        <span style={{ fontSize:12, color:muted }}>© {new Date().getFullYear()} SPED Summit. All rights reserved.</span>
+      </div>
+    </footer>
+  );
+}
+
 function SearchBar({ onOpenSession, onNavigate }) {
   const [query, setQuery]   = useState("");
   const [open,  setOpen]    = useState(false);
@@ -850,7 +933,7 @@ function SearchBar({ onOpenSession, onNavigate }) {
                   style={{ width:"100%", display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:"none", border:"none", cursor:"pointer", textAlign:"left" }}
                   onMouseEnter={e => e.currentTarget.style.background = C.gray50}
                   onMouseLeave={e => e.currentTarget.style.background = "none"}>
-                  <Avatar name={s.instructor} size={28}/>
+                  <Avatar name={s.instructor} src={INSTRUCTOR_AVATARS[s.instructor]} size={28}/>
                   <div>
                     <div style={{ fontSize:14, fontWeight:600, color:C.gray800 }}>{s.instructor}</div>
                     <div style={{ fontSize:12, color:C.gray400 }}>{s.category}</div>
@@ -985,19 +1068,89 @@ function ReferFriendsModal({ onClose, userName }) {
   );
 }
 
-function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, onOpenSession, onNavigate, userName = "Alex Johnson" }) {
+function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, onOpenSession, onNavigate, userName = "Alex Johnson", onBrowseSelect }) {
   const [showNotif, setShowNotif] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showReferModal, setShowReferModal] = useState(false);
+  const [showBrowse, setShowBrowse] = useState(false);
+  const browseRef = useRef(null);
   const unread = NOTIF_DATA.filter(n => !n.read).length;
   const notifBtnRef = useRef(null);
 
+  /* Close browse on outside click */
+  useEffect(() => {
+    if (!showBrowse) return;
+    function handleClick(e) {
+      if (browseRef.current && !browseRef.current.contains(e.target)) setShowBrowse(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [showBrowse]);
+
+  /* Derive seasons and years from SEASONS data */
+  const browseSeasons = SEASONS.map(s => ({ id: s.id, name: s.name, tagline: s.tagline, color: s.color }));
+  const browseYears   = [...new Set(SEASONS.map(s => s.name.split(" ")[1]))].sort((a,b) => b - a);
+  const browseSeasonNames = [...new Set(SEASONS.map(s => s.name.split(" ")[0]))];
+
   return (
-    <div style={{ height:60, background:C.white, borderBottom:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", paddingLeft:20, paddingRight:20, position:"sticky", top:0, zIndex:100, flexShrink:0 }}>
+    <div style={{ height:60, background:C.white, borderBottom:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", paddingLeft:12, paddingRight:12, position:"sticky", top:0, zIndex:100, flexShrink:0 }}>
       {/* Logo */}
       <div style={{ flexShrink:0, display:"flex", alignItems:"center", cursor:"pointer" }}
         onClick={()=>onNavigate(isAdmin ? "admin-overview" : "dashboard")}>
         <img src="/Container.png" alt="SPED Summit" style={{ height:28, width:"auto", display:"block" }}/>
+      </div>
+
+      {/* Browse button */}
+      <div style={{ position:"relative", marginLeft:16, flexShrink:0 }} ref={browseRef}>
+        <button
+          onClick={() => setShowBrowse(v => !v)}
+          style={{ display:"inline-flex", alignItems:"center", gap:5, background:"none", border:"none", cursor:"pointer", fontSize:14, fontWeight:600, color: showBrowse ? C.primary : C.gray700, padding:"6px 10px", borderRadius:8, fontFamily:"inherit", transition:"color .15s" }}
+          onMouseEnter={e => { if (!showBrowse) e.currentTarget.style.color = C.gray900; }}
+          onMouseLeave={e => { if (!showBrowse) e.currentTarget.style.color = C.gray700; }}>
+          Browse
+          <Icon name="caret-down" size={13} color={showBrowse ? C.primary : C.gray500}
+            style={{ transition:"transform .2s", transform: showBrowse ? "rotate(180deg)" : "rotate(0deg)" }}/>
+        </button>
+
+        {showBrowse && (
+          <div style={{ position:"absolute", top:"calc(100% + 8px)", left:0, background:"#fff", border:"1px solid #e4e4e7", borderRadius:14, boxShadow:"0 12px 40px rgba(0,0,0,0.12)", minWidth:400, zIndex:200, display:"flex", overflow:"hidden" }}>
+            {/* Sessions column */}
+            <div style={{ flex:1, padding:"20px 20px 16px" }}>
+              <div style={{ fontSize:11, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:8, paddingLeft:4 }}>Sessions</div>
+              <div style={{ display:"flex", flexDirection:"column" }}>
+                {browseSeasons.map(s => (
+                  <button key={s.id}
+                    onClick={() => { setShowBrowse(false); const [sn, sy] = s.name.split(" "); onBrowseSelect?.(sn, sy); }}
+                    style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", background:"none", border:"none", cursor:"pointer", padding:"8px 8px", borderRadius:8, textAlign:"left", fontFamily:"inherit", transition:"background .12s" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "#f4f4f5"}
+                    onMouseLeave={e => e.currentTarget.style.background = "none"}>
+                    <span style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{s.name}</span>
+                    <span style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{s.tagline}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div style={{ width:1, background:"#f0f0f0", flexShrink:0, margin:"0" }}/>
+
+            {/* Year column */}
+            <div style={{ minWidth:120, padding:"20px 20px 16px" }}>
+              <div style={{ fontSize:11, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:8, paddingLeft:4 }}>Year</div>
+              <div style={{ display:"flex", flexDirection:"column" }}>
+                {browseYears.map(y => (
+                  <button key={y}
+                    onClick={() => { setShowBrowse(false); onBrowseSelect?.("all", y); }}
+                    style={{ background:"none", border:"none", cursor:"pointer", padding:"8px 8px", borderRadius:8, fontSize:14, fontWeight:600, color:C.gray900, textAlign:"left", fontFamily:"inherit", transition:"background .12s" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "#f4f4f5"}
+                    onMouseLeave={e => e.currentTarget.style.background = "none"}>
+                    {y}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Search — centered */}
@@ -1079,113 +1232,140 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
 /* ─────────────────────────────────────────────────────────────────────────────
    SIDEBAR
 ───────────────────────────────────────────────────────────────────────────── */
-const SIDEBAR_USER_NAV = [
-  { id: "dashboard",      Icon: PhosphorIcons.House,          label: "My Learnings"    },
-  { id: "sessions",       Icon: PhosphorIcons.PlayCircle,     label: "All Sessions"    },
-  { id: "schedules",      Icon: PhosphorIcons.CalendarBlank,  label: "Schedules"       },
-  { id: "certifications", Icon: PhosphorIcons.Certificate,    label: "My Certificates" },
-];
-const SIDEBAR_ADMIN_NAV = [
-  { id: "admin-overview",  Icon: PhosphorIcons.House,       label: "Overview"    },
-  { id: "admin-sessions",  Icon: PhosphorIcons.PlayCircle,  label: "My Sessions" },
-  { id: "admin-analytics", Icon: PhosphorIcons.ChartLine,   label: "Analytics"   },
-];
-
-const sidebarMotionVariants = {
-  open:   { width: "15rem" },
-  closed: { width: "3.25rem" },
-};
-const labelVariants = {
-  open:   { opacity: 1, x: 0,   display: "block", transition: { duration: 0.18 } },
-  closed: { opacity: 0, x: -10, transitionEnd: { display: "none" } },
-};
-
 function Sidebar({ active, onChange, isAdmin }) {
-  const [collapsed, setCollapsed] = useState(true);
-  const nav = isAdmin ? SIDEBAR_ADMIN_NAV : SIDEBAR_USER_NAV;
+  const [hov, setHov] = useState(null);
+  const userNav = [
+    { id:"dashboard",      icon:"house",        label:"My Learnings"    },
+    { id:"sessions",       icon:"play-circle",  label:"All Sessions"    },
+    { id:"schedules",      icon:"calendar",     label:"Schedules"       },
+    { id:"certifications", icon:"certificate",  label:"My Certificates" },
+  ];
+  const adminNav = [
+    { id:"admin-overview",  icon:"house",       label:"Overview"    },
+    { id:"admin-sessions",  icon:"play-circle", label:"My Sessions" },
+    { id:"admin-analytics", icon:"chart-line",  label:"Analytics"   },
+  ];
+  const nav = isAdmin ? adminNav : userNav;
 
   return (
-    <motion.div
-      initial="closed"
-      animate={collapsed ? "closed" : "open"}
-      variants={sidebarMotionVariants}
-      transition={{ type: "tween", ease: "easeOut", duration: 0.2 }}
-      onMouseEnter={() => setCollapsed(false)}
-      onMouseLeave={() => setCollapsed(true)}
-      style={{
-        position: "relative",
-        flexShrink: 0,
-        height: "100%",
-        background: C.white,
-        borderRight: `1px solid ${C.gray200}`,
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-        zIndex: 40,
-      }}
-    >
-      {/* Nav items */}
-      <div style={{ flex: 1, padding: "10px 8px", display: "flex", flexDirection: "column", gap: 2 }}>
-        {nav.map(({ id, Icon: NavIcon, label }) => {
-          const isActive = active === id;
-          return (
+    <div style={{ width:52, background:C.white, borderRight:`1px solid ${C.gray200}`, display:"flex", flexDirection:"column", alignItems:"center", padding:"10px 0 12px", flexShrink:0, height:"100%", gap:2 }}>
+      {nav.map(item => {
+        const isActive = active === item.id;
+        const isHov = hov === item.id;
+        return (
+          <div key={item.id} style={{ position:"relative" }}>
             <button
-              key={id}
-              onClick={() => onChange(id)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                width: "100%",
-                height: 36,
-                padding: "0 8px",
-                borderRadius: 9,
-                border: "none",
-                cursor: "pointer",
-                background: isActive ? C.primaryLight : "transparent",
-                transition: "background .12s",
-                position: "relative",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-              }}
-              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = C.gray100; }}
-              onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
-            >
-              {/* Active indicator */}
+              onClick={() => onChange(item.id)}
+              onMouseEnter={() => setHov(item.id)}
+              onMouseLeave={() => setHov(null)}
+              style={{ width:36, height:36, borderRadius:9, border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", background: isActive ? C.primaryLight : isHov ? C.gray100 : "transparent", transition:"background .12s", position:"relative" }}>
+              <Icon name={item.icon} size={18} color={isActive ? C.primary : C.gray500}/>
               {isActive && (
-                <div style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", width: 3, height: 18, borderRadius: 99, background: C.primary }} />
+                <div style={{ position:"absolute", left:-8, top:"50%", transform:"translateY(-50%)", width:3, height:18, borderRadius:99, background:C.primary }}/>
               )}
-              <NavIcon
-                size={18}
-                weight={isActive ? "fill" : "regular"}
-                color={isActive ? C.primary : C.gray500}
-                style={{ flexShrink: 0 }}
-              />
-              <motion.span
-                variants={labelVariants}
-                style={{ fontSize: 13, fontWeight: 600, color: isActive ? C.primary : C.gray700 }}
-              >
-                {label}
-              </motion.span>
             </button>
-          );
-        })}
-      </div>
+            {isHov && (
+              <div style={{ position:"absolute", left:"calc(100% + 10px)", top:"50%", transform:"translateY(-50%)", background:"#181c32", color:"#fff", fontSize:12, fontWeight:600, padding:"5px 9px", borderRadius:7, whiteSpace:"nowrap", pointerEvents:"none", zIndex:999, boxShadow:"0 2px 8px rgba(0,0,0,0.18)" }}>
+                {item.label}
+                <div style={{ position:"absolute", right:"100%", top:"50%", transform:"translateY(-50%)", borderWidth:"4px 5px 4px 0", borderStyle:"solid", borderColor:"transparent #181c32 transparent transparent" }}/>
+              </div>
+            )}
+          </div>
+        );
+      })}
+      <div style={{ marginTop:"auto" }}/>
+    </div>
+  );
+}
 
-      {/* Bottom: settings */}
-      <div style={{ padding: "8px", borderTop: `1px solid ${C.gray200}` }}>
-        <button
-          style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", height: 36, padding: "0 8px", borderRadius: 9, border: "none", cursor: "pointer", background: "transparent", transition: "background .12s", whiteSpace: "nowrap", overflow: "hidden" }}
-          onMouseEnter={e => { e.currentTarget.style.background = C.gray100; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
-        >
-          <PhosphorIcons.Gear size={18} color={C.gray500} style={{ flexShrink: 0 }} />
-          <motion.span variants={labelVariants} style={{ fontSize: 13, fontWeight: 600, color: C.gray700 }}>
-            Settings
-          </motion.span>
-        </button>
+/* ─────────────────────────────────────────────────────────────────────────────
+   TAB BAR  (horizontal top nav — replaces sidebar for logged-in users)
+───────────────────────────────────────────────────────────────────────────── */
+function TabBar({ active, onChange, isAdmin }) {
+  const userNav = [
+    { id:"dashboard",      label:"My Learnings"    },
+    { id:"certifications", label:"My Certificates" },
+  ];
+  const adminNav = [
+    { id:"admin-overview",  label:"Overview"    },
+    { id:"admin-sessions",  label:"My Sessions" },
+    { id:"admin-analytics", label:"Analytics"   },
+  ];
+  const nav = isAdmin ? adminNav : userNav;
+
+  return (
+    <>
+      <style>{`
+        .tabbar-wrap {
+          background: #fff;
+          border-bottom: 1px solid #e4e4e7;
+          padding: 0 20px;
+          display: flex;
+          align-items: stretch;
+          flex-shrink: 0;
+          overflow-x: auto;
+          scrollbar-width: none;
+        }
+        .tabbar-list {
+          display: inline-flex;
+          align-items: stretch;
+          gap: 0;
+        }
+        .tabbar-tab {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0 14px;
+          height: 40px;
+          border: none;
+          background: transparent;
+          border-radius: 0;
+          font-family: inherit;
+          font-size: 13px;
+          font-weight: 500;
+          color: #71717a;
+          cursor: pointer;
+          white-space: nowrap;
+          position: relative;
+          transition: color 150ms;
+          outline: none;
+        }
+        .tabbar-tab::after {
+          content: '';
+          position: absolute;
+          bottom: -1px;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: transparent;
+          border-radius: 2px 2px 0 0;
+          transition: background 150ms;
+        }
+        .tabbar-tab:hover:not(.tabbar-tab-active) {
+          color: #18181b;
+        }
+        .tabbar-tab-active {
+          color: #18181b;
+          font-weight: 600;
+        }
+        .tabbar-tab-active::after {
+          background: #18181b;
+        }
+      `}</style>
+      <div className="tabbar-wrap">
+        <div className="tabbar-list">
+          {nav.map(item => (
+            <button
+              key={item.id}
+              className={`tabbar-tab${active === item.id ? " tabbar-tab-active" : ""}`}
+              onClick={() => onChange(item.id)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
       </div>
-    </motion.div>
+    </>
   );
 }
 
@@ -1383,9 +1563,21 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 /* ─────────────────────────────────────────────────────────────────────────────
    DASHBOARD
 ───────────────────────────────────────────────────────────────────────────── */
-function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS }) {
+function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS, externalFilter, onFilterChange }) {
   const [calendarItem, setCalendarItem] = useState(null);
+  const [calDaySession, setCalDaySession] = useState(null);
   const [previewSession, setPreviewSession] = useState(null);
+  const [contentTab, setContentTab] = useState("inprogress");
+  const [calMonth, setCalMonth] = useState(() => new Date(2026, 3, 1));
+  const [filterSeason, setFilterSeason] = useState(externalFilter?.season || "all");
+  const [filterYear,   setFilterYear]   = useState(externalFilter?.year   || "all");
+
+  useEffect(() => {
+    if (externalFilter) {
+      setFilterSeason(externalFilter.season);
+      setFilterYear(externalFilter.year);
+    }
+  }, [externalFilter?.season, externalFilter?.year]);
 
   const enrolledSessions = SESSIONS.filter(s => enrolledIds.has(s.id));
   const upcomingSchedule = SCHEDULE.filter(i => i.status === "upcoming");
@@ -1655,18 +1847,18 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
                   </div>
                   <div style={{ fontSize:13, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.title}</div>
                   <div style={{ fontSize:12, color:C.gray500, marginTop:2, display:"flex", alignItems:"center", gap:4 }}>
-                    <Avatar name={item.instructor} size={14}/>
+                    <Avatar name={item.instructor} src={INSTRUCTOR_AVATARS[item.instructor]} size={14}/>
                     <span>{item.instructor}</span>
                   </div>
                 </div>
                 {registered ? (
                   <div style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:12, color:C.success, background:"rgba(16,185,129,0.10)", padding:"6px 12px", borderRadius:99, fontWeight:600, flexShrink:0 }}>
-                    <Icon name="check-circle" size={13} color={C.success}/> Registered
+                    Registered
                   </div>
                 ) : (
                   <button className="db-btn-primary" style={{ fontSize:13, padding:"7px 14px", flexShrink:0 }}
                     onClick={() => setCalendarItem(item)}>
-                    <Icon name="bell" size={13} color="#fff"/> Register
+                    Register
                   </button>
                 )}
               </div>
@@ -1677,6 +1869,29 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
     );
   }
 
+  // ─── RENDER DATA ─────────────────────────────────────────────────────────
+  const INST_ROLES = {
+    "Tara Roehl":     "Occupational Therapist",
+    "Casey Harrison": "Dyslexia Specialist",
+    "Jordan Smith":   "Speech-Language Pathologist",
+    "Morgan Lee":     "Special Ed Educator",
+    "Dr. Emily Tran": "AI & Technology Educator",
+    "Dr. Sarah Kim":  "AAC Specialist, BCBA",
+  };
+  const DB_TESTIMONIALS = [
+    { text:"SPED Summit gave me practical tools I could use in my classroom the very next day. Immediately applicable.", name:"Maria Gonzalez", role:"Special Ed Teacher", img:"https://images.unsplash.com/photo-1573497491208-6b1acb260507?w=80&h=80&fit=crop&auto=format", color:"#dcfce7", accent:"#16a34a" },
+    { text:"The AAC module completely changed how I support my non-verbal students. Research-backed and immediately usable.", name:"Priya Nair", role:"AAC Specialist, BCBA", img:"https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=80&h=80&fit=crop&auto=format", color:"#fef9c3", accent:"#ca8a04" },
+    { text:"Best professional development I've attended. The sessions are structured perfectly and easy to follow.", name:"Devon Castillo", role:"Inclusion Facilitator", img:"https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=80&h=80&fit=crop&auto=format", color:"#e0e7ff", accent:"#4f46e5" },
+    { text:"I loved how each session was visually clear and immediately applicable. The PD I always wished existed.", name:"Jordan Brooks", role:"Resource Room Specialist", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&auto=format", color:"#fce7f3", accent:"#be185d" },
+  ];
+  const CHALLENGES = [
+    { icon:"warning-circle", color:"#ef4444", title:"Adapting curriculum for diverse learners", desc:"Every student has unique needs, making one-size-fits-all lesson plans ineffective." },
+    { icon:"question",       color:"#f59e0b", title:"Limited planning time and resources", desc:"Educators rarely have enough time to research and develop differentiated materials." },
+    { icon:"users",          color:"#8b5cf6", title:"Supporting students with complex needs", desc:"AAC users, DHH students, and those with behavioral challenges need specialized strategies." },
+    { icon:"chart-bar",      color:"#3b82f6", title:"Tracking IEP goals effectively", desc:"Monitoring progress across multiple students and goals can be overwhelming." },
+  ];
+
+  // KEEP RightSidebar stub so LearningPathSection references compile (unused now)
   function RightSidebar() {
     const sessionsLeft = Math.max(0, 2 - completed);
     return (
@@ -1763,8 +1978,8 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
     );
   }
 
-  // ─── STATE 1: FIRST-TIME USER ─────────────────────────────────────────────
-  if (!hasStarted) {
+  // ─── UNIFIED RENDER ───────────────────────────────────────────────────────
+  if (false) { // dead branch – keeps linter happy for removed state renders
     return (
       <div style={{ display:"flex", gap:24, padding:24, minHeight:"100%", background:C.gray50, boxSizing:"border-box", alignItems:"flex-start" }}>
         <style>{CSS}</style>
@@ -1817,7 +2032,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
                 </div>
                 <div style={{ fontSize:17, fontWeight:800, color:C.gray900, lineHeight:1.35 }}>{featuredSession.title}</div>
                 <div style={{ display:"flex", alignItems:"center", gap:8, fontSize:13, color:C.gray500 }}>
-                  <Avatar name={featuredSession.instructor} size={22}/>
+                  <Avatar name={featuredSession.instructor} src={INSTRUCTOR_AVATARS[featuredSession.instructor]} size={22}/>
                   <span>{featuredSession.instructor}</span>
                   <span style={{ color:C.gray300 }}>·</span>
                   <Icon name="clock" size={13} color={C.gray400}/>
@@ -1867,10 +2082,56 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
     );
   }
 
-  // ─── STATE 2: RETURNING USER ──────────────────────────────────────────────
+  // ─── CALENDAR + COURSERA-STYLE RENDER ────────────────────────────────────
+  function parseSessionDate(dateStr) {
+    try {
+      const m = dateStr.match(/(\d+)\w*\s+(\w+)(?:\s+(\d{4}))?/);
+      if (!m) return null;
+      const d = new Date(`${m[2]} ${m[1]} ${m[3] || 2026}`);
+      return isNaN(d) ? null : d;
+    } catch { return null; }
+  }
+  const scheduledDates = SCHEDULE.map(item => ({ date: parseSessionDate(item.date), item })).filter(x => x.date);
+  const calYear  = calMonth.getFullYear();
+  const calMon   = calMonth.getMonth();
+  const daysInMon = new Date(calYear, calMon + 1, 0).getDate();
+  const startOffset = (new Date(calYear, calMon, 1).getDay() + 6) % 7; // Mon=0
+  function sessionsOnDay(day) {
+    return scheduledDates.filter(sd => sd.date.getDate()===day && sd.date.getMonth()===calMon && sd.date.getFullYear()===calYear);
+  }
+  const today = new Date();
+  const inProgressSessions = enrolledSessions.filter(s => s.status === "in-progress" || s.status === "not-started");
+  const completedSessions  = enrolledSessions.filter(s => s.status === "completed");
+
+  /* ── Filter options derived from SEASONS ── */
+  const seasonOptions = [...new Set(SEASONS.map(s => s.name.split(" ")[0]))];
+  const yearOptions   = [...new Set(SEASONS.map(s => s.name.split(" ")[1]))].sort((a,b) => b - a);
+
+  function sessionMatchesFilter(s) {
+    if (filterSeason === "all" && filterYear === "all") return true;
+    const season = SEASONS.find(se => se.sessionIds.includes(s.id));
+    if (!season) return false;
+    const [sName, sYear] = season.name.split(" ");
+    if (filterSeason !== "all" && sName !== filterSeason) return false;
+    if (filterYear   !== "all" && sYear !== filterYear)   return false;
+    return true;
+  }
+
+  const filteredInProgress = inProgressSessions.filter(sessionMatchesFilter);
+  const filteredCompleted  = completedSessions.filter(sessionMatchesFilter);
+  const todayGoals = [
+    { text:"Complete any 2 sessions",   done: completed >= 2 },
+    { text:"Watch a session today",      done: hasStarted     },
+    { text:"Take a session quiz",        done: Object.keys(quizStates||{}).length > 0 },
+  ];
+
   return (
-    <div style={{ display:"flex", gap:24, padding:24, minHeight:"100%", background:C.gray50, boxSizing:"border-box", alignItems:"flex-start" }}>
-      <style>{CSS}</style>
+    <div style={{ minHeight:"100%", background:"#f8fafc" }}>
+      <style>{CSS + `
+        .db-course-row { transition:box-shadow 150ms ease; }
+        .db-course-row:hover { box-shadow:0 2px 12px rgba(0,0,0,0.08); }
+        .db-cal-day:hover { background:var(--c-gray100) !important; }
+      `}</style>
       {calendarItem && (
         <AddToCalendarModal item={calendarItem} onClose={() => setCalendarItem(null)}
           onConfirm={() => {
@@ -1880,145 +2141,541 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenSession, toast, quizS
           }}/>
       )}
 
-      <div style={{ flex:1, minWidth:0, display:"flex", flexDirection:"column", gap:24 }}>
+      {/* ── MAIN CONTENT ── */}
+      <div style={{ flex:1, minWidth:0, padding:"28px 32px" }}>
 
-        {/* ① PROGRESS HERO */}
-        <div className="db-hero" style={{ background:"linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #3b82f6 100%)", borderRadius:20, padding:"28px 36px", position:"relative", overflow:"hidden" }}>
-          <div style={{ position:"absolute", top:-30, right:-30, width:180, height:180, borderRadius:"50%", background:"rgba(255,255,255,0.07)", pointerEvents:"none" }}/>
-          <div style={{ position:"absolute", bottom:-50, right:100, width:130, height:130, borderRadius:"50%", background:"rgba(255,255,255,0.05)", pointerEvents:"none" }}/>
-          <div style={{ position:"relative" }}>
-            <div style={{ fontSize:12, fontWeight:700, color:"rgba(255,255,255,0.7)", letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>Your Learning Journey</div>
-            <h1 style={{ margin:"0 0 6px", fontSize:24, fontWeight:900, color:"#fff" }}>Keep up the great work!</h1>
-            <p style={{ margin:"0 0 20px", fontSize:14, color:"rgba(255,255,255,0.75)" }}>
-              {completed} of {totalEnrolled} sessions completed
-              {completed < totalEnrolled && ` · Complete ${totalEnrolled - completed} more to unlock all rewards`}
-            </p>
-            <div style={{ marginBottom:20, maxWidth:480 }}>
-              <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
-                <span style={{ fontSize:12, color:"rgba(255,255,255,0.7)", fontWeight:600 }}>{pct}% complete</span>
-                <span style={{ fontSize:12, color:"rgba(255,255,255,0.5)" }}>{totalEnrolled - completed} session{totalEnrolled - completed !== 1 ? "s" : ""} left</span>
-              </div>
-              <div style={{ height:8, background:"rgba(255,255,255,0.2)", borderRadius:99, overflow:"hidden" }}>
-                <div className="db-hero-progress-fill" style={{ width:`${pct}%` }}/>
-              </div>
-            </div>
-            <div style={{ display:"flex", gap:10 }}>
-              {continueSession && (
-                <button className="db-btn-primary" style={{ background:"#fff", color:"#1e40af", fontWeight:800, fontSize:14 }}
-                  onClick={() => onOpenSession(continueSession)}>
-                  <Icon name="play" size={16} color="#1e40af"/> Continue Learning
-                </button>
-              )}
-              <button className="db-btn-outline" onClick={() => onNavigate("sessions")}>All Sessions</button>
-            </div>
-          </div>
+        {/* Greeting header */}
+        <div style={{ marginBottom:20 }}>
+          <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900 }}>Good morning</h1>
+          <div style={{ fontSize:13, color:C.gray500 }}>SPED Summit · Spring 2026</div>
         </div>
 
-        {/* ② CONTINUE WHERE YOU LEFT OFF */}
-        {continueSession && (
-          <div className="db-section db-section-1">
-            <div style={{ fontSize:11, fontWeight:700, color:C.primary, letterSpacing:1, textTransform:"uppercase", marginBottom:10 }}>Continue Watching</div>
-            <div className="db-card" style={{ overflow:"hidden" }}>
-              <div style={{ display:"flex" }}>
-                <div style={{ width:280, flexShrink:0, position:"relative" }}>
-                  <SessionThumb id={continueSession.id} height={195} vimeoUrl={continueSession.vimeoUrl}/>
-                  <div style={{ position:"absolute", bottom:0, left:0, right:0, height:4, background:"rgba(0,0,0,0.3)" }}>
-                    <div className="db-progress-bar-fill" style={{ width:`${continueSession.progress || 0}%` }}/>
-                  </div>
-                  <div style={{ position:"absolute", top:12, left:12, background:"rgba(0,0,0,0.58)", backdropFilter:"blur(6px)", padding:"4px 10px", borderRadius:99, display:"flex", alignItems:"center", gap:5 }}>
-                    <Icon name="timer" size={11} color="#fbbf24"/>
-                    <span style={{ fontSize:11, fontWeight:700, color:"#fbbf24" }}>{continueSession.progress || 0}% watched</span>
-                  </div>
-                </div>
-                <div style={{ flex:1, padding:"22px 24px", display:"flex", flexDirection:"column", gap:10 }}>
-                  <span style={{ fontSize:11, fontWeight:700, color:C.primary, background:C.primaryLight, padding:"3px 9px", borderRadius:99, alignSelf:"flex-start" }}>IN PROGRESS</span>
-                  <div style={{ fontSize:17, fontWeight:800, color:C.gray900, lineHeight:1.35 }}>{continueSession.title}</div>
-                  <div style={{ display:"flex", alignItems:"center", gap:8, fontSize:13, color:C.gray500 }}>
-                    <Avatar name={continueSession.instructor} size={22}/>
-                    <span>{continueSession.instructor}</span>
-                    <span style={{ color:C.gray300 }}>·</span>
-                    <Icon name="clock" size={13} color={C.gray400}/>
-                    <span>{continueSession.duration}</span>
-                  </div>
-                  <div>
-                    <div style={{ height:5, background:C.gray200, borderRadius:99, overflow:"hidden" }}>
-                      <div className="db-progress-bar-fill" style={{ width:`${continueSession.progress || 0}%` }}/>
-                    </div>
-                    <div style={{ display:"flex", justifyContent:"space-between", marginTop:4 }}>
-                      <span style={{ fontSize:11, color:C.gray400 }}>{continueSession.progress || 0}% complete</span>
-                      <span style={{ fontSize:11, color:C.gray400 }}>~{Math.round((1 - (continueSession.progress || 0) / 100) * parseInt(continueSession.duration))} mins left</span>
-                    </div>
-                  </div>
-                  <button className="db-btn-primary" style={{ alignSelf:"flex-start" }}
-                    onClick={() => onOpenSession(continueSession)}>
-                    <Icon name="play" size={15} color="#fff"/> Resume Session
-                  </button>
-                  <div style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 12px", background:C.gray50, borderRadius:9, marginTop:2 }}>
-                    <Icon name="caret-right" size={13} color={C.primary}/>
-                    <span style={{ fontSize:12, color:C.gray600, fontWeight:500 }}>Next: Quiz → Earn Certificate</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* ── MY PROGRESS BANNER ── */}
+        {(() => {
+          const ringR = 28; const ringCirc = 2 * Math.PI * ringR;
+          const ringColor = pct === 100 ? "#10b981" : C.primary;
+          const sessionsLeft = Math.max(0, 2 - completed);
+          const STATS = [
+            { icon:"play-circle", label:"Sessions Watched",    val: completed,                            color:C.primary, bg:"rgba(37,99,235,0.08)"   },
+            { icon:"certificate", label:"Certificates Earned", val: certsEarned,                         color:"#f59e0b", bg:"rgba(245,158,11,0.08)"   },
+            { icon:"timer",       label:"Hours Learned",       val: `${(completed*0.75).toFixed(1)}h`,   color:"#10b981", bg:"rgba(16,185,129,0.08)"   },
+          ];
+          return (
+            <div style={{ background:"#fff", border:`1px solid ${C.gray200}`, borderRadius:18, marginBottom:28, display:"flex", alignItems:"stretch", overflow:"hidden", boxShadow:"0 1px 4px rgba(0,0,0,0.04)" }}>
 
-        {/* ③ LEARNING PATH */}
-        <LearningPathSection showProgress={true}/>
-
-        {/* ④ REWARDS */}
-        <div className="db-card db-section db-section-3" style={{ overflow:"hidden" }}>
-          <div style={{ padding:"18px 22px 14px", borderBottom:`1px solid ${C.gray100}` }}>
-            <div style={{ fontSize:11, fontWeight:700, color:"#f59e0b", letterSpacing:1, textTransform:"uppercase", marginBottom:2 }}>Motivation</div>
-            <div style={{ fontSize:16, fontWeight:800, color:C.gray900 }}>Your Progress & Rewards</div>
-          </div>
-          <div style={{ padding:"20px 22px", display:"flex", gap:12 }}>
-            {[
-              { icon:"certificate", color:"#f59e0b", bg:"rgba(245,158,11,0.1)",  label:"Certificates",  val: certsEarned, sub:"earned",           cls:"db-stagger-1" },
-              { icon:"timer",       color:C.success,  bg:C.successLight,          label:"Hours Learned", val: "2.5h",      sub:"this quarter",      cls:"db-stagger-2" },
-              { icon:"play-circle", color:C.primary,  bg:C.primaryLight,          label:"Sessions Done", val: completed,   sub:`of ${totalEnrolled}`, cls:"db-stagger-3" },
-            ].map((stat, i) => (
-              <div key={i} className={`db-stat-tile ${stat.cls}`}>
-                <div style={{ width:40, height:40, borderRadius:11, background:stat.bg, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 10px" }}>
-                  <Icon name={stat.icon} size={20} color={stat.color}/>
+              {/* ① Progress block */}
+              <div style={{ flex:1, padding:"22px 28px", display:"flex", alignItems:"center", gap:18, background:"#fafbff", borderRight:`1px solid ${C.gray100}` }}>
+                <div style={{ width:"100%" }}>
+                  <div style={{ fontSize:15, fontWeight:800, color:C.gray900, marginBottom:3 }}>My Progress</div>
+                  <div style={{ fontSize:12, color:C.gray500, marginBottom:8 }}>{completed} of {totalEnrolled} sessions</div>
+                  {/* Progress bar */}
+                  <div style={{ width:"100%", height:6, background:"#eef0f6", borderRadius:99, overflow:"hidden" }}>
+                    <div style={{ width:`${pct}%`, height:"100%", background:ringColor, borderRadius:99, transition:"width 0.8s cubic-bezier(0.23,1,0.32,1)" }}/>
+                  </div>
+                  <div style={{ fontSize:12, fontWeight:700, color:ringColor, marginTop:5 }}>{pct}% complete</div>
                 </div>
-                <div style={{ fontSize:22, fontWeight:900, color:C.gray900, lineHeight:1 }}>{stat.val}</div>
-                <div style={{ fontSize:11, fontWeight:700, color:C.gray700, marginTop:3 }}>{stat.label}</div>
-                <div style={{ fontSize:10, color:C.gray400 }}>{stat.sub}</div>
               </div>
-            ))}
-          </div>
-          {completed < totalEnrolled && (
-            <div style={{ margin:"0 22px 20px", padding:"14px 16px", background:"linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(59,130,246,0.08) 100%)", border:"1.5px solid rgba(99,102,241,0.2)", borderRadius:12 }}>
-              <div style={{ fontSize:13, fontWeight:700, color:C.gray900, marginBottom:8 }}>
-                Complete {totalEnrolled - completed} more session{totalEnrolled - completed !== 1 ? "s" : ""} to unlock:
-              </div>
-              <div style={{ display:"flex", gap:16 }}>
-                {[
-                  { icon:"trophy", color:"#f59e0b", label:"Quiz Challenge Game" },
-                  { icon:"star",   color:"#6366f1", label:"Win Pro Membership"  },
-                ].map((r, i) => (
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:7 }}>
-                    <div style={{ width:28, height:28, borderRadius:8, background:`color-mix(in srgb, ${r.color} 15%, transparent)`, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                      <Icon name={r.icon} size={14} color={r.color}/>
-                    </div>
-                    <span style={{ fontSize:12, fontWeight:600, color:C.gray700 }}>{r.label}</span>
+
+              {/* ② Stats */}
+              <div style={{ display:"flex", alignItems:"center", flex:1, justifyContent:"space-around", padding:"0 32px" }}>
+                {STATS.map((row, i) => (
+                  <div key={i} style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", gap:4 }}>
+                    <div style={{ fontSize:28, fontWeight:900, color:C.gray900, lineHeight:1 }}>{row.val}</div>
+                    <div style={{ fontSize:11, fontWeight:600, color:C.gray500, whiteSpace:"nowrap" }}>{row.label}</div>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-        </div>
 
-        {/* ⑤ UPCOMING */}
-        <UpcomingSessionsSection sectionClass="db-section-4"/>
+
+            </div>
+          );
+        })()}
+
+        {/* ── shared card badge map ── */}
+        {(()=>{
+          const CAT_BADGE_MAP = {
+            "MANAGEMENT":    { label:"Management",    bg:"#dbeafe", color:"#1d4ed8" },
+            "LEADERSHIP":    { label:"Leadership",    bg:"#d1fae5", color:"#065f46" },
+            "COMMUNICATION": { label:"Communication", bg:"#fff7ed", color:"#c2410c" },
+            "TEAMWORK":      { label:"Teamwork",      bg:"#fdf4ff", color:"#7e22ce" },
+            "TECHNOLOGY":    { label:"Technology",    bg:"#fef3c7", color:"#b45309" },
+            "ACCESSIBILITY": { label:"Accessibility", bg:"#ede9fe", color:"#6d28d9" },
+          };
+          function renderSessionCard(s, btnLabel) {
+            const catBadge = CAT_BADGE_MAP[s.category] || { label:s.category, bg:"#f3f4f6", color:"#374151" };
+            const instrRole = INST_ROLES[s.instructor] || "Instructor";
+            const schedItem = SCHEDULE.find(i => i.id === s.id);
+            const typeLabel = schedItem ? schedItem.type.charAt(0) + schedItem.type.slice(1).toLowerCase() : "Session";
+            return (
+              <div key={s.id} className="db-course-row"
+                style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:12, display:"flex", alignItems:"stretch", overflow:"hidden", cursor:"pointer", minHeight:235 }}
+                onClick={() => onOpenSession(s)}>
+                <div style={{ flexShrink:0, width:200, position:"relative" }}>
+                  <img src={INSTRUCTOR_AVATARS[s.instructor]} alt={s.instructor}
+                    style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top center", display:"block" }}/>
+                  <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.25) 45%, transparent 75%)" }}/>
+                  <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"0 10px 10px" }}>
+                    <div style={{ fontSize:15, fontWeight:700, color:"#fff", lineHeight:1.25 }}>{s.instructor}</div>
+                    <div style={{ fontSize:13, color:"rgba(255,255,255,0.72)", marginTop:3, lineHeight:1.3 }}>{instrRole}</div>
+                  </div>
+                </div>
+                <div style={{ flex:1, minWidth:0, padding:20, display:"flex", flexDirection:"column" }}>
+                  <div style={{ marginBottom:8 }}>
+                    <span style={{ display:"inline-block", fontSize:11, fontWeight:600, padding:"2px 7px", borderRadius:4, background:catBadge.bg, color:catBadge.color, letterSpacing:.2 }}>
+                      {catBadge.label}
+                    </span>
+                  </div>
+                  <div style={{ fontSize:17, fontWeight:700, color:"#111827", lineHeight:1.3, marginBottom:6 }}>{s.title}</div>
+                  <div style={{ fontSize:12, color:"#6b7280", lineHeight:1.55, marginBottom:s.progress > 0 && s.status!=="completed" ? 10 : 6, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
+                    {s.description}
+                  </div>
+                  {s.progress > 0 && s.status !== "completed" && (
+                    <div style={{ marginBottom:16 }}>
+                      <div style={{ height:3, background:"#e5e7eb", borderRadius:99, overflow:"hidden", maxWidth:280 }}>
+                        <div style={{ width:`${s.progress}%`, height:"100%", background:C.primary, borderRadius:99 }}/>
+                      </div>
+                      <div style={{ fontSize:11, color:"#9ca3af", marginTop:4 }}>{s.progress}% complete · {s.duration}</div>
+                    </div>
+                  )}
+                  <div style={{ display:"flex", alignItems:"center", gap:12, marginTop:"auto", paddingTop:12 }}>
+                    <button
+                      onClick={e=>{ e.stopPropagation(); onOpenSession(s); }}
+                      style={{ display:"inline-flex", alignItems:"center", padding:"7px 13px", background:"#6366f1", color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", transition:"background 0.15s" }}
+                      onMouseEnter={e=>e.currentTarget.style.background="#4f46e5"}
+                      onMouseLeave={e=>e.currentTarget.style.background="#6366f1"}>
+                      {btnLabel}
+                    </button>
+                    {s.status==="completed" && (
+                      <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, color:"#059669" }}>
+                        <Icon name="check-circle" size={13} color="#059669"/> Certificate earned
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          return (
+            <>
+              {/* ── UPCOMING SESSION (calendar date click) ── */}
+              {calDaySession && calDaySession.status === "upcoming" && (() => {
+                const tc = SCHEDULE_TYPE_COLORS[calDaySession.type] || { c:C.gray500, bg:"rgba(128,128,128,0.10)" };
+                const registered = !!scheduleRegistrations[calDaySession.id];
+                const instrRole = INST_ROLES[calDaySession.instructor] || "Instructor";
+                const typeLabel = calDaySession.type.charAt(0) + calDaySession.type.slice(1).toLowerCase();
+                return (
+                  <div style={{ marginBottom:32 }}>
+                    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+                      <div style={{ fontSize:16, fontWeight:800, color:C.gray900 }}>Upcoming Session</div>
+                      <button onClick={() => setCalDaySession(null)}
+                        style={{ background:"none", border:"none", cursor:"pointer", color:"#9ca3af", fontSize:20, lineHeight:1, padding:"2px 6px" }}
+                        aria-label="Close">×</button>
+                    </div>
+                    <div style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:12, display:"flex", alignItems:"stretch", overflow:"hidden", minHeight:235 }}>
+                      <div style={{ flexShrink:0, width:200, position:"relative" }}>
+                        <img src={INSTRUCTOR_AVATARS[calDaySession.instructor]} alt={calDaySession.instructor}
+                          style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top center", display:"block" }}/>
+                        <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.25) 45%, transparent 75%)" }}/>
+                        <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"0 10px 10px" }}>
+                          <div style={{ fontSize:15, fontWeight:700, color:"#fff", lineHeight:1.25 }}>{calDaySession.instructor}</div>
+                          <div style={{ fontSize:13, color:"rgba(255,255,255,0.72)", marginTop:3, lineHeight:1.3 }}>{instrRole}</div>
+                        </div>
+                      </div>
+                      <div style={{ flex:1, minWidth:0, padding:20, display:"flex", flexDirection:"column" }}>
+                        <div style={{ marginBottom:8 }}>
+                          <span style={{ display:"inline-block", fontSize:11, fontWeight:600, padding:"2px 7px", borderRadius:4, background:tc.bg, color:tc.c, letterSpacing:.2 }}>
+                            {calDaySession.type}
+                          </span>
+                        </div>
+                        <div style={{ fontSize:17, fontWeight:700, color:"#111827", lineHeight:1.3, marginBottom:6 }}>{calDaySession.title}</div>
+                        <div style={{ fontSize:12, color:"#6b7280", lineHeight:1.55, marginBottom:6, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
+                          {calDaySession.description}
+                        </div>
+                        <div style={{ display:"flex", alignItems:"center", gap:12, marginTop:"auto", paddingTop:12 }}>
+                          {registered ? (
+                            <div style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:13, fontWeight:700, color:"#059669", background:"rgba(16,185,129,0.10)", padding:"7px 16px", borderRadius:7 }}>
+                              <Icon name="check-circle" size={14} color="#059669"/> Registered
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setScheduleRegistrations(r => ({ ...r, [calDaySession.id]: true }));
+                                toast({ type:"success", title:"Registered!", message:`You're registered for "${calDaySession.title.slice(0,40)}"` });
+                              }}
+                              style={{ display:"inline-flex", alignItems:"center", padding:"7px 13px", background:"#6366f1", color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", transition:"background 0.15s" }}
+                              onMouseEnter={e=>e.currentTarget.style.background="#4f46e5"}
+                              onMouseLeave={e=>e.currentTarget.style.background="#6366f1"}>
+                              Register Now
+                            </button>
+                          )}
+                          <span style={{ fontSize:12, color:"#9ca3af" }}>{calDaySession.date} · {calDaySession.time}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* ── CONTINUE LEARNING ── */}
+              <div style={{ marginBottom:32 }}>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16, gap:10 }}>
+                  <div style={{ fontSize:16, fontWeight:800, color:C.gray900 }}>Continue Learning</div>
+                  <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                    {/* Season dropdown */}
+                    <div style={{ position:"relative", display:"inline-flex", alignItems:"center" }}>
+                      <select
+                        value={filterSeason}
+                        onChange={e => { setFilterSeason(e.target.value); onFilterChange?.({ season: e.target.value, year: filterYear }); }}
+                        style={{ appearance:"none", WebkitAppearance:"none", background:"#fff", border:"1px solid #e4e4e7", borderRadius:8, padding:"5px 28px 5px 10px", fontSize:13, fontWeight:500, color:"#18181b", cursor:"pointer", outline:"none", fontFamily:"inherit" }}>
+                        <option value="all">All Seasons</option>
+                        {seasonOptions.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                      <Icon name="caret-down" size={13} color="#71717a" style={{ position:"absolute", right:8, pointerEvents:"none" }}/>
+                    </div>
+                    {/* Year dropdown */}
+                    <div style={{ position:"relative", display:"inline-flex", alignItems:"center" }}>
+                      <select
+                        value={filterYear}
+                        onChange={e => { setFilterYear(e.target.value); onFilterChange?.({ season: filterSeason, year: e.target.value }); }}
+                        style={{ appearance:"none", WebkitAppearance:"none", background:"#fff", border:"1px solid #e4e4e7", borderRadius:8, padding:"5px 28px 5px 10px", fontSize:13, fontWeight:500, color:"#18181b", cursor:"pointer", outline:"none", fontFamily:"inherit" }}>
+                        <option value="all">All Years</option>
+                        {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                      </select>
+                      <Icon name="caret-down" size={13} color="#71717a" style={{ position:"absolute", right:8, pointerEvents:"none" }}/>
+                    </div>
+                  </div>
+                </div>
+                {filteredInProgress.length > 0 ? (
+                  <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                    {filteredInProgress.map(s => {
+                      const lbl = s.status==="in-progress" ? "Resume" : "Start";
+                      return renderSessionCard(s, lbl);
+                    })}
+                  </div>
+                ) : (
+                  <div style={{ textAlign:"center", padding:"32px 24px", background:"#fff", border:"1px solid #e5e7eb", borderRadius:12 }}>
+                    <Icon name="play-circle" size={36} color={C.gray300}/>
+                    <div style={{ fontSize:14, fontWeight:600, color:C.gray500, marginTop:10 }}>No sessions in progress</div>
+                    <button className="db-btn-primary" style={{ marginTop:16 }} onClick={() => onNavigate("sessions")}>Browse All Sessions</button>
+                  </div>
+                )}
+              </div>
+
+              {/* ── PAST SESSIONS ── */}
+              {filteredCompleted.length > 0 && (
+                <div>
+                  <div style={{ fontSize:16, fontWeight:800, color:C.gray900, marginBottom:16 }}>Past Sessions</div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                    {filteredCompleted.map(s => renderSessionCard(s, "Watch Again"))}
+                  </div>
+                </div>
+              )}
+            </>
+          );
+        })()}
 
       </div>
 
-      <RightSidebar/>
+      {/* ── dead section banners removed (hero/instructors/testimonials/challenges/community now replaced by this layout) ── */}
+      <div style={{ display:"none" }}>
+      <div className="db-hero" style={{ background: hasStarted ? "linear-gradient(135deg,#1e3a8a 0%,#1d4ed8 50%,#3b82f6 100%)" : "linear-gradient(135deg,#1e40af 0%,#3b82f6 60%,#6366f1 100%)", padding:"40px 32px", position:"relative", overflow:"hidden" }}>
+        <div style={{ position:"absolute", top:-60, right:-60, width:300, height:300, borderRadius:"50%", background:"rgba(255,255,255,0.06)", pointerEvents:"none" }}/>
+        <div style={{ position:"absolute", bottom:-80, right:180, width:200, height:200, borderRadius:"50%", background:"rgba(255,255,255,0.04)", pointerEvents:"none" }}/>
+        <div style={{ maxWidth:1100, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-between", gap:32, position:"relative" }}>
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.65)", letterSpacing:1.2, textTransform:"uppercase", marginBottom:10 }}>
+              {hasStarted ? "Your Learning Journey" : "SPED Summit · Spring 2026"}
+            </div>
+            <h1 style={{ margin:"0 0 10px", fontSize:30, fontWeight:900, color:"#fff", lineHeight:1.15 }}>
+              {hasStarted ? "Keep up the great work!" : "Start Your Learning Journey"}
+            </h1>
+            <p style={{ margin:"0 0 22px", fontSize:15, color:"rgba(255,255,255,0.8)", lineHeight:1.6, maxWidth:480 }}>
+              {hasStarted
+                ? `${completed} of ${totalEnrolled} sessions completed${completed < totalEnrolled ? ` · ${totalEnrolled - completed} more to unlock all rewards` : ""}`
+                : "Expert-led sessions in special education, free for all educators."}
+            </p>
+            {hasStarted && (
+              <div style={{ marginBottom:22, maxWidth:400 }}>
+                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:7 }}>
+                  <span style={{ fontSize:12, color:"rgba(255,255,255,0.7)", fontWeight:600 }}>{pct}% complete</span>
+                  <span style={{ fontSize:12, color:"rgba(255,255,255,0.5)" }}>{totalEnrolled - completed} sessions left</span>
+                </div>
+                <div style={{ height:8, background:"rgba(255,255,255,0.2)", borderRadius:99, overflow:"hidden" }}>
+                  <div className="db-hero-progress-fill" style={{ width:`${pct}%` }}/>
+                </div>
+              </div>
+            )}
+            <div style={{ display:"flex", gap:10 }}>
+              {hasStarted ? (
+                <>
+                  {continueSession && (
+                    <button className="db-btn-primary" style={{ background:"#fff", color:"#1e40af", fontWeight:800, fontSize:14 }}
+                      onClick={() => onOpenSession(continueSession)}>
+                      Continue Learning
+                    </button>
+                  )}
+                  <button className="db-btn-outline" onClick={() => onNavigate("sessions")}>All Sessions</button>
+                </>
+              ) : (
+                <>
+                  <button className="db-btn-primary" style={{ background:"#fff", color:"#1e40af", fontWeight:800, fontSize:14 }}
+                    onClick={() => onOpenSession(featuredSession)}>
+                    Start First Session
+                  </button>
+                  <button className="db-btn-outline" onClick={() => onNavigate("sessions")}>Explore Path</button>
+                </>
+              )}
+            </div>
+          </div>
+          {hasStarted && (
+            <div style={{ display:"flex", gap:12, flexShrink:0 }}>
+              {[
+                { val:completed,   label:"Sessions Done" },
+                { val:certsEarned, label:"Certificates"  },
+                { val:"2.5h",      label:"Hours Learned" },
+              ].map((stat,i) => (
+                <div key={i} style={{ textAlign:"center", background:"rgba(255,255,255,0.12)", backdropFilter:"blur(6px)", border:"1px solid rgba(255,255,255,0.18)", borderRadius:16, padding:"18px 22px", minWidth:90 }}>
+                  <div style={{ fontSize:26, fontWeight:900, color:"#fff", lineHeight:1 }}>{stat.val}</div>
+                  <div style={{ fontSize:11, color:"rgba(255,255,255,0.65)", fontWeight:600, marginTop:6, whiteSpace:"nowrap" }}>{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── SESSIONS GRID ── */}
+      <div style={{ padding:"52px 32px", background:"#fff", borderBottom:`1px solid ${C.gray100}` }}>
+        <div style={{ maxWidth:1100, margin:"0 auto" }}>
+          <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:28 }}>
+            <div>
+              <div style={{ fontSize:11, fontWeight:700, color:C.primary, letterSpacing:1.2, textTransform:"uppercase", marginBottom:5 }}>Spring 2026</div>
+              <div style={{ fontSize:22, fontWeight:800, color:C.gray900 }}>{hasStarted ? "Continue Your Journey" : "Start Here"}</div>
+            </div>
+            <button className="db-btn-ghost" onClick={() => onNavigate("sessions")}>
+              View all <Icon name="caret-right" size={13} color={C.primary}/>
+            </button>
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:24 }}>
+            {SESSIONS.slice(0,3).map(s => {
+              const enrolled = enrolledIds.has(s.id);
+              const stMap = {
+                "completed":   { label:"Completed",   bg:"rgba(16,185,129,0.12)", color:"#059669" },
+                "in-progress": { label:"In Progress",  bg:C.primaryLight,          color:C.primary  },
+                "not-started": { label:"Available",    bg:"rgba(99,102,241,0.10)", color:"#6366f1"  },
+                "locked":      { label:"Locked",       bg:C.gray100,               color:C.gray400  },
+              };
+              const st = enrolled ? (stMap[s.status] || stMap.locked) : stMap.locked;
+              const canOpen = enrolled && s.status !== "locked";
+              return (
+                <div key={s.id} className="db-course-card db-card" style={{ overflow:"hidden", cursor: canOpen ? "pointer" : "default" }}
+                  onClick={() => canOpen && onOpenSession(s)}>
+                  <div style={{ position:"relative", height:162, overflow:"hidden", background:C.gray100 }}>
+                    <SessionThumb id={s.id} height={162} vimeoUrl={s.vimeoUrl} noPlayHover={!canOpen}/>
+                    {enrolled && s.progress > 0 && (
+                      <div style={{ position:"absolute", bottom:0, left:0, right:0, height:3, background:"rgba(0,0,0,0.25)" }}>
+                        <div style={{ height:"100%", width:`${s.progress}%`, background:C.primary }}/>
+                      </div>
+                    )}
+                    <div style={{ position:"absolute", top:10, left:10 }}>
+                      <span style={{ fontSize:10, fontWeight:700, color:st.color, background:st.bg, backdropFilter:"blur(4px)", padding:"3px 9px", borderRadius:99 }}>{st.label}</span>
+                    </div>
+                  </div>
+                  <div style={{ padding:"16px 18px" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:9 }}>
+                      <Avatar name={s.instructor} src={INSTRUCTOR_AVATARS[s.instructor]} size={22}/>
+                      <span style={{ fontSize:12, color:C.gray500, fontWeight:500 }}>{s.instructor}</span>
+                    </div>
+                    <div style={{ fontSize:14, fontWeight:800, color:C.gray900, lineHeight:1.4, marginBottom:8 }}>{s.title}</div>
+                    <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:14 }}>
+                      <Icon name="clock" size={12} color={C.gray400}/>
+                      <span style={{ fontSize:12, color:C.gray500 }}>{s.duration}</span>
+                    </div>
+                    <button className="db-btn-primary"
+                      style={{ width:"100%", justifyContent:"center", fontSize:13, padding:"9px 0", ...(!enrolled ? { background:C.gray200, color:C.gray500 } : {}) }}
+                      onClick={e => { e.stopPropagation(); if (canOpen) onOpenSession(s); else if (!enrolled && onEnroll) onEnroll(s.id); }}>
+                      {enrolled
+                        ? (s.status==="completed" ? "Watch Again" : s.status==="in-progress" ? "Resume Session" : s.status==="locked" ? "Locked" : "Start Session")
+                        : "Enroll Free"}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── INSTRUCTOR SHOWCASE ── */}
+      <div style={{ padding:"52px 32px", background:"#f8fafc", borderBottom:`1px solid ${C.gray100}` }}>
+        <div style={{ maxWidth:1100, margin:"0 auto" }}>
+          <div style={{ marginBottom:32 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:C.primary, letterSpacing:1.2, textTransform:"uppercase", marginBottom:5 }}>Expert Faculty</div>
+            <div style={{ fontSize:22, fontWeight:800, color:C.gray900 }}>Learn from SPED experts</div>
+            <div style={{ fontSize:14, color:C.gray500, marginTop:5 }}>Top educators sharing research-backed strategies for special education</div>
+          </div>
+          <div style={{ display:"flex", gap:44, overflowX:"auto", paddingBottom:8 }}>
+            {Object.entries(INSTRUCTOR_AVATARS).map(([name, img]) => (
+              <div key={name} className="db-instr-pill" style={{ textAlign:"center", flexShrink:0 }}>
+                <div style={{ width:88, height:88, borderRadius:"50%", overflow:"hidden", border:"3px solid #fff", boxShadow:"0 3px 14px rgba(0,0,0,0.12)", margin:"0 auto 10px" }}>
+                  <img src={img} alt={name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top center" }}/>
+                </div>
+                <div style={{ fontSize:13, fontWeight:700, color:C.gray900 }}>{name.split(" ").slice(-1)[0]}</div>
+                <div style={{ fontSize:11, color:C.gray500, marginTop:2, maxWidth:110 }}>{INST_ROLES[name] || "Instructor"}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── UPCOMING LIVE SESSIONS ── */}
+      {upcomingSchedule.length > 0 && (
+        <div style={{ padding:"52px 32px", background:"#fff", borderBottom:`1px solid ${C.gray100}` }}>
+          <div style={{ maxWidth:1100, margin:"0 auto" }}>
+            <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:28 }}>
+              <div>
+                <div style={{ fontSize:11, fontWeight:700, color:"#dc2626", letterSpacing:1.2, textTransform:"uppercase", marginBottom:5, display:"flex", alignItems:"center", gap:6 }}>
+                  <span className="db-pulse" style={{ width:7, height:7, borderRadius:"50%", background:"#dc2626", display:"inline-block" }}/>
+                  Coming Up
+                </div>
+                <div style={{ fontSize:22, fontWeight:800, color:C.gray900 }}>Upcoming live sessions</div>
+              </div>
+              <button className="db-btn-ghost" onClick={() => onNavigate("schedules")}>
+                Full schedule <Icon name="caret-right" size={13} color={C.primary}/>
+              </button>
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(320px, 1fr))", gap:20 }}>
+              {upcomingSchedule.map(item => {
+                const tc = SCHEDULE_TYPE_COLORS[item.type] || { c:C.gray500, bg:"rgba(128,128,128,0.10)" };
+                const registered = !!scheduleRegistrations[item.id];
+                return (
+                  <div key={item.id} className="db-card db-upcoming-item" style={{ padding:"16px 18px", display:"flex", gap:14, alignItems:"flex-start" }}>
+                    <div style={{ width:76, height:54, borderRadius:9, overflow:"hidden", flexShrink:0 }}>
+                      <SessionThumb id={item.id} height={54} noPlayHover/>
+                    </div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:5 }}>
+                        <Badge label={item.type} color={tc.c} bg={tc.bg} size={10}/>
+                        <span style={{ fontSize:11, color:C.gray400 }}>· {item.date}, {item.time}</span>
+                      </div>
+                      <div style={{ fontSize:13, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", marginBottom:4 }}>{item.title}</div>
+                      <div style={{ fontSize:12, color:C.gray500, display:"flex", alignItems:"center", gap:4 }}>
+                        <Avatar name={item.instructor} src={INSTRUCTOR_AVATARS[item.instructor]} size={14}/>
+                        <span>{item.instructor}</span>
+                      </div>
+                    </div>
+                    <div style={{ flexShrink:0, marginTop:2 }}>
+                      {registered
+                        ? <div style={{ fontSize:12, color:C.success, background:"rgba(16,185,129,0.10)", padding:"5px 11px", borderRadius:99, fontWeight:600 }}>Registered</div>
+                        : <button className="db-btn-primary" style={{ fontSize:12, padding:"6px 12px" }} onClick={() => setCalendarItem(item)}>Register</button>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── HEAR FROM OUR LEARNERS ── */}
+      <div style={{ padding:"52px 32px", background:"#f8fafc", borderBottom:`1px solid ${C.gray100}` }}>
+        <div style={{ maxWidth:1100, margin:"0 auto" }}>
+          <div style={{ marginBottom:32 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:C.primary, letterSpacing:1.2, textTransform:"uppercase", marginBottom:5 }}>Social Proof</div>
+            <div style={{ fontSize:22, fontWeight:800, color:C.gray900 }}>Hear straight from our learners</div>
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:18 }}>
+            {DB_TESTIMONIALS.map((t, i) => (
+              <div key={i} style={{ background:t.color, borderRadius:16, padding:"22px 20px", display:"flex", flexDirection:"column", gap:14 }}>
+                <div style={{ display:"flex", gap:2 }}>
+                  {[0,1,2,3,4].map(j => <Icon key={j} name="star" size={13} color={t.accent} weight="fill"/>)}
+                </div>
+                <p style={{ margin:0, fontSize:13, color:"#1f2937", lineHeight:1.65, flex:1 }}>"{t.text}"</p>
+                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                  <div style={{ width:36, height:36, borderRadius:"50%", overflow:"hidden", flexShrink:0, border:`2px solid ${t.accent}` }}>
+                    <img src={t.img} alt={t.name} style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
+                  </div>
+                  <div>
+                    <div style={{ fontSize:12, fontWeight:700, color:"#1f2937" }}>{t.name}</div>
+                    <div style={{ fontSize:11, color:"#6b7280" }}>{t.role}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── CHALLENGES WE'VE ALL FACED ── */}
+      <div style={{ padding:"52px 32px", background:"#1e1b4b" }}>
+        <div style={{ maxWidth:1100, margin:"0 auto" }}>
+          <div style={{ marginBottom:32, textAlign:"center" }}>
+            <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.45)", letterSpacing:1.2, textTransform:"uppercase", marginBottom:5 }}>We get it</div>
+            <div style={{ fontSize:22, fontWeight:800, color:"#fff" }}>Learning challenges we've all faced</div>
+            <div style={{ fontSize:14, color:"rgba(255,255,255,0.55)", marginTop:6 }}>SPED Summit was built to solve these — step by step.</div>
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:18 }}>
+            {CHALLENGES.map((ch, i) => (
+              <div key={i} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.09)", borderRadius:16, padding:"24px 20px" }}>
+                <div style={{ width:44, height:44, borderRadius:12, background:`color-mix(in srgb, ${ch.color} 18%, transparent)`, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:14 }}>
+                  <Icon name={ch.icon} size={22} color={ch.color}/>
+                </div>
+                <div style={{ fontSize:14, fontWeight:700, color:"#fff", marginBottom:8, lineHeight:1.4 }}>{ch.title}</div>
+                <div style={{ fontSize:12, color:"rgba(255,255,255,0.55)", lineHeight:1.6 }}>{ch.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── YOUR LEARNING PATH ── */}
+      <div style={{ padding:"52px 32px", background:"#fff", borderBottom:`1px solid ${C.gray100}` }}>
+        <div style={{ maxWidth:1100, margin:"0 auto" }}>
+          <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:28 }}>
+            <div>
+              <div style={{ fontSize:11, fontWeight:700, color:C.primary, letterSpacing:1.2, textTransform:"uppercase", marginBottom:5 }}>Spring 2026</div>
+              <div style={{ fontSize:22, fontWeight:800, color:C.gray900 }}>Your learning path</div>
+            </div>
+            <button className="db-btn-ghost" onClick={() => onNavigate("sessions")}>
+              View all <Icon name="caret-right" size={13} color={C.primary}/>
+            </button>
+          </div>
+          <div style={{ maxWidth:720 }}>
+            <LearningPathSection showProgress={hasStarted}/>
+          </div>
+        </div>
+      </div>
+
+      {/* ── JOIN THE COMMUNITY ── */}
+      <div style={{ padding:"52px 32px 72px", background:"linear-gradient(135deg,#1e40af 0%,#6366f1 100%)" }}>
+        <div style={{ maxWidth:1100, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-between", gap:32 }}>
+          <div>
+            <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.6)", letterSpacing:1.2, textTransform:"uppercase", marginBottom:8 }}>Join Us</div>
+            <div style={{ fontSize:26, fontWeight:900, color:"#fff", marginBottom:10 }}>Join our vibrant community</div>
+            <div style={{ fontSize:15, color:"rgba(255,255,255,0.8)", lineHeight:1.65, maxWidth:480, marginBottom:24 }}>
+              Connect with thousands of SPED educators. Share strategies, ask questions, and grow together.
+            </div>
+            <button className="db-btn-primary" style={{ background:"#fff", color:"#1e40af", fontWeight:800 }}
+              onClick={() => onNavigate("community")}>
+              Explore Community
+            </button>
+          </div>
+          <div style={{ display:"flex", alignItems:"center" }}>
+            {Object.values(INSTRUCTOR_AVATARS).slice(0, 4).map((img, i) => (
+              <div key={i} style={{ width:56, height:56, borderRadius:"50%", overflow:"hidden", border:"3px solid rgba(255,255,255,0.8)", marginLeft: i > 0 ? -16 : 0, boxShadow:"0 2px 10px rgba(0,0,0,0.2)" }}>
+                <img src={img} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
+              </div>
+            ))}
+            <span style={{ marginLeft:16, fontSize:14, fontWeight:700, color:"rgba(255,255,255,0.9)" }}>+2,400 educators</span>
+          </div>
+        </div>
+
+      </div>
+      </div>{/* end display:none */}
     </div>
   );
 }
+/* ─── old STATE 2 content removed — Dashboard now uses unified render above ─── */
 
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -2039,11 +2696,17 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
 
     return (
       <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
-        {/* Back + header */}
-        <button onClick={()=>changeSeason(null)}
-          style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", color:C.gray500, fontSize:14, cursor:"pointer", marginBottom:20, padding:"4px 0" }}>
-          <Icon name="arrow-left" size={16} color={C.gray500}/> Sessions
-        </button>
+        {/* Breadcrumb */}
+        <div style={{ display:"flex", flexWrap:"wrap", alignItems:"center", gap:4, marginBottom:20, fontSize:14, fontWeight:500, color:C.gray500 }}>
+          <button onClick={()=>changeSeason(null)} style={{ background:"none", border:"none", cursor:"pointer", padding:0, fontSize:14, fontWeight:500, color:C.gray500 }}
+            onMouseEnter={e=>e.currentTarget.style.color=C.gray900} onMouseLeave={e=>e.currentTarget.style.color=C.gray500}>
+            Sessions
+          </button>
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="#CBD5E1"/>
+          </svg>
+          <span style={{ color:"#6366f1", fontWeight:600 }}>{season.name}</span>
+        </div>
 
         {/* Live */}
         {liveSessions.length > 0 && (
@@ -2326,7 +2989,7 @@ function SchedulePage({ onOpenSession, toast, scheduleRegistrations = {}, setSch
                           </div>
                           <div style={{ fontSize:14, fontWeight:700, color:C.gray900, marginBottom:4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.title}</div>
                           <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-                            <Avatar name={item.instructor} size={18}/>
+                            <Avatar name={item.instructor} src={INSTRUCTOR_AVATARS[item.instructor]} size={18}/>
                             <span style={{ fontSize:12, color:C.gray600, fontWeight:500 }}>{item.instructor}</span>
                           </div>
                         </div>
@@ -2341,12 +3004,12 @@ function SchedulePage({ onOpenSession, toast, scheduleRegistrations = {}, setSch
                             <SessionCountdown dateStr={item.date} timeStr={item.time}
                               fallback={
                                 <div style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:12, color:C.success, background:"rgba(16,185,129,0.10)", padding:"6px 12px", borderRadius:99, fontWeight:600 }}>
-                                  <Icon name="check-circle" size={13} color={C.success}/> Registered
+                                  Registered
                                 </div>
                               }/>
                           ) : cta === "Register" ? (
                             <Btn variant="primary" size="sm" onClick={() => handleCta(item)}>
-                              <Icon name="bell" size={13} color="#fff"/> Register
+                              Register
                             </Btn>
                           ) : (cta === "Watch Again" || cta === "Resume Lesson") ? (
                             <Btn variant="outline" size="sm" onClick={() => handleCta(item)}>
@@ -2493,7 +3156,7 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress }) {
   );
 }
 
-function SessionDetail({ session, onBack, backLabel, toast, onAssessmentClick, onUpdateProgress }) {
+function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress }) {
   const [playing, setPlaying] = useState(false);
   const [activeLesson, setActiveLesson] = useState(() => session.lessons.findIndex(l=>l.status==="active" && l.type!=="quiz")||0);
   const [progress, setProgress] = useState(session.progress || 0);
@@ -2580,7 +3243,7 @@ function SessionDetail({ session, onBack, backLabel, toast, onAssessmentClick, o
       </div>
       {/* Instructor row — like YouTube channel info */}
       <div style={{ padding:"12px 18px 14px", borderTop:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", gap:12 }}>
-        <Avatar name={session.instructor} size={40}/>
+        <Avatar name={session.instructor} src={INSTRUCTOR_AVATARS[session.instructor]} size={40}/>
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ fontWeight:700, fontSize:14, color:C.gray900, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{session.instructor}</div>
           <div style={{ fontSize:12, color:C.gray400, marginTop:1 }}>Special Ed Instructor</div>
@@ -2609,10 +3272,38 @@ function SessionDetail({ session, onBack, backLabel, toast, onAssessmentClick, o
       {/* ── Main scroll area ── */}
       <div style={{ flex:1, overflowY:"auto", padding: narrow ? 14 : 20, minWidth:0 }}>
 
-        {/* Back */}
-        <button onClick={onBack} style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", color:C.gray500, cursor:"pointer", fontSize:14, marginBottom:14, padding:"4px 0" }}>
-          <Icon name="arrow-left" size={16} color={C.gray500}/> Back
-        </button>
+        {/* Breadcrumb */}
+        {(() => {
+          const sourceLabels = { dashboard:"My Learnings", sessions:"All Sessions", schedules:"Schedules", certifications:"My Certificates" };
+          const rootLabel = sourceLabels[sessionSource] || "Sessions";
+          const crumbs = [
+            { label: rootLabel, onClick: onBack },
+            ...(backLabel ? [{ label: backLabel }] : []),
+            { label: session.title },
+          ];
+          return (
+            <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:16, flexWrap:"wrap" }}>
+              {crumbs.map((crumb, i) => (
+                <span key={i} style={{ display:"inline-flex", alignItems:"center", gap:6 }}>
+                  {i > 0 && <span style={{ color:C.gray300, fontSize:13, userSelect:"none" }}>›</span>}
+                  {crumb.onClick ? (
+                    <button onClick={crumb.onClick}
+                      style={{ background:"none", border:"none", padding:0, cursor:"pointer", fontSize:13, fontWeight:500, color:C.gray500, fontFamily:"inherit" }}
+                      onMouseEnter={e => e.currentTarget.style.color = C.gray700}
+                      onMouseLeave={e => e.currentTarget.style.color = C.gray500}>
+                      {crumb.label}
+                    </button>
+                  ) : (
+                    <span style={{ fontSize:13, fontWeight: i === crumbs.length - 1 ? 600 : 500, color: i === crumbs.length - 1 ? C.gray900 : C.gray500,
+                      ...(i === crumbs.length - 1 ? { overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:320 } : {}) }}>
+                      {crumb.label}
+                    </span>
+                  )}
+                </span>
+              ))}
+            </div>
+          );
+        })()}
 
 
         {/* ── Video Player ── */}
@@ -2687,7 +3378,7 @@ function SessionDetail({ session, onBack, backLabel, toast, onAssessmentClick, o
           {bottomTab === "instructor" && (
             <div style={{ padding:"22px 24px" }}>
               <div style={{ display:"flex", gap:16, alignItems:"flex-start", marginBottom:20 }}>
-                <Avatar name={session.instructor} size={68}/>
+                <Avatar name={session.instructor} src={INSTRUCTOR_AVATARS[session.instructor]} size={68}/>
                 <div>
                   <div style={{ fontWeight:800, fontSize:18, color:C.gray900, marginBottom:2 }}>{session.instructor}</div>
                   <div style={{ fontSize:14, color:C.gray500, marginBottom:10 }}>Special Education Instructor · SPED Summit Faculty</div>
@@ -3375,10 +4066,30 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
     return (
       <>
       <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
-        <button onClick={()=>setActiveSession(null)}
-          style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", color:C.gray500, fontSize:14, cursor:"pointer", marginBottom:20, padding:"4px 0" }}>
-          <Icon name="arrow-left" size={16} color={C.gray500}/> {season.name}
-        </button>
+        {/* Breadcrumb */}
+        <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:20, flexWrap:"wrap" }}>
+          {[
+            { label:"My Certificates", onClick:()=>{ setActiveSession(null); setActiveSeason(null); } },
+            { label:season.name,       onClick:()=>setActiveSession(null) },
+            { label:session.title },
+          ].map((crumb, i) => (
+            <span key={i} style={{ display:"inline-flex", alignItems:"center", gap:6 }}>
+              {i > 0 && <span style={{ color:C.gray300, fontSize:13 }}>›</span>}
+              {crumb.onClick ? (
+                <button onClick={crumb.onClick}
+                  style={{ background:"none", border:"none", padding:0, cursor:"pointer", fontSize:13, fontWeight:500, color:C.gray500, fontFamily:"inherit" }}
+                  onMouseEnter={e=>e.currentTarget.style.color=C.gray700}
+                  onMouseLeave={e=>e.currentTarget.style.color=C.gray500}>
+                  {crumb.label}
+                </button>
+              ) : (
+                <span style={{ fontSize:13, fontWeight:600, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:320 }}>
+                  {crumb.label}
+                </span>
+              )}
+            </span>
+          ))}
+        </div>
 
         <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:22 }}>
           <div style={{ width:52, height:36, borderRadius:8, overflow:"hidden", flexShrink:0 }}>
@@ -3484,10 +4195,17 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
 
     return (
       <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
-        <button onClick={()=>setActiveSeason(null)}
-          style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", color:C.gray500, fontSize:14, cursor:"pointer", marginBottom:20, padding:"4px 0" }}>
-          <Icon name="arrow-left" size={16} color={C.gray500}/> Certifications
-        </button>
+        {/* Breadcrumb */}
+        <div style={{ display:"flex", flexWrap:"wrap", alignItems:"center", gap:4, marginBottom:20, fontSize:14, fontWeight:500, color:C.gray500 }}>
+          <button onClick={()=>setActiveSeason(null)} style={{ background:"none", border:"none", cursor:"pointer", padding:0, fontSize:14, fontWeight:500, color:C.gray500 }}
+            onMouseEnter={e=>e.currentTarget.style.color=C.gray900} onMouseLeave={e=>e.currentTarget.style.color=C.gray500}>
+            Certifications
+          </button>
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="#CBD5E1"/>
+          </svg>
+          <span style={{ color:"#6366f1", fontWeight:600 }}>{season.name}</span>
+        </div>
 
         <h2 style={{ margin:"0 0 18px", fontSize:18, fontWeight:800, color:C.gray900 }}>{season.name}</h2>
 
@@ -3527,63 +4245,74 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
     );
   }
 
-  /* ── Season Overview ── */
+  /* ── Flat list overview: season headers + session rows ── */
   return (
-    <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
-      <div style={{ marginBottom:24 }}>
-        <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>YOUR ACHIEVEMENTS</div>
-        <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900 }}>Certifications</h1>
-        <p style={{ margin:0, color:C.gray500, fontSize:14 }}>
-          {totalEarned > 0
-            ? `You've earned ${totalEarned} certificate${totalEarned > 1 ? "s" : ""} so far. Keep going!`
-            : "Complete sessions and pass assessments to earn certificates."}
-        </p>
-      </div>
+    <div style={{ padding:"28px 32px", background:C.gray50, minHeight:"100%" }}>
 
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))", gap:20 }}>
+      <div style={{ display:"flex", flexDirection:"column", gap:32 }}>
         {SEASONS.map(season => {
-          const sessions   = SESSIONS.filter(s => season.sessionIds.includes(s.id));
-          const withQuiz   = sessions.filter(s => !!SESSION_QUIZZES[s.id]);
-          const earned     = withQuiz.filter(s => quizStates[s.id]?.status === "passed").length;
-          const total      = withQuiz.length;
-          const pct        = total > 0 ? Math.round((earned / total) * 100) : 0;
-          const allEarned  = total > 0 && earned === total;
-          const firstSession = sessions[0];
+          const sessions  = SESSIONS.filter(s => season.sessionIds.includes(s.id));
+          const withQuiz  = sessions.filter(s => !!SESSION_QUIZZES[s.id]);
+          const earned    = withQuiz.filter(s => quizStates[s.id]?.status === "passed").length;
+          const total     = withQuiz.length;
+          const allEarned = total > 0 && earned === total;
 
           return (
-            <div key={season.id} onClick={()=>setActiveSeason(season.id)}
-              style={{ background:C.white, borderRadius:16, border:`1px solid ${allEarned ? C.primaryBorder : C.gray200}`, overflow:"hidden", cursor:"pointer" }}>
-
-              {/* Thumbnail */}
-              <div style={{ position:"relative", width:"100%", paddingBottom:"52%", background:"#1f2937" }}>
-                {firstSession && (
-                  <div style={{ position:"absolute", inset:0 }}>
-                    <SessionThumb id={firstSession.id} height="100%" noPlayHover/>
-                    <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.1) 60%, transparent 100%)" }}/>
-                  </div>
-                )}
+            <div key={season.id}>
+              {/* Season header */}
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
+                <h2 style={{ margin:0, fontSize:15, fontWeight:800, color:C.gray900 }}>{season.name}</h2>
                 {allEarned && (
-                  <div style={{ position:"absolute", top:10, left:10, background:"rgba(16,185,129,0.92)", backdropFilter:"blur(4px)", borderRadius:99, padding:"3px 10px", display:"flex", alignItems:"center", gap:5 }}>
-                    <Icon name="medal" size={12} color="#fff"/>
-                    <span style={{ fontSize:11, fontWeight:700, color:"#fff" }}>ALL EARNED</span>
-                  </div>
+                  <span style={{ display:"inline-flex", alignItems:"center", gap:4, background:"rgba(16,185,129,0.1)", borderRadius:99, padding:"3px 10px" }}>
+                    <Icon name="medal" size={12} color={C.success}/>
+                    <span style={{ fontSize:11, fontWeight:700, color:C.success }}>All Earned</span>
+                  </span>
                 )}
-                <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"12px 14px" }}>
-                  <div style={{ fontSize:17, fontWeight:900, color:"#fff", letterSpacing:-.2 }}>{season.name}</div>
-                </div>
+                <span style={{ fontSize:12, color:C.gray400, marginLeft:"auto" }}>{earned}/{total} certificates</span>
               </div>
 
-              {/* Footer */}
-              <div style={{ padding:"14px 16px" }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
-                  <span style={{ fontSize:13, fontWeight:600, color: earned > 0 ? C.success : C.gray400 }}>
-                    {earned}/{total} certificate{total !== 1 ? "s" : ""} earned
-                  </span>
-                  <span style={{ fontSize:12, fontWeight:700, color: allEarned ? C.success : C.primary }}>{pct}%</span>
-                </div>
-                <div style={{ background:C.gray100, borderRadius:99, height:6, overflow:"hidden" }}>
-                  <div style={{ width:`${pct}%`, background: allEarned ? C.success : C.primary, height:"100%", borderRadius:99, transition:"width 0.5s ease" }}/>
-                </div>
+              {/* Session rows */}
+              <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, overflow:"hidden" }}>
+                {sessions.map((s, i) => {
+                  const qs = quizStates[s.id];
+                  const passed   = qs?.status === "passed";
+                  const hasQuiz  = !!SESSION_QUIZZES[s.id];
+                  const lessonQuizCount = (s.lessons || []).filter(l => l.type === "quiz").length;
+                  const lessonDoneCount = (s.lessons || []).filter(l => l.type === "quiz" && l.status === "completed").length;
+
+                  return (
+                    <div key={s.id} onClick={() => { setActiveSeason(season.id); setActiveSession(s.id); }}
+                      style={{ display:"flex", alignItems:"center", gap:14, padding:"16px 20px", borderBottom: i < sessions.length - 1 ? `1px solid ${C.gray100}` : "none", cursor:"pointer", transition:"background 0.12s" }}
+                      onMouseEnter={e => e.currentTarget.style.background = C.gray50}
+                      onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+
+                      {/* Status dot */}
+                      <div style={{ width:36, height:36, borderRadius:10, flexShrink:0, background: passed ? "rgba(16,185,129,0.1)" : "rgba(37,99,235,0.07)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        <Icon name={passed ? "medal" : "certificate"} size={18} color={passed ? C.success : C.gray400}/>
+                      </div>
+
+                      {/* Text */}
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
+                        <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{s.instructor}</div>
+                        {lessonQuizCount > 0 && (
+                          <div style={{ fontSize:11, color:C.gray400, marginTop:3 }}>
+                            {lessonDoneCount}/{lessonQuizCount} knowledge checks · {passed ? "Certificate earned" : hasQuiz ? "Final assessment pending" : "No final assessment"}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Badge */}
+                      {passed ? (
+                        <span style={{ fontSize:11, fontWeight:700, color:C.success, background:"rgba(16,185,129,0.1)", borderRadius:99, padding:"4px 12px", whiteSpace:"nowrap", flexShrink:0 }}>Earned</span>
+                      ) : (
+                        <span style={{ fontSize:11, fontWeight:600, color:C.gray400, background:C.gray100, borderRadius:99, padding:"4px 12px", whiteSpace:"nowrap", flexShrink:0 }}>Pending</span>
+                      )}
+
+                      <Icon name="caret-right" size={15} color={C.gray300}/>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           );
@@ -4586,10 +5315,25 @@ function AdminCreateSession({ onBack, toast, onSave }) {
       {/* Header + Tabs combined */}
       <div style={{ background:C.white, borderBottom:`1px solid ${C.gray200}`, flexShrink:0 }}>
         <div style={{ padding:"16px 28px 0", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-            <button onClick={onBack} style={{ background:"none", border:"none", cursor:"pointer", fontSize:14, color:C.gray400, fontWeight:500, padding:0 }}>Sessions</button>
-            <Icon name="caret-right" size={13} color={C.gray300}/>
-            <span style={{ fontSize:14, fontWeight:400, color:C.gray900 }}>Create New Session</span>
+          <div style={{ display:"flex", flexWrap:"wrap", alignItems:"center", gap:4, fontSize:14, fontWeight:500, color:C.gray500 }}>
+            <button type="button" aria-label="Home" onClick={onBack}
+              style={{ background:"none", border:"none", cursor:"pointer", padding:0, display:"flex", alignItems:"center" }}
+              onMouseEnter={e=>e.currentTarget.style.opacity=".7"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+              <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 7.609c.352 0 .69.122.96.343l.111.1 6.25 6.25v.001a1.5 1.5 0 0 1 .445 1.071v7.5a.89.89 0 0 1-.891.891H9.125a.89.89 0 0 1-.89-.89v-7.5l.006-.149a1.5 1.5 0 0 1 .337-.813l.1-.11 6.25-6.25c.285-.285.67-.444 1.072-.444Zm5.984 7.876L16 9.5l-5.984 5.985v6.499h11.968z" fill="#475569" stroke="#475569" strokeWidth=".094"/>
+              </svg>
+            </button>
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="#CBD5E1"/>
+            </svg>
+            <button onClick={onBack} style={{ background:"none", border:"none", cursor:"pointer", padding:0, fontSize:14, fontWeight:500, color:C.gray500 }}
+              onMouseEnter={e=>e.currentTarget.style.color=C.gray900} onMouseLeave={e=>e.currentTarget.style.color=C.gray500}>
+              Sessions
+            </button>
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="#CBD5E1"/>
+            </svg>
+            <span style={{ color:"#6366f1", fontWeight:600 }}>Create New Session</span>
           </div>
           <div style={{ display:"flex", gap:8 }}>
             <Btn variant="outline" onClick={()=>save(false)}>Save Draft</Btn>
@@ -4837,10 +5581,25 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
       {/* Header + Tabs combined */}
       <div style={{ background:C.white, borderBottom:`1px solid ${C.gray200}`, flexShrink:0 }}>
         <div style={{ padding:"16px 28px 0", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-            <button onClick={onBack} style={{ background:"none", border:"none", cursor:"pointer", fontSize:14, color:C.gray400, fontWeight:500, padding:0 }}>Sessions</button>
-            <Icon name="caret-right" size={13} color={C.gray300}/>
-            <span style={{ fontSize:14, fontWeight:400, color:C.gray900, maxWidth:300, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{session.title}</span>
+          <div style={{ display:"flex", flexWrap:"wrap", alignItems:"center", gap:4, fontSize:14, fontWeight:500, color:C.gray500 }}>
+            <button type="button" aria-label="Home" onClick={onBack}
+              style={{ background:"none", border:"none", cursor:"pointer", padding:0, display:"flex", alignItems:"center" }}
+              onMouseEnter={e=>e.currentTarget.style.opacity=".7"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+              <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 7.609c.352 0 .69.122.96.343l.111.1 6.25 6.25v.001a1.5 1.5 0 0 1 .445 1.071v7.5a.89.89 0 0 1-.891.891H9.125a.89.89 0 0 1-.89-.89v-7.5l.006-.149a1.5 1.5 0 0 1 .337-.813l.1-.11 6.25-6.25c.285-.285.67-.444 1.072-.444Zm5.984 7.876L16 9.5l-5.984 5.985v6.499h11.968z" fill="#475569" stroke="#475569" strokeWidth=".094"/>
+              </svg>
+            </button>
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="#CBD5E1"/>
+            </svg>
+            <button onClick={onBack} style={{ background:"none", border:"none", cursor:"pointer", padding:0, fontSize:14, fontWeight:500, color:C.gray500 }}
+              onMouseEnter={e=>e.currentTarget.style.color=C.gray900} onMouseLeave={e=>e.currentTarget.style.color=C.gray500}>
+              Sessions
+            </button>
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="#CBD5E1"/>
+            </svg>
+            <span style={{ color:"#6366f1", fontWeight:600, maxWidth:300, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{session.title}</span>
           </div>
           <div style={{ display:"flex", gap:8 }}>
             <Btn variant="outline" onClick={discard}>Discard</Btn>
@@ -6494,7 +7253,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
         </div>
         {registered ? (
           <div style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 18px", background:"#f0fdf4", border:"1px solid #bbf7d0", borderRadius:10, fontSize:14, fontWeight:700, color:"#15803d" }}>
-            <Icon name="check-circle" size={16} color="#22c55e"/> Registered
+            Registered
           </div>
         ) : (
           <button onClick={handleRegister}
@@ -6509,24 +7268,20 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
       <div style={{ background:gradients[si], padding:"40px 48px 48px" }}>
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
           {/* Breadcrumbs */}
-          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20 }}>
-            {[
-              { label:"SPED Summit", onClick: onBack },
-              { label: session.title.length > 52 ? session.title.slice(0,52)+"…" : session.title, current: true },
-            ].map((crumb, i, arr) => (
-              <div key={i} style={{ display:"flex", alignItems:"center", gap:6, minWidth:0, flexShrink: i===arr.length-1?1:0 }}>
-                {crumb.onClick
-                  ? <button onClick={crumb.onClick} style={{ background:"none", border:"none", cursor:"pointer", fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.85)", padding:0, whiteSpace:"nowrap" }}
-                      onMouseEnter={e=>e.currentTarget.style.color="#fff"} onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.85)"}>
-                      {crumb.label}
-                    </button>
-                  : <span style={{ fontSize:14, fontWeight: crumb.current ? 700 : 400, color: crumb.current ? "#fff" : "rgba(255,255,255,0.7)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                      {crumb.label}
-                    </span>
-                }
-                {i < arr.length-1 && <Icon name="caret-right" size={12} color="rgba(255,255,255,0.4)"/>}
-              </div>
-            ))}
+          <div style={{ display:"flex", flexWrap:"wrap", alignItems:"center", gap:4, marginBottom:20, fontSize:14, fontWeight:500, color:"rgba(255,255,255,0.65)" }}>
+            {/* SPED Summit */}
+            <button onClick={onBack} style={{ background:"none", border:"none", cursor:"pointer", padding:0, fontSize:14, fontWeight:500, color:"rgba(255,255,255,0.65)" }}
+              onMouseEnter={e=>e.currentTarget.style.color="#fff"} onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.65)"}>
+              SPED Summit
+            </button>
+            {/* Separator */}
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="rgba(255,255,255,0.35)"/>
+            </svg>
+            {/* Current page */}
+            <span style={{ color:"#fff", fontWeight:600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:420 }}>
+              {session.title.length > 52 ? session.title.slice(0,52)+"…" : session.title}
+            </span>
           </div>
 
           <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"rgba(255,255,255,0.18)", borderRadius:99, padding:"4px 12px", fontSize:12, fontWeight:700, color:"#fff", letterSpacing:.5, marginBottom:16 }}>
@@ -7013,6 +7768,216 @@ function QuizOverlay({ T, onComplete }) {
   );
 }
 
+// Fixed card dimensions — every card shares these so the stack is uniform
+const CARD_W = 340;
+const CARD_H = 440;
+const CARD_STYLE_BASE = {
+  width: CARD_W, height: CARD_H,
+  background: "#fff", borderRadius: 18,
+  border: "1px solid #e5e7eb",
+  boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+  overflow: "hidden",
+  display: "flex", flexDirection: "column",
+};
+
+function HeroCardStack({ T }) {
+  const CARDS = [
+    {
+      id: "watch",
+      render: () => (
+        <div style={{ ...CARD_STYLE_BASE, padding: 24 }}>
+          {/* header */}
+          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14, flexShrink:0 }}>
+            <div style={{ width:40, height:40, borderRadius:12, background:"linear-gradient(135deg,#6366f1,#8a46ff)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              <Icon name="play-circle" size={20} color="#fff"/>
+            </div>
+            <div>
+              <div style={{ fontSize:10, fontWeight:700, color:"#8a46ff", letterSpacing:.5, textTransform:"uppercase" }}>Now Playing</div>
+              <div style={{ fontSize:14, fontWeight:700, color:T.text, lineHeight:1.3 }}>Mindfulness for SPED Educators</div>
+            </div>
+          </div>
+          {/* thumbnail — flex-grows to fill remaining space */}
+          <div style={{ flex:1, borderRadius:12, overflow:"hidden", marginBottom:14 }}>
+            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&h=300&fit=crop&auto=format" alt="Session" style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%", display:"block" }}/>
+          </div>
+          {/* instructor row */}
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10, flexShrink:0 }}>
+            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=40&h=40&fit=crop&auto=format" alt="" style={{ width:26, height:26, borderRadius:"50%", objectFit:"cover" }}/>
+            <span style={{ fontSize:12, color:T.muted }}>Tara Roehl · 45 min</span>
+          </div>
+          {/* progress */}
+          <div style={{ flexShrink:0 }}>
+            <div style={{ height:5, background:"#e5e7eb", borderRadius:99, overflow:"hidden", marginBottom:4 }}>
+              <div style={{ width:"62%", height:"100%", background:"linear-gradient(90deg,#6366f1,#8a46ff)", borderRadius:99 }}/>
+            </div>
+            <div style={{ fontSize:11, color:T.muted }}>62% complete</div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: "quiz",
+      render: () => (
+        <div style={{ ...CARD_STYLE_BASE, padding: 24 }}>
+          {/* header */}
+          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16, flexShrink:0 }}>
+            <div style={{ width:40, height:40, borderRadius:12, background:"linear-gradient(135deg,#0ea5e9,#6366f1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              <Icon name="question" size={20} color="#fff"/>
+            </div>
+            <div>
+              <div style={{ fontSize:10, fontWeight:700, color:"#0ea5e9", letterSpacing:.5, textTransform:"uppercase" }}>Knowledge Check</div>
+              <div style={{ fontSize:14, fontWeight:700, color:T.text }}>Question 2 of 5</div>
+            </div>
+          </div>
+          {/* question */}
+          <div style={{ fontSize:15, fontWeight:700, color:T.text, marginBottom:18, lineHeight:1.5, flexShrink:0 }}>
+            Which technique helps regulate the nervous system before class?
+          </div>
+          {/* answers — flex:1 to fill */}
+          <div style={{ flex:1, display:"flex", flexDirection:"column", gap:10 }}>
+            {[
+              { label:"Box breathing exercises", correct:true  },
+              { label:"Checking emails quickly", correct:false },
+              { label:"Skipping your morning coffee", correct:false },
+              { label:"Reviewing your lesson plan", correct:false },
+            ].map((opt, i) => (
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:12, background: opt.correct ? "rgba(16,185,129,0.08)" : "#f9fafb", border: opt.correct ? "1.5px solid rgba(16,185,129,0.4)" : "1.5px solid #e5e7eb" }}>
+                <div style={{ width:18, height:18, borderRadius:"50%", flexShrink:0, background: opt.correct ? "#10b981" : "#e5e7eb", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  {opt.correct && <Icon name="check" size={10} color="#fff"/>}
+                </div>
+                <span style={{ fontSize:13, color: opt.correct ? "#059669" : T.muted, fontWeight: opt.correct ? 600 : 400 }}>{opt.label}</span>
+              </div>
+            ))}
+          </div>
+          {/* score */}
+          <div style={{ marginTop:14, fontSize:12, color:"#10b981", fontWeight:700, display:"flex", alignItems:"center", gap:5, flexShrink:0 }}>
+            <Icon name="check-circle" size={13} color="#10b981"/> Correct! · Score: 92%
+          </div>
+        </div>
+      )
+    },
+    {
+      id: "cert",
+      render: () => (
+        <div style={{ ...CARD_STYLE_BASE, padding: 32, alignItems:"center", justifyContent:"center", textAlign:"center" }}>
+          {/* badge */}
+          <div style={{ width:72, height:72, borderRadius:22, background:"linear-gradient(135deg,#8a46ff,#e83e8c)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:18, flexShrink:0 }}>
+            <Icon name="certificate" size={36} color="#fff"/>
+          </div>
+          <div style={{ fontSize:10, fontWeight:700, color:T.muted, textTransform:"uppercase", letterSpacing:1.5, marginBottom:10, flexShrink:0 }}>Certificate of Completion</div>
+          <div style={{ fontSize:26, fontWeight:800, color:T.text, letterSpacing:-.5, marginBottom:6, flexShrink:0 }}>Sarah Johnson</div>
+          <div style={{ fontSize:13, color:T.muted, lineHeight:1.7, marginBottom:24, flexShrink:0 }}>
+            Successfully completed all 9 sessions of<br/>
+            <strong style={{ color:T.text }}>SPED Summit 2026</strong>
+          </div>
+          <div style={{ width:"100%", background:"rgba(99,102,241,0.06)", border:"1px solid rgba(99,102,241,0.2)", borderRadius:14, padding:"14px 16px", marginBottom:20, flexShrink:0 }}>
+            {["9 sessions watched","All quizzes passed","Certificate issued Jan 2026"].map((s,i)=>(
+              <div key={i} style={{ fontSize:12, color:"#6366f1", fontWeight:600, display:"flex", alignItems:"center", gap:6, marginBottom:i<2?6:0 }}>
+                <Icon name="check-circle" size={12} color="#6366f1"/> {s}
+              </div>
+            ))}
+          </div>
+          <div style={{ display:"flex", gap:8, width:"100%", flexShrink:0 }}>
+            <button style={{ flex:1, padding:"11px 0", background:"#6366f1", color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+              <Icon name="download" size={13} color="#fff"/> Download
+            </button>
+            <button style={{ flex:1, padding:"11px 0", background:"#f9fafb", color:T.text, border:`1px solid ${T.border}`, borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+              <Icon name="share-network" size={13} color={T.text}/> Share
+            </button>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: "win",
+      render: () => (
+        <div style={{ ...CARD_STYLE_BASE, padding: 28, alignItems:"center", justifyContent:"center", textAlign:"center" }}>
+          {/* trophy */}
+          <div style={{ width:72, height:72, borderRadius:22, background:"linear-gradient(135deg,#f59e0b,#f97316)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:18, flexShrink:0 }}>
+            <Icon name="trophy" size={36} color="#fff"/>
+          </div>
+          <div style={{ fontSize:20, fontWeight:800, color:T.text, marginBottom:8, letterSpacing:-.3, flexShrink:0 }}>You're in the Draw!</div>
+          <div style={{ fontSize:13, color:T.muted, lineHeight:1.7, marginBottom:22, flexShrink:0 }}>
+            Your certificate entered you in the <strong style={{ color:T.text }}>Ablespace Pro</strong> prize draw.<br/>Good luck! 🎉
+          </div>
+          {/* checklist */}
+          <div style={{ width:"100%", background:"rgba(245,158,11,0.07)", border:"1px solid rgba(245,158,11,0.25)", borderRadius:14, padding:"16px 18px", textAlign:"left", marginBottom:20, flexShrink:0 }}>
+            {["Watch all 9 expert sessions ✓","Pass every knowledge check ✓","Certificate = your entry ticket ✓"].map((s,i)=>(
+              <div key={i} style={{ fontSize:13, color:"#92400e", fontWeight:600, marginBottom:i<2?10:0 }}>{s}</div>
+            ))}
+          </div>
+          {/* draw info strip */}
+          <div style={{ width:"100%", background:"#f9fafb", border:"1px solid #e5e7eb", borderRadius:12, padding:"12px 16px", display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
+            <div style={{ textAlign:"left" }}>
+              <div style={{ fontSize:11, color:T.muted, fontWeight:500 }}>Draw date</div>
+              <div style={{ fontSize:13, fontWeight:700, color:T.text }}>Jan 31, 2026</div>
+            </div>
+            <div style={{ width:1, height:32, background:T.border }}/>
+            <div style={{ textAlign:"right" }}>
+              <div style={{ fontSize:11, color:T.muted, fontWeight:500 }}>Winners</div>
+              <div style={{ fontSize:13, fontWeight:700, color:T.text }}>Multiple</div>
+            </div>
+          </div>
+        </div>
+      )
+    },
+  ];
+
+  const [cards, setCards] = useState(CARDS);
+
+  const moveToEnd = (idx) => setCards(prev => [...prev.slice(idx + 1), prev[idx]]);
+
+  useEffect(() => {
+    const t = setInterval(() => moveToEnd(0), 3500);
+    return () => clearInterval(t);
+  }, []);
+
+  // Back cards fan DOWNWARD — like a physical deck on a table
+  // i=0 is front (highest zIndex), i=1,2,3 peek below it
+  const OFFSET   = 18;   // px each card shifts down
+  const SCALE_S  = 0.055; // scale shrinks per step
+  const spring = { type:"spring", stiffness:160, damping:24 };
+
+  // Container height = card height + total bottom peek of all back cards
+  const containerH = CARD_H + OFFSET * (cards.length - 1);
+
+  return (
+    <div style={{ display:"flex", justifyContent:"center", paddingTop:16, paddingBottom:64 }}>
+      <div style={{ position:"relative", width:CARD_W, height:containerH }}>
+        {/* Render back-to-front so front card sits on top visually */}
+        {[...cards].reverse().map(({ id, render }, ri) => {
+          const i = cards.length - 1 - ri; // real depth index (0=front)
+          return (
+            <motion.div
+              key={id}
+              style={{
+                position:"absolute", left:0,
+                width:"100%", height:CARD_H,
+                cursor: i === 0 ? "grab" : "default",
+                userSelect:"none",
+              }}
+              animate={{
+                top: i * OFFSET,                                   // back cards shift DOWN
+                scale: 1 - i * SCALE_S,                            // back cards shrink
+                filter: `brightness(${Math.max(0.55, 1 - i * 0.15)})`, // back cards dim
+                zIndex: cards.length - i,                          // front = highest zIndex
+              }}
+              transition={spring}
+              drag={i === 0 ? "y" : false}
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragMomentum={false}
+              onDragEnd={() => moveToEnd(0)}
+              whileDrag={{ rotate: -2, scale: 1.02, zIndex: 99 }}
+            >
+              {render()}
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function LandingPage({ onGetStarted }) {
   const [showAuth, setShowAuth] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
@@ -7021,6 +7986,22 @@ function LandingPage({ onGetStarted }) {
   const [instructorPage, setInstructorPage] = useState(0);
   const [testimonialPage, setTestimonialPage] = useState(0);
   const [heroTab, setHeroTab] = useState("watch");
+  const heroMouseX = useMotionValue(0);
+  const heroMouseY = useMotionValue(0);
+  const [heroMaskCx, setHeroMaskCx] = useState("50%");
+  const [heroMaskCy, setHeroMaskCy] = useState("50%");
+  useEffect(()=>{
+    const un = heroMouseX.on("change", v => {
+      setHeroMaskCx(`${(v / window.innerWidth * 100).toFixed(1)}%`);
+    });
+    return un;
+  },[heroMouseX]);
+  useEffect(()=>{
+    const un = heroMouseY.on("change", v => {
+      setHeroMaskCy(`${(v / window.innerHeight * 100).toFixed(1)}%`);
+    });
+    return un;
+  },[heroMouseY]);
   const [navOpen, setNavOpen] = useState(false);
   const [navScrolled, setNavScrolled] = useState(false);
 
@@ -7194,13 +8175,13 @@ function LandingPage({ onGetStarted }) {
 
   const T = {
     bg:       "#ffffff",
-    text:     "#37352f",
-    muted:    "#787774",
-    border:   "rgba(55,53,47,0.09)",
-    hover:    "rgba(55,53,47,0.06)",
-    blue:     "#0070d7",
-    blueHov:  "#005bb5",
-    pink:     "#e83e8c",
+    text:     "#1e293b",
+    muted:    "#6b7280",
+    border:   "#e5e7eb",
+    hover:    "#f3f4f6",
+    blue:     "#6366f1",
+    blueHov:  "#4f46e5",
+    pink:     "#818cf8",
   };
 
   return (
@@ -7271,16 +8252,40 @@ function LandingPage({ onGetStarted }) {
       )}
 
       {/* ── Hero ── */}
-      <section style={{ paddingTop:0, paddingBottom:72, background:T.bg, position:"relative" }}>
+      <section style={{ paddingTop:0, paddingBottom:72, background:T.bg, position:"relative", overflow:"hidden" }}
+        onMouseMove={e=>{ heroMouseX.set(e.clientX); heroMouseY.set(e.clientY); }}>
+
+        {/* ── Infinite grid background ── */}
+        {(()=>{
+          const CELL = 40;
+          return (
+            <svg style={{ position:"absolute", inset:0, width:"100%", height:"100%", pointerEvents:"none", zIndex:0 }} aria-hidden="true">
+              <defs>
+                <pattern id="hero-grid" x="0" y="0" width={CELL} height={CELL} patternUnits="userSpaceOnUse">
+                  <path d={`M ${CELL} 0 L 0 0 0 ${CELL}`} fill="none" stroke={T.text} strokeWidth="0.5"/>
+                </pattern>
+                <radialGradient id="hero-grid-reveal" cx={heroMaskCx} cy={heroMaskCy} r="28%" gradientUnits="objectBoundingBox">
+                  <stop offset="0%" stopColor="white" stopOpacity="0.07"/>
+                  <stop offset="100%" stopColor="white" stopOpacity="0"/>
+                </radialGradient>
+                <mask id="hero-grid-mask">
+                  <rect width="100%" height="100%" fill="url(#hero-grid-reveal)"/>
+                </mask>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#hero-grid)" opacity="0.04"/>
+              <rect width="100%" height="100%" fill="url(#hero-grid)" mask="url(#hero-grid-mask)"/>
+            </svg>
+          );
+        })()}
 
         {/* ── Text block ── */}
-        <div style={{ maxWidth:780, margin:"0 auto", padding:"80px 24px 48px", textAlign:"center", position:"relative" }}>
+        <div style={{ maxWidth:780, margin:"0 auto", padding:"80px 24px 48px", textAlign:"center", position:"relative", zIndex:1 }}>
 
           {/* Rating badge */}
           <div className="animate-fade-in-up" style={{ opacity:0, animationDelay:"0.2s", marginBottom:24 }}>
             <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"#f1f0ef", border:`1px solid ${T.border}`, borderRadius:8, padding:"5px 14px" }}>
               <div style={{ width:22, height:22, border:`1px solid ${T.border}`, borderRadius:5, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <Icon name="star" size={12} color="#f59e0b" weight="fill"/>
+                <Icon name="star" size={12} color="#f59e0b"/>
               </div>
               <span style={{ fontSize:13, fontWeight:500, color:T.text }}>4.9 rating from 4,200+ educators</span>
             </div>
@@ -7317,122 +8322,8 @@ function LandingPage({ onGetStarted }) {
           <p style={{ margin:"16px 0 0", fontSize:13, color:T.muted }}>No signup required to preview sessions</p>
         </div>
 
-        {/* ── Tab bar + demo area ── */}
-        <div className="animate-fade-in-up" style={{ opacity:0, animationDelay:"0.6s", maxWidth:900, margin:"0 auto", padding:"0 24px" }}>
-
-          {/* Tab bar */}
-          <div style={{ display:"flex", justifyContent:"center", marginBottom:14 }}>
-            <div style={{ background:"#f1f0ef", borderRadius:10, padding:4, display:"inline-flex", gap:2 }}>
-              {[
-                { id:"watch", icon:"play-circle", label:"Watch Sessions"   },
-                { id:"quiz",  icon:"question",    label:"Take Quiz"        },
-                { id:"cert",  icon:"certificate", label:"Get Certificate"  },
-                { id:"win",   icon:"gift",        label:"Win Prizes"       },
-              ].map(tab=>(
-                <button key={tab.id} onClick={()=>setHeroTab(tab.id)}
-                  style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 18px", borderRadius:7, border:"none", fontSize:13, fontWeight:500, cursor:"pointer", transition:"all .15s", whiteSpace:"nowrap",
-                    background: heroTab===tab.id ? "#fff"   : "transparent",
-                    color:      heroTab===tab.id ? T.text   : T.muted,
-                    boxShadow:  heroTab===tab.id ? "0 1px 4px rgba(0,0,0,0.08)" : "none" }}>
-                  <Icon name={tab.icon} size={15} color="currentColor"/>
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Demo area */}
-          <div style={{ position:"relative", borderRadius:24, overflow:"hidden", height:460 }}>
-            {/* Instructor photo collage */}
-            {(()=>{
-              const IMG_H = 200, GAP = 8;
-              const cols = [
-                { idxs:[0,3,6], mt:-60 },
-                { idxs:[1,4,7], mt:-10 },
-                { idxs:[2,5,8], mt:-80 },
-                { idxs:[3,6,1], mt:-30 },
-                { idxs:[4,7,2], mt:-55 },
-                { idxs:[5,8,0], mt:-20 },
-              ];
-              return (
-                <div style={{ position:"absolute", inset:0, display:"flex", gap:GAP, overflow:"hidden", pointerEvents:"none" }}>
-                  {cols.map((col,ci)=>(
-                    <div key={ci} style={{ flex:"1 1 0", display:"flex", flexDirection:"column", gap:GAP, marginTop:col.mt,
-                      animation:`${ci%2===0?"colUp":"colDown"} 8s ease-in-out ${ci*-1.3}s infinite alternate` }}>
-                      {col.idxs.map((idx,ii)=>(
-                        <img key={ii} src={experts[idx].img} alt=""
-                          style={{ width:"100%", height:IMG_H, objectFit:"cover", objectPosition:"center 15%", display:"block", borderRadius:8, flexShrink:0 }}/>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              );
-            })()}
-
-            {/* WATCH overlay */}
-            {heroTab==="watch" && (
-              <div key="watch" className="animate-fade-in-overlay" style={{ opacity:0, position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <WatchOverlay T={T}/>
-              </div>
-            )}
-
-            {/* QUIZ overlay */}
-            {heroTab==="quiz" && (
-              <div key="quiz" className="animate-fade-in-overlay" style={{ opacity:0, position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <QuizOverlay T={T} onComplete={()=>setHeroTab("cert")}/>
-              </div>
-            )}
-
-            {/* CERTIFICATE overlay */}
-            {heroTab==="cert" && (
-              <div key="cert" className="animate-fade-in-overlay" style={{ opacity:0, position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <div className="animate-slide-up-overlay" style={{ opacity:0, position:"absolute", top:"50%", left:"50%", width:340, background:"#fff", borderRadius:18, padding:30, boxShadow:"0 24px 64px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.25)", textAlign:"center" }}>
-                  <div className="bounce-in" style={{ width:60, height:60, borderRadius:18, background:"linear-gradient(135deg,#8a46ff,#e83e8c)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 18px" }}>
-                    <Icon name="certificate" size={30} color="#fff"/>
-                  </div>
-                  <div style={{ fontSize:10, fontWeight:700, color:T.muted, textTransform:"uppercase", letterSpacing:1.5, marginBottom:10 }}>Certificate of Completion</div>
-                  <div style={{ fontSize:22, fontWeight:800, color:T.text, letterSpacing:-.5, marginBottom:5 }}>Sarah Johnson</div>
-                  <div style={{ fontSize:13, color:T.muted, lineHeight:1.6, marginBottom:22 }}>
-                    Successfully completed all 9 sessions of<br/>
-                    <strong style={{ color:T.text }}>SPED Summit 2026</strong>
-                  </div>
-                  <div style={{ display:"flex", gap:8 }}>
-                    <button style={{ flex:1, padding:"11px 0", background:"#0070d7", color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-                      <Icon name="download" size={14} color="#fff"/> Download PDF
-                    </button>
-                    <button style={{ flex:1, padding:"11px 0", background:T.bg, color:T.text, border:`1px solid ${T.border}`, borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-                      <Icon name="share-network" size={14} color={T.text}/> Share
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* WIN overlay */}
-            {heroTab==="win" && (
-              <div key="win" className="animate-fade-in-overlay" style={{ opacity:0, position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <div className="animate-slide-up-overlay" style={{ opacity:0, position:"absolute", top:"50%", left:"50%", width:340, background:"#fff", borderRadius:18, padding:28, boxShadow:"0 24px 64px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.25)", textAlign:"center" }}>
-                  <div className="bounce-in" style={{ width:60, height:60, borderRadius:18, background:"linear-gradient(135deg,#8a46ff,#e83e8c)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 18px" }}>
-                    <Icon name="trophy" size={30} color="#fff"/>
-                  </div>
-                  <div style={{ fontSize:17, fontWeight:800, color:T.text, marginBottom:6, letterSpacing:-.3 }}>Win Ablespace Pro</div>
-                  <div style={{ fontSize:13, color:T.muted, lineHeight:1.65, marginBottom:20 }}>
-                    Complete all sessions and pass the quizzes to enter the prize draw for a full year of Ablespace Pro.
-                  </div>
-                  <div style={{ background:"rgba(138,70,255,0.07)", border:`1px solid rgba(138,70,255,0.2)`, borderRadius:12, padding:"14px 18px", marginBottom:16, textAlign:"left" }}>
-                    <div style={{ fontSize:12, fontWeight:700, color:"#5b21b6", marginBottom:10 }}>How to enter:</div>
-                    {["Watch all 9 expert sessions","Pass every knowledge check quiz","Your certificate is your entry ticket"].map((s,i)=>(
-                      <div key={i} className="stagger-in" style={{ display:"flex", alignItems:"center", gap:8, fontSize:13, color:T.text, marginBottom:i<2?8:0, animationDelay:`${i*0.1+0.3}s` }}>
-                        <Icon name="check-circle" size={15} color="#8a46ff"/> {s}
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ fontSize:12, color:T.muted }}>Draw date: Jan 31, 2026 · Multiple winners</div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        {/* ── Card Stack ── */}
+        <HeroCardStack T={T}/>
 
       </section>
 
@@ -7479,7 +8370,7 @@ function LandingPage({ onGetStarted }) {
           {/* Header */}
           <div style={{ textAlign:"center", marginBottom:48 }}>
             <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:700, color:T.muted, letterSpacing:1, textTransform:"uppercase" }}>Platform</p>
-            <h2 style={{ margin:"0 0 10px", fontSize:"clamp(26px,4vw,40px)", fontWeight:900, color:T.text, letterSpacing:-1, lineHeight:1.15 }}>
+            <h2 style={{ margin:"0 0 10px", fontSize:"clamp(32px,4vw,48px)", fontWeight:900, color:T.text, letterSpacing:-1, lineHeight:1.15 }}>
               Built for SPED Professionals
             </h2>
             <p style={{ margin:0, fontSize:16, color:T.muted, maxWidth:480, marginInline:"auto", lineHeight:1.65 }}>
@@ -7717,7 +8608,7 @@ function LandingPage({ onGetStarted }) {
           {/* Header */}
           <div style={{ maxWidth:1200, margin:"0 auto 56px", padding:"0 24px", display:"flex", flexDirection:"column", alignItems:"center", textAlign:"center", gap:12 }}>
             <p style={{ margin:0, fontSize:13, fontWeight:700, color:T.muted, letterSpacing:1, textTransform:"uppercase" }}>Speakers</p>
-            <h2 style={{ margin:0, fontSize:"clamp(28px,4vw,42px)", fontWeight:900, color:T.text, letterSpacing:-1, lineHeight:1.15 }}>
+            <h2 style={{ margin:0, fontSize:"clamp(32px,4vw,48px)", fontWeight:900, color:T.text, letterSpacing:-1, lineHeight:1.15 }}>
               9 experts. Real strategies.
             </h2>
             <p style={{ margin:0, fontSize:16, color:T.muted, maxWidth:520, lineHeight:1.65 }}>
@@ -7766,7 +8657,6 @@ function LandingPage({ onGetStarted }) {
                 onMouseLeave={e=>e.currentTarget.style.background=T.blue}
                 onMouseDown={e=>e.currentTarget.style.transform="scale(0.97)"}
                 onMouseUp={e=>e.currentTarget.style.transform=""}>
-                <Icon name="paper-plane-tilt" size={15} color="#fff"/>
                 Apply
               </button>
             </div>
@@ -7775,172 +8665,162 @@ function LandingPage({ onGetStarted }) {
       </section>
 
       {/* ── Giveaways ── */}
-      <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#ffffff" }}>
-        <div style={{ maxWidth:1024, margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 1fr", gap:80, alignItems:"center" }}>
-          <div>
-            <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Prizes & Giveaways</p>
-            <h2 style={{ margin:"0 0 16px", fontSize:36, fontWeight:800, color:T.text, letterSpacing:-1, lineHeight:1.2 }}>
-              Win Starbucks, TpT, AbleSpace & more
-            </h2>
-            <p style={{ margin:"0 0 28px", fontSize:16, color:T.muted, lineHeight:1.6 }}>
-              Multiple giveaways throughout the conference — raffles, quiz prizes, and surprise gifts. Learn, engage, and get a chance to win!
-            </p>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:28 }}>
-              {[
-                { icon:"coffee",  color:"#a16207", bg:"#fef9c3", label:"Starbucks Gift Cards" },
-                { icon:"book-open", color:"#1d4ed8", bg:"#dbeafe", label:"TpT Resources" },
-                { icon:"target",  color:"#7c3aed", bg:"#ede9fe", label:"AbleSpace Subscriptions" },
-                { icon:"gift",    color:"#be185d", bg:"#fce7f3", label:"Surprise Gifts" },
-              ].map(({icon,color,bg,label},i)=>(
-                <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 16px", border:`1px solid ${T.border}`, borderRadius:10, background:T.bg, fontSize:14, color:T.text, fontWeight:500 }}>
-                  <div style={{ width:32, height:32, borderRadius:8, background:bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                    <Icon name={icon} size={16} color={color}/>
-                  </div>
-                  {label}
-                </div>
-              ))}
+      {(()=>{
+        function SpotlightCard({ children, spotlightColor="rgba(0,0,0,0.06)", style={} }) {
+          const ref = useRef(null);
+          const [pos, setPos] = useState({ x:0, y:0 });
+          const [opacity, setOpacity] = useState(0);
+          return (
+            <div ref={ref}
+              onMouseMove={e=>{ const r=ref.current.getBoundingClientRect(); setPos({ x:e.clientX-r.left, y:e.clientY-r.top }); }}
+              onMouseEnter={e=>{ setOpacity(1); e.currentTarget.style.borderColor=T.border; e.currentTarget.style.boxShadow="0 4px 24px rgba(0,0,0,0.08)"; }}
+              onMouseLeave={e=>{ setOpacity(0); e.currentTarget.style.borderColor=T.border; e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"; }}
+              style={{ position:"relative", overflow:"hidden", borderRadius:16, border:`1px solid ${T.border}`, background:"#ffffff", transition:"box-shadow 0.2s, border-color 0.2s", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", ...style }}
+            >
+              <div style={{ pointerEvents:"none", position:"absolute", inset:-1, transition:"opacity 0.3s", opacity, background:`radial-gradient(500px circle at ${pos.x}px ${pos.y}px, ${spotlightColor}, transparent 40%)`, zIndex:0 }}/>
+              <div style={{ position:"relative", zIndex:1 }}>{children}</div>
             </div>
-            <button onClick={()=>setShowAuth(true)}
-              style={{ padding:"0 20px", height:36, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
-              onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
-              onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-              Register for free
-            </button>
-          </div>
-          <div style={{ textAlign:"center", padding:"40px", border:`1px solid ${T.border}`, borderRadius:16, background:T.bg }}>
-            <div style={{ fontSize:72, fontWeight:800, color:T.text, letterSpacing:-3, lineHeight:1 }}>$10,000<span style={{ color:"#8a46ff" }}>+</span></div>
-            <div style={{ fontSize:16, color:T.muted, marginTop:12 }}>in prizes & giveaways</div>
-            <div style={{ display:"flex", justifyContent:"center", gap:16, marginTop:28 }}>
-              {[
-                { icon:"trophy",  color:"#f59e0b" },
-                { icon:"confetti",color:"#8a46ff" },
-                { icon:"star",    color:"#fbbf24" },
-                { icon:"gift",    color:"#e83e8c" },
-                { icon:"heart",   color:"#ef4444" },
-              ].map(({icon,color},i)=>(
-                <Icon key={i} name={icon} size={28} color={color}/>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+          );
+        }
 
-      {/* ── Sponsor: AbleSpace ── */}
-      <section style={{ padding:"64px 24px", borderBottom:`1px solid ${T.border}`, textAlign:"center" }}>
-        <div style={{ maxWidth:560, margin:"0 auto" }}>
-          <p style={{ margin:"0 0 16px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Presenting Sponsor</p>
-          <img src="/ablespace.svg" alt="AbleSpace" style={{ height:44, display:"block", margin:"0 auto 16px" }}/>
-          <h2 style={{ margin:"0 0 12px", fontSize:28, fontWeight:800, color:T.text, letterSpacing:-.5 }}>Sponsored by AbleSpace</h2>
-          <p style={{ margin:"0 0 28px", fontSize:15, color:T.muted, lineHeight:1.65 }}>
-            An IEP Goal Tracking app built for special education professionals. Spend less time on paperwork and more time with students.
-          </p>
-          <a href="https://ablespace.io" target="_blank" rel="noopener noreferrer"
-            style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"0 20px", height:36, background:T.blue, color:"#fff", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", textDecoration:"none", transition:"background .12s" }}
-            onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
-            onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-            Start using AbleSpace for free
-          </a>
-        </div>
-      </section>
+        const prizes = [
+          { icon:"coffee",   iconColor:"#d97706", iconBg:"#fef9c3", spotlight:"rgba(217,119,6,0.08)",   title:"Starbucks Gift Cards",       desc:"Fuel your grading sessions — $25 gift cards raffled every day of the summit.",         value:"$25 each" },
+          { icon:"book-open",iconColor:"#2563eb", iconBg:"#dbeafe", spotlight:"rgba(37,99,235,0.08)",   title:"TpT Resource Bundles",       desc:"Premium Teachers Pay Teachers bundles handpicked for SPED classrooms.",               value:"$50 value" },
+          { icon:"target",   iconColor:"#7c3aed", iconBg:"#ede9fe", spotlight:"rgba(124,58,237,0.08)",  title:"AbleSpace Pro Subscriptions",desc:"Full-year AbleSpace Pro access — IEP goal tracking built for special educators.",        value:"$120/yr" },
+          { icon:"gift",     iconColor:"#be185d", iconBg:"#fce7f3", spotlight:"rgba(190,24,93,0.07)",   title:"Surprise Mystery Gifts",     desc:"Branded SPED Summit swag packs and surprise items revealed live during sessions.",      value:"Surprise!" },
+          { icon:"trophy",   iconColor:"#059669", iconBg:"#d1fae5", spotlight:"rgba(5,150,105,0.08)",   title:"Grand Prize Bundle",         desc:"Complete the full summit + pass all quizzes to enter the $500 grand prize drawing.",    value:"$500+" },
+          { icon:"star",     iconColor:"#ea580c", iconBg:"#ffedd5", spotlight:"rgba(234,88,12,0.08)",   title:"Quiz Champion Prizes",       desc:"Top quiz scorers each day win exclusive educator resource packs from our sponsors.",    value:"Daily" },
+        ];
+
+        return (
+          <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#ffffff" }}>
+            <div style={{ maxWidth:1100, margin:"0 auto" }}>
+              {/* Header */}
+              <div style={{ textAlign:"center", marginBottom:64 }}>
+                <p style={{ margin:"0 0 12px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Prizes & Giveaways</p>
+                <h2 style={{ margin:"0 0 16px", fontSize:"clamp(32px,4vw,48px)", fontWeight:800, color:T.text, letterSpacing:-1.5, lineHeight:1.1 }}>
+                  Win over <span style={{ background:"linear-gradient(90deg,#f59e0b,#e83e8c)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>$10,000+</span> in prizes
+                </h2>
+                <p style={{ margin:"0 auto", fontSize:17, color:T.muted, lineHeight:1.7, maxWidth:520 }}>
+                  Learn, engage, and win. Multiple giveaways happen throughout the summit — the more you participate, the more chances you get.
+                </p>
+              </div>
+
+              {/* Grid */}
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16 }} className="giveaway-grid">
+                {prizes.map(({ icon, iconColor, iconBg, spotlight, title, desc, value }, i) => (
+                  <SpotlightCard key={i} spotlightColor={spotlight}>
+                    <div style={{ padding:"28px 28px 24px" }}>
+                      <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:20 }}>
+                        <div style={{ width:44, height:44, borderRadius:10, background:iconBg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                          <Icon name={icon} size={20} color={iconColor}/>
+                        </div>
+                        <span style={{ fontSize:11, fontWeight:700, color:iconColor, background:iconBg, border:`1px solid ${iconColor}30`, borderRadius:99, padding:"3px 10px", letterSpacing:.5 }}>
+                          {value}
+                        </span>
+                      </div>
+                      <h3 style={{ margin:"0 0 10px", fontSize:16, fontWeight:700, color:T.text, lineHeight:1.3 }}>{title}</h3>
+                      <p style={{ margin:0, fontSize:13, color:T.muted, lineHeight:1.65 }}>{desc}</p>
+                    </div>
+                  </SpotlightCard>
+                ))}
+              </div>
+
+              {/* CTA */}
+              <div style={{ textAlign:"center", marginTop:48 }}>
+                <button onClick={()=>setShowAuth(true)}
+                  style={{ padding:"12px 32px", background:T.blue, color:"#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:700, cursor:"pointer", transition:"background .12s" }}
+                  onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
+                  onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
+                  Register free to enter all giveaways
+                </button>
+              </div>
+            </div>
+            <style>{`@media(max-width:900px){.giveaway-grid{grid-template-columns:repeat(2,1fr)!important}} @media(max-width:600px){.giveaway-grid{grid-template-columns:1fr!important}}`}</style>
+          </section>
+        );
+      })()}
 
       {/* ── Featured Sessions ── */}
       <section id="sessions" style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
         <div style={{ maxWidth:1024, margin:"0 auto" }}>
           {/* Header */}
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:40, flexWrap:"wrap", gap:16 }}>
-            <div>
-              <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Event Programming</p>
-              <h2 style={{ margin:0, fontSize:32, fontWeight:800, color:T.text, letterSpacing:-1, lineHeight:1.1 }}>SPED Summit Schedule</h2>
-              <p style={{ margin:"8px 0 0", fontSize:15, color:T.muted }}>Explore the full lineup of sessions, workshops &amp; keynote events.</p>
-            </div>
-            {/* Upcoming / Past tabs */}
-            <div style={{ display:"flex", border:`1px solid ${T.border}`, borderRadius:8, overflow:"hidden", flexShrink:0 }}>
-              {[["upcoming",2],["past",4]].map(([tab, count]) => (
-                <button key={tab} onClick={()=>setScheduleTab(tab)}
-                  style={{ padding:"8px 16px", background:scheduleTab===tab?T.blue:"transparent", border:"none", borderRight:tab==="upcoming"?`1px solid ${T.border}`:"none", cursor:"pointer", display:"flex", alignItems:"center", gap:6, fontSize:13, fontWeight:600, color:scheduleTab===tab?"#fff":T.muted, transition:"all .15s" }}>
-                  {tab.charAt(0).toUpperCase()+tab.slice(1)}
-                  <span style={{ background:scheduleTab===tab?"rgba(255,255,255,0.25)":T.hover, color:scheduleTab===tab?"#fff":T.muted, borderRadius:99, fontSize:11, fontWeight:700, padding:"1px 7px" }}>{count}</span>
-                </button>
-              ))}
-            </div>
+          <div style={{ marginBottom:40 }}>
+            <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Upcoming Schedule</p>
+            <h2 style={{ margin:0, fontSize:"clamp(28px,4vw,40px)", fontWeight:800, color:T.text, letterSpacing:-1, lineHeight:1.1 }}>Spring 2026 Sessions</h2>
+            <p style={{ margin:"8px 0 0", fontSize:15, color:T.muted }}>Register for these upcoming live sessions — free for all educators.</p>
           </div>
 
-          {/* Timeline */}
+          {/* Session cards — pixel-matched to reference design */}
           {(()=>{
             const SD = {
-              5:{ type:"WORKSHOP",        date:"Apr 15", day:"Wednesday", time:"09:00 AM", ts:new Date("2026-04-15T09:00"), tab:"upcoming" },
-              6:{ type:"PANEL DISCUSSION",date:"Apr 15", day:"Wednesday", time:"11:00 AM", ts:new Date("2026-04-15T11:00"), tab:"upcoming" },
-              1:{ type:"KEYNOTE",         date:"Mar 26", day:"Wednesday", time:"09:00 AM", ts:new Date("2026-03-26T09:00"), tab:"past" },
-              2:{ type:"WORKSHOP",        date:"Mar 26", day:"Wednesday", time:"11:00 AM", ts:new Date("2026-03-26T11:00"), tab:"past" },
-              3:{ type:"WORKSHOP",        date:"Mar 12", day:"Wednesday", time:"09:00 AM", ts:new Date("2026-03-12T09:00"), tab:"past" },
-              4:{ type:"PANEL DISCUSSION",date:"Mar 12", day:"Wednesday", time:"11:00 AM", ts:new Date("2026-03-12T11:00"), tab:"past" },
+              5:{ date:"Apr 15", time:"09:00 AM", sessionType:"Workshop" },
+              6:{ date:"Apr 15", time:"11:00 AM", sessionType:"Panel Discussion" },
             };
-            const BADGE = {
-              "WORKSHOP":        { bg:"#d1fae5", color:"#065f46" },
-              "PANEL DISCUSSION":{ bg:"#fff0f6", color:"#c2185b", border:"1px solid #f48fb1" },
-              "KEYNOTE":         { bg:"#ede9fe", color:"#6d28d9" },
+            /* Category badge: short topic label, amber-toned like the reference */
+            const CAT_BADGE = {
+              "TECHNOLOGY":    { label:"Technology",    bg:"#fef3c7", color:"#b45309" },
+              "ACCESSIBILITY": { label:"Accessibility", bg:"#ede9fe", color:"#6d28d9" },
+              "MANAGEMENT":    { label:"Management",    bg:"#dbeafe", color:"#1d4ed8" },
+              "LEADERSHIP":    { label:"Leadership",    bg:"#d1fae5", color:"#065f46" },
+              "COMMUNICATION": { label:"Communication", bg:"#fff7ed", color:"#c2410c" },
+              "TEAMWORK":      { label:"Teamwork",      bg:"#fdf4ff", color:"#7e22ce" },
             };
-            const AVATAR_COLORS = ["#0070d7","#8a46ff","#e83e8c","#059669","#f59e0b","#ef4444"];
-            const filtered = SESSIONS.filter(s => SD[s.id]?.tab === scheduleTab);
-            const groups = {};
-            filtered.forEach(s => {
-              const d = SD[s.id];
-              if (!groups[d.date]) groups[d.date] = { date:d.date, day:d.day, items:[] };
-              groups[d.date].items.push(s);
-            });
-            const groupArr = Object.values(groups);
-            /* Layout metrics:
-               date col = 100px, gap = 24px, dot col = 16px (dot centered at 8px)
-               Line left = 100 + 24 + 8 - 1 = 131px  (1px = half of 2px line) */
-            const LINE_LEFT = 131;
+            const INSTRUCTOR_ROLES = {
+              "Dr. Emily Tran": "AI & Technology Educator",
+              "Dr. Sarah Kim":  "AAC Specialist, BCBA",
+            };
+            const upcomingItems = SESSIONS.filter(s => SD[s.id]);
             return (
-              <div style={{ position:"relative" }}>
-                {/* Continuous vertical line */}
-                <div style={{ position:"absolute", left:LINE_LEFT, top:0, bottom:0, width:0, borderLeft:`2px dashed ${T.border}`, zIndex:0 }}/>
-                {groupArr.map((grp, gi) => (
-                  <div key={gi} style={{ display:"flex", alignItems:"flex-start", gap:24, marginBottom: gi < groupArr.length-1 ? 28 : 0 }}>
-                    {/* Date — vertically centered with first card's top padding */}
-                    <div style={{ width:100, flexShrink:0, paddingTop:22, textAlign:"right" }}>
-                      <div style={{ fontSize:17, fontWeight:800, color:T.text, lineHeight:1.1 }}>{grp.date}</div>
-                      <div style={{ fontSize:12, color:T.muted, marginTop:3 }}>{grp.day}</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                {upcomingItems.map(s => {
+                  const d        = SD[s.id];
+                  const catBadge = CAT_BADGE[s.category] || { label:s.category, bg:"#f3f4f6", color:"#374151" };
+                  const avatarSrc= INSTRUCTOR_AVATARS[s.instructor];
+                  const schedItem= SCHEDULE.find(i => i.id === s.id);
+                  const ctaLabel = "Register Now";
+                  const instrRole= INSTRUCTOR_ROLES[s.instructor] || "Instructor";
+                  return (
+                    <div key={s.id}
+                      style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:12, display:"flex", alignItems:"stretch", overflow:"hidden", cursor:"pointer" }}
+                      onClick={()=>setSelectedSession(s)}>
+
+                      {/* ── Left: image fills full card height, name+role overlaid via gradient ── */}
+                      <div style={{ flexShrink:0, width:200, position:"relative" }}>
+                        <img src={avatarSrc} alt={s.instructor}
+                          style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top center", display:"block" }}/>
+                        <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.25) 45%, transparent 75%)" }}/>
+                        <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"0 10px 10px" }}>
+                          <div style={{ fontSize:15, fontWeight:700, color:"#fff", lineHeight:1.25 }}>{s.instructor}</div>
+                          <div style={{ fontSize:13, color:"rgba(255,255,255,0.72)", marginTop:3, lineHeight:1.3 }}>{instrRole}</div>
+                        </div>
+                      </div>
+
+                      {/* ── Right: content with own padding ── */}
+                      <div style={{ flex:1, minWidth:0, padding:20 }}>
+                        <div style={{ marginBottom:8 }}>
+                          <span style={{ display:"inline-block", fontSize:11, fontWeight:600, padding:"2px 7px", borderRadius:4, background:catBadge.bg, color:catBadge.color, letterSpacing:.2 }}>
+                            {catBadge.label}
+                          </span>
+                        </div>
+                        <div style={{ fontSize:17, fontWeight:700, color:"#111827", lineHeight:1.3, marginBottom:6 }}>{s.title}</div>
+                        <div style={{ fontSize:13, fontWeight:500, color:"#374151", marginBottom:6 }}>
+                          {d.sessionType} with {s.instructor} ({instrRole})
+                        </div>
+                        <div style={{ fontSize:12, color:"#6b7280", lineHeight:1.55, marginBottom:28, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
+                          {schedItem?.description || s.description}
+                        </div>
+                        <button
+                          onClick={e=>{ e.stopPropagation(); setSelectedSession(s); }}
+                          style={{ display:"inline-flex", alignItems:"center", padding:"7px 13px", background:"#6366f1", color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", transition:"background 0.15s" }}
+                          onMouseEnter={e=>e.currentTarget.style.background="#4f46e5"}
+                          onMouseLeave={e=>e.currentTarget.style.background="#6366f1"}>
+                          {ctaLabel}
+                        </button>
+                      </div>
                     </div>
-                    {/* Dot — sits exactly on the line, halo masks line behind it */}
-                    <div style={{ width:16, flexShrink:0, paddingTop:28, display:"flex", justifyContent:"center", position:"relative", zIndex:1 }}>
-                      <div style={{ width:9, height:9, borderRadius:"50%", background:T.muted, boxShadow:`0 0 0 4px ${T.bg}` }}/>
-                    </div>
-                    {/* Cards stack */}
-                    <div style={{ flex:1, display:"flex", flexDirection:"column", gap:10 }}>
-                      {grp.items.map((s) => {
-                        const d = SD[s.id];
-                        const badge = BADGE[d.type] || BADGE["WORKSHOP"];
-                        const initials = s.instructor.replace(/^Dr\.\s*/,"").split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase();
-                        const avatarBg = AVATAR_COLORS[s.id % AVATAR_COLORS.length];
-                        const imgSrc = sessionImgs[(s.id - 1) % sessionImgs.length];
-                        return (
-                          <div key={s.id} onClick={()=>setSelectedSession(s)}
-                            style={{ background:"#fff", border:`1px solid ${T.border}`, borderRadius:12, padding:"20px 20px 20px 24px", display:"flex", alignItems:"stretch", gap:0, cursor:"pointer", overflow:"hidden" }}
-                            onMouseEnter={e=>e.currentTarget.querySelector("img").style.transform="scale(1.08)"}
-                            onMouseLeave={e=>e.currentTarget.querySelector("img").style.transform="scale(1)"}>
-                            {/* Left: text content */}
-                            <div style={{ flex:1, minWidth:0, paddingRight:20 }}>
-                              <div style={{ fontSize:12, color:T.muted, fontWeight:500, marginBottom:6 }}>{d.time}</div>
-                              <div style={{ fontSize:16, fontWeight:700, color:T.text, lineHeight:1.35, marginBottom:10 }}>{s.title}</div>
-                              <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:14 }}>
-                                <div style={{ width:22, height:22, borderRadius:"50%", background:avatarBg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:800, color:"#fff", flexShrink:0 }}>{initials}</div>
-                                <span style={{ fontSize:13, color:T.muted }}>By {s.instructor}</span>
-                              </div>
-                              <span style={{ fontSize:11, fontWeight:700, padding:"3px 10px", borderRadius:99, background:badge.bg, color:badge.color, border:badge.border||"none", letterSpacing:.3 }}>{d.type}</span>
-                            </div>
-                            {/* Right: thumbnail flush to card edge */}
-                            <div style={{ width:150, flexShrink:0, borderRadius:10, overflow:"hidden", alignSelf:"stretch" }}>
-                              <img src={imgSrc} alt={s.title} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block", transition:"transform 0.4s ease" }}/>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             );
           })()}
@@ -7951,7 +8831,7 @@ function LandingPage({ onGetStarted }) {
       <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#ffffff", textAlign:"center" }}>
         <div style={{ maxWidth:560, margin:"0 auto" }}>
           <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Community</p>
-          <h2 style={{ margin:"0 0 12px", fontSize:32, fontWeight:800, color:T.text, letterSpacing:-1, lineHeight:1.2 }}>Connect with educators across the country</h2>
+          <h2 style={{ margin:"0 0 12px", fontSize:"clamp(32px,4vw,48px)", fontWeight:800, color:T.text, letterSpacing:-1, lineHeight:1.2 }}>Connect with educators across the country</h2>
           <p style={{ margin:"0 0 36px", fontSize:16, color:T.muted, lineHeight:1.6 }}>
             Stay in the loop — follow us for session updates, announcements, and community highlights.
           </p>
@@ -8007,7 +8887,7 @@ function LandingPage({ onGetStarted }) {
 
         function TCol({ items, duration }) {
           return (
-            <div style={{ overflow:"hidden" }}>
+            <div style={{ overflow:"visible" }}>
               <motion.div
                 animate={{ translateY:"-50%" }}
                 transition={{ duration, repeat:Infinity, ease:"linear", repeatType:"loop" }}
@@ -8034,9 +8914,7 @@ function LandingPage({ onGetStarted }) {
             >
               {/* Header */}
               <div style={{ display:"flex", flexDirection:"column", alignItems:"center", maxWidth:540, margin:"0 auto 64px", textAlign:"center" }}>
-                <div style={{ border:`1px solid ${T.border}`, padding:"4px 16px", borderRadius:999, fontSize:12, fontWeight:700, letterSpacing:1, textTransform:"uppercase", color:T.muted, background:"#f9fafb", marginBottom:24 }}>
-                  Testimonials
-                </div>
+                <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Testimonials</p>
                 <h2 style={{ margin:"0 0 16px", fontSize:"clamp(32px,4vw,48px)", fontWeight:800, color:T.text, letterSpacing:-1.5, lineHeight:1.1 }}>
                   Loved by educators
                 </h2>
@@ -8062,7 +8940,7 @@ function LandingPage({ onGetStarted }) {
         <div style={{ maxWidth:680, margin:"0 auto" }}>
           <div style={{ textAlign:"center", marginBottom:40 }}>
             <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>FAQ</p>
-            <h2 style={{ margin:0, fontSize:36, fontWeight:800, color:T.text, letterSpacing:-1 }}>Frequently asked questions</h2>
+            <h2 style={{ margin:0, fontSize:"clamp(32px,4vw,48px)", fontWeight:800, color:T.text, letterSpacing:-1 }}>Frequently asked questions</h2>
           </div>
           {faqs.map((f,i)=>(
             <div key={i} style={{ borderBottom:`1px solid ${T.border}` }}>
@@ -8088,8 +8966,8 @@ function LandingPage({ onGetStarted }) {
         <div style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
           <div style={{ maxWidth:1024, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-between", gap:40, flexWrap:"wrap" }}>
             <div style={{ flex:1, minWidth:280 }}>
-              <h2 style={{ margin:"0 0 12px", fontSize:40, fontWeight:800, color:T.text, lineHeight:1.1, letterSpacing:-1.5 }}>
-                Ready to advance<br/>your SPED career?
+              <h2 style={{ margin:"0 0 12px", fontSize:"clamp(32px,4vw,48px)", fontWeight:800, color:T.text, lineHeight:1.1, letterSpacing:-1.5 }}>
+                Connect with educators<br/>across the country?
               </h2>
               <p style={{ margin:0, fontSize:16, color:T.muted, lineHeight:1.6 }}>
                 Join 4,200+ educators. Free sessions, real certificates, expert instructors.
@@ -8570,6 +9448,7 @@ export default function App() {
   const [userName, setUserName] = useState("Alex Johnson");
   const [scheduleRegistrations, setScheduleRegistrations] = useState({});
   const [sessionsDeepLink, setSessionsDeepLink] = useState(null);
+  const [dashFilter, setDashFilter] = useState({ season:"all", year:"all" });
   const [adminSessions, setAdminSessions] = useState(() => {
     try { const s = localStorage.getItem("adminSessions"); return s ? JSON.parse(s) : ADMIN_SESSIONS_DATA; } catch { return ADMIN_SESSIONS_DATA; }
   });
@@ -8731,7 +9610,7 @@ export default function App() {
   function renderPage() {
     if (page==="session-detail" && activeSession) {
       const liveSession = sessions.find(s => s.id === activeSession.id) || activeSession;
-      return <SessionDetail session={liveSession} onBack={()=>nav(isAdmin?"admin-sessions":sessionSource)} backLabel={sessionBackLabel} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress}/>;
+      return <SessionDetail session={liveSession} onBack={()=>nav(isAdmin?"admin-sessions":sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress}/>;
     }
     if (isAdmin) {
       if (page==="admin-overview") return <AdminOverview onNavigate={nav} onEditSession={openEdit} toast={toast}/>;
@@ -8740,7 +9619,7 @@ export default function App() {
       if (page==="admin-edit" && editingSession) return <AdminEditSession session={editingSession} onBack={()=>nav("admin-sessions")} toast={toast} onSave={updateSession}/>;
       if (page==="admin-analytics") return <AnalyticsPage onEditSession={openEdit}/>;
     }
-    if (page==="dashboard") return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={sessions}/>;
+    if (page==="dashboard") return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={sessions} externalFilter={dashFilter} onFilterChange={setDashFilter}/>;
     if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={sessions} seasons={seasons}/>;
     if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
@@ -8798,10 +9677,11 @@ export default function App() {
         onOpenSession={openSession}
         onNavigate={nav}
         userName={userName}
+        onBrowseSelect={(season, year) => { setDashFilter({ season, year }); nav("dashboard"); }}
       />
-      <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
-        <Sidebar active={activePage} onChange={nav} isAdmin={isAdmin}/>
-        <div style={{ flex:1, overflowY:"auto" }}>{renderPage()}</div>
+      <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+        <TabBar active={activePage} onChange={nav} isAdmin={isAdmin}/>
+        <div style={{ flex:1, overflowY:"auto" }}>{renderPage()}<Footer/></div>
       </div>
       {/* Session Assessment Modal */}
       {assessmentSession && (
@@ -8836,32 +9716,32 @@ export default function App() {
       <ToastContainer toasts={toasts} onRemove={remove}/>
       <style>{`
         :root, [data-theme="light"] {
-          --hero-bg: linear-gradient(120deg, #e1f0ff, #d6ebff);
-          /* Metronic Primary Blue */
-          --c-primary:#3699ff; --c-primaryDark:#187de4; --c-primaryLight:#e1f0ff; --c-primaryBorder:#b0d4ff;
-          /* Metronic Feedback */
-          --c-success:#50cd89; --c-successLight:#e8fff3; --c-successBorder:#b5f0d0;
-          --c-warning:#ffc700; --c-warningLight:#fff8dd; --c-warningBorder:#ffe47d;
-          --c-error:#f1416c; --c-errorLight:#fff5f8; --c-errorBorder:#ffbccd;
-          --c-info:#7239ea; --c-infoLight:#f8f5ff; --c-infoBorder:#cbbcf5;
-          /* Metronic Typography Gray Scale */
-          --c-gray50:#f5f8fa; --c-gray100:#eff2f5; --c-gray200:#e4e6ef; --c-gray300:#b5b5c3;
-          --c-gray400:#a1a5b7; --c-gray500:#7e8299; --c-gray600:#5e6278; --c-gray700:#3f4254;
-          --c-gray800:#3f4254; --c-gray900:#181c32; --c-white:#ffffff;
+          --hero-bg: linear-gradient(120deg, #e0e7ff, #ede9fe);
+          /* Indigo Primary */
+          --c-primary:#6366f1; --c-primaryDark:#4f46e5; --c-primaryLight:#e0e7ff; --c-primaryBorder:#c7d2fe;
+          /* Feedback */
+          --c-success:#10b981; --c-successLight:#ecfdf5; --c-successBorder:#6ee7b7;
+          --c-warning:#f59e0b; --c-warningLight:#fffbeb; --c-warningBorder:#fcd34d;
+          --c-error:#ef4444; --c-errorLight:#fef2f2; --c-errorBorder:#fca5a5;
+          --c-info:#6366f1; --c-infoLight:#e0e7ff; --c-infoBorder:#c7d2fe;
+          /* Slate/Gray Scale */
+          --c-gray50:#f8fafc; --c-gray100:#f3f4f6; --c-gray200:#e5e7eb; --c-gray300:#d1d5db;
+          --c-gray400:#9ca3af; --c-gray500:#6b7280; --c-gray600:#4b5563; --c-gray700:#374151;
+          --c-gray800:#1f2937; --c-gray900:#1e293b; --c-white:#ffffff;
         }
         [data-theme="dark"] {
-          --hero-bg: linear-gradient(120deg, #1e2647, #151b30);
-          /* Metronic Primary Blue (dark) */
-          --c-primary:#3699ff; --c-primaryDark:#5eaeff; --c-primaryLight:#1c2e4a; --c-primaryBorder:#1e3a5f;
-          /* Metronic Feedback (dark) */
-          --c-success:#50cd89; --c-successLight:#0e2d1f; --c-successBorder:#1a5c3a;
-          --c-warning:#ffc700; --c-warningLight:#2a1f00; --c-warningBorder:#5a4200;
-          --c-error:#f1416c; --c-errorLight:#2d0f18; --c-errorBorder:#5c1a2c;
-          --c-info:#7239ea; --c-infoLight:#1e1530; --c-infoBorder:#3d2170;
-          /* Metronic Sidebar Dark Scale */
-          --c-gray50:#1e1e2d; --c-gray100:#2b2b40; --c-gray200:#3a3a53; --c-gray300:#474761;
-          --c-gray400:#565674; --c-gray500:#7e8299; --c-gray600:#a1a5b7; --c-gray700:#cdcde0;
-          --c-gray800:#e4e6ef; --c-gray900:#f5f8fa; --c-white:#1e1e2d;
+          --hero-bg: linear-gradient(120deg, #1e1b4b, #0f172a);
+          /* Indigo Primary (dark) */
+          --c-primary:#818cf8; --c-primaryDark:#6366f1; --c-primaryLight:#1e1b4b; --c-primaryBorder:#3730a3;
+          /* Feedback (dark) */
+          --c-success:#10b981; --c-successLight:#064e3b; --c-successBorder:#065f46;
+          --c-warning:#f59e0b; --c-warningLight:#451a03; --c-warningBorder:#92400e;
+          --c-error:#ef4444; --c-errorLight:#450a0a; --c-errorBorder:#7f1d1d;
+          --c-info:#818cf8; --c-infoLight:#1e1b4b; --c-infoBorder:#3730a3;
+          /* Dark Slate Scale */
+          --c-gray50:#1e293b; --c-gray100:#1e293b; --c-gray200:#2d3748; --c-gray300:#4b5563;
+          --c-gray400:#6b7280; --c-gray500:#9ca3af; --c-gray600:#d1d5db; --c-gray700:#e5e7eb;
+          --c-gray800:#e2e8f0; --c-gray900:#e2e8f0; --c-white:#1e293b;
         }
         * { box-sizing: border-box; }
         @keyframes toastIn { from{opacity:0;transform:translateX(30px)} to{opacity:1;transform:translateX(0)} }
