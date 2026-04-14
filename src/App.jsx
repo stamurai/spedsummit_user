@@ -1115,33 +1115,33 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
         {showBrowse && (
           <div style={{ position:"absolute", top:"calc(100% + 8px)", left:0, background:"#fff", border:"1px solid #e4e4e7", borderRadius:14, boxShadow:"0 12px 40px rgba(0,0,0,0.12)", minWidth:400, zIndex:200, display:"flex", overflow:"hidden" }}>
             {/* Sessions column */}
-            <div style={{ flex:1, padding:"20px 20px 16px" }}>
-              <div style={{ fontSize:11, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:8, paddingLeft:4 }}>Sessions</div>
+            <div style={{ flex:1, padding:"12px 12px 10px" }}>
+              <div style={{ fontSize:11, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:4, paddingLeft:4 }}>Sessions</div>
               <div style={{ display:"flex", flexDirection:"column" }}>
                 {browseSeasons.map(s => (
                   <button key={s.id}
                     onClick={() => { setShowBrowse(false); const [sn, sy] = s.name.split(" "); onBrowseSelect?.(sn, sy); }}
-                    style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", background:"none", border:"none", cursor:"pointer", padding:"8px 8px", borderRadius:8, textAlign:"left", fontFamily:"inherit", transition:"background .12s" }}
+                    style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", background:"none", border:"none", cursor:"pointer", padding:"6px 8px", borderRadius:8, textAlign:"left", fontFamily:"inherit", transition:"background .12s" }}
                     onMouseEnter={e => e.currentTarget.style.background = "#f4f4f5"}
                     onMouseLeave={e => e.currentTarget.style.background = "none"}>
                     <span style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{s.name}</span>
-                    <span style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{s.tagline}</span>
+                    <span style={{ fontSize:12, color:C.gray400, marginTop:1 }}>{s.tagline}</span>
                   </button>
                 ))}
               </div>
             </div>
 
             {/* Divider */}
-            <div style={{ width:1, background:"#f0f0f0", flexShrink:0, margin:"0" }}/>
+            <div style={{ width:1, background:"#f0f0f0", flexShrink:0 }}/>
 
             {/* Year column */}
-            <div style={{ minWidth:120, padding:"20px 20px 16px" }}>
-              <div style={{ fontSize:11, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:8, paddingLeft:4 }}>Year</div>
+            <div style={{ minWidth:100, padding:"12px 12px 10px" }}>
+              <div style={{ fontSize:11, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:4, paddingLeft:4 }}>Year</div>
               <div style={{ display:"flex", flexDirection:"column" }}>
                 {browseYears.map(y => (
                   <button key={y}
                     onClick={() => { setShowBrowse(false); onBrowseSelect?.("all", y); }}
-                    style={{ background:"none", border:"none", cursor:"pointer", padding:"8px 8px", borderRadius:8, fontSize:14, fontWeight:600, color:C.gray900, textAlign:"left", fontFamily:"inherit", transition:"background .12s" }}
+                    style={{ background:"none", border:"none", cursor:"pointer", padding:"6px 8px", borderRadius:8, fontSize:14, fontWeight:600, color:C.gray900, textAlign:"left", fontFamily:"inherit", transition:"background .12s" }}
                     onMouseEnter={e => e.currentTarget.style.background = "#f4f4f5"}
                     onMouseLeave={e => e.currentTarget.style.background = "none"}>
                     {y}
