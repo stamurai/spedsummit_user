@@ -855,16 +855,26 @@ const SEARCH_PAGES = [
 /* ─────────────────────────────────────────────────────────────────────────────
    FOOTER
 ───────────────────────────────────────────────────────────────────────────── */
-function Footer() {
+function Footer({ onNavigate }) {
   const muted = C.gray500;
   const text  = C.gray900;
   const border = C.gray200;
   const bg = C.white;
   const hover = C.gray100;
+  const blue = C.primary;
   return (
-    <footer style={{ background:bg, borderTop:`1px solid ${border}`, fontFamily:"inherit", flexShrink:0 }}>
-      <style>{`@media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr !important;}.footer-brand{grid-column:1/-1 !important;}}`}</style>
-      <div className="footer-grid" style={{ maxWidth:1024, margin:"0 auto", padding:"56px 24px 48px", display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:40, borderBottom:`1px solid ${border}` }}>
+    <footer style={{ background:bg, borderTop:`1px solid ${border}`, fontFamily:"inherit", flexShrink:0, overflow:"hidden" }}>
+      <style>{`
+        .footer-inner { box-sizing:border-box; width:100%; }
+        @media(max-width:768px){
+          .footer-grid { grid-template-columns:1fr 1fr !important; }
+          .footer-brand { grid-column:1/-1 !important; }
+          .footer-inner { padding-left:20px !important; padding-right:20px !important; }
+        }
+      `}</style>
+
+
+      <div className="footer-grid footer-inner" style={{ maxWidth:1024, margin:"0 auto", padding:"56px 40px 48px", display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:48, borderBottom:`1px solid ${border}` }}>
         {/* Brand */}
         <div className="footer-brand">
           <img src="/Container.png" alt="SPED Summit" style={{ height:26, display:"block", marginBottom:16 }}/>
@@ -907,7 +917,7 @@ function Footer() {
       </div>
 
       {/* Copyright */}
-      <div style={{ padding:"16px 24px", display:"flex", justifyContent:"center" }}>
+      <div className="footer-inner" style={{ maxWidth:1024, margin:"0 auto", padding:"16px 40px", display:"flex", justifyContent:"center" }}>
         <span style={{ fontSize:12, color:muted }}>© {new Date().getFullYear()} SPED Summit. All rights reserved.</span>
       </div>
     </footer>
@@ -1421,14 +1431,14 @@ function TabBar({ active, onChange, isAdmin, breadcrumbs }) {
           <div style={{ display:"flex", alignItems:"center", gap:6, height:40, fontSize:13 }}>
             {breadcrumbs.map((crumb, i) => (
               <span key={i} style={{ display:"inline-flex", alignItems:"center", gap:6 }}>
-                {i > 0 && <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="#CBD5E1"/></svg>}
+                {i > 0 && <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="var(--c-gray400)"/></svg>}
                 {crumb.onClick ? (
-                  <button onClick={crumb.onClick} style={{ background:"none", border:"none", padding:0, cursor:"pointer", fontSize:13, fontWeight:500, color:"#71717a", fontFamily:"inherit" }}
-                    onMouseEnter={e=>e.currentTarget.style.color="#18181b"} onMouseLeave={e=>e.currentTarget.style.color="#71717a"}>
+                  <button onClick={crumb.onClick} style={{ background:"none", border:"none", padding:0, cursor:"pointer", fontSize:13, fontWeight:500, color:C.gray500, fontFamily:"inherit" }}
+                    onMouseEnter={e=>e.currentTarget.style.color=C.gray900} onMouseLeave={e=>e.currentTarget.style.color=C.gray500}>
                     {crumb.label}
                   </button>
                 ) : (
-                  <span style={{ fontSize:13, fontWeight:600, color:"#18181b" }}>{crumb.label}</span>
+                  <span style={{ fontSize:13, fontWeight:600, color:C.gray900 }}>{crumb.label}</span>
                 )}
               </span>
             ))}
@@ -2266,7 +2276,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
 
         {/* Greeting header */}
         <div style={{ marginBottom:20 }}>
-          <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900 }}>Good morning</h1>
+          <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900 }}>{(()=>{ const h = new Date().getHours(); return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening"; })()}</h1>
           <div style={{ fontSize:13, color:C.gray500 }}>SPED Summit · Spring 2026</div>
         </div>
 
@@ -2274,15 +2284,15 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
         {/* ── shared card badge map ── */}
         {(()=>{
           const CAT_BADGE_MAP = {
-            "MANAGEMENT":    { label:"Management",    bg:"#dbeafe", color:"#1d4ed8" },
-            "LEADERSHIP":    { label:"Leadership",    bg:"#d1fae5", color:"#065f46" },
-            "COMMUNICATION": { label:"Communication", bg:"#fff7ed", color:"#c2410c" },
-            "TEAMWORK":      { label:"Teamwork",      bg:"#fdf4ff", color:"#7e22ce" },
-            "TECHNOLOGY":    { label:"Technology",    bg:"#fef3c7", color:"#b45309" },
-            "ACCESSIBILITY": { label:"Accessibility", bg:"#ede9fe", color:"#6d28d9" },
+            "MANAGEMENT":    { label:"Management",    bg:"rgba(59,130,246,0.15)",  color:"#60a5fa" },
+            "LEADERSHIP":    { label:"Leadership",    bg:"rgba(16,185,129,0.15)",  color:"#34d399" },
+            "COMMUNICATION": { label:"Communication", bg:"rgba(249,115,22,0.15)",  color:"#fb923c" },
+            "TEAMWORK":      { label:"Teamwork",      bg:"rgba(168,85,247,0.15)",  color:"#c084fc" },
+            "TECHNOLOGY":    { label:"Technology",    bg:"rgba(234,179,8,0.15)",   color:"#fbbf24" },
+            "ACCESSIBILITY": { label:"Accessibility", bg:"rgba(139,92,246,0.15)",  color:"#a78bfa" },
           };
           function renderSessionCard(s, btnLabel) {
-            const catBadge = CAT_BADGE_MAP[s.category] || { label:s.category, bg:"#f3f4f6", color:"#374151" };
+            const catBadge = CAT_BADGE_MAP[s.category] || { label:s.category, bg:C.gray100, color:C.gray700 };
             const instrRole = INST_ROLES[s.instructor] || "Instructor";
             const schedItem = SCHEDULE.find(i => i.id === s.id);
             const typeLabel = schedItem ? schedItem.type.charAt(0) + schedItem.type.slice(1).toLowerCase() : "Session";
@@ -2299,25 +2309,25 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                     <div style={{ fontSize:13, color:"rgba(255,255,255,0.72)", marginTop:3, lineHeight:1.3 }}>{instrRole}</div>
                   </div>
                 </div>
-                <div style={{ flex:1, minWidth:0, padding:20, display:"flex", flexDirection:"column" }}>
-                  <div style={{ marginBottom:8 }}>
-                    <span style={{ display:"inline-block", fontSize:11, fontWeight:600, padding:"2px 7px", borderRadius:4, background:catBadge.bg, color:catBadge.color, letterSpacing:.2 }}>
+                <div style={{ flex:1, minWidth:0, padding:"24px 28px", display:"flex", flexDirection:"column" }}>
+                  <div style={{ marginBottom:12 }}>
+                    <span style={{ display:"inline-block", fontSize:11, fontWeight:600, padding:"3px 9px", borderRadius:4, background:catBadge.bg, color:catBadge.color, letterSpacing:.2 }}>
                       {catBadge.label}
                     </span>
                   </div>
-                  <div style={{ fontSize:17, fontWeight:700, color:C.gray900, lineHeight:1.3, marginBottom:6 }}>{s.title}</div>
-                  <div style={{ fontSize:12, color:C.gray500, lineHeight:1.55, marginBottom:s.progress > 0 && s.status!=="completed" ? 10 : 6, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
+                  <div style={{ fontSize:18, fontWeight:700, color:C.gray900, lineHeight:1.35, marginBottom:10 }}>{s.title}</div>
+                  <div style={{ fontSize:13, color:C.gray600, lineHeight:1.6, marginBottom:s.progress > 0 && s.status!=="completed" ? 14 : 10, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
                     {s.description}
                   </div>
                   {s.progress > 0 && s.status !== "completed" && (
-                    <div style={{ marginBottom:16 }}>
-                      <div style={{ height:8, background:C.gray200, borderRadius:99, overflow:"hidden", maxWidth:280 }}>
+                    <div style={{ marginBottom:20 }}>
+                      <div style={{ height:8, background:C.gray200, borderRadius:99, overflow:"hidden", maxWidth:320 }}>
                         <div style={{ width:`${s.progress}%`, height:"100%", background:C.primary, borderRadius:99 }}/>
                       </div>
-                      <div style={{ fontSize:11, color:C.gray400, marginTop:4 }}>{s.progress}% complete · {s.duration}</div>
+                      <div style={{ fontSize:12, color:C.gray600, marginTop:6 }}>{s.progress}% complete · {s.duration}</div>
                     </div>
                   )}
-                  <div style={{ display:"flex", alignItems:"center", gap:12, marginTop:"auto", paddingTop:12 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:12, marginTop:"auto", paddingTop:16 }}>
                     <button
                       onClick={e=>{ e.stopPropagation(); onOpenSession(s); }}
                       style={{ display:"inline-flex", alignItems:"center", padding:"7px 13px", background:C.primary, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", transition:"opacity 0.15s" }}
@@ -2367,14 +2377,14 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                             {calDaySession.type}
                           </span>
                         </div>
-                        <div style={{ fontSize:17, fontWeight:700, color:"#111827", lineHeight:1.3, marginBottom:6 }}>{calDaySession.title}</div>
-                        <div style={{ fontSize:12, color:"#6b7280", lineHeight:1.55, marginBottom:6, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
+                        <div style={{ fontSize:17, fontWeight:700, color:C.gray900, lineHeight:1.3, marginBottom:6 }}>{calDaySession.title}</div>
+                        <div style={{ fontSize:12, color:C.gray600, lineHeight:1.55, marginBottom:6, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
                           {calDaySession.description}
                         </div>
                         <div style={{ display:"flex", alignItems:"center", gap:12, marginTop:"auto", paddingTop:12 }}>
                           {registered ? (
-                            <div style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:13, fontWeight:700, color:"#059669", background:"rgba(16,185,129,0.10)", padding:"7px 16px", borderRadius:7 }}>
-                              <Icon name="check-circle" size={14} color="#059669"/> Registered
+                            <div style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:13, fontWeight:700, color:C.success, background:C.successLight, padding:"7px 16px", borderRadius:7 }}>
+                              <Icon name="check-circle" size={14} color={C.success}/> Registered
                             </div>
                           ) : (
                             <button
@@ -2382,13 +2392,13 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                                 setScheduleRegistrations(r => ({ ...r, [calDaySession.id]: true }));
                                 toast({ type:"success", title:"Registered!", message:`You're registered for "${calDaySession.title.slice(0,40)}"` });
                               }}
-                              style={{ display:"inline-flex", alignItems:"center", padding:"7px 13px", background:"#6366f1", color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", transition:"background 0.15s" }}
-                              onMouseEnter={e=>e.currentTarget.style.background="#4f46e5"}
-                              onMouseLeave={e=>e.currentTarget.style.background="#6366f1"}>
+                              style={{ display:"inline-flex", alignItems:"center", padding:"7px 13px", background:C.primary, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", transition:"opacity 0.15s", fontFamily:"inherit" }}
+                              onMouseEnter={e=>e.currentTarget.style.opacity="0.85"}
+                              onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
                               Register Now
                             </button>
                           )}
-                          <span style={{ fontSize:12, color:"#9ca3af" }}>{calDaySession.date} · {calDaySession.time}</span>
+                          <span style={{ fontSize:12, color:C.gray500 }}>{calDaySession.date} · {calDaySession.time}</span>
                         </div>
                       </div>
                     </div>
@@ -2572,7 +2582,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
       </div>
 
       {/* ── SESSIONS GRID ── */}
-      <div style={{ padding:"52px 32px", background:"#fff", borderBottom:`1px solid ${C.gray100}` }}>
+      <div style={{ padding:"52px 32px", background:C.white, borderBottom:`1px solid ${C.gray100}` }}>
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
           <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:28 }}>
             <div>
@@ -2634,7 +2644,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
       </div>
 
       {/* ── INSTRUCTOR SHOWCASE ── */}
-      <div style={{ padding:"52px 32px", background:"#f8fafc", borderBottom:`1px solid ${C.gray100}` }}>
+      <div style={{ padding:"52px 32px", background:C.gray50, borderBottom:`1px solid ${C.gray100}` }}>
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
           <div style={{ marginBottom:32 }}>
             <div style={{ fontSize:11, fontWeight:700, color:C.primary, letterSpacing:1.2, textTransform:"uppercase", marginBottom:5 }}>Expert Faculty</div>
@@ -2644,7 +2654,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
           <div style={{ display:"flex", gap:44, overflowX:"auto", paddingBottom:8 }}>
             {Object.entries(INSTRUCTOR_AVATARS).map(([name, img]) => (
               <div key={name} className="db-instr-pill" style={{ textAlign:"center", flexShrink:0 }}>
-                <div style={{ width:88, height:88, borderRadius:"50%", overflow:"hidden", border:"3px solid #fff", boxShadow:"0 3px 14px rgba(0,0,0,0.12)", margin:"0 auto 10px" }}>
+                <div style={{ width:88, height:88, borderRadius:"50%", overflow:"hidden", border:`3px solid ${C.white}`, boxShadow:"0 3px 14px rgba(0,0,0,0.12)", margin:"0 auto 10px" }}>
                   <img src={img} alt={name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top center" }}/>
                 </div>
                 <div style={{ fontSize:13, fontWeight:700, color:C.gray900 }}>{name.split(" ").slice(-1)[0]}</div>
@@ -2657,7 +2667,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
 
       {/* ── UPCOMING LIVE SESSIONS ── */}
       {upcomingSchedule.length > 0 && (
-        <div style={{ padding:"52px 32px", background:"#fff", borderBottom:`1px solid ${C.gray100}` }}>
+        <div style={{ padding:"52px 32px", background:C.white, borderBottom:`1px solid ${C.gray100}` }}>
           <div style={{ maxWidth:1100, margin:"0 auto" }}>
             <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:28 }}>
               <div>
@@ -2705,7 +2715,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
       )}
 
       {/* ── HEAR FROM OUR LEARNERS ── */}
-      <div style={{ padding:"52px 32px", background:"#f8fafc", borderBottom:`1px solid ${C.gray100}` }}>
+      <div style={{ padding:"52px 32px", background:C.gray50, borderBottom:`1px solid ${C.gray100}` }}>
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
           <div style={{ marginBottom:32 }}>
             <div style={{ fontSize:11, fontWeight:700, color:C.primary, letterSpacing:1.2, textTransform:"uppercase", marginBottom:5 }}>Social Proof</div>
@@ -2717,14 +2727,14 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                 <div style={{ display:"flex", gap:2 }}>
                   {[0,1,2,3,4].map(j => <Icon key={j} name="star" size={13} color={t.accent} weight="fill"/>)}
                 </div>
-                <p style={{ margin:0, fontSize:13, color:"#1f2937", lineHeight:1.65, flex:1 }}>"{t.text}"</p>
+                <p style={{ margin:0, fontSize:13, color:C.gray900, lineHeight:1.65, flex:1 }}>"{t.text}"</p>
                 <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                   <div style={{ width:36, height:36, borderRadius:"50%", overflow:"hidden", flexShrink:0, border:`2px solid ${t.accent}` }}>
                     <img src={t.img} alt={t.name} style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
                   </div>
                   <div>
-                    <div style={{ fontSize:12, fontWeight:700, color:"#1f2937" }}>{t.name}</div>
-                    <div style={{ fontSize:11, color:"#6b7280" }}>{t.role}</div>
+                    <div style={{ fontSize:12, fontWeight:700, color:C.gray900 }}>{t.name}</div>
+                    <div style={{ fontSize:11, color:C.gray600 }}>{t.role}</div>
                   </div>
                 </div>
               </div>
@@ -2756,7 +2766,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
       </div>
 
       {/* ── YOUR LEARNING PATH ── */}
-      <div style={{ padding:"52px 32px", background:"#fff", borderBottom:`1px solid ${C.gray100}` }}>
+      <div style={{ padding:"52px 32px", background:C.white, borderBottom:`1px solid ${C.gray100}` }}>
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
           <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:28 }}>
             <div>
@@ -2830,7 +2840,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
             Sessions
           </button>
           <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="#CBD5E1"/>
+            <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="var(--c-gray400)"/>
           </svg>
           <span style={{ color:"#6366f1", fontWeight:600 }}>{season.name}</span>
         </div>
@@ -2941,7 +2951,7 @@ function SeasonFolderCard({ season, sessions, onOpen }) {
 
         {/* Animated description on hover */}
         <div style={{ marginTop:10 }}>
-          <p style={{ margin:"0 0 10px", fontSize:13, color:C.gray500, lineHeight:1.6 }}>{season.description}</p>
+          <p style={{ margin:"0 0 10px", fontSize:13, color:C.gray600, lineHeight:1.6 }}>{season.description}</p>
           <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
             {isPast && <span style={{ fontSize:11, fontWeight:600, color:C.gray600, background:C.gray100, borderRadius:99, padding:"2px 10px" }}>Recorded</span>}
             <span style={{ fontSize:11, fontWeight:600, color:C.gray600, background:C.gray100, borderRadius:99, padding:"2px 10px" }}>{seasonSessions.length} sessions</span>
@@ -4418,7 +4428,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
             Certifications
           </button>
           <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="#CBD5E1"/>
+            <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="var(--c-gray400)"/>
           </svg>
           <span style={{ color:"#6366f1", fontWeight:600 }}>{season.name}</span>
         </div>
@@ -4484,7 +4494,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
                     <span style={{ fontSize:11, fontWeight:700, color:C.success }}>All Earned</span>
                   </span>
                 )}
-                <span style={{ fontSize:12, color:C.gray400, marginLeft:"auto" }}>{earned}/{total} certificates</span>
+                <span style={{ fontSize:12, color:C.gray600, marginLeft:"auto" }}>{earned}/{total} certificates</span>
               </div>
 
               {/* Session rows */}
@@ -4502,14 +4512,14 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
 
                       {/* Status icon */}
                       <div style={{ width:36, height:36, borderRadius:10, flexShrink:0, background:"rgba(37,99,235,0.07)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                        <Icon name="certificate" size={18} color={C.gray400}/>
+                        <Icon name="certificate" size={18} color={C.gray500}/>
                       </div>
 
                       {/* Text */}
                       <div style={{ flex:1, minWidth:0 }}>
                         <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
-                        <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{s.instructor}</div>
-                        <div style={{ fontSize:11, color: C.gray400, marginTop:3 }}>
+                        <div style={{ fontSize:12, color:C.gray600, marginTop:2 }}>{s.instructor}</div>
+                        <div style={{ fontSize:11, color:C.gray600, marginTop:3 }}>
                           {passed ? "Certificate earned" : hasQuiz ? "Final assessment pending" : "No final assessment"}
                         </div>
                       </div>
@@ -4519,17 +4529,17 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
                         <div style={{ display:"flex", gap:8, flexShrink:0 }}>
                           <button
                             onClick={() => { const certId = `SS-${s.id}-${qs?.score}-2026`; setShareCert({ certUrl:`spedsummit.com/cert/${certId.toLowerCase()}`, sessionTitle:s.title }); }}
-                            style={{ padding:"6px 12px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray600, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
-                            <Icon name="share-network" size={13} color={C.gray500}/> Share
+                            style={{ padding:"6px 12px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap", fontFamily:"inherit" }}>
+                            <Icon name="share-network" size={13} color={C.gray600}/> Share
                           </button>
                           <button
                             onClick={() => downloadCertificate({ recipientName:userName, sessionTitle:s.title, instructor:s.instructor, duration:s.duration, score:qs?.score, description:s.description })}
-                            style={{ padding:"6px 12px", borderRadius:8, border:"none", background:C.primary, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap" }}>
+                            style={{ padding:"6px 12px", borderRadius:8, border:"none", background:C.primary, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap", fontFamily:"inherit" }}>
                             <Icon name="download" size={13} color="#fff"/> Download
                           </button>
                         </div>
                       ) : (
-                        <span style={{ fontSize:11, fontWeight:600, color:C.gray400, background:C.gray100, borderRadius:99, padding:"4px 12px", whiteSpace:"nowrap", flexShrink:0 }}>Pending</span>
+                        <span style={{ fontSize:11, fontWeight:600, color:C.gray600, background:C.gray200, borderRadius:99, padding:"4px 12px", whiteSpace:"nowrap", flexShrink:0 }}>Pending</span>
                       )}
                     </div>
                   );
@@ -5552,14 +5562,14 @@ function AdminCreateSession({ onBack, toast, onSave }) {
               </svg>
             </button>
             <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="#CBD5E1"/>
+              <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="var(--c-gray400)"/>
             </svg>
             <button onClick={onBack} style={{ background:"none", border:"none", cursor:"pointer", padding:0, fontSize:14, fontWeight:500, color:C.gray500 }}
               onMouseEnter={e=>e.currentTarget.style.color=C.gray900} onMouseLeave={e=>e.currentTarget.style.color=C.gray500}>
               Sessions
             </button>
             <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="#CBD5E1"/>
+              <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="var(--c-gray400)"/>
             </svg>
             <span style={{ color:"#6366f1", fontWeight:600 }}>Create New Session</span>
           </div>
@@ -5818,14 +5828,14 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
               </svg>
             </button>
             <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="#CBD5E1"/>
+              <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="var(--c-gray400)"/>
             </svg>
             <button onClick={onBack} style={{ background:"none", border:"none", cursor:"pointer", padding:0, fontSize:14, fontWeight:500, color:C.gray500 }}
               onMouseEnter={e=>e.currentTarget.style.color=C.gray900} onMouseLeave={e=>e.currentTarget.style.color=C.gray500}>
               Sessions
             </button>
             <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="#CBD5E1"/>
+              <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="var(--c-gray400)"/>
             </svg>
             <span style={{ color:"#6366f1", fontWeight:600, maxWidth:300, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{session.title}</span>
           </div>
@@ -9126,12 +9136,12 @@ function LandingPage({ onGetStarted }) {
             };
             /* Category badge: short topic label, amber-toned like the reference */
             const CAT_BADGE = {
-              "TECHNOLOGY":    { label:"Technology",    bg:"#fef3c7", color:"#b45309" },
-              "ACCESSIBILITY": { label:"Accessibility", bg:"#ede9fe", color:"#6d28d9" },
-              "MANAGEMENT":    { label:"Management",    bg:"#dbeafe", color:"#1d4ed8" },
-              "LEADERSHIP":    { label:"Leadership",    bg:"#d1fae5", color:"#065f46" },
-              "COMMUNICATION": { label:"Communication", bg:"#fff7ed", color:"#c2410c" },
-              "TEAMWORK":      { label:"Teamwork",      bg:"#fdf4ff", color:"#7e22ce" },
+              "TECHNOLOGY":    { label:"Technology",    bg:"rgba(234,179,8,0.15)",   color:"#fbbf24" },
+              "ACCESSIBILITY": { label:"Accessibility", bg:"rgba(139,92,246,0.15)",  color:"#a78bfa" },
+              "MANAGEMENT":    { label:"Management",    bg:"rgba(59,130,246,0.15)",  color:"#60a5fa" },
+              "LEADERSHIP":    { label:"Leadership",    bg:"rgba(16,185,129,0.15)",  color:"#34d399" },
+              "COMMUNICATION": { label:"Communication", bg:"rgba(249,115,22,0.15)",  color:"#fb923c" },
+              "TEAMWORK":      { label:"Teamwork",      bg:"rgba(168,85,247,0.15)",  color:"#c084fc" },
             };
             const INSTRUCTOR_ROLES = {
               "Dr. Emily Tran": "AI & Technology Educator",
@@ -9142,7 +9152,7 @@ function LandingPage({ onGetStarted }) {
               <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
                 {upcomingItems.map(s => {
                   const d        = SD[s.id];
-                  const catBadge = CAT_BADGE[s.category] || { label:s.category, bg:"#f3f4f6", color:"#374151" };
+                  const catBadge = CAT_BADGE[s.category] || { label:s.category, bg:C.gray100, color:C.gray700 };
                   const avatarSrc= INSTRUCTOR_AVATARS[s.instructor];
                   const schedItem= SCHEDULE.find(i => i.id === s.id);
                   const ctaLabel = "Register Now";
@@ -9170,18 +9180,18 @@ function LandingPage({ onGetStarted }) {
                             {catBadge.label}
                           </span>
                         </div>
-                        <div style={{ fontSize:17, fontWeight:700, color:"#111827", lineHeight:1.3, marginBottom:6 }}>{s.title}</div>
-                        <div style={{ fontSize:13, fontWeight:500, color:"#374151", marginBottom:6 }}>
+                        <div style={{ fontSize:17, fontWeight:700, color:C.gray900, lineHeight:1.3, marginBottom:6 }}>{s.title}</div>
+                        <div style={{ fontSize:13, fontWeight:500, color:C.gray700, marginBottom:6 }}>
                           {d.sessionType} with {s.instructor} ({instrRole})
                         </div>
-                        <div style={{ fontSize:12, color:"#6b7280", lineHeight:1.55, marginBottom:28, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
+                        <div style={{ fontSize:12, color:C.gray600, lineHeight:1.55, marginBottom:28, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
                           {schedItem?.description || s.description}
                         </div>
                         <button
                           onClick={e=>{ e.stopPropagation(); setSelectedSession(s); }}
-                          style={{ display:"inline-flex", alignItems:"center", padding:"7px 13px", background:"#6366f1", color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", transition:"background 0.15s" }}
-                          onMouseEnter={e=>e.currentTarget.style.background="#4f46e5"}
-                          onMouseLeave={e=>e.currentTarget.style.background="#6366f1"}>
+                          style={{ display:"inline-flex", alignItems:"center", padding:"7px 13px", background:C.primary, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"opacity 0.15s" }}
+                          onMouseEnter={e=>e.currentTarget.style.opacity="0.85"}
+                          onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
                           {ctaLabel}
                         </button>
                       </div>
@@ -9738,7 +9748,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => sessionStorage.getItem("loggedIn") === "1");
   const [page, setPage] = useState(() => sessionStorage.getItem("page") || "dashboard");
   const [isAdmin, setIsAdmin] = useState(() => sessionStorage.getItem("isAdmin") === "1");
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(() => { const h = new Date().getHours(); return h >= 19 || h < 6; });
   const [landingV, setLandingV] = useState(1);
   const [activeSession,   setActiveSession]   = useState(null);
   const [sessionSource,   setSessionSource]   = useState("sessions");
@@ -9926,35 +9936,34 @@ export default function App() {
     }
     if (page==="past-season" && pastSeasonPageId) {
       const season = seasons.find(s => s.id === pastSeasonPageId);
-      const enrolledSessions = sessions.filter(s => enrolledIds.has(s.id));
-      const seasonSessions = enrolledSessions.filter(s => season?.sessionIds.includes(s.id) && s.status === "completed");
+      const seasonSessions = sessions.filter(s => season?.sessionIds.includes(s.id));
       const INST_ROLES_PS = {
         "Tara Roehl":"Occupational Therapist","Casey Harrison":"Dyslexia Specialist","Jordan Smith":"Speech-Language Pathologist",
         "Morgan Lee":"Special Ed Educator","Dr. Emily Tran":"AI & Technology Educator","Dr. Sarah Kim":"AAC Specialist, BCBA",
         "Alex Rivera":"Behavior Intervention Specialist","Sam Parmelee":"DHH Education Specialist","Natasha S.":"Transition Planning Expert",
       };
       const CAT_BADGE_PS = {
-        "MANAGEMENT":{"label":"Management","bg":"#dbeafe","color":"#1d4ed8"},
-        "LEADERSHIP":{"label":"Leadership","bg":"#d1fae5","color":"#065f46"},
-        "COMMUNICATION":{"label":"Communication","bg":"#fff7ed","color":"#c2410c"},
-        "TEAMWORK":{"label":"Teamwork","bg":"#fdf4ff","color":"#7e22ce"},
-        "TECHNOLOGY":{"label":"Technology","bg":"#fef3c7","color":"#b45309"},
-        "ACCESSIBILITY":{"label":"Accessibility","bg":"#ede9fe","color":"#6d28d9"},
+        "MANAGEMENT":    {"label":"Management",    "bg":"rgba(59,130,246,0.15)",  "color":"#60a5fa"},
+        "LEADERSHIP":    {"label":"Leadership",    "bg":"rgba(16,185,129,0.15)",  "color":"#34d399"},
+        "COMMUNICATION": {"label":"Communication", "bg":"rgba(249,115,22,0.15)",  "color":"#fb923c"},
+        "TEAMWORK":      {"label":"Teamwork",      "bg":"rgba(168,85,247,0.15)",  "color":"#c084fc"},
+        "TECHNOLOGY":    {"label":"Technology",    "bg":"rgba(234,179,8,0.15)",   "color":"#fbbf24"},
+        "ACCESSIBILITY": {"label":"Accessibility", "bg":"rgba(139,92,246,0.15)",  "color":"#a78bfa"},
       };
       return (
         <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
           {/* Page title */}
           <div style={{ marginBottom:20 }}>
             <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900 }}>{season?.name}</h1>
-            <div style={{ fontSize:13, color:C.gray500 }}>Past Season · {seasonSessions.length} session{seasonSessions.length!==1?"s":""} completed</div>
+            <div style={{ fontSize:13, color:C.gray500 }}>Past Season · {seasonSessions.length} session{seasonSessions.length!==1?"s":""}</div>
           </div>
           <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
             {seasonSessions.map(s => {
-              const catBadge = CAT_BADGE_PS[s.category] || { label:s.category, bg:"#f3f4f6", color:"#374151" };
+              const catBadge = CAT_BADGE_PS[s.category] || { label:s.category, bg:C.gray100, color:C.gray700 };
               const instrRole = INST_ROLES_PS[s.instructor] || "Instructor";
               return (
                 <div key={s.id}
-                  style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:12, display:"flex", alignItems:"stretch", overflow:"hidden", cursor:"pointer", minHeight:235 }}
+                  style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, display:"flex", alignItems:"stretch", overflow:"hidden", cursor:"pointer", minHeight:235 }}
                   onClick={()=>openSession(s)}>
                   <div style={{ flexShrink:0, width:200, position:"relative" }}>
                     <img src={INSTRUCTOR_AVATARS[s.instructor]} alt={s.instructor}
@@ -9971,20 +9980,20 @@ export default function App() {
                         {catBadge.label}
                       </span>
                     </div>
-                    <div style={{ fontSize:17, fontWeight:700, color:"#111827", lineHeight:1.3, marginBottom:6 }}>{s.title}</div>
-                    <div style={{ fontSize:12, color:"#6b7280", lineHeight:1.55, marginBottom:6, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
+                    <div style={{ fontSize:17, fontWeight:700, color:C.gray900, lineHeight:1.3, marginBottom:6 }}>{s.title}</div>
+                    <div style={{ fontSize:12, color:C.gray500, lineHeight:1.55, marginBottom:6, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
                       {s.description}
                     </div>
                     <div style={{ display:"flex", alignItems:"center", gap:12, marginTop:"auto", paddingTop:12 }}>
                       <button onClick={e=>{ e.stopPropagation(); openSession(s); }}
-                        style={{ display:"inline-flex", alignItems:"center", padding:"7px 13px", background:"#6366f1", color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer" }}
-                        onMouseEnter={e=>e.currentTarget.style.background="#4f46e5"}
-                        onMouseLeave={e=>e.currentTarget.style.background="#6366f1"}>
-                        Watch Again
+                        style={{ display:"inline-flex", alignItems:"center", padding:"7px 13px", background:C.primary, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}
+                        onMouseEnter={e=>e.currentTarget.style.opacity="0.85"}
+                        onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+                        {s.status==="completed" ? "Watch Again" : s.status==="in-progress" ? "Resume" : "Watch Now"}
                       </button>
                       {s.status==="completed" && (
-                        <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, color:"#059669" }}>
-                          <Icon name="check-circle" size={13} color="#059669"/> Certificate earned
+                        <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, color:C.success }}>
+                          <Icon name="check-circle" size={13} color={C.success}/> Certificate earned
                         </span>
                       )}
                     </div>
@@ -10072,7 +10081,7 @@ export default function App() {
             { label: seasons.find(s => s.id === pastSeasonPageId)?.name || "Past Season" },
           ] : null}
         />}
-        <div ref={scrollContainerRef} style={{ flex:1, overflowY:"auto" }}>{renderPage()}<Footer/></div>
+        <div ref={scrollContainerRef} style={{ flex:1, overflowY:"auto" }}>{renderPage()}<Footer onNavigate={nav}/></div>
       </div>
       {/* Session Assessment Modal */}
       {assessmentSession && (
