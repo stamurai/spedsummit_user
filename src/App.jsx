@@ -454,6 +454,7 @@ const SEASONS = [
     sessionIds: [1, 2, 5, 6],
     color: "#2563eb",
     bg: "#dbeafe",
+    updatedAt: "Apr 2026",
   },
   {
     id: "winter-2026",
@@ -463,6 +464,7 @@ const SEASONS = [
     sessionIds: [3, 4],
     color: "#6b7280",
     bg: "#f3f4f6",
+    updatedAt: "Jan 2026",
   },
   {
     id: "summer-2026",
@@ -472,6 +474,7 @@ const SEASONS = [
     sessionIds: [5, 6],
     color: "#6b7280",
     bg: "#f3f4f6",
+    updatedAt: "Jul 2026",
   },
   {
     id: "spring-2025",
@@ -481,6 +484,7 @@ const SEASONS = [
     sessionIds: [1, 3],
     color: "#6b7280",
     bg: "#f3f4f6",
+    updatedAt: "Apr 2025",
   },
   {
     id: "winter-2025",
@@ -490,6 +494,7 @@ const SEASONS = [
     sessionIds: [2, 4],
     color: "#6b7280",
     bg: "#f3f4f6",
+    updatedAt: "Jan 2025",
   },
   {
     id: "summer-2025",
@@ -499,6 +504,7 @@ const SEASONS = [
     sessionIds: [1, 2],
     color: "#6b7280",
     bg: "#f3f4f6",
+    updatedAt: "Jul 2025",
   },
   {
     id: "spring-2024",
@@ -508,6 +514,7 @@ const SEASONS = [
     sessionIds: [3, 5],
     color: "#6b7280",
     bg: "#f3f4f6",
+    updatedAt: "Apr 2024",
   },
   {
     id: "winter-2024",
@@ -517,6 +524,7 @@ const SEASONS = [
     sessionIds: [4, 6],
     color: "#6b7280",
     bg: "#f3f4f6",
+    updatedAt: "Jan 2024",
   },
   {
     id: "summer-2024",
@@ -563,7 +571,7 @@ const SCHEDULE = [
 ];
 
 const SCHEDULE_TYPE_COLORS = { OPENING:{c:"#7c3aed",bg:"rgba(124,58,237,0.12)"}, KEYNOTE:{c:"#2563eb",bg:"rgba(37,99,235,0.12)"}, WORKSHOP:{c:"#059669",bg:"rgba(5,150,105,0.12)"}, NETWORKING:{c:"#d97706",bg:"rgba(217,119,6,0.12)"}, "PANEL DISCUSSION":{c:"#dc2626",bg:"rgba(220,38,38,0.12)"} };
-const ADMIN_STATUS_COLORS = { LIVE:{c:"#fff",bg:"#10b981"}, DRAFT:{c:"#d97706",bg:"rgba(217,119,6,0.12)"}, ARCHIVED:{c:"#6b7280",bg:"rgba(107,114,128,0.12)"} };
+const ADMIN_STATUS_COLORS = { LIVE:{c:"#fff",bg:"#10b981"}, DRAFT:{c:"#d97706",bg:"rgba(217,119,6,0.18)"}, ARCHIVED:{c:"var(--c-gray600)",bg:"rgba(156,163,175,0.18)"} };
 
 const ADMIN_SESSIONS_DATA = [
   { id:1, title:"Mental Health & Teacher Wellness in Special Education", category:"SPED", status:"LIVE", date:"Mar 26, 2026", enrolled:1240, availableFrom:"2026-03-26T09:00", availableTo:"2027-12-31T23:59" },
@@ -609,7 +617,7 @@ function ProgressBar({ value, color=C.primary, height=4, trackColor=C.gray200 })
 }
 
 function Badge({ label, color, bg, size=10 }) {
-  return <span style={{ fontSize:size, fontWeight:700, color, background:bg, padding:"2px 8px", borderRadius:99, letterSpacing:0.4, display:"inline-block", lineHeight:1.6 }}>{label}</span>;
+  return <span style={{ fontSize:size, fontWeight:700, color, background:bg, padding:"2px 8px", borderRadius:6, letterSpacing:0.4, display:"inline-block", lineHeight:1.6 }}>{label}</span>;
 }
 
 function Btn({ children, onClick, variant="primary", size="md", disabled=false, style:s={} }) {
@@ -1239,20 +1247,22 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
 
       {/* Right actions */}
       <div style={{ flexShrink:0, display:"flex", alignItems:"center", gap:6 }}>
-        {/* Notification button + popover */}
-        <div style={{ position:"relative" }} ref={notifBtnRef}>
-          <button
-            onClick={() => setShowNotif(v => !v)}
-            style={{ width:36, height:36, borderRadius:"50%", border:"none", background: showNotif ? C.primaryLight : C.gray100, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", transition:"background .15s" }}
-            onMouseEnter={e => { if (!showNotif) e.currentTarget.style.background = C.gray200; }}
-            onMouseLeave={e => { if (!showNotif) e.currentTarget.style.background = C.gray100; }}>
-            <Icon name="bell" size={18} color={showNotif ? C.primary : C.gray600}/>
-            {unread > 0 && (
-              <span style={{ position:"absolute", top:5, right:5, width:8, height:8, borderRadius:"50%", background:C.error, border:`2px solid ${C.white}` }}/>
-            )}
-          </button>
-          {showNotif && <NotificationPopover onClose={() => setShowNotif(false)} anchorRef={notifBtnRef}/>}
-        </div>
+        {/* Notification button + popover — user only */}
+        {!isAdmin && (
+          <div style={{ position:"relative" }} ref={notifBtnRef}>
+            <button
+              onClick={() => setShowNotif(v => !v)}
+              style={{ width:36, height:36, borderRadius:"50%", border:"none", background: showNotif ? C.primaryLight : C.gray100, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", transition:"background .15s" }}
+              onMouseEnter={e => { if (!showNotif) e.currentTarget.style.background = C.gray200; }}
+              onMouseLeave={e => { if (!showNotif) e.currentTarget.style.background = C.gray100; }}>
+              <Icon name="bell" size={18} color={showNotif ? C.primary : C.gray600}/>
+              {unread > 0 && (
+                <span style={{ position:"absolute", top:5, right:5, width:8, height:8, borderRadius:"50%", background:C.error, border:`2px solid ${C.white}` }}/>
+              )}
+            </button>
+            {showNotif && <NotificationPopover onClose={() => setShowNotif(false)} anchorRef={notifBtnRef}/>}
+          </div>
+        )}
 
 
         {showReferModal && <ReferFriendsModal onClose={() => setShowReferModal(false)} userName={userName}/>}
@@ -1277,16 +1287,18 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
                   label: isDark ? "Light Mode" : "Dark Mode",
                   action: () => onToggleDarkMode?.(),
                 },
-                {
-                  icon: "gift",
-                  label: "Refer Friends",
-                  action: () => { setShowProfileMenu(false); setShowReferModal(true); },
-                },
-                {
-                  icon: "question",
-                  label: "Help Center",
-                  action: () => toast({ type: "info", message: "Opening Help Center..." }),
-                },
+                ...(!isAdmin ? [
+                  {
+                    icon: "gift",
+                    label: "Refer Friends",
+                    action: () => { setShowProfileMenu(false); setShowReferModal(true); },
+                  },
+                  {
+                    icon: "question",
+                    label: "Help Center",
+                    action: () => toast({ type: "info", message: "Opening Help Center..." }),
+                  },
+                ] : []),
                 {
                   icon: "sign-out",
                   label: "Logout",
@@ -2953,9 +2965,8 @@ function SeasonFolderCard({ season, sessions, onOpen }) {
         <div style={{ marginTop:10 }}>
           <p style={{ margin:"0 0 10px", fontSize:13, color:C.gray600, lineHeight:1.6 }}>{season.description}</p>
           <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-            {isPast && <span style={{ fontSize:11, fontWeight:600, color:C.gray600, background:C.gray100, borderRadius:99, padding:"2px 10px" }}>Recorded</span>}
-            <span style={{ fontSize:11, fontWeight:600, color:C.gray600, background:C.gray100, borderRadius:99, padding:"2px 10px" }}>{seasonSessions.length} sessions</span>
-            <span style={{ fontSize:11, fontWeight:600, color:C.gray600, background:C.gray100, borderRadius:99, padding:"2px 10px" }}>Free certificate</span>
+            <span style={{ fontSize:11, fontWeight:600, color:C.gray700, background:C.gray200, borderRadius:8, padding:"3px 10px" }}>{seasonSessions.length} sessions</span>
+            {season.updatedAt && <span style={{ fontSize:11, fontWeight:600, color:C.gray700, background:C.gray200, borderRadius:8, padding:"3px 10px" }}>Updated {season.updatedAt}</span>}
           </div>
 
         </div>
@@ -4564,7 +4575,6 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
    ADMIN OVERVIEW
 ───────────────────────────────────────────────────────────────────────────── */
 function AdminOverview({ onNavigate, onEditSession, toast }) {
-  const [showEngagement, setShowEngagement] = useState(false);
   return (
     <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
       <div style={{ marginBottom:22 }}>
@@ -4573,20 +4583,19 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
       </div>
 
       {/* Metrics */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(200px, 1fr))", gap:14, marginBottom:24 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:14, marginBottom:24 }}>
         {[
-          {label:"COURSE ENROLLMENTS", val:"12,842", delta:"↑ 15% from last month", color:C.primary,   icon:"users"},
-          {label:"STUDENT RATING",     val:"8.4/10", delta:"Top 1% of Educators",   color:"#7c3aed",   icon:"star"},
-          {label:"TOTAL SITE VISITS",  val:"83",     delta:"↑ 23 Today",            color:C.success,   icon:"eye"},
-          {label:"TOTAL REVENUE",      val:"$4,210", delta:"↑ 8% this month",       color:C.warning,   icon:"lightning"},
+          {label:"Course Enrollments", val:"12,842", delta:"+15% vs prev", color:C.primary,     bg:C.primaryLight},
+          {label:"Student Rating",     val:"8.4/10", delta:"Top 1%",      color:C.primaryDark, bg:C.primaryLight},
+          {label:"Total Site Visits",  val:"83",     delta:"+23 today",   color:C.success,     bg:C.successLight},
+          {label:"Total Revenue",      val:"$4,210", delta:"+8% vs prev", color:C.warning,     bg:C.warningLight},
         ].map(m=>(
           <div key={m.label} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"18px 20px" }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-              <Icon name={m.icon} size={16} color={m.color}/>
-              <span style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.5 }}>{m.label}</span>
+              <div style={{ fontSize:30, fontWeight:900, color:m.color, lineHeight:1 }}>{m.val}</div>
+              <span style={{ fontSize:12, fontWeight:700, color:m.color, background:m.bg, padding:"2px 7px", borderRadius:6 }}>{m.delta}</span>
             </div>
-            <div style={{ fontSize:30, fontWeight:900, color:m.color, marginBottom:4 }}>{m.val}</div>
-            <div style={{ fontSize:12, color:C.success, fontWeight:600 }}>{m.delta}</div>
+            <div style={{ fontSize:13, fontWeight:600, color:C.gray600 }}>{m.label}</div>
           </div>
         ))}
       </div>
@@ -4610,7 +4619,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
                   <div style={{ fontWeight:600, fontSize:14, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
                   <div style={{ display:"flex", alignItems:"center", gap:6, marginTop:3 }}>
                     <Badge label={s.status} color={sc.c} bg={sc.bg} size={12}/>
-                    <span style={{ fontSize:12, color:C.gray400 }}>{s.date}</span>
+                    <span style={{ fontSize:12, color:C.gray600 }}>{s.date}</span>
                   </div>
                 </div>
                 <button onClick={() => onEditSession?.(s)}
@@ -4623,68 +4632,28 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
           })}
         </div>
 
-        {/* Quick stats */}
-        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-          <div style={{ background:"linear-gradient(135deg,#eef2ff,#e0e7ff)", borderRadius:14, padding:20, border:"1px solid #c7d2fe" }}>
-            <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
-              <Icon name="medal" size={18} color="#f59e0b"/>
-              <span style={{ fontWeight:800, fontSize:14, color:"#1e1b4b" }}>Instructor Growth Program</span>
-            </div>
-            <p style={{ margin:"0 0 12px", fontSize:12, color:"#4b5563", lineHeight:1.6 }}>You're almost at "Gold Level" — get 15% off fees and priority placement.</p>
-            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5, fontSize:12, fontWeight:600, color:"#374151" }}><span>Reach Gold</span><span>70%</span></div>
-            <ProgressBar value={70} color={C.primary} height={5} trackColor="#fff"/>
-          </div>
-          <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:18 }}>
-            <div style={{ display:"flex", gap:10, marginBottom:8 }}>
-              <div style={{ width:32,height:32,borderRadius:9,background:C.primaryLight,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
-                <Icon name="lightning" size={18} color={C.primary}/>
+        {/* Engagement Guide */}
+        <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:20 }}>
+          <h2 style={{ margin:"0 0 16px", fontSize:16, fontWeight:800, color:C.gray900 }}>Engagement Guide</h2>
+          {[
+            { icon:"clock",            color:"#f59e0b", title:"Optimal Scheduling",       body:"Sessions at 10 AM–2 PM EST see 40% higher live attendance." },
+            { icon:"bell",             color:"#3b82f6", title:"Pre-Session Reminders",    body:"Learners who get both 24h and 1h reminders show 2× higher show-up rates." },
+            { icon:"chat-circle-dots", color:"#10b981", title:"Live Interaction",          body:"Ask a poll in the first 5 minutes — 60% lower drop-off." },
+            { icon:"trophy",           color:"#8b5cf6", title:"Certificates & Rewards",   body:"Offering a certificate increases completion by 35%." },
+            { icon:"megaphone",        color:"#ef4444", title:"Promote Before Going Live", body:"A teaser post 3 days early makes learners 50% more likely to register." },
+          ].map((tip, i, arr) => (
+            <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:12, padding:"10px 0", borderBottom: i < arr.length-1 ? `1px solid ${C.gray100}` : "none" }}>
+              <div style={{ width:30, height:30, borderRadius:8, background:`${tip.color}18`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:1 }}>
+                <Icon name={tip.icon} size={14} color={tip.color}/>
               </div>
-              <div style={{ fontWeight:700, fontSize:14, color:C.gray900, alignSelf:"center" }}>Teaching Tip</div>
+              <div>
+                <div style={{ fontSize:13, fontWeight:700, color:C.gray900, marginBottom:2 }}>{tip.title}</div>
+                <div style={{ fontSize:12, color:C.gray500, lineHeight:1.5 }}>{tip.body}</div>
+              </div>
             </div>
-            <p style={{ margin:"0 0 10px", fontSize:12, color:C.gray600, lineHeight:1.6, fontStyle:"italic" }}>"Sessions between 10 AM–2 PM EST see 40% higher live attendance."</p>
-            <Btn variant="outline" size="sm" onClick={() => setShowEngagement(true)} style={{ width:"100%", justifyContent:"center" }}>View engagement guide</Btn>
-          </div>
+          ))}
         </div>
       </div>
-
-      {/* Engagement Guide Modal */}
-      {showEngagement && (
-        <div onClick={() => setShowEngagement(false)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", zIndex:900, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-          <div onClick={e => e.stopPropagation()} style={{ background:C.white, borderRadius:20, width:"100%", maxWidth:520, maxHeight:"90vh", boxShadow:"0 20px 60px rgba(0,0,0,0.18)", overflow:"hidden", display:"flex", flexDirection:"column" }}>
-            {/* Header */}
-            <div style={{ background:"#f0f4ff", borderBottom:`1px solid #dde5ff`, padding:"24px 28px 20px" }}>
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
-                <div>
-                  <div style={{ fontSize:11, fontWeight:700, letterSpacing:1, color:"#6366f1", marginBottom:4 }}>INSTRUCTOR RESOURCE</div>
-                  <h2 style={{ margin:0, fontSize:20, fontWeight:900, color:"#1e1b4b" }}>Engagement Guide</h2>
-                  <p style={{ margin:"6px 0 0", fontSize:13, color:"#4b5563" }}>Proven tactics to boost attendance and completion rates.</p>
-                </div>
-                <button onClick={() => setShowEngagement(false)} style={{ background:"#fff", border:`1px solid #dde5ff`, color:"#6b7280", width:32, height:32, borderRadius:8, cursor:"pointer", fontSize:16, display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
-              </div>
-            </div>
-            {/* Tips */}
-            <div style={{ padding:"20px 28px 28px", display:"flex", flexDirection:"column", gap:14, overflowY:"auto" }}>
-              {[
-                { icon:"clock",            color:"#f59e0b", title:"Optimal Scheduling",       body:"Sessions at 10 AM–2 PM EST see 40% higher live attendance. Avoid Friday afternoons and weekends for new releases." },
-                { icon:"bell",             color:"#3b82f6", title:"Pre-Session Reminders",    body:"Send reminders 24h and 1h before. Learners who receive both show 2× higher show-up rates." },
-                { icon:"chat-circle-dots", color:"#10b981", title:"Live Interaction",          body:"Ask a poll or question in the first 5 minutes. Sessions with early interaction have 60% lower drop-off." },
-                { icon:"trophy",           color:"#8b5cf6", title:"Certificates & Rewards",   body:"Offering a certificate increases completion by 35%. Highlight it in your session description." },
-                { icon:"megaphone",        color:"#ef4444", title:"Promote Before Going Live", body:"Share a teaser post 3 days before. Learners who see a preview are 50% more likely to register." },
-              ].map((tip, i) => (
-                <div key={i} style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
-                  <div style={{ width:34, height:34, borderRadius:10, background:`${tip.color}18`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                    <Icon name={tip.icon} size={16} color={tip.color}/>
-                  </div>
-                  <div>
-                    <div style={{ fontWeight:700, fontSize:14, color:C.gray900, marginBottom:2 }}>{tip.title}</div>
-                    <div style={{ fontSize:12, color:C.gray500, lineHeight:1.6 }}>{tip.body}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -4697,6 +4666,7 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast, adminSessions = A
   const statuses = ["ALL", "LIVE", "DRAFT", "ARCHIVED"];
   const filtered = filter === "ALL" ? adminSessions :
                    adminSessions.filter(s => s.status === filter);
+  const archived = adminSessions.filter(s => s.status === "ARCHIVED");
 
   return (
     <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
@@ -4711,14 +4681,14 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast, adminSessions = A
       {/* Summary stats */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
         {[
-          {label:"Total",    val:adminSessions.length,                                    color:C.gray700},
+          {label:"Total",    val:adminSessions.length,                                    color:C.gray900},
           {label:"Live",     val:adminSessions.filter(s=>s.status==="LIVE").length,       color:C.success},
           {label:"Drafts",   val:adminSessions.filter(s=>s.status==="DRAFT").length,      color:C.warning},
-          {label:"Archived", val:adminSessions.filter(s=>s.status==="ARCHIVED").length,   color:C.gray500},
+          {label:"Archived", val:adminSessions.filter(s=>s.status==="ARCHIVED").length,   color:C.gray600},
         ].map(s=>(
-          <div key={s.label} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"18px 20px" }}>
-            <div style={{ fontSize:30, fontWeight:900, color:s.color, marginBottom:4 }}>{s.val}</div>
-            <div style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.5, textTransform:"uppercase" }}>{s.label}</div>
+          <div key={s.label} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"18px 20px" }}>
+            <div style={{ fontSize:30, fontWeight:900, color:s.color, lineHeight:1, marginBottom:6 }}>{s.val}</div>
+            <div style={{ fontSize:13, fontWeight:600, color:C.gray600 }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -4726,8 +4696,8 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast, adminSessions = A
       {/* Filter tabs */}
       <div style={{ display:"flex", gap:6, marginBottom:16, flexWrap:"wrap" }}>
         {statuses.map(s=>(
-          <button key={s} onClick={()=>setFilter(s)}
-            style={{ padding:"6px 14px", borderRadius:99, border:`1px solid ${filter===s?C.primary:C.gray200}`, background:filter===s?C.primary:C.white, color:filter===s?"#fff":C.gray500, fontSize:12, fontWeight:600, cursor:"pointer" }}>
+          <button key={s} onClick={()=>setFilter(s)} aria-pressed={filter===s}
+            style={{ padding:"6px 14px", borderRadius:8, border:`1px solid ${filter===s?C.primary:C.gray200}`, background:filter===s?C.primary:C.white, color:filter===s?"#fff":C.gray600, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
             {s === "ALL" ? "All" : s.charAt(0)+s.slice(1).toLowerCase()}
           </button>
         ))}
@@ -4735,7 +4705,7 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast, adminSessions = A
 
       {/* Archived notice */}
       {filter === "ARCHIVED" && archived.length > 0 && (
-        <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 14px", background:"#f9fafb", borderRadius:10, border:"1px solid #e5e7eb", marginBottom:16 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 14px", background:C.gray100, borderRadius:10, border:`1px solid ${C.gray200}`, marginBottom:16 }}>
           <Icon name="info" size={14} color={C.gray500}/>
           <span style={{ fontSize:12, color:C.gray600, lineHeight:1.5 }}>
             Archived sessions are <strong>not visible to students</strong>. To restore a session, open it and update the <strong>Available To</strong> date to a future date.
@@ -4746,39 +4716,40 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast, adminSessions = A
       {/* Sessions list */}
       <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, overflow:"hidden" }}>
         {filtered.length === 0 && (
-          <div style={{ padding:"48px 20px", color:C.gray400, fontSize:14 }}>No sessions match this filter.</div>
+          <div style={{ padding:"48px 20px", color:C.gray500, fontSize:14 }}>No sessions match this filter.</div>
         )}
         {filtered.map((s,i)=>{
           const sc = ADMIN_STATUS_COLORS[s.status] || ADMIN_STATUS_COLORS.DRAFT;
           return (
-            <div key={s.id} style={{ display:"flex", alignItems:"center", gap:16, padding:"16px 20px", borderBottom:i<filtered.length-1?`1px solid ${C.gray100}`:"none", opacity: s.status==="ARCHIVED" ? 0.72 : 1 }}
-              onMouseEnter={e=>e.currentTarget.style.background=C.gray50}
+            <div key={s.id} style={{ display:"flex", alignItems:"center", gap:20, padding:"20px 24px", borderBottom:i<filtered.length-1?`1px solid ${C.gray200}`:"none", opacity: s.status==="ARCHIVED" ? 0.85 : 1 }}
+              onMouseEnter={e=>e.currentTarget.style.background=C.gray200}
               onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
               <AdminThumb idx={i}/>
               <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4 }}>
-                  <Badge label={s.status} color={sc.c} bg={sc.bg} size={12}/>
-                  <span style={{ fontSize:12, color:C.gray400 }}>{s.category}</span>
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
+                  <Badge label={s.status} color={sc.c} bg={sc.bg} size={11}/>
+                  <span style={{ fontSize:12, color:C.gray500 }}>{s.category}</span>
+                </div>
+                <div style={{ fontWeight:700, fontSize:14, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", marginBottom:6 }}>{s.title}</div>
+                <div style={{ fontSize:12, color:C.gray500, display:"flex", gap:14, alignItems:"center" }}>
+                  {s.enrolled && <span style={{ display:"flex",alignItems:"center",gap:4 }}><Icon name="users" size={12} color={C.gray500}/>{s.enrolled.toLocaleString()} Enrolled</span>}
+                  {s.rating   && <span style={{ display:"flex",alignItems:"center",gap:4 }}><Icon name="star"  size={12} color={C.warning}/>{s.rating} Stars</span>}
+                  <span style={{ display:"flex",alignItems:"center",gap:4 }}><Icon name="calendar" size={12} color={C.gray500}/>{s.date}</span>
                   {s.availableFrom && s.availableTo && s.status !== "ARCHIVED" && (
-                    <span style={{ fontSize:12, color:C.gray400 }}>
+                    <span style={{ display:"flex",alignItems:"center",gap:4 }}>
+                      <Icon name="clock" size={12} color={C.gray500}/>
                       {new Date(s.availableFrom).toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})} – {new Date(s.availableTo).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}
                     </span>
                   )}
                 </div>
-                <div style={{ fontWeight:600, fontSize:14, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
-                <div style={{ fontSize:12, color:C.gray400, marginTop:3, display:"flex", gap:12 }}>
-                  {s.enrolled && <span style={{ display:"flex",alignItems:"center",gap:3 }}><Icon name="users" size={12} color={C.gray400}/>{s.enrolled.toLocaleString()} Enrolled</span>}
-                  {s.rating   && <span style={{ display:"flex",alignItems:"center",gap:3 }}><Icon name="star"  size={12} color={C.warning}/>{s.rating} Stars</span>}
-                  <span style={{ display:"flex",alignItems:"center",gap:3 }}><Icon name="calendar" size={12} color={C.gray400}/>{s.date}</span>
-                </div>
               </div>
               <div style={{ display:"flex", gap:6, flexShrink:0 }}>
-                <button onClick={()=>onEditSession(s)}
-                  style={{ padding:"6px 12px", borderRadius:7, border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", display:"flex", alignItems:"center", gap:5, fontSize:12, fontWeight:600, color:C.gray600 }}>
-                  <Icon name="pencil" size={13} color={C.gray500}/>Edit
+                <button onClick={()=>onEditSession(s)} title="Edit session"
+                  style={{ width:28,height:28,borderRadius:8,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
+                  <Icon name="pencil" size={13} color={C.gray500}/>
                 </button>
-                <button onClick={()=>toast({type:"info",message:"More options coming soon."})}
-                  style={{ width:30,height:30,borderRadius:7,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center" }}>
+                <button onClick={()=>toast({type:"info",message:"More options coming soon."})} aria-label="More options"
+                  style={{ width:28,height:28,borderRadius:8,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
                   <Icon name="dots-three-vertical" size={14} color={C.gray500}/>
                 </button>
               </div>
@@ -4974,10 +4945,11 @@ function AnalyticsPage({ onEditSession }) {
   }));
 
   const INSIGHTS = [
-    { icon:"trend-up",     title:"User activity up this week",              body:`Returning learners drove ${stat.viewsDelta} growth. Peak days are Tuesday–Thursday.` },
-    { icon:"timer",        title:"Watch time drops on weekends",             body:"Sat–Sun see 40% fewer hours. Schedule new releases Mon–Thu for best reach." },
-    { icon:"check-circle", title:`Completion at all-time high: ${stat.completion}%`, body:"Sessions with attached quizzes see 23% higher completion. Add quizzes to remaining sessions." },
-    { icon:"star",         title:"\"AI in SPED\" needs a push",              body:"Enrolled: 34%, Started: 0%. A notification or teaser clip would drive first clicks." },
+    { icon:"trend-up",        title:"User activity up this week"                     },
+    { icon:"timer",           title:"Watch time drops on weekends"                   },
+    { icon:"check-circle",    title:`Completion at all-time high: ${stat.completion}%` },
+    { icon:"star",            title:"\"AI in SPED\" needs a push"                   },
+    { icon:"certificate",     title:"Certificate downloads up 18% vs last month"    },
   ];
 
   return (
@@ -5019,21 +4991,20 @@ function AnalyticsPage({ onEditSession }) {
         </div>
       </div>
 
-      {/* Metric cards — same style as Overview */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(200px, 1fr))", gap:14, marginBottom:24 }}>
+      {/* Metric cards */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:14, marginBottom:24 }}>
         {[
-          { label:"TOTAL VIEWS",      val:stat.views.toLocaleString(), delta:stat.viewsDelta+" vs prev period", color:C.primary,  icon:"eye"          },
-          { label:"WATCH TIME (HRS)", val:stat.watch.toLocaleString(), delta:stat.watchDelta+" vs prev period", color:"#7c3aed",  icon:"timer"         },
-          { label:"COMPLETION RATE",  val:`${stat.completion}%`,       delta:stat.compDelta+" vs prev period",  color:C.success,  icon:"check-circle"  },
-          { label:"ENROLLED",         val:stat.enrolled.toLocaleString(), delta:"Active learners",             color:C.warning,  icon:"users"         },
+          { label:"Total Views",      val:stat.views.toLocaleString(),    delta:stat.viewsDelta+" vs prev", color:C.primary,  bg:C.primaryLight  },
+          { label:"Watch Time (hrs)", val:stat.watch.toLocaleString(),    delta:stat.watchDelta+" vs prev", color:"#7c3aed",  bg:"rgba(124,58,237,0.12)" },
+          { label:"Completion Rate",  val:`${stat.completion}%`,          delta:stat.compDelta+" vs prev",  color:C.success,  bg:C.successLight  },
+          { label:"Enrolled",         val:stat.enrolled.toLocaleString(), delta:"Active learners",          color:C.warning,  bg:C.warningLight  },
         ].map(m => (
           <div key={m.label} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"18px 20px" }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-              <Icon name={m.icon} size={16} color={m.color}/>
-              <span style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.5 }}>{m.label}</span>
+              <div style={{ fontSize:30, fontWeight:900, color:m.color, lineHeight:1 }}>{m.val}</div>
+              <span style={{ fontSize:12, fontWeight:700, color:m.color, background:m.bg, padding:"2px 7px", borderRadius:6 }}>{m.delta}</span>
             </div>
-            <div style={{ fontSize:30, fontWeight:900, color:m.color, marginBottom:4 }}>{m.val}</div>
-            <div style={{ fontSize:12, color:C.success, fontWeight:600 }}>{m.delta}</div>
+            <div style={{ fontSize:13, fontWeight:600, color:C.gray600 }}>{m.label}</div>
           </div>
         ))}
       </div>
@@ -5091,16 +5062,13 @@ function AnalyticsPage({ onEditSession }) {
         <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:20 }}>
           <h2 style={{ margin:"0 0 20px", fontSize:16, fontWeight:800, color:C.gray900 }}>Smart Insights</h2>
           {INSIGHTS.map((ins,i) => (
-            <div key={i} style={{ display:"flex", gap:10, marginBottom:14,
-              paddingBottom:14, borderBottom:i<INSIGHTS.length-1?`1px solid ${C.gray100}`:"none" }}>
-              <div style={{ width:32, height:32, borderRadius:9, background:C.primaryLight,
-                display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:1 }}>
-                <Icon name={ins.icon} size={15} color={C.primary}/>
+            <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0",
+              borderBottom:i<INSIGHTS.length-1?`1px solid ${C.gray100}`:"none" }}>
+              <div style={{ width:30, height:30, borderRadius:8, background:C.primaryLight,
+                display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <Icon name={ins.icon} size={14} color={C.primary}/>
               </div>
-              <div>
-                <div style={{ fontSize:14, fontWeight:700, color:C.gray900, lineHeight:1.4, marginBottom:3 }}>{ins.title}</div>
-                <div style={{ fontSize:12, color:C.gray500, lineHeight:1.55 }}>{ins.body}</div>
-              </div>
+              <div style={{ fontSize:14, fontWeight:600, color:C.gray900, lineHeight:1.4 }}>{ins.title}</div>
             </div>
           ))}
         </div>
@@ -5318,16 +5286,10 @@ function CurriculumBuilder({ toast, initialSections, onSectionsChange }) {
       {nonMaterialLessons.map((l, li) => (
         <div key={l.id} style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, marginBottom:16, padding:24 }}>
 
-          {/* Card header — FormSection style */}
-          <div style={{ display:"flex", gap:12, marginBottom:20, alignItems:"flex-start" }}>
-            <div style={{ width:36, height:36, borderRadius:10, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center",
-              background: l.type==="video" ? C.primaryLight : "#ede9fe" }}>
-              <Icon name={l.type==="video"?"video":"article"} size={18} color={l.type==="video"?C.primary:"#7c3aed"}/>
-            </div>
-            <div style={{ flex:1 }}>
-              <div style={{ fontWeight:800, fontSize:16, color:C.gray900 }}>{l.type==="quiz"?"Assessment":"Lesson"}</div>
-              <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{l.type==="quiz"?"Add questions for this assessment":"Add a title and video link"}</div>
-            </div>
+          {/* Card header */}
+          <div style={{ marginBottom:20 }}>
+            <div style={{ fontWeight:800, fontSize:16, color:C.gray900 }}>{l.type==="quiz"?"Assessment":"Lesson"}</div>
+            <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{l.type==="quiz"?"Add questions for this assessment":"Add a title and video link"}</div>
           </div>
 
           <Label>TITLE</Label>
@@ -5420,12 +5382,9 @@ function CurriculumBuilder({ toast, initialSections, onSectionsChange }) {
                     </div>
                   );
                 })}
-            <div onClick={()=>addQuestion(l._secId,l.id)} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 14px 2px", cursor:"pointer" }}>
-              <div style={{ width:30, height:30, borderRadius:8, background:C.gray100, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                <Icon name="plus" size={13} color={C.gray500}/>
-              </div>
-              <span style={{ fontSize:14, fontWeight:600, color:C.gray700 }}>New question</span>
-            </div>
+            <button onClick={()=>addQuestion(l._secId,l.id)} style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 14px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", fontSize:13, fontWeight:600, color:C.gray600, fontFamily:"inherit", marginTop:8 }}>
+              <Icon name="plus" size={13} color={C.gray500}/>Add question
+            </button>
           </div>
           </>}
         </div>
@@ -5547,147 +5506,138 @@ function AdminCreateSession({ onBack, toast, onSave }) {
     { key:"availability", label:"Availability" },
   ];
 
+  const TAB_META = {
+    details:      { title:"Session Details",    subtitle:"Set the title, description and instructor info." },
+    curriculum:   { title:"Lessons",            subtitle:"Build your curriculum with sections and videos." },
+    availability: { title:"Availability",       subtitle:"Control when learners can access this session." },
+  };
+
   return (
     <div style={{ background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
+      <div style={{ maxWidth:960, width:"100%", margin:"0 auto", display:"flex", alignItems:"stretch", flex:1, boxSizing:"border-box" }}>
 
-      {/* Header + Tabs combined */}
-      <div style={{ background:C.white, borderBottom:`1px solid ${C.gray200}`, flexShrink:0 }}>
-        <div style={{ padding:"16px 28px 0", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-          <div style={{ display:"flex", flexWrap:"wrap", alignItems:"center", gap:4, fontSize:14, fontWeight:500, color:C.gray500 }}>
-            <button type="button" aria-label="Home" onClick={onBack}
-              style={{ background:"none", border:"none", cursor:"pointer", padding:0, display:"flex", alignItems:"center" }}
-              onMouseEnter={e=>e.currentTarget.style.opacity=".7"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-              <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M16 7.609c.352 0 .69.122.96.343l.111.1 6.25 6.25v.001a1.5 1.5 0 0 1 .445 1.071v7.5a.89.89 0 0 1-.891.891H9.125a.89.89 0 0 1-.89-.89v-7.5l.006-.149a1.5 1.5 0 0 1 .337-.813l.1-.11 6.25-6.25c.285-.285.67-.444 1.072-.444Zm5.984 7.876L16 9.5l-5.984 5.985v6.499h11.968z" fill="#475569" stroke="#475569" strokeWidth=".094"/>
-              </svg>
-            </button>
-            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="var(--c-gray400)"/>
-            </svg>
-            <button onClick={onBack} style={{ background:"none", border:"none", cursor:"pointer", padding:0, fontSize:14, fontWeight:500, color:C.gray500 }}
-              onMouseEnter={e=>e.currentTarget.style.color=C.gray900} onMouseLeave={e=>e.currentTarget.style.color=C.gray500}>
-              Sessions
-            </button>
-            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="var(--c-gray400)"/>
-            </svg>
-            <span style={{ color:"#6366f1", fontWeight:600 }}>Create New Session</span>
-          </div>
-          <div style={{ display:"flex", gap:8 }}>
-            <Btn variant="outline" onClick={()=>save(false)}>Save Draft</Btn>
-            <Btn onClick={()=>save(true)}><Icon name="lightning" size={14} color="#fff"/>Publish Session</Btn>
-          </div>
+        {/* ── Sidebar ── */}
+        <div style={{ width:240, flexShrink:0, padding:"32px 24px", boxSizing:"border-box" }}>
+          <h2 style={{ margin:"0 0 6px", fontSize:18, fontWeight:900, color:C.gray900 }}>Create Session</h2>
+          <p style={{ margin:"0 0 28px", fontSize:13, color:C.gray500, lineHeight:1.5 }}>Fill in the details, build your lessons, then publish.</p>
+          <nav style={{ display:"flex", flexDirection:"column", gap:2 }}>
+            {TABS.map(t => {
+              const active = tab === t.key;
+              return (
+                <button key={t.key} onClick={()=>setTab(t.key)}
+                  style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", borderRadius:10, border:"none", background: active ? C.primaryLight : "transparent", color: active ? C.primary : C.gray600, fontSize:14, fontWeight: active ? 700 : 500, cursor:"pointer", textAlign:"left", fontFamily:"inherit", transition:"background .15s" }}>
+                  <Icon name={t.key==="details"?"info":t.key==="curriculum"?"play-circle":"calendar"} size={15} color={active ? C.primary : C.gray500}/>
+                  {t.label}
+                </button>
+              );
+            })}
+          </nav>
         </div>
-        <div style={{ display:"flex", gap:20, padding:"0 28px" }}>
-          {TABS.map(t => {
-            const active = tab === t.key;
-            return (
-              <button key={t.key} onClick={()=>setTab(t.key)}
-                style={{ padding:"12px 0", background:"none", border:"none",
-                  borderBottom: active ? `2px solid ${C.primary}` : "2px solid transparent",
-                  cursor:"pointer", fontSize:14, fontWeight: active ? 700 : 500,
-                  color: active ? C.primary : C.gray500, marginBottom:-1 }}>
-                {t.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
-      {/* Tab content */}
-      <div style={{ flex:1, overflowY:"auto", padding: tab==="curriculum" ? "20px" : "20px" }}>
+        {/* ── Divider ── */}
+        <div style={{ width:1, background:C.gray200, flexShrink:0, alignSelf:"stretch" }}/>
 
-        {/* ── SESSION DETAILS tab ── */}
-        {tab === "details" && <>
+        {/* ── Content ── */}
+        <div style={{ flex:1, minWidth:0, padding:"32px 28px", boxSizing:"border-box", display:"flex", flexDirection:"column" }}>
+          <div style={{ marginBottom:24 }}>
+            <h2 style={{ margin:"0 0 4px", fontSize:18, fontWeight:900, color:C.gray900 }}>{TAB_META[tab].title}</h2>
+            <p style={{ margin:0, fontSize:13, color:C.gray500 }}>{TAB_META[tab].subtitle}</p>
+          </div>
 
-          <FormSection icon="info" title="General Information" subtitle="Set the foundational details for your curated recorded course.">
-            <Label required>COURSE TITLE</Label>
-            <input value={form.title} onChange={e=>upd("title",e.target.value)} placeholder="e.g. Advanced Figma Auto-Layout Masterclass" style={{...inputSt,marginBottom:14}}/>
-            <Label>DESCRIPTION</Label>
-            <textarea value={form.desc} onChange={e=>upd("desc",e.target.value)} placeholder="Deep dive into the nuances of the course content…" rows={4} style={{...inputSt,resize:"vertical",marginBottom:14}}/>
-          </FormSection>
+          <div style={{ flex:1 }}>
+            {/* ── SESSION DETAILS tab ── */}
+            {tab === "details" && <>
+              {/* General */}
+              {[
+                { label:"Course title", required:true, node:<input value={form.title} onChange={e=>upd("title",e.target.value)} placeholder="e.g. Advanced Figma Auto-Layout Masterclass" style={inputSt}/> },
+                { label:"Description", node:<textarea value={form.desc} onChange={e=>upd("desc",e.target.value)} placeholder="Describe what learners will gain from this session…" rows={3} style={{...inputSt,resize:"vertical"}}/> },
+                { label:"Instructor name", required:true, node:<input value={form.instructorName} onChange={e=>upd("instructorName",e.target.value)} placeholder="e.g. Jane Doe" style={inputSt}/> },
+                { label:"Professional bio", node:<textarea value={form.bio} onChange={e=>upd("bio",e.target.value)} placeholder="Short bio about your career and achievements…" rows={2} style={{...inputSt,resize:"vertical"}}/> },
+                { label:"LinkedIn", node:<input placeholder="LinkedIn username" style={inputSt}/> },
+                { label:"X (Twitter)", node:<input placeholder="X handle" style={inputSt}/> },
+              ].map((row,i) => (
+                <div key={i} style={{ display:"grid", gridTemplateColumns:"180px 1fr", gap:16, alignItems:"start", padding:"16px 0", borderBottom:`1px solid ${C.gray200}` }}>
+                  <div style={{ fontSize:14, fontWeight:600, color:C.gray700, paddingTop:10 }}>{row.label}{row.required && <span style={{ color:C.error }}> *</span>}</div>
+                  <div>{row.node}</div>
+                </div>
+              ))}
 
-          <FormSection icon="user-circle" title="Instructor Profile" subtitle="Share your expertise and background with your students.">
-            <div style={{ display:"grid", gridTemplateColumns:"160px 1fr", gap:20 }}>
-              <div>
-                <Label>PROFILE PICTURE</Label>
-                <UploadZone accept="image/*" icon="image" label="Upload photo" hint="JPG/PNG" height={140}/>
-              </div>
-              <div>
-                <Label required>INSTRUCTOR NAME</Label>
-                <input value={form.instructorName} onChange={e=>upd("instructorName",e.target.value)} placeholder="e.g. Jane Doe" style={{...inputSt,marginBottom:12}}/>
-                <Label>PROFESSIONAL BIO</Label>
-                <textarea value={form.bio} onChange={e=>upd("bio",e.target.value)} placeholder="Write a short bio about your career and achievements…" rows={3} style={{...inputSt,resize:"vertical",marginBottom:12}}/>
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-                  <input placeholder="LinkedIn username" style={inputSt}/>
-                  <input placeholder="X (Twitter) handle" style={inputSt}/>
+              {/* Engagement */}
+              <div style={{ marginTop:24 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>Engagement</div>
+                <div style={{ border:`1px solid ${C.gray200}`, borderRadius:14, overflow:"hidden" }}>
+                  {[
+                    { key:"certificate", label:"Certificate",    desc:"Send a certificate on completion." },
+                    { key:"spinWheel",   label:"Spin the Wheel", desc:"Enable reward spin activity." },
+                  ].map((item, i, arr) => (
+                    <div key={item.key} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, padding:"16px 20px", borderBottom: i < arr.length-1 ? `1px solid ${C.gray200}` : "none", background:C.white }}>
+                      <div>
+                        <div style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{item.label}</div>
+                        <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{item.desc}</div>
+                      </div>
+                      <Toggle fieldKey={item.key}/>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-          </FormSection>
 
-          <FormSection icon="chat-circle" title="Engagement Settings" subtitle="Configure how learners interact with this session.">
-            {/* Certificate */}
-            {[
-              { key:"certificate", label:"Certificate",   desc:"Send students a certificate when they complete all lessons." },
-              { key:"spinWheel",   label:"Spin the Wheel", desc:"Enable a spin the wheel activity for students to win rewards." },
-            ].map(item => (
-              <div key={item.key} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"16px 0", borderBottom:`1px solid ${C.gray100}` }}>
-                <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{item.label}</div>
-                <Toggle fieldKey={item.key}/>
-              </div>
-            ))}
-            {/* Comment visibility */}
-            <div style={{ padding:"16px 0" }}>
-              <div style={{ fontWeight:700, fontSize:14, color:C.gray900, marginBottom:14 }}>Community visibility</div>
-              <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-                {[
-                  { val:"visible", label:"Visible", desc:"All comments are shown and new ones can be posted." },
-                  { val:"hidden",  label:"Hidden",  desc:"No comments are shown and new ones can't be posted." },
-                  { val:"locked",  label:"Locked",  desc:"Existing comments are shown, but students cannot leave new ones." },
-                ].map(opt => (
-                  <div key={opt.val} onClick={()=>upd("commentVisibility", opt.val)}
-                    style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, cursor:"pointer" }}>
-                    <div>
-                      <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{opt.label}</div>
-                      <div style={{ fontSize:12, color:C.gray400, marginTop:2, lineHeight:1.5 }}>{opt.desc}</div>
+              {/* Community */}
+              <div style={{ marginTop:20 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>Community</div>
+                <div style={{ border:`1px solid ${C.gray200}`, borderRadius:14, overflow:"hidden" }}>
+                  {[
+                    { val:"visible", label:"Visible", desc:"Comments shown, new ones allowed." },
+                    { val:"hidden",  label:"Hidden",  desc:"No comments shown or accepted." },
+                    { val:"locked",  label:"Locked",  desc:"Existing shown, no new comments." },
+                  ].map((opt, i, arr) => (
+                    <div key={opt.val} onClick={()=>upd("commentVisibility", opt.val)}
+                      style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, padding:"16px 20px", borderBottom: i < arr.length-1 ? `1px solid ${C.gray200}` : "none", background:C.white, cursor:"pointer" }}>
+                      <div>
+                        <div style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{opt.label}</div>
+                        <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{opt.desc}</div>
+                      </div>
+                      <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${form.commentVisibility===opt.val ? C.primary : C.gray300}`, background: form.commentVisibility===opt.val ? C.primary : C.white, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        {form.commentVisibility===opt.val && <div style={{ width:6, height:6, borderRadius:"50%", background:"#fff" }}/>}
+                      </div>
                     </div>
-                    <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${form.commentVisibility===opt.val ? C.primary : C.gray300}`, background: form.commentVisibility===opt.val ? C.primary : C.white, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                      {form.commentVisibility===opt.val && <div style={{ width:6, height:6, borderRadius:"50%", background:"#fff" }}/>}
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          </FormSection>
-        </>}
+            </>}
 
-        {/* ── AVAILABILITY tab ── */}
-        {tab === "availability" && (
-          <FormSection icon="calendar" title="Availability" subtitle="Set the access window. The session goes live on the start date and auto-archives after the end date.">
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
-              <div>
-                <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE FROM</div>
-                <input type="datetime-local" value={form.availableFrom} onChange={e=>upd("availableFrom",e.target.value)} style={inputSt}/>
+            {/* ── AVAILABILITY tab ── */}
+            {tab === "availability" && <>
+              {[
+                { label:"Available from", node:<input type="datetime-local" value={form.availableFrom} onChange={e=>upd("availableFrom",e.target.value)} style={inputSt}/> },
+                { label:"Available to",   node:<input type="datetime-local" value={form.availableTo}   onChange={e=>upd("availableTo",  e.target.value)} style={inputSt}/> },
+              ].map((row,i) => (
+                <div key={i} style={{ display:"grid", gridTemplateColumns:"180px 1fr", gap:16, alignItems:"center", padding:"16px 0", borderBottom:`1px solid ${C.gray200}` }}>
+                  <div style={{ fontSize:14, fontWeight:600, color:C.gray700 }}>{row.label}</div>
+                  <div>{row.node}</div>
+                </div>
+              ))}
+              <div style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 14px", background:C.primaryLight, borderRadius:8, border:`1px solid ${C.primaryBorder}`, marginTop:16 }}>
+                <Icon name="info" size={14} color={C.primary}/>
+                <span style={{ fontSize:12, color:C.primary, lineHeight:1.5 }}>When the <strong>Available To</strong> date passes, this session auto-archives and is hidden from students. Leave blank for no expiry.</span>
               </div>
-              <div>
-                <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE TO</div>
-                <input type="datetime-local" value={form.availableTo} onChange={e=>upd("availableTo",e.target.value)} style={inputSt}/>
-              </div>
-            </div>
-            <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 12px", background:C.primaryLight, borderRadius:8, border:`1px solid ${C.primaryBorder}` }}>
-              <Icon name="info" size={14} color={C.primary}/>
-              <span style={{ fontSize:12, color:C.primary, lineHeight:1.5 }}>
-                When the <strong>Available To</strong> date passes, this session is automatically moved to <strong>Archive</strong> and hidden from students. Leave blank for no expiry.
-              </span>
-            </div>
-          </FormSection>
-        )}
+            </>}
 
-        {/* ── LESSONS tab ── */}
-        {tab === "curriculum" && (
-          <CurriculumBuilder toast={toast} initialSections={initialSections} onSectionsChange={handleSectionsChange}/>
-        )}
+          </div>
+
+          {/* ── LESSONS tab (outside flex:1 div to avoid height constraints) ── */}
+          {tab === "curriculum" && (
+            <CurriculumBuilder toast={toast} initialSections={initialSections} onSectionsChange={handleSectionsChange}/>
+          )}
+
+          {/* Actions */}
+          <div style={{ display:"flex", justifyContent:"flex-end", gap:8, paddingTop:24, borderTop:`1px solid ${C.gray200}`, marginTop:24 }}>
+            <Btn variant="outline" onClick={onBack}>Close</Btn>
+            {tab === "availability"
+              ? <Btn onClick={()=>save(true)}>Publish</Btn>
+              : <Btn onClick={()=>setTab(tab==="details"?"curriculum":"availability")}>Continue</Btn>
+            }
+          </div>
+        </div>
 
       </div>
     </div>
@@ -5727,7 +5677,7 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
     lessons: session.lessons.map(l => ({
       id: l.id, title: l.title, type: l.type || "video",
       duration: l.duration || "", status: l.status || "draft",
-      vimeoUrl: l.vimeoUrl || "", questions: l.questions || [], quizExpanded: false,
+      vimeoUrl: l.vimeoUrl || "", questions: Array.isArray(l.questions) ? l.questions : [], quizExpanded: false,
     })),
   }] : null;
 
@@ -5813,156 +5763,139 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
     </div>
   );
 
+  const TAB_META = {
+    details:      { title:"Session Details",    subtitle:"Edit the title, description and instructor info." },
+    curriculum:   { title:"Lessons",            subtitle:"Manage your curriculum sections and videos." },
+    availability: { title:"Availability",       subtitle:"Control when learners can access this session." },
+  };
+
   return (
     <div style={{ background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
+      <div style={{ maxWidth:960, width:"100%", margin:"0 auto", display:"flex", alignItems:"stretch", flex:1, boxSizing:"border-box" }}>
 
-      {/* Header + Tabs combined */}
-      <div style={{ background:C.white, borderBottom:`1px solid ${C.gray200}`, flexShrink:0 }}>
-        <div style={{ padding:"16px 28px 0", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-          <div style={{ display:"flex", flexWrap:"wrap", alignItems:"center", gap:4, fontSize:14, fontWeight:500, color:C.gray500 }}>
-            <button type="button" aria-label="Home" onClick={onBack}
-              style={{ background:"none", border:"none", cursor:"pointer", padding:0, display:"flex", alignItems:"center" }}
-              onMouseEnter={e=>e.currentTarget.style.opacity=".7"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-              <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M16 7.609c.352 0 .69.122.96.343l.111.1 6.25 6.25v.001a1.5 1.5 0 0 1 .445 1.071v7.5a.89.89 0 0 1-.891.891H9.125a.89.89 0 0 1-.89-.89v-7.5l.006-.149a1.5 1.5 0 0 1 .337-.813l.1-.11 6.25-6.25c.285-.285.67-.444 1.072-.444Zm5.984 7.876L16 9.5l-5.984 5.985v6.499h11.968z" fill="#475569" stroke="#475569" strokeWidth=".094"/>
-              </svg>
-            </button>
-            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="var(--c-gray400)"/>
-            </svg>
-            <button onClick={onBack} style={{ background:"none", border:"none", cursor:"pointer", padding:0, fontSize:14, fontWeight:500, color:C.gray500 }}
-              onMouseEnter={e=>e.currentTarget.style.color=C.gray900} onMouseLeave={e=>e.currentTarget.style.color=C.gray500}>
-              Sessions
-            </button>
-            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="var(--c-gray400)"/>
-            </svg>
-            <span style={{ color:"#6366f1", fontWeight:600, maxWidth:300, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{session.title}</span>
-          </div>
-          <div style={{ display:"flex", gap:8 }}>
-            <Btn variant="outline" onClick={discard}>Discard</Btn>
-            <Btn onClick={save}><Icon name="floppy-disk" size={14} color="#fff"/>Save Changes</Btn>
-          </div>
+        {/* ── Sidebar ── */}
+        <div style={{ width:240, flexShrink:0, padding:"32px 24px", boxSizing:"border-box" }}>
+          <h2 style={{ margin:"0 0 4px", fontSize:18, fontWeight:900, color:C.gray900 }}>Edit Session</h2>
+          <p style={{ margin:"0 0 4px", fontSize:12, color:C.gray500, lineHeight:1.4, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{session.title}</p>
+          <p style={{ margin:"0 0 28px", fontSize:13, color:C.gray500 }}></p>
+          <nav style={{ display:"flex", flexDirection:"column", gap:2 }}>
+            {TABS.map(t => {
+              const active = tab === t.key;
+              return (
+                <button key={t.key} onClick={()=>setTab(t.key)}
+                  style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", borderRadius:10, border:"none", background: active ? C.primaryLight : "transparent", color: active ? C.primary : C.gray600, fontSize:14, fontWeight: active ? 700 : 500, cursor:"pointer", textAlign:"left", fontFamily:"inherit", transition:"background .15s" }}>
+                  <Icon name={t.key==="details"?"info":t.key==="curriculum"?"play-circle":"calendar"} size={15} color={active ? C.primary : C.gray500}/>
+                  {t.label}
+                </button>
+              );
+            })}
+          </nav>
         </div>
-        <div style={{ display:"flex", padding:"0 28px", gap:20 }}>
-          {TABS.map(t => {
-            const active = tab === t.key;
-            return (
-              <button key={t.key} onClick={()=>setTab(t.key)}
-                style={{ padding:"12px 0", background:"none", border:"none",
-                  borderBottom: active ? `2px solid ${C.primary}` : "2px solid transparent",
-                  cursor:"pointer", fontSize:14, fontWeight: active ? 700 : 500,
-                  color: active ? C.primary : C.gray500, marginBottom:-1 }}>
-                {t.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
-      {/* Tab content */}
-      <div style={{ flex:1, overflowY:"auto", padding: tab==="curriculum" ? "20px" : "20px" }}>
+        {/* ── Divider ── */}
+        <div style={{ width:1, background:C.gray200, flexShrink:0, alignSelf:"stretch" }}/>
 
-        {/* ── SESSION DETAILS tab ── */}
-        {tab === "details" && <>
+        {/* ── Content ── */}
+        <div style={{ flex:1, minWidth:0, padding:"32px 28px", boxSizing:"border-box", display:"flex", flexDirection:"column" }}>
+          <div style={{ marginBottom:24 }}>
+            <h2 style={{ margin:"0 0 4px", fontSize:18, fontWeight:900, color:C.gray900 }}>{TAB_META[tab].title}</h2>
+            <p style={{ margin:0, fontSize:13, color:C.gray500 }}>{TAB_META[tab].subtitle}</p>
+          </div>
 
-          {/* General Information */}
-          <FormSection icon="info" title="General Information" subtitle="Edit the foundational details for this session.">
-            <Label required>SESSION TITLE</Label>
-            <input value={form.title} onChange={e=>upd("title",e.target.value)}
-              placeholder="e.g. Advanced Figma Auto-Layout Masterclass" style={{...inputSt,marginBottom:14}}/>
-            <Label>DESCRIPTION</Label>
-            <textarea value={form.desc} onChange={e=>upd("desc",e.target.value)}
-              placeholder="Describe what students will learn in this session…" rows={4} style={{...inputSt,resize:"vertical"}}/>
-          </FormSection>
+          <div style={{ flex:1 }}>
+            {/* ── DETAILS tab ── */}
+            {tab === "details" && <>
+              {[
+                { label:"Session title",   required:true, node:<input value={form.title} onChange={e=>upd("title",e.target.value)} placeholder="e.g. Advanced Figma Auto-Layout Masterclass" style={inputSt}/> },
+                { label:"Description",     node:<textarea value={form.desc} onChange={e=>upd("desc",e.target.value)} placeholder="Describe what students will learn…" rows={3} style={{...inputSt,resize:"vertical"}}/> },
+                { label:"Instructor name", required:true, node:<input value={form.instructorName} onChange={e=>upd("instructorName",e.target.value)} placeholder="e.g. Jane Doe" style={inputSt}/> },
+                { label:"Professional bio",node:<textarea value={form.bio} onChange={e=>upd("bio",e.target.value)} placeholder="Short bio about your career and achievements…" rows={2} style={{...inputSt,resize:"vertical"}}/> },
+                { label:"LinkedIn",        node:<input placeholder="LinkedIn username" style={inputSt}/> },
+                { label:"X (Twitter)",     node:<input placeholder="X handle" style={inputSt}/> },
+              ].map((row,i) => (
+                <div key={i} style={{ display:"grid", gridTemplateColumns:"180px 1fr", gap:16, alignItems:"start", padding:"16px 0", borderBottom:`1px solid ${C.gray200}` }}>
+                  <div style={{ fontSize:14, fontWeight:600, color:C.gray700, paddingTop:10 }}>{row.label}{row.required && <span style={{ color:C.error }}> *</span>}</div>
+                  <div>{row.node}</div>
+                </div>
+              ))}
 
-          {/* Instructor Profile */}
-          <FormSection icon="user-circle" title="Instructor Profile" subtitle="Your profile information shown to learners for this session.">
-            <div style={{ display:"grid", gridTemplateColumns:"160px 1fr", gap:20 }}>
-              <div>
-                <Label>PROFILE PICTURE</Label>
-                <UploadZone accept="image/*" icon="image" label="Change photo" hint="JPG/PNG" height={140}/>
-              </div>
-              <div>
-                <Label required>INSTRUCTOR NAME</Label>
-                <input value={form.instructorName} onChange={e=>upd("instructorName",e.target.value)}
-                  placeholder="e.g. Jane Doe" style={{...inputSt,marginBottom:12}}/>
-                <Label>PROFESSIONAL BIO</Label>
-                <textarea value={form.bio} onChange={e=>upd("bio",e.target.value)}
-                  placeholder="Write a short bio about your career and achievements…"
-                  rows={3} style={{...inputSt,resize:"vertical",marginBottom:12}}/>
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-                  <input placeholder="LinkedIn username" style={inputSt}/>
-                  <input placeholder="X (Twitter) handle" style={inputSt}/>
+              {/* Engagement */}
+              <div style={{ marginTop:24 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>Engagement</div>
+                <div style={{ border:`1px solid ${C.gray200}`, borderRadius:14, overflow:"hidden" }}>
+                  {[
+                    { key:"certificate", label:"Certificate",      desc:"Send a certificate on completion." },
+                    { key:"discussion",  label:"Discussion Forum",  desc:"Allow students to discuss with peers." },
+                    { key:"qa",          label:"Q&A Section",       desc:"Moderate and answer student questions." },
+                  ].map((item, i, arr) => (
+                    <div key={item.key} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, padding:"16px 20px", borderBottom: i < arr.length-1 ? `1px solid ${C.gray200}` : "none", background:C.white }}>
+                      <div>
+                        <div style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{item.label}</div>
+                        <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{item.desc}</div>
+                      </div>
+                      <Toggle fieldKey={item.key}/>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-          </FormSection>
 
-
-          {/* Engagement Settings */}
-          <FormSection icon="chat-circle" title="Engagement Settings" subtitle="Configure how learners interact with this session.">
-            {[
-              { key:"certificate", label:"Certificate",      desc:"Send students a certificate when they complete all lessons." },
-              { key:"discussion",  label:"Discussion Forum", desc:"Allow students to ask questions and discuss with peers." },
-              { key:"qa",          label:"Q&A Section",      desc:"Moderate and answer student questions individually." },
-            ].map(item => (
-              <div key={item.key} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"16px 0", borderBottom:`1px solid ${C.gray100}` }}>
-                <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{item.label}</div>
-                <Toggle fieldKey={item.key}/>
-              </div>
-            ))}
-            {/* Comment visibility */}
-            <div style={{ padding:"16px 0" }}>
-              <div style={{ fontWeight:700, fontSize:14, color:C.gray900, marginBottom:14 }}>Community visibility</div>
-              <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-                {[
-                  { val:"visible", label:"Visible", desc:"All comments are shown and new ones can be posted." },
-                  { val:"hidden",  label:"Hidden",  desc:"No comments are shown and new ones can't be posted." },
-                  { val:"locked",  label:"Locked",  desc:"Existing comments are shown, but students cannot leave new ones." },
-                ].map(opt => (
-                  <div key={opt.val} onClick={()=>upd("commentVisibility", opt.val)}
-                    style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, cursor:"pointer" }}>
-                    <div>
-                      <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{opt.label}</div>
-                      <div style={{ fontSize:12, color:C.gray400, marginTop:2, lineHeight:1.5 }}>{opt.desc}</div>
+              {/* Community */}
+              <div style={{ marginTop:20 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>Community</div>
+                <div style={{ border:`1px solid ${C.gray200}`, borderRadius:14, overflow:"hidden" }}>
+                  {[
+                    { val:"visible", label:"Visible", desc:"Comments shown, new ones allowed." },
+                    { val:"hidden",  label:"Hidden",  desc:"No comments shown or accepted." },
+                    { val:"locked",  label:"Locked",  desc:"Existing shown, no new comments." },
+                  ].map((opt, i, arr) => (
+                    <div key={opt.val} onClick={()=>upd("commentVisibility", opt.val)}
+                      style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, padding:"16px 20px", borderBottom: i < arr.length-1 ? `1px solid ${C.gray200}` : "none", background:C.white, cursor:"pointer" }}>
+                      <div>
+                        <div style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{opt.label}</div>
+                        <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{opt.desc}</div>
+                      </div>
+                      <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${form.commentVisibility===opt.val ? C.primary : C.gray300}`, background: form.commentVisibility===opt.val ? C.primary : C.white, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        {form.commentVisibility===opt.val && <div style={{ width:6, height:6, borderRadius:"50%", background:"#fff" }}/>}
+                      </div>
                     </div>
-                    <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${form.commentVisibility===opt.val ? C.primary : C.gray300}`, background: form.commentVisibility===opt.val ? C.primary : C.white, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                      {form.commentVisibility===opt.val && <div style={{ width:6, height:6, borderRadius:"50%", background:"#fff" }}/>}
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          </FormSection>
-        </>}
+            </>}
 
-        {/* ── AVAILABILITY tab ── */}
-        {tab === "availability" && (
-          <FormSection icon="calendar" title="Availability" subtitle="Set the access window. The session goes live on the start date and auto-archives after the end date.">
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
-              <div>
-                <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE FROM</div>
-                <input type="datetime-local" value={form.availableFrom} onChange={e=>upd("availableFrom",e.target.value)} style={inputSt}/>
+            {/* ── AVAILABILITY tab ── */}
+            {tab === "availability" && <>
+              {[
+                { label:"Available from", node:<input type="datetime-local" value={form.availableFrom} onChange={e=>upd("availableFrom",e.target.value)} style={inputSt}/> },
+                { label:"Available to",   node:<input type="datetime-local" value={form.availableTo}   onChange={e=>upd("availableTo",  e.target.value)} style={inputSt}/> },
+              ].map((row,i) => (
+                <div key={i} style={{ display:"grid", gridTemplateColumns:"180px 1fr", gap:16, alignItems:"center", padding:"16px 0", borderBottom:`1px solid ${C.gray200}` }}>
+                  <div style={{ fontSize:14, fontWeight:600, color:C.gray700 }}>{row.label}</div>
+                  <div>{row.node}</div>
+                </div>
+              ))}
+              <div style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 14px", background:C.primaryLight, borderRadius:8, border:`1px solid ${C.primaryBorder}`, marginTop:16 }}>
+                <Icon name="info" size={14} color={C.primary}/>
+                <span style={{ fontSize:12, color:C.primary, lineHeight:1.5 }}>When the <strong>Available To</strong> date passes, this session auto-archives and is hidden from students. Leave blank for no expiry.</span>
               </div>
-              <div>
-                <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:4 }}>AVAILABLE TO</div>
-                <input type="datetime-local" value={form.availableTo} onChange={e=>upd("availableTo",e.target.value)} style={inputSt}/>
-              </div>
-            </div>
-            <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 12px", background:C.primaryLight, borderRadius:8, border:`1px solid ${C.primaryBorder}` }}>
-              <Icon name="info" size={14} color={C.primary}/>
-              <span style={{ fontSize:12, color:C.primary, lineHeight:1.5 }}>
-                The session goes live at the <strong>Available From</strong> date &amp; time and auto-archives after <strong>Available To</strong>. Leave blank for no expiry.
-              </span>
-            </div>
-          </FormSection>
-        )}
+            </>}
 
-        {/* ── LESSONS tab ── */}
-        {tab === "curriculum" && (
-          <CurriculumBuilder toast={toast} initialSections={initialSections} onSectionsChange={handleSectionsChange}/>
-        )}
+          </div>
+
+          {/* ── LESSONS tab ── */}
+          {tab === "curriculum" && (
+            <CurriculumBuilder toast={toast} initialSections={initialSections} onSectionsChange={handleSectionsChange}/>
+          )}
+
+          {/* Actions */}
+          <div style={{ display:"flex", justifyContent:"flex-end", gap:8, paddingTop:24, borderTop:`1px solid ${C.gray200}`, marginTop:24 }}>
+            <Btn variant="outline" onClick={onBack}>Close</Btn>
+            {tab === "availability"
+              ? <Btn onClick={save}>Save Changes</Btn>
+              : <Btn onClick={()=>setTab(tab==="details"?"curriculum":"availability")}>Continue</Btn>
+            }
+          </div>
+        </div>
 
       </div>
     </div>
@@ -8886,7 +8819,7 @@ function LandingPage({ onGetStarted }) {
                       <div style={{ fontSize:13, color:T.muted }}>Sessions · Quizzes · Certificates · Community · Replays · Giveaways</div>
                     </div>
                     <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
-                      {["Sessions", "Quizzes", "Certs"].map((label, i) => (
+                      {["Sessions", "Quizzes", "Certificate"].map((label, i) => (
                         <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"center", height:32, padding:"0 12px", borderRadius:8, border:`1px solid ${T.border}`, background:T.bg, fontSize:12, fontWeight:600, color:T.muted }}>
                           {label}
                         </div>
@@ -9874,6 +9807,8 @@ export default function App() {
     const full = sessions.find(sess => sess.id === s.id);
     setEditingSession(full ? { ...s, lessons: full.lessons, vimeoUrl: full.vimeoUrl || s.vimeoUrl } : s);
     setPage("admin-edit");
+    sessionStorage.setItem("page", "admin-edit");
+    if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0;
   }
 
   function updateProgress(sessionId, pct) {
@@ -9981,7 +9916,7 @@ export default function App() {
                       </span>
                     </div>
                     <div style={{ fontSize:17, fontWeight:700, color:C.gray900, lineHeight:1.3, marginBottom:6 }}>{s.title}</div>
-                    <div style={{ fontSize:12, color:C.gray500, lineHeight:1.55, marginBottom:6, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
+                    <div style={{ fontSize:12, color:C.gray600, lineHeight:1.55, marginBottom:6, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
                       {s.description}
                     </div>
                     <div style={{ display:"flex", alignItems:"center", gap:12, marginTop:"auto", paddingTop:12 }}>
@@ -10017,24 +9952,27 @@ export default function App() {
 
   const activePage = page==="session-detail" ? (isAdmin?"admin-sessions":"sessions") : page;
 
-  if (!isLoggedIn) {
+  if (page === "landing" || !isLoggedIn) {
     const handleGetStarted = (sessionId, role = "user") => {
       const admin = role === "admin";
       setIsLoggedIn(true);
       sessionStorage.setItem("loggedIn", "1");
       setIsAdmin(admin);
       sessionStorage.setItem("isAdmin", admin ? "1" : "0");
-      const p = admin ? "admin-overview" : "dashboard";
+      if (sessionId && !admin) enroll(sessionId);
+      // Stay on landing — profile icon will appear in nav
+    };
+    const handleGoToDashboard = () => {
+      const p = isAdmin ? "admin-overview" : "dashboard";
       setPage(p);
       sessionStorage.setItem("page", p);
-      if (sessionId && !admin) enroll(sessionId);
     };
     return (
       <>
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet"/>
         {landingV === 1
-          ? <LandingPage onGetStarted={handleGetStarted}/>
-          : <LandingV2 onGetStarted={handleGetStarted}/>
+          ? <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} onGoToDashboard={handleGoToDashboard}/>
+          : <LandingV2 onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} onGoToDashboard={handleGoToDashboard}/>
         }
         {/* Version switcher */}
         <div style={{ position:"fixed", bottom:24, right:24, zIndex:9999, display:"flex", gap:6, background:"rgba(26,10,36,0.92)", backdropFilter:"blur(8px)", borderRadius:100, padding:"5px 6px", boxShadow:"0 8px 32px rgba(0,0,0,0.25)", border:"1px solid rgba(255,255,255,0.1)" }}>
@@ -10072,7 +10010,7 @@ export default function App() {
         onBrowseSelect={(season, year) => { setDashFilter({ season, year }); nav("dashboard"); }}
       />
       <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-        {activePage !== "profile" && page !== "session-detail" && <TabBar
+        {activePage !== "profile" && page !== "session-detail" && page !== "admin-create" && page !== "admin-edit" && <TabBar
           active={activePage}
           onChange={nav}
           isAdmin={isAdmin}
@@ -10080,6 +10018,15 @@ export default function App() {
             { label:"My Learnings", onClick:() => { setPastSeasonPageId(null); nav("dashboard"); } },
             { label: seasons.find(s => s.id === pastSeasonPageId)?.name || "Past Season" },
           ] : null}
+        />}
+        {(page === "admin-create" || page === "admin-edit") && <TabBar
+          active={activePage}
+          onChange={nav}
+          isAdmin={isAdmin}
+          breadcrumbs={[
+            { label:"My Sessions", onClick:() => nav("admin-sessions") },
+            { label: page === "admin-edit" ? (editingSession?.title || "Edit Session") : "Create New Session" },
+          ]}
         />}
         <div ref={scrollContainerRef} style={{ flex:1, overflowY:"auto" }}>{renderPage()}<Footer onNavigate={nav}/></div>
       </div>

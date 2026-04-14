@@ -7,13 +7,13 @@ import { TestimonialsResponsive as Testimonials } from './components/Testimonial
 import FAQAccordion from './components/FAQAccordion';
 import Footer from './components/Footer';
 
-export default function LandingV2({ onGetStarted }) {
+export default function LandingV2({ onGetStarted, isLoggedIn, isAdmin, userName, onGoToDashboard }) {
   useLenis();
 
   return (
     <div style={{ background: '#ffffff', minHeight: '100vh', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif" }}>
-      <NavV2 onGetStarted={onGetStarted} />
-      <HeroV2 onGetStarted={onGetStarted} />
+      <NavV2 onGetStarted={onGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} onGoToDashboard={onGoToDashboard} />
+      <HeroV2 onGetStarted={onGetStarted} isLoggedIn={isLoggedIn} onGoToDashboard={onGoToDashboard} />
       <StatsStrip />
       <FeatureSection />
       <Testimonials />

@@ -1,5 +1,55 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
+
+/* ── Avatar initials helper ─────────────────────────────────────────────────── */
+function getInitials(name = '') {
+  const parts = name.trim().split(' ');
+  return parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : (parts[0]?.[0] ?? '?');
+}
+
+/* ── ProfileMenu ─────────────────────────────────────────────────────────────── */
+function ProfileMenu({ isAdmin, userName, onGoToDashboard }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handler(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  const items = isAdmin
+    ? [{ label: 'Admin Dashboard', icon: '⚡' }]
+    : [{ label: 'My Learning', icon: '🎓' }];
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button onClick={() => setOpen(o => !o)}
+        style={{ width: 36, height: 36, borderRadius: '50%', border: '2px solid #f59e0b', background: '#1a0a24', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#fff', transition: 'box-shadow 0.15s' }}
+        onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 0 3px rgba(245,158,11,0.3)'}
+        onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
+        {getInitials(userName)}
+      </button>
+      {open && (
+        <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, boxShadow: '0 8px 28px rgba(0,0,0,0.12)', minWidth: 180, zIndex: 200, overflow: 'hidden' }}>
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid #f3f4f6' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>{userName}</div>
+            <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>{isAdmin ? 'Admin' : 'Learner'}</div>
+          </div>
+          {items.map(item => (
+            <button key={item.label} onClick={() => { setOpen(false); onGoToDashboard?.(); }}
+              style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '11px 16px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#111827', textAlign: 'left', transition: 'background 0.12s' }}
+              onMouseEnter={e => e.currentTarget.style.background = '#f9fafb'}
+              onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+              <span>{item.icon}</span>{item.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 /* ── useScrollThreshold ─────────────────────────────────────────────────────── */
 function useScrollThreshold(threshold = 10) {
@@ -37,7 +87,7 @@ const LINKS = [
 ];
 
 /* ── NavV2 ──────────────────────────────────────────────────────────────────── */
-export default function NavV2({ onGetStarted }) {
+export default function NavV2({ onGetStarted, isLoggedIn, isAdmin, userName, onGoToDashboard }) {
   const [open, setOpen] = useState(false);
   const scrolled = useScrollThreshold(10);
 
@@ -85,11 +135,14 @@ export default function NavV2({ onGetStarted }) {
                 onMouseLeave={e => { e.currentTarget.style.color = '#6b7280'; e.currentTarget.style.background = 'transparent'; }}
               >{label}</a>
             ))}
-            <button onClick={onGetStarted}
-              style={{ marginLeft: 8, padding: '7px 18px', fontSize: 14, fontWeight: 700, background: '#f59e0b', color: '#000', border: 'none', borderRadius: 10, cursor: 'pointer', transition: 'background 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.background = '#d97706'}
-              onMouseLeave={e => e.currentTarget.style.background = '#f59e0b'}
-            >Get started free</button>
+            {isLoggedIn
+              ? <div style={{ marginLeft: 8 }}><ProfileMenu isAdmin={isAdmin} userName={userName} onGoToDashboard={onGoToDashboard}/></div>
+              : <button onClick={onGetStarted}
+                  style={{ marginLeft: 8, padding: '7px 18px', fontSize: 14, fontWeight: 700, background: '#f59e0b', color: '#000', border: 'none', borderRadius: 10, cursor: 'pointer', transition: 'background 0.15s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#d97706'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#f59e0b'}
+                >Get started free</button>
+            }
           </div>
 
           {/* Mobile hamburger */}
@@ -117,10 +170,16 @@ export default function NavV2({ onGetStarted }) {
               >{label}</a>
             ))}
           </div>
-          <button onClick={() => { setOpen(false); onGetStarted?.(); }}
-            style={{ width: '100%', padding: '14px', fontSize: 15, fontWeight: 800, background: '#f59e0b', color: '#000', border: 'none', borderRadius: 12, cursor: 'pointer' }}>
-            Get started free
-          </button>
+          {isLoggedIn
+            ? <button onClick={() => { setOpen(false); onGoToDashboard?.(); }}
+                style={{ width: '100%', padding: '14px', fontSize: 15, fontWeight: 800, background: '#f59e0b', color: '#000', border: 'none', borderRadius: 12, cursor: 'pointer' }}>
+                {isAdmin ? 'Admin Dashboard' : 'My Learning'} →
+              </button>
+            : <button onClick={() => { setOpen(false); onGetStarted?.(); }}
+                style={{ width: '100%', padding: '14px', fontSize: 15, fontWeight: 800, background: '#f59e0b', color: '#000', border: 'none', borderRadius: 12, cursor: 'pointer' }}>
+                Get started free
+              </button>
+          }
         </div>,
         document.body
       )}

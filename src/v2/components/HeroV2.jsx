@@ -39,7 +39,7 @@ const floatVariants = {
   animate: { y: [0, -10, 0], transition: { duration: 3.2, repeat: Infinity, ease: 'easeInOut' } },
 };
 
-export default function HeroV2({ onGetStarted }) {
+export default function HeroV2({ onGetStarted, isLoggedIn, onGoToDashboard }) {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
   const y       = useTransform(scrollYProgress, [0, 1], ['0%', '25%']);
@@ -106,9 +106,10 @@ export default function HeroV2({ onGetStarted }) {
 
           {/* CTAs */}
           <motion.div variants={itemVariants} style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 52 }}>
-            <Button size="lg" onClick={onGetStarted}>
-              Start learning for free →
-            </Button>
+            {isLoggedIn
+              ? <Button size="lg" onClick={onGoToDashboard}>Go to my dashboard →</Button>
+              : <Button size="lg" onClick={onGetStarted}>Start learning for free →</Button>
+            }
             <Button size="lg" variant="outline" onClick={() => document.getElementById('features-v2')?.scrollIntoView({ behavior: 'smooth' })}>
               See how it works
             </Button>
