@@ -2919,7 +2919,7 @@ function SeasonFolderCard({ season, sessions, onOpen }) {
       onClick={onOpen}
       onHoverStart={()=>setHovered(true)}
       onHoverEnd={()=>setHovered(false)}
-      whileHover={{ boxShadow:"0 16px 40px rgba(0,0,0,0.12)" }}
+      whileHover={{ boxShadow:"0 4px 16px rgba(0,0,0,0.08)" }}
       transition={{ duration:0.3, ease:[0.25,1,0.5,1] }}
       style={{ cursor:"pointer", borderRadius:16, border:`1px solid ${C.gray200}`, background:C.white, overflow:"hidden", boxShadow:"0 2px 8px rgba(0,0,0,0.06)", color:"inherit" }}
     >
