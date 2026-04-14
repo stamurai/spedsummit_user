@@ -2236,7 +2236,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
     return true;
   }
 
-  const filteredInProgress = inProgressSessions.filter(sessionMatchesFilter);
+  const filteredInProgress = inProgressSessions;
   const filteredCompleted  = completedSessions.filter(sessionMatchesFilter);
   const todayGoals = [
     { text:"Complete any 2 sessions",   done: completed >= 2 },
@@ -2418,7 +2418,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
               </div>
 
               {/* ── PAST SESSIONS — season folder cards ── */}
-              {filteredCompleted.length > 0 && (
+              {completedSessions.length > 0 && (
                 <>
                   <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16, gap:10 }}>
                     <div style={{ fontSize:16, fontWeight:800, color:C.gray900 }}>Past Sessions</div>
@@ -2441,15 +2441,27 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                       </div>
                     </div>
                   </div>
-                  <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px, 1fr))", gap:20 }}>
-                    {SEASONS.map(season => {
-                      const seasonCompleted = filteredCompleted.filter(s => season.sessionIds.includes(s.id));
-                      if (!seasonCompleted.length) return null;
-                      return (
-                        <SeasonFolderCard key={season.id} season={season} sessions={seasonCompleted} onOpen={() => onOpenPastSeason?.(season.id)}/>
-                      );
-                    })}
-                  </div>
+                  {(() => {
+                    const filtered = SEASONS.filter(season => {
+                      const [sName, sYear] = season.name.split(" ");
+                      if (filterSeason !== "all" && sName !== filterSeason) return false;
+                      if (filterYear   !== "all" && sYear !== filterYear)   return false;
+                      return true;
+                    });
+                    if (!filtered.length) return (
+                      <div style={{ textAlign:"center", padding:"40px 0", color:C.gray400, fontSize:14 }}>No seasons match the selected filters.</div>
+                    );
+                    return (
+                      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px, 1fr))", gap:20 }}>
+                        {filtered.map(season => {
+                          const seasonCompleted = filteredCompleted.filter(s => season.sessionIds.includes(s.id));
+                          return (
+                            <SeasonFolderCard key={season.id} season={season} sessions={seasonCompleted} onOpen={() => onOpenPastSeason?.(season.id)}/>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </>
               )}
             </>
