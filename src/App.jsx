@@ -454,17 +454,78 @@ const SEASONS = [
     sessionIds: [1, 2, 5, 6],
     color: "#2563eb",
     bg: "#dbeafe",
-    icon: "🌸",
+  },
+  {
+    id: "winter-2026",
+    name: "Winter 2026",
+    tagline: "Past Season",
+    description: "Recorded sessions from the Winter 2026 SPED Summit. All recordings available.",
+    sessionIds: [3, 4],
+    color: "#6b7280",
+    bg: "#f3f4f6",
+  },
+  {
+    id: "summer-2026",
+    name: "Summer 2026",
+    tagline: "Past Season",
+    description: "Recorded sessions from the Summer 2026 SPED Summit. All recordings available.",
+    sessionIds: [5, 6],
+    color: "#6b7280",
+    bg: "#f3f4f6",
+  },
+  {
+    id: "spring-2025",
+    name: "Spring 2025",
+    tagline: "Past Season",
+    description: "Recorded sessions from the Spring 2025 SPED Summit. All recordings available.",
+    sessionIds: [1, 3],
+    color: "#6b7280",
+    bg: "#f3f4f6",
   },
   {
     id: "winter-2025",
     name: "Winter 2025",
     tagline: "Past Season",
-    description: "Recorded sessions from the Winter 2025 SPED Summit. Available recordings included.",
-    sessionIds: [3, 4],
+    description: "Recorded sessions from the Winter 2025 SPED Summit. All recordings available.",
+    sessionIds: [2, 4],
     color: "#6b7280",
     bg: "#f3f4f6",
-    icon: "❄️",
+  },
+  {
+    id: "summer-2025",
+    name: "Summer 2025",
+    tagline: "Past Season",
+    description: "Recorded sessions from the Summer 2025 SPED Summit. All recordings available.",
+    sessionIds: [1, 2],
+    color: "#6b7280",
+    bg: "#f3f4f6",
+  },
+  {
+    id: "spring-2024",
+    name: "Spring 2024",
+    tagline: "Past Season",
+    description: "Recorded sessions from the Spring 2024 SPED Summit. All recordings available.",
+    sessionIds: [3, 5],
+    color: "#6b7280",
+    bg: "#f3f4f6",
+  },
+  {
+    id: "winter-2024",
+    name: "Winter 2024",
+    tagline: "Past Season",
+    description: "Recorded sessions from the Winter 2024 SPED Summit. All recordings available.",
+    sessionIds: [4, 6],
+    color: "#6b7280",
+    bg: "#f3f4f6",
+  },
+  {
+    id: "summer-2024",
+    name: "Summer 2024",
+    tagline: "Past Season",
+    description: "Recorded sessions from the Summer 2024 SPED Summit. All recordings available.",
+    sessionIds: [1, 4],
+    color: "#6b7280",
+    bg: "#f3f4f6",
   },
 ];
 
@@ -562,7 +623,7 @@ function Btn({ children, onClick, variant="primary", size="md", disabled=false, 
   };
   return (
     <button onClick={disabled ? undefined : onClick} disabled={disabled}
-      style={{ padding:sizes[size], borderRadius:8, fontSize:14, fontWeight:600, cursor:disabled?"not-allowed":"pointer",
+      style={{ padding:sizes[size], borderRadius:10, fontSize:14, fontWeight:600, cursor:disabled?"not-allowed":"pointer",
         display:"inline-flex", alignItems:"center", justifyContent:"center", gap:6, lineHeight:1,
         transition:"all .15s", ...variants[variant], ...s }}
       onMouseEnter={e=>{ if(!disabled){ e.currentTarget.style.opacity=".85"; e.currentTarget.style.transform="translateY(-1px)"; }}}
@@ -575,13 +636,16 @@ function Btn({ children, onClick, variant="primary", size="md", disabled=false, 
 /* ─────────────────────────────────────────────────────────────────────────────
    DROPDOWN MENU
 ───────────────────────────────────────────────────────────────────────────── */
-function DropdownMenu({ items, onClose }) {
+function DropdownMenu({ items, onClose, anchorRef }) {
   const ref = useRef(null);
   useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
+    const handler = (e) => {
+      if (anchorRef?.current?.contains(e.target)) return;
+      if (ref.current && !ref.current.contains(e.target)) onClose();
+    };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, [onClose]);
+  }, [onClose, anchorRef]);
   return (
     <div ref={ref} style={{ position:"absolute", right:0, top:"110%", background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, boxShadow:"0 8px 24px rgba(0,0,0,0.12)", minWidth:170, zIndex:200, overflow:"hidden", animation:"fadeIn .15s ease" }}>
       {items.map((item, i) => (
@@ -647,22 +711,25 @@ function UploadZone({ accept, label, hint, icon, preview, onFile, aspect="16/9",
 ───────────────────────────────────────────────────────────────────────────── */
 const NOTIF_DATA = [
   { id:1, type:"session",  icon:"play-circle", color:C.primary,  bg:C.primaryLight,  title:"New session available",        body:"\"AI & Advanced Technologies in SPED\" is now unlocked for you.", time:"2m ago",  read:false },
-  { id:2, type:"community",icon:"chat-circle", color:"#7c3aed",  bg:"#f5f3ff",       title:"Tara Roehl replied to your post", body:"\"Great point! The DHH strategies also apply here — check out…\"", time:"18m ago", read:false },
+  { id:2, type:"community",icon:"chat-circle", color:"#7c3aed",  bg:C.primaryLight,  title:"Tara Roehl replied to your post", body:"\"Great point! The DHH strategies also apply here — check out…\"", time:"18m ago", read:false },
   { id:3, type:"reward",   icon:"star",        color:C.warning,  bg:C.warningLight,  title:"You earned a new badge 🏆",    body:"\"Knowledge Seeker\" — You completed 3 quizzes this week.",       time:"1h ago",  read:false },
   { id:4, type:"schedule", icon:"calendar",    color:C.success,  bg:C.successLight,  title:"Session starting in 30 min",   body:"\"Paraeducators & Team Collaboration\" starts at 2:00 PM EST.",   time:"30m ago", read:true  },
   { id:5, type:"system",   icon:"info",        color:C.gray500,  bg:C.gray100,       title:"Platform update",              body:"New analytics features are live. Check your admin dashboard.",    time:"3h ago",  read:true  },
 ];
 
-function NotificationPopover({ onClose }) {
+function NotificationPopover({ onClose, anchorRef }) {
   const [notifs, setNotifs] = useState(NOTIF_DATA);
   const ref = useRef(null);
   const unreadCount = notifs.filter(n => !n.read).length;
 
   useEffect(() => {
-    const handler = e => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
+    const handler = e => {
+      if (anchorRef?.current?.contains(e.target)) return;
+      if (ref.current && !ref.current.contains(e.target)) onClose();
+    };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, [onClose]);
+  }, [onClose, anchorRef]);
 
   function markRead(id) { setNotifs(ns => ns.map(n => n.id === id ? { ...n, read:true } : n)); }
   function markAllRead() { setNotifs(ns => ns.map(n => ({ ...n, read:true }))); }
@@ -708,11 +775,11 @@ function NotificationPopover({ onClose }) {
             style={{
               display:"flex", alignItems:"flex-start", gap:12, padding:"12px 16px",
               borderBottom: i < notifs.length - 1 ? `1px solid ${C.gray100}` : "none",
-              background: n.read ? C.white : "#f8faff",
+              background: n.read ? C.white : C.primaryLight,
               cursor:"pointer", transition:"background .15s", position:"relative"
             }}
             onMouseEnter={e => e.currentTarget.style.background = C.gray50}
-            onMouseLeave={e => e.currentTarget.style.background = n.read ? C.white : "#f8faff"}>
+            onMouseLeave={e => e.currentTarget.style.background = n.read ? C.white : C.primaryLight}>
             {/* Icon badge */}
             <div style={{ width:36, height:36, borderRadius:10, background:n.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:1 }}>
               <Icon name={n.icon} size={17} color={n.color}/>
@@ -789,11 +856,11 @@ const SEARCH_PAGES = [
    FOOTER
 ───────────────────────────────────────────────────────────────────────────── */
 function Footer() {
-  const muted = "#6b7280";
-  const text  = "#111827";
-  const border = "#e5e7eb";
-  const bg = "#fff";
-  const hover = "rgba(0,0,0,0.04)";
+  const muted = C.gray500;
+  const text  = C.gray900;
+  const border = C.gray200;
+  const bg = C.white;
+  const hover = C.gray100;
   return (
     <footer style={{ background:bg, borderTop:`1px solid ${border}`, fontFamily:"inherit", flexShrink:0 }}>
       <style>{`@media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr !important;}.footer-brand{grid-column:1/-1 !important;}}`}</style>
@@ -1075,6 +1142,7 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
   const [showReferModal, setShowReferModal] = useState(false);
   const [showBrowse, setShowBrowse] = useState(false);
   const browseRef = useRef(null);
+  const avatarBtnRef = useRef(null);
   const unread = NOTIF_DATA.filter(n => !n.read).length;
   const notifBtnRef = useRef(null);
 
@@ -1114,7 +1182,7 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
         </button>
 
         {showBrowse && (
-          <div style={{ position:"absolute", top:"calc(100% + 8px)", left:0, background:"#fff", border:"1px solid #e4e4e7", borderRadius:14, boxShadow:"0 12px 40px rgba(0,0,0,0.12)", minWidth:400, zIndex:200, display:"flex", overflow:"hidden" }}>
+          <div style={{ position:"absolute", top:"calc(100% + 8px)", left:0, background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, boxShadow:"0 12px 40px rgba(0,0,0,0.12)", minWidth:400, zIndex:200, display:"flex", overflow:"hidden" }}>
             {/* Sessions column */}
             <div style={{ flex:1, padding:"12px 12px 10px" }}>
               <div style={{ fontSize:11, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:4, paddingLeft:4 }}>Sessions</div>
@@ -1123,7 +1191,7 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
                   <button key={s.id}
                     onClick={() => { setShowBrowse(false); const [sn, sy] = s.name.split(" "); onBrowseSelect?.(sn, sy); }}
                     style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", background:"none", border:"none", cursor:"pointer", padding:"6px 8px", borderRadius:8, textAlign:"left", fontFamily:"inherit", transition:"background .12s" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "#f4f4f5"}
+                    onMouseEnter={e => e.currentTarget.style.background = C.gray100}
                     onMouseLeave={e => e.currentTarget.style.background = "none"}>
                     <span style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{s.name}</span>
                     <span style={{ fontSize:12, color:C.gray400, marginTop:1 }}>{s.tagline}</span>
@@ -1133,7 +1201,7 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
             </div>
 
             {/* Divider */}
-            <div style={{ width:1, background:"#f0f0f0", flexShrink:0 }}/>
+            <div style={{ width:1, background:C.gray200, flexShrink:0 }}/>
 
             {/* Year column */}
             <div style={{ minWidth:100, padding:"12px 12px 10px" }}>
@@ -1143,7 +1211,7 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
                   <button key={y}
                     onClick={() => { setShowBrowse(false); onBrowseSelect?.("all", y); }}
                     style={{ background:"none", border:"none", cursor:"pointer", padding:"6px 8px", borderRadius:8, fontSize:14, fontWeight:600, color:C.gray900, textAlign:"left", fontFamily:"inherit", transition:"background .12s" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "#f4f4f5"}
+                    onMouseEnter={e => e.currentTarget.style.background = C.gray100}
                     onMouseLeave={e => e.currentTarget.style.background = "none"}>
                     {y}
                   </button>
@@ -1173,21 +1241,21 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
               <span style={{ position:"absolute", top:5, right:5, width:8, height:8, borderRadius:"50%", background:C.error, border:`2px solid ${C.white}` }}/>
             )}
           </button>
-          {showNotif && <NotificationPopover onClose={() => setShowNotif(false)}/>}
+          {showNotif && <NotificationPopover onClose={() => setShowNotif(false)} anchorRef={notifBtnRef}/>}
         </div>
 
 
         {showReferModal && <ReferFriendsModal onClose={() => setShowReferModal(false)} userName={userName}/>}
 
         {/* Avatar */}
-        <div style={{ position: "relative" }}>
+        <div style={{ position: "relative" }} ref={avatarBtnRef}>
           <button
             onClick={() => setShowProfileMenu(v => !v)}
             style={{ border: "none", background: "transparent", padding: 0, cursor: "pointer", borderRadius: "50%" }}>
             <Avatar name={userName} size={34}/>
           </button>
           {showProfileMenu && (
-            <DropdownMenu
+            <DropdownMenu anchorRef={avatarBtnRef}
               items={[
                 {
                   icon: "user-circle",
@@ -1277,7 +1345,7 @@ function Sidebar({ active, onChange, isAdmin }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    TAB BAR  (horizontal top nav — replaces sidebar for logged-in users)
 ───────────────────────────────────────────────────────────────────────────── */
-function TabBar({ active, onChange, isAdmin }) {
+function TabBar({ active, onChange, isAdmin, breadcrumbs }) {
   const userNav = [
     { id:"dashboard",      label:"My Learnings"    },
     { id:"certifications", label:"My Certificates" },
@@ -1293,8 +1361,8 @@ function TabBar({ active, onChange, isAdmin }) {
     <>
       <style>{`
         .tabbar-wrap {
-          background: #fff;
-          border-bottom: 1px solid #e4e4e7;
+          background: var(--c-white);
+          border-bottom: 1px solid var(--c-gray200);
           padding: 0 20px;
           display: flex;
           align-items: stretch;
@@ -1319,7 +1387,7 @@ function TabBar({ active, onChange, isAdmin }) {
           font-family: inherit;
           font-size: 13px;
           font-weight: 500;
-          color: #71717a;
+          color: var(--c-gray500);
           cursor: pointer;
           white-space: nowrap;
           position: relative;
@@ -1338,28 +1406,46 @@ function TabBar({ active, onChange, isAdmin }) {
           transition: background 150ms;
         }
         .tabbar-tab:hover:not(.tabbar-tab-active) {
-          color: #18181b;
+          color: var(--c-gray900);
         }
         .tabbar-tab-active {
-          color: #18181b;
+          color: var(--c-gray900);
           font-weight: 600;
         }
         .tabbar-tab-active::after {
-          background: #18181b;
+          background: var(--c-gray900);
         }
       `}</style>
       <div className="tabbar-wrap">
-        <div className="tabbar-list">
-          {nav.map(item => (
-            <button
-              key={item.id}
-              className={`tabbar-tab${active === item.id ? " tabbar-tab-active" : ""}`}
-              onClick={() => onChange(item.id)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+        {breadcrumbs ? (
+          <div style={{ display:"flex", alignItems:"center", gap:6, height:40, fontSize:13 }}>
+            {breadcrumbs.map((crumb, i) => (
+              <span key={i} style={{ display:"inline-flex", alignItems:"center", gap:6 }}>
+                {i > 0 && <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="#CBD5E1"/></svg>}
+                {crumb.onClick ? (
+                  <button onClick={crumb.onClick} style={{ background:"none", border:"none", padding:0, cursor:"pointer", fontSize:13, fontWeight:500, color:"#71717a", fontFamily:"inherit" }}
+                    onMouseEnter={e=>e.currentTarget.style.color="#18181b"} onMouseLeave={e=>e.currentTarget.style.color="#71717a"}>
+                    {crumb.label}
+                  </button>
+                ) : (
+                  <span style={{ fontSize:13, fontWeight:600, color:"#18181b" }}>{crumb.label}</span>
+                )}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <div className="tabbar-list">
+            {nav.map(item => (
+              <button
+                key={item.id}
+                className={`tabbar-tab${active === item.id ? " tabbar-tab-active" : ""}`}
+                onClick={() => onChange(item.id)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );
@@ -1368,6 +1454,41 @@ function TabBar({ active, onChange, isAdmin }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    SESSION CARD
 ───────────────────────────────────────────────────────────────────────────── */
+const SESSION_VIEWERS = {
+  1: [{ initials:"TR", color:"#f97316" }, { initials:"KM", color:"#6366f1" }, { initials:"SL", color:"#ec4899" }, { initials:"AJ", color:"#0ea5e9" }],
+  2: [{ initials:"CH", color:"#7c3aed" }, { initials:"RD", color:"#10b981" }, { initials:"PW", color:"#f59e0b" }],
+  3: [{ initials:"JS", color:"#2563eb" }, { initials:"MR", color:"#ec4899" }, { initials:"TK", color:"#f97316" }, { initials:"BN", color:"#10b981" }],
+  4: [{ initials:"ML", color:"#6366f1" }, { initials:"SA", color:"#0ea5e9" }, { initials:"DW", color:"#f59e0b" }],
+  5: [{ initials:"ET", color:"#7c3aed" }, { initials:"LC", color:"#2563eb" }, { initials:"NP", color:"#ec4899" }],
+  6: [{ initials:"SK", color:"#10b981" }, { initials:"OG", color:"#f97316" }, { initials:"VH", color:"#6366f1" }, { initials:"IM", color:"#0ea5e9" }],
+};
+
+function AvatarStack({ sessionId }) {
+  const viewers = SESSION_VIEWERS[sessionId] || [];
+  if (!viewers.length) return null;
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:6, marginTop:10 }}>
+      <div style={{ display:"flex" }}>
+        {viewers.slice(0,4).map((v, i) => (
+          <div key={i} style={{
+            width:24, height:24, borderRadius:"50%",
+            background:v.color, border:"2px solid #fff",
+            marginLeft: i === 0 ? 0 : -8,
+            display:"flex", alignItems:"center", justifyContent:"center",
+            fontSize:9, fontWeight:700, color:"#fff", zIndex: viewers.length - i,
+            position:"relative", flexShrink:0,
+          }}>
+            {v.initials}
+          </div>
+        ))}
+      </div>
+      <span style={{ fontSize:11, color:C.gray400 }}>
+        {viewers.length > 3 ? `+${viewers.length - 3} watching` : "watching"}
+      </span>
+    </div>
+  );
+}
+
 function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCertificateClick }) {
   const cta = getCTA(session);
   const catColors = { MANAGEMENT:{c:"#2563eb",bg:"rgba(37,99,235,0.12)"}, LEADERSHIP:{c:"#7c3aed",bg:"rgba(124,58,237,0.12)"}, COMMUNICATION:{c:"#0ea5e9",bg:"rgba(14,165,233,0.12)"}, TEAMWORK:{c:"#f97316",bg:"rgba(249,115,22,0.12)"}, TECHNOLOGY:{c:"#6366f1",bg:"rgba(99,102,241,0.12)"}, ACCESSIBILITY:{c:"#ec4899",bg:"rgba(236,72,153,0.12)"} };
@@ -1475,6 +1596,8 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
         </div>
         <div style={{ fontSize:12, color:C.gray500, marginBottom:10 }}>by {session.instructor}</div>
 
+        <AvatarStack sessionId={session.id}/>
+
         <div style={{ marginTop:"auto" }}>
           {/* When assessment is in-progress, it replaces the video progress section */}
           {qs === "in-progress" ? (
@@ -1488,7 +1611,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
                   Q{(quizState.currentQ||0)+1}/{SESSION_QUIZZES[session.id]?.length||5}
                 </span>
               </div>
-              <ProgressBar value={Math.round(((quizState.currentQ||0) / (SESSION_QUIZZES[session.id]?.length||5)) * 100)} color={C.warning}/>
+              <ProgressBar value={Math.round(((quizState.currentQ||0) / (SESSION_QUIZZES[session.id]?.length||5)) * 100)} color={C.warning} height={8}/>
             </div>
           ) : (
             <>
@@ -1500,7 +1623,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
                   <span style={{ fontSize:12, color:C.gray500 }}>{session.progress}%</span>
                 </div>
               )}
-              <ProgressBar value={session.progress}/>
+              <ProgressBar value={session.progress} height={8}/>
             </>
           )}
 
@@ -2122,7 +2245,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
   ];
 
   return (
-    <div style={{ minHeight:"100%", background:"#f8fafc" }}>
+    <div style={{ minHeight:"100%", background:C.gray50 }}>
       <style>{CSS + `
         .db-course-row { transition:box-shadow 150ms ease; }
         .db-course-row:hover { box-shadow:0 2px 12px rgba(0,0,0,0.08); }
@@ -2165,7 +2288,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
             const typeLabel = schedItem ? schedItem.type.charAt(0) + schedItem.type.slice(1).toLowerCase() : "Session";
             return (
               <div key={s.id} className="db-course-row"
-                style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:12, display:"flex", alignItems:"stretch", overflow:"hidden", cursor:"pointer", minHeight:235 }}
+                style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, display:"flex", alignItems:"stretch", overflow:"hidden", cursor:"pointer", minHeight:235 }}
                 onClick={() => onOpenSession(s)}>
                 <div style={{ flexShrink:0, width:200, position:"relative" }}>
                   <img src={INSTRUCTOR_AVATARS[s.instructor]} alt={s.instructor}
@@ -2182,29 +2305,29 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                       {catBadge.label}
                     </span>
                   </div>
-                  <div style={{ fontSize:17, fontWeight:700, color:"#111827", lineHeight:1.3, marginBottom:6 }}>{s.title}</div>
-                  <div style={{ fontSize:12, color:"#6b7280", lineHeight:1.55, marginBottom:s.progress > 0 && s.status!=="completed" ? 10 : 6, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
+                  <div style={{ fontSize:17, fontWeight:700, color:C.gray900, lineHeight:1.3, marginBottom:6 }}>{s.title}</div>
+                  <div style={{ fontSize:12, color:C.gray500, lineHeight:1.55, marginBottom:s.progress > 0 && s.status!=="completed" ? 10 : 6, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
                     {s.description}
                   </div>
                   {s.progress > 0 && s.status !== "completed" && (
                     <div style={{ marginBottom:16 }}>
-                      <div style={{ height:3, background:"#e5e7eb", borderRadius:99, overflow:"hidden", maxWidth:280 }}>
+                      <div style={{ height:8, background:C.gray200, borderRadius:99, overflow:"hidden", maxWidth:280 }}>
                         <div style={{ width:`${s.progress}%`, height:"100%", background:C.primary, borderRadius:99 }}/>
                       </div>
-                      <div style={{ fontSize:11, color:"#9ca3af", marginTop:4 }}>{s.progress}% complete · {s.duration}</div>
+                      <div style={{ fontSize:11, color:C.gray400, marginTop:4 }}>{s.progress}% complete · {s.duration}</div>
                     </div>
                   )}
                   <div style={{ display:"flex", alignItems:"center", gap:12, marginTop:"auto", paddingTop:12 }}>
                     <button
                       onClick={e=>{ e.stopPropagation(); onOpenSession(s); }}
-                      style={{ display:"inline-flex", alignItems:"center", padding:"7px 13px", background:"#6366f1", color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", transition:"background 0.15s" }}
-                      onMouseEnter={e=>e.currentTarget.style.background="#4f46e5"}
-                      onMouseLeave={e=>e.currentTarget.style.background="#6366f1"}>
+                      style={{ display:"inline-flex", alignItems:"center", padding:"7px 13px", background:C.primary, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", transition:"opacity 0.15s" }}
+                      onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
+                      onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
                       {btnLabel}
                     </button>
                     {s.status==="completed" && (
-                      <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, color:"#059669" }}>
-                        <Icon name="check-circle" size={13} color="#059669"/> Certificate earned
+                      <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, color:C.success }}>
+                        <Icon name="check-circle" size={13} color={C.success}/> Certificate earned
                       </span>
                     )}
                   </div>
@@ -2228,7 +2351,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                         style={{ background:"none", border:"none", cursor:"pointer", color:"#9ca3af", fontSize:20, lineHeight:1, padding:"2px 6px" }}
                         aria-label="Close">×</button>
                     </div>
-                    <div style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:12, display:"flex", alignItems:"stretch", overflow:"hidden", minHeight:235 }}>
+                    <div style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, display:"flex", alignItems:"stretch", overflow:"hidden", minHeight:235 }}>
                       <div style={{ flexShrink:0, width:200, position:"relative" }}>
                         <img src={INSTRUCTOR_AVATARS[calDaySession.instructor]} alt={calDaySession.instructor}
                           style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top center", display:"block" }}/>
@@ -2286,7 +2409,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                     })}
                   </div>
                 ) : (
-                  <div style={{ textAlign:"center", padding:"32px 24px", background:"#fff", border:"1px solid #e5e7eb", borderRadius:12 }}>
+                  <div style={{ textAlign:"center", padding:"32px 24px", background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12 }}>
                     <Icon name="play-circle" size={36} color={C.gray300}/>
                     <div style={{ fontSize:14, fontWeight:600, color:C.gray500, marginTop:10 }}>No sessions in progress</div>
                     <button className="db-btn-primary" style={{ marginTop:16 }} onClick={() => onNavigate("sessions")}>Browse All Sessions</button>
@@ -2302,7 +2425,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                     <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                       <div style={{ position:"relative", display:"inline-flex", alignItems:"center" }}>
                         <select value={filterSeason} onChange={e=>{ setFilterSeason(e.target.value); onFilterChange?.({ season:e.target.value, year:filterYear }); }}
-                          style={{ appearance:"none", WebkitAppearance:"none", background:"#fff", border:"1px solid #e4e4e7", borderRadius:8, padding:"5px 28px 5px 10px", fontSize:13, fontWeight:500, color:"#18181b", cursor:"pointer", outline:"none", fontFamily:"inherit" }}>
+                          style={{ appearance:"none", WebkitAppearance:"none", background:C.white, border:`1px solid ${C.gray200}`, borderRadius:8, padding:"5px 28px 5px 10px", fontSize:13, fontWeight:500, color:C.gray900, cursor:"pointer", outline:"none", fontFamily:"inherit" }}>
                           <option value="all">All Seasons</option>
                           {seasonOptions.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
@@ -2310,7 +2433,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                       </div>
                       <div style={{ position:"relative", display:"inline-flex", alignItems:"center" }}>
                         <select value={filterYear} onChange={e=>{ setFilterYear(e.target.value); onFilterChange?.({ season:filterSeason, year:e.target.value }); }}
-                          style={{ appearance:"none", WebkitAppearance:"none", background:"#fff", border:"1px solid #e4e4e7", borderRadius:8, padding:"5px 28px 5px 10px", fontSize:13, fontWeight:500, color:"#18181b", cursor:"pointer", outline:"none", fontFamily:"inherit" }}>
+                          style={{ appearance:"none", WebkitAppearance:"none", background:C.white, border:`1px solid ${C.gray200}`, borderRadius:8, padding:"5px 28px 5px 10px", fontSize:13, fontWeight:500, color:C.gray900, cursor:"pointer", outline:"none", fontFamily:"inherit" }}>
                           <option value="all">All Years</option>
                           {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
                         </select>
@@ -2318,38 +2441,12 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                       </div>
                     </div>
                   </div>
-                  <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16 }}>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px, 1fr))", gap:20 }}>
                     {SEASONS.map(season => {
                       const seasonCompleted = filteredCompleted.filter(s => season.sessionIds.includes(s.id));
                       if (!seasonCompleted.length) return null;
-                      const thumb = seasonCompleted[0];
-                      const thumbSrc = thumb ? `https://vumbnail.com/${thumb.id}.jpg` : "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&h=340&fit=crop";
                       return (
-                        <motion.div key={season.id}
-                          onClick={()=>onOpenPastSeason?.(season.id)}
-                          whileHover={{ y:-4, boxShadow:"0 12px 32px rgba(0,0,0,0.10)" }}
-                          transition={{ duration:0.25, ease:[0.25,1,0.5,1] }}
-                          style={{ cursor:"pointer", borderRadius:14, border:`1px solid ${C.gray200}`, background:C.white, overflow:"hidden", boxShadow:"0 2px 6px rgba(0,0,0,0.05)" }}
-                        >
-                          <div style={{ position:"relative", height:120, overflow:"hidden", background:"#1f2937" }}>
-                            <img src={thumbSrc} alt={season.name}
-                              style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 20%" }}
-                              onError={e=>e.currentTarget.src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=340&fit=crop"}/>
-                            <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top,rgba(0,0,0,0.25) 0%,transparent 60%)" }}/>
-                            <div style={{ position:"absolute", top:8, right:8, background:"rgba(0,0,0,0.6)", backdropFilter:"blur(4px)", borderRadius:6, padding:"3px 8px", display:"flex", alignItems:"center", gap:4 }}>
-                              <Icon name="list" size={10} color="#fff"/>
-                              <span style={{ fontSize:11, fontWeight:700, color:"#fff" }}>{seasonCompleted.length}</span>
-                            </div>
-                          </div>
-                          <div style={{ padding:"12px 14px" }}>
-                            <span style={{ fontSize:10, fontWeight:700, color:"#6b7280", background:"#f3f4f6", padding:"2px 7px", borderRadius:99 }}>Past Season</span>
-                            <div style={{ fontSize:15, fontWeight:800, color:C.gray900, lineHeight:1.3, marginTop:6 }}>{season.name}</div>
-                            <div style={{ fontSize:12, color:C.gray500, marginTop:3 }}>{seasonCompleted.length} completed session{seasonCompleted.length!==1?"s":""}</div>
-                          </div>
-                          <div style={{ padding:"8px 14px", borderTop:`1px solid ${C.gray100}`, display:"flex", justifyContent:"flex-end" }}>
-                            <span style={{ fontSize:12, fontWeight:600, color:C.primary }}>View all →</span>
-                          </div>
-                        </motion.div>
+                        <SeasonFolderCard key={season.id} season={season} sessions={seasonCompleted} onOpen={() => onOpenPastSeason?.(season.id)}/>
                       );
                     })}
                   </div>
@@ -2367,16 +2464,16 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
         return (
           <div style={{ width:200, flexShrink:0, display:"flex", flexDirection:"column", gap:0, paddingTop:4 }}>
             {/* Progress card */}
-            <div style={{ background:"#fff", border:`1px solid ${C.gray200}`, borderRadius:14, padding:"16px 18px", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", marginBottom:20 }}>
+            <div style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:"16px 18px", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", marginBottom:20 }}>
               <div style={{ fontSize:13, fontWeight:800, color:C.gray900, marginBottom:2 }}>My Progress</div>
               <div style={{ fontSize:11, color:C.gray500, marginBottom:8 }}>{completed} of {totalEnrolled} sessions</div>
-              <div style={{ width:"100%", height:5, background:"#eef0f6", borderRadius:99, overflow:"hidden" }}>
+              <div style={{ width:"100%", height:5, background:C.gray200, borderRadius:99, overflow:"hidden" }}>
                 <div style={{ width:`${pct}%`, height:"100%", background:ringColor, borderRadius:99, transition:"width 0.8s cubic-bezier(0.23,1,0.32,1)" }}/>
               </div>
               <div style={{ fontSize:11, fontWeight:700, color:ringColor, marginTop:5 }}>{pct}% complete</div>
             </div>
             {/* Stats */}
-            <div style={{ background:"#fff", border:`1px solid ${C.gray200}`, borderRadius:14, boxShadow:"0 1px 4px rgba(0,0,0,0.04)", overflow:"hidden" }}>
+            <div style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, boxShadow:"0 1px 4px rgba(0,0,0,0.04)", overflow:"hidden" }}>
               {[
                 { label:"Sessions Watched",    val: completed },
                 { label:"Certificates Earned", val: certsEarned },
@@ -2802,7 +2899,7 @@ function SeasonFolderCard({ season, sessions, onOpen }) {
                     : { label:"Past Season", color:"#6b7280", bg:"#f3f4f6" };
   const thumb = seasonSessions[0];
   const thumbSrc = thumb
-    ? `https://vumbnail.com/${thumb.id}.jpg`
+    ? (INSTRUCTOR_AVATARS[thumb.instructor] || "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&h=340&fit=crop")
     : "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&h=340&fit=crop";
 
   return (
@@ -2810,61 +2907,41 @@ function SeasonFolderCard({ season, sessions, onOpen }) {
       onClick={onOpen}
       onHoverStart={()=>setHovered(true)}
       onHoverEnd={()=>setHovered(false)}
-      whileHover={{ y:-6, boxShadow:"0 16px 40px rgba(0,0,0,0.12)" }}
+      whileHover={{ boxShadow:"0 16px 40px rgba(0,0,0,0.12)" }}
       transition={{ duration:0.3, ease:[0.25,1,0.5,1] }}
-      style={{ cursor:"pointer", borderRadius:16, border:`1px solid ${C.gray200}`, background:C.white, overflow:"hidden", boxShadow:"0 2px 8px rgba(0,0,0,0.06)" }}
+      style={{ cursor:"pointer", borderRadius:16, border:`1px solid ${C.gray200}`, background:C.white, overflow:"hidden", boxShadow:"0 2px 8px rgba(0,0,0,0.06)", color:"inherit" }}
     >
       {/* Top image */}
       <div style={{ position:"relative", height:144, overflow:"hidden", background:"#1f2937" }}>
         <img src={thumbSrc} alt={season.name}
           style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 20%" }}
-          onError={e => e.currentTarget.src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=340&fit=crop"}/>
+          onError={e => e.currentTarget.src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&h=340&fit=crop"}/>
         <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top,rgba(0,0,0,0.2) 0%,transparent 60%)" }}/>
-        <div style={{ position:"absolute", top:10, right:10, background:"rgba(0,0,0,0.65)", backdropFilter:"blur(4px)", borderRadius:8, padding:"4px 10px", display:"flex", alignItems:"center", gap:5 }}>
-          <Icon name="list" size={11} color="#fff"/>
-          <span style={{ fontSize:12, fontWeight:700, color:"#fff" }}>{seasonSessions.length}</span>
-        </div>
       </div>
 
       {/* Body */}
       <div style={{ padding:"16px 16px 10px" }}>
         <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
           <div>
-            <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:6 }}>
-              <span style={{ fontSize:10, fontWeight:700, color:statusLabel.color, background:statusLabel.bg, padding:"2px 8px", borderRadius:99 }}>{statusLabel.label}</span>
-              <span style={{ fontSize:11, color:C.gray400 }}>Updated recently</span>
-            </div>
             <div style={{ fontSize:17, fontWeight:800, color:C.gray900, lineHeight:1.3 }}>{season.name}</div>
           </div>
-          <Icon name="caret-right" size={16} color={C.gray300}/>
         </div>
 
         {/* Animated description on hover */}
-        <motion.div
-          initial={{ opacity:0, height:0, marginTop:0 }}
-          animate={hovered ? { opacity:1, height:"auto", marginTop:10 } : { opacity:0, height:0, marginTop:0 }}
-          transition={{ duration:0.25, ease:"easeInOut" }}
-          style={{ overflow:"hidden" }}
-        >
+        <div style={{ marginTop:10 }}>
           <p style={{ margin:"0 0 10px", fontSize:13, color:C.gray500, lineHeight:1.6 }}>{season.description}</p>
           <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
             {isPast && <span style={{ fontSize:11, fontWeight:600, color:C.gray600, background:C.gray100, borderRadius:99, padding:"2px 10px" }}>Recorded</span>}
             <span style={{ fontSize:11, fontWeight:600, color:C.gray600, background:C.gray100, borderRadius:99, padding:"2px 10px" }}>{seasonSessions.length} sessions</span>
             <span style={{ fontSize:11, fontWeight:600, color:C.gray600, background:C.gray100, borderRadius:99, padding:"2px 10px" }}>Free certificate</span>
           </div>
-        </motion.div>
+
+        </div>
       </div>
 
       {/* Footer */}
       <div style={{ padding:"10px 16px", borderTop:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-        <div style={{ display:"flex", alignItems:"center" }}>
-          {seasonSessions.slice(0,3).map((s,i) => (
-            <div key={i} style={{ width:26, height:26, borderRadius:"50%", border:"2px solid #fff", overflow:"hidden", background:C.gray200, marginLeft:i>0?-8:0 }}>
-              <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=40&h=40&fit=crop" alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
-            </div>
-          ))}
-          <span style={{ fontSize:12, color:C.gray500, marginLeft:8 }}>{seasonSessions.length} sessions</span>
-        </div>
+        <div/>
         <span style={{ fontSize:12, fontWeight:600, color:C.primary }}>View all →</span>
       </div>
     </motion.div>
@@ -3908,6 +3985,7 @@ function ProfileField({ label, children }) {
    PROFILE PAGE
 ───────────────────────────────────────────────────────────────────────────── */
 function ProfilePage({ toast, userName = "Alex Johnson", onNameChange }) {
+  const [activeSection, setActiveSection] = useState("personal");
   const [form, setForm] = useState({ name:userName, title:"Special Education Teacher", email:"alex.johnson@school.edu", phone:"+1 (555) 123-4567", language:"English (US)" });
   const [notifEmail,   setNotifEmail]   = useState(true);
   const [notifMentor,  setNotifMentor]  = useState(true);
@@ -3932,143 +4010,229 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange }) {
     toast({ type:"success", title:"Profile saved", message:"Your changes have been updated." });
   }
 
-  const inputSt = { width:"100%", padding:"12px 14px", border:`1.5px solid ${C.gray200}`, borderRadius:12, fontSize:14, color:C.gray900, background:C.gray50, outline:"none", boxSizing:"border-box", fontFamily:"inherit", transition:"border-color .15s" };
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [pwForm, setPwForm] = useState({ current:"", newPw:"", confirm:"" });
+
+  const sidebarNav = [
+    { id:"personal",       icon:"user-circle", label:"Personal details" },
+    { id:"security",       icon:"lock",        label:"Password and security" },
+    { id:"notifications",  icon:"bell",        label:"Notifications" },
+    { id:"danger",         icon:"trash",       label:"Deactivate account" },
+  ];
+
+  const inputSt = { width:"100%", padding:"10px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:14, color:C.gray900, background:C.white, outline:"none", boxSizing:"border-box", fontFamily:"inherit", transition:"border-color .15s" };
+
+  function renderContent() {
+    if (activeSection === "personal") return (
+      <div>
+        <div style={{ marginBottom:24 }}>
+          <h2 style={{ margin:"0 0 4px", fontSize:20, fontWeight:800, color:C.gray900 }}>Personal details</h2>
+          <p style={{ margin:0, fontSize:14, color:C.gray500 }}>Manage your name, photo and contact information.</p>
+        </div>
+
+        {/* Photo row */}
+        <input ref={photoInputRef} type="file" accept="image/*" style={{ display:"none" }}
+          onChange={e => { handlePhotoFile(e.target.files?.[0]); e.target.value=""; }}/>
+        <div style={{ display:"flex", alignItems:"center", gap:16, padding:"16px 0", borderBottom:`1px solid ${C.gray200}`, marginBottom:8 }}>
+          {photoUrl
+            ? <img src={photoUrl} alt="Profile" style={{ width:56, height:56, borderRadius:14, objectFit:"cover" }}/>
+            : <div style={{ width:56, height:56, borderRadius:14, background:`linear-gradient(135deg,${C.primary},#a855f7)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, fontWeight:900, color:"#fff" }}>{form.name.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase()}</div>
+          }
+          <div style={{ flex:1 }}>
+            <div style={{ fontSize:14, fontWeight:700, color:C.gray900 }}>Profile photo</div>
+            <div style={{ fontSize:12, color:C.gray500 }}>PNG or JPG, max 5MB</div>
+          </div>
+          <div style={{ display:"flex", gap:8 }}>
+            <button onClick={()=>photoInputRef.current?.click()} style={{ padding:"7px 14px", background:C.gray100, border:"none", borderRadius:8, fontSize:13, fontWeight:600, color:C.gray700, cursor:"pointer" }}>Upload</button>
+            {photoUrl && <button onClick={()=>{setPhotoUrl(null);toast({type:"warning",message:"Photo removed."});}} style={{ padding:"7px 14px", background:"none", border:`1px solid ${C.errorBorder}`, borderRadius:8, fontSize:13, fontWeight:600, color:C.error, cursor:"pointer" }}>Remove</button>}
+          </div>
+        </div>
+
+        {/* Fields */}
+        {[
+          { label:"Full name",           key:"name",     type:"text" },
+          { label:"Professional title",  key:"title",    type:"text" },
+          { label:"Email address",       key:"email",    type:"email" },
+          { label:"Phone number",        key:"phone",    type:"tel" },
+        ].map(f => (
+          <div key={f.key} style={{ display:"flex", alignItems:"center", padding:"14px 0", borderBottom:`1px solid ${C.gray200}`, gap:16 }}>
+            <div style={{ width:160, fontSize:14, fontWeight:600, color:C.gray600, flexShrink:0 }}>{f.label}</div>
+            <input type={f.type} style={{...inputSt, flex:1}} value={form[f.key]} onChange={e=>setForm(v=>({...v,[f.key]:e.target.value}))}
+              onFocus={e=>e.target.style.borderColor=C.primary} onBlur={e=>e.target.style.borderColor=C.gray200}/>
+          </div>
+        ))}
+        <div style={{ display:"flex", alignItems:"center", padding:"14px 0", borderBottom:`1px solid ${C.gray200}`, gap:16 }}>
+          <div style={{ width:160, fontSize:14, fontWeight:600, color:C.gray600, flexShrink:0 }}>Language</div>
+          <select style={{...inputSt, flex:1, appearance:"none"}} value={form.language} onChange={e=>setForm(f=>({...f,language:e.target.value}))}>
+            {["English (US)","Spanish","French","German","Mandarin"].map(l=><option key={l}>{l}</option>)}
+          </select>
+        </div>
+        <div style={{ paddingTop:20, display:"flex", justifyContent:"flex-end" }}>
+          <Btn onClick={save}>Save</Btn>
+        </div>
+      </div>
+    );
+
+    if (activeSection === "security") {
+      if (changingPassword) return (
+        <div>
+          {/* Back header */}
+          <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:28 }}>
+            <button onClick={()=>{ setChangingPassword(false); setPwForm({current:"",newPw:"",confirm:""}); }}
+              style={{ width:36, height:36, borderRadius:10, border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"background .12s" }}
+              onMouseEnter={e=>e.currentTarget.style.background=C.gray100}
+              onMouseLeave={e=>e.currentTarget.style.background=C.white}>
+              <Icon name="arrow-left" size={16} color={C.gray700}/>
+            </button>
+            <h2 style={{ margin:0, fontSize:20, fontWeight:800, color:C.gray900 }}>Change your password</h2>
+          </div>
+
+          {/* Current password */}
+          <div style={{ borderBottom:`1px solid ${C.gray200}`, paddingBottom:16, marginBottom:16 }}>
+            <input type="password" placeholder="Current password" value={pwForm.current}
+              onChange={e=>setPwForm(v=>({...v,current:e.target.value}))}
+              style={inputSt}
+              onFocus={e=>e.target.style.borderColor=C.primary} onBlur={e=>e.target.style.borderColor=C.gray200}/>
+            <button onClick={()=>toast({type:"info",message:"Password reset email sent."})}
+              style={{ background:"none", border:"none", color:C.primary, fontSize:13, fontWeight:600, cursor:"pointer", marginTop:8, padding:0, fontFamily:"inherit" }}>
+              Forgot password?
+            </button>
+          </div>
+
+          {/* New password */}
+          <div style={{ borderBottom:`1px solid ${C.gray200}`, paddingBottom:16, marginBottom:16 }}>
+            <input type="password" placeholder="New password" value={pwForm.newPw}
+              onChange={e=>setPwForm(v=>({...v,newPw:e.target.value}))}
+              style={inputSt}
+              onFocus={e=>e.target.style.borderColor=C.primary} onBlur={e=>e.target.style.borderColor=C.gray200}/>
+          </div>
+
+          {/* Confirm password */}
+          <div style={{ borderBottom:`1px solid ${C.gray200}`, paddingBottom:16, marginBottom:16 }}>
+            <input type="password" placeholder="Confirm password" value={pwForm.confirm}
+              onChange={e=>setPwForm(v=>({...v,confirm:e.target.value}))}
+              style={inputSt}
+              onFocus={e=>e.target.style.borderColor=C.primary} onBlur={e=>e.target.style.borderColor=C.gray200}/>
+          </div>
+
+          {/* Info */}
+          <div style={{ borderBottom:`1px solid ${C.gray200}`, paddingBottom:16, marginBottom:20 }}>
+            <p style={{ margin:0, fontSize:13, color:C.gray500, lineHeight:1.6 }}>
+              Changing your password will log you out of all your active sessions except the one you're using at this time.
+            </p>
+          </div>
+
+          {/* Save */}
+          <div style={{ display:"flex", justifyContent:"flex-end" }}>
+            <Btn onClick={()=>{
+              if (!pwForm.current) { toast({type:"error",message:"Please enter your current password."}); return; }
+              if (pwForm.newPw.length < 8) { toast({type:"error",message:"New password must be at least 8 characters."}); return; }
+              if (pwForm.newPw !== pwForm.confirm) { toast({type:"error",message:"Passwords don't match."}); return; }
+              toast({type:"success",title:"Password updated",message:"Your password has been changed successfully."});
+              setChangingPassword(false); setPwForm({current:"",newPw:"",confirm:""});
+            }}>Save</Btn>
+          </div>
+        </div>
+      );
+
+      return (
+        <div>
+          <div style={{ marginBottom:24 }}>
+            <h2 style={{ margin:"0 0 4px", fontSize:20, fontWeight:800, color:C.gray900 }}>Password and security</h2>
+            <p style={{ margin:0, fontSize:14, color:C.gray500 }}>Manage your passwords, login preferences and recovery methods.</p>
+          </div>
+          <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.8, textTransform:"uppercase", marginBottom:12 }}>Login &amp; recovery</div>
+          {[
+            { label:"Change password",           sub:"Last updated 3 months ago",             action:()=>setChangingPassword(true) },
+            { label:"Two-factor authentication", sub:"Enhanced security for your account",    action:null, toggle: <ProfileToggle on={twoFA} onToggle={()=>setTwoFA(v=>!v)}/> },
+          ].map((row,i,arr) => (
+            <div key={row.label} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 0", borderBottom: i<arr.length-1?`1px solid ${C.gray200}`:"none", gap:12, cursor: row.action?"pointer":"default" }}
+              onClick={row.action||undefined}>
+              <div>
+                <div style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{row.label}</div>
+                <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{row.sub}</div>
+              </div>
+              {row.toggle || <Icon name="caret-right" size={16} color={C.gray400}/>}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (activeSection === "notifications") return (
+      <div>
+        <div style={{ marginBottom:24 }}>
+          <h2 style={{ margin:"0 0 4px", fontSize:20, fontWeight:800, color:C.gray900 }}>Notifications</h2>
+          <p style={{ margin:0, fontSize:14, color:C.gray500 }}>Choose how and when you want to be notified.</p>
+        </div>
+        {[
+          { label:"Email Notifications", sub:"Updates on course progress and activity", on:notifEmail, toggle:()=>setNotifEmail(v=>!v) },
+          { label:"Mentor Messages",     sub:"Real-time chat alerts and mentorship pings", on:notifMentor, toggle:()=>setNotifMentor(v=>!v) },
+          { label:"Public Profile",      sub:"Make your profile visible to other students", on:publicProfile, toggle:()=>setPublicProfile(v=>!v) },
+        ].map((row,i,arr) => (
+          <div key={row.label} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 0", borderBottom:i<arr.length-1?`1px solid ${C.gray200}`:"none", gap:16 }}>
+            <div>
+              <div style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{row.label}</div>
+              <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{row.sub}</div>
+            </div>
+            <ProfileToggle on={row.on} onToggle={row.toggle}/>
+          </div>
+        ))}
+      </div>
+    );
+
+    if (activeSection === "danger") return (
+      <div>
+        <div style={{ marginBottom:24 }}>
+          <h2 style={{ margin:"0 0 4px", fontSize:20, fontWeight:800, color:C.gray900 }}>Deactivate account</h2>
+          <p style={{ margin:0, fontSize:14, color:C.gray500 }}>Permanently delete your account and all associated data.</p>
+        </div>
+        <div style={{ background:C.errorLight, border:`1px solid ${C.errorBorder}`, borderRadius:12, padding:"20px 24px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, flexWrap:"wrap" }}>
+          <div>
+            <div style={{ fontWeight:700, fontSize:15, color:C.error, marginBottom:4 }}>Deactivate Account</div>
+            <div style={{ fontSize:14, color:C.gray600 }}>Permanently remove your profile and all learning progress. This cannot be undone.</div>
+          </div>
+          <button onClick={()=>toast({type:"error",title:"Are you sure?",message:"This action is permanent."})}
+            style={{ padding:"10px 20px", background:"transparent", color:C.error, border:`1px solid ${C.error}`, borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap" }}>
+            Deactivate Account
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ padding:28, background:C.gray50, minHeight:"100%", overflowY:"auto" }}>
-      <div style={{ maxWidth:760, margin:"0 auto" }}>
+    <div style={{ minHeight:"100vh", background:C.gray50, display:"flex", flexDirection:"column" }}>
+      <div style={{ maxWidth:960, width:"100%", margin:"0 auto", display:"flex", gap:0, alignItems:"stretch", flex:1, boxSizing:"border-box" }}>
 
-        {/* Page header */}
-        <div style={{ marginBottom:28 }}>
-          <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>ACCOUNT</div>
-          <h1 style={{ margin:"0 0 4px", fontSize:24, fontWeight:900, color:C.gray900 }}>Your Profile</h1>
-          <p style={{ margin:0, fontSize:14, color:C.gray500, lineHeight:1.5 }}>Manage your personal information, security, and preferences.</p>
-        </div>
-
-        {/* ── Photo ── */}
-        <input ref={photoInputRef} type="file" accept="image/*" style={{ display:"none" }}
-          onChange={e => { handlePhotoFile(e.target.files?.[0]); e.target.value = ""; }}/>
-        <div style={{ background:C.white, borderRadius:20, border:`1px solid ${C.gray200}`, padding:"28px 32px", marginBottom:20, display:"flex", alignItems:"center", gap:24, flexWrap:"wrap" }}>
-          <div style={{ position:"relative", flexShrink:0 }}>
-            {photoUrl
-              ? <img src={photoUrl} alt="Profile" style={{ width:88, height:88, borderRadius:20, objectFit:"cover", display:"block" }}/>
-              : <div style={{ width:88, height:88, borderRadius:20, background:`linear-gradient(135deg,${C.primary},#a855f7)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:32, fontWeight:900, color:"#fff" }}>{form.name.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase()}</div>
-            }
-            <button onClick={() => photoInputRef.current?.click()}
-              style={{ position:"absolute", bottom:-6, right:-6, width:28, height:28, borderRadius:8, background:C.primary, border:"2px solid #fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <Icon name="pencil" size={13} color="#fff"/>
-            </button>
+        {/* ── Sidebar ── */}
+        <div style={{ width:260, flexShrink:0, marginRight:8, padding:"32px 24px", boxSizing:"border-box" }}>
+          <div style={{ marginBottom:20, paddingLeft:12 }}>
+            <div style={{ fontSize:18, fontWeight:900, color:C.gray900 }}>Account Centre</div>
+            <div style={{ fontSize:13, color:C.gray500, marginTop:4, lineHeight:1.5 }}>Manage your account settings and preferences.</div>
           </div>
-          <div style={{ flex:1, minWidth:180 }}>
-            <div style={{ fontWeight:800, fontSize:16, color:C.gray900, marginBottom:4 }}>Profile Photo</div>
-            <div style={{ fontSize:14, color:C.gray500, marginBottom:14 }}>PNG or JPG, max 5MB. Used across your profile and certificates.</div>
-            <div style={{ display:"flex", gap:10 }}>
-              <button onClick={() => photoInputRef.current?.click()}
-                style={{ padding:"8px 18px", background:C.primary, color:"#fff", border:"none", borderRadius:99, fontSize:12, fontWeight:700, cursor:"pointer" }}>
-                Upload Photo
-              </button>
-              {photoUrl && (
-                <button onClick={() => { setPhotoUrl(null); toast({ type:"warning", message:"Photo removed." }); }}
-                  style={{ padding:"8px 18px", background:"none", color:C.error, border:"none", borderRadius:99, fontSize:12, fontWeight:700, cursor:"pointer" }}>
-                  Remove
+          <nav style={{ display:"flex", flexDirection:"column", gap:2 }}>
+            {sidebarNav.map(item => {
+              const active = activeSection === item.id;
+              return (
+                <button key={item.id} onClick={()=>setActiveSection(item.id)}
+                  style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 12px", borderRadius:10, border:"none", background: active ? C.gray200 : "transparent", color: active ? C.gray900 : C.gray600, fontSize:14, fontWeight: active ? 700 : 500, cursor:"pointer", textAlign:"left", fontFamily:"inherit", transition:"background .12s, color .12s" }}
+                  onMouseEnter={e=>{ if(!active) e.currentTarget.style.background=C.gray100; }}
+                  onMouseLeave={e=>{ if(!active) e.currentTarget.style.background="transparent"; }}>
+                  <Icon name={item.icon} size={18} color={active ? C.gray900 : C.gray500}/>
+                  {item.label}
                 </button>
-              )}
-            </div>
-          </div>
+              );
+            })}
+          </nav>
         </div>
 
-        {/* ── Personal Info ── */}
-        <ProfileSection icon="user-circle" label="Personal Information">
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
-            <ProfileField label="Full Name">
-              <input style={inputSt} value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))}
-                onFocus={e=>e.target.style.borderColor=C.primary} onBlur={e=>e.target.style.borderColor=C.gray200}/>
-            </ProfileField>
-            <ProfileField label="Professional Title">
-              <input style={inputSt} value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))}
-                onFocus={e=>e.target.style.borderColor=C.primary} onBlur={e=>e.target.style.borderColor=C.gray200}/>
-            </ProfileField>
-            <ProfileField label="Email Address">
-              <div style={{ position:"relative" }}>
-                <input style={{...inputSt, paddingRight:40}} value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))}
-                  onFocus={e=>e.target.style.borderColor=C.primary} onBlur={e=>e.target.style.borderColor=C.gray200}/>
-                <div style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)" }}>
-                  <Icon name="check-circle" size={16} color={C.success}/>
-                </div>
-              </div>
-            </ProfileField>
-            <ProfileField label="Phone Number">
-              <input style={inputSt} value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value}))}
-                onFocus={e=>e.target.style.borderColor=C.primary} onBlur={e=>e.target.style.borderColor=C.gray200}/>
-            </ProfileField>
-            <ProfileField label="Interface Language">
-              <select style={{...inputSt, appearance:"none"}} value={form.language} onChange={e=>setForm(f=>({...f,language:e.target.value}))}>
-                {["English (US)","Spanish","French","German","Mandarin"].map(l=><option key={l}>{l}</option>)}
-              </select>
-            </ProfileField>
-          </div>
-        </ProfileSection>
+        {/* ── Divider ── */}
+        <div style={{ width:1, background:C.gray200, flexShrink:0, margin:"0 24px", alignSelf:"stretch" }}/>
 
-        {/* ── Security ── */}
-        <ProfileSection icon="lock" label="Security & Privacy">
-          <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-            {[
-              { label:"Password", sub:"Last updated 3 months ago", action:()=>toast({type:"info",message:"Password reset email sent."}), btn:"Change Password" },
-            ].map(row=>(
-              <div key={row.label} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 18px", background:C.gray50, borderRadius:14, flexWrap:"wrap", gap:10 }}>
-                <div>
-                  <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{row.label}</div>
-                  <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{row.sub}</div>
-                </div>
-                <button onClick={row.action} style={{ padding:"8px 18px", background:C.gray100, border:"none", borderRadius:99, fontSize:12, fontWeight:700, color:C.gray700, cursor:"pointer" }}>{row.btn}</button>
-              </div>
-            ))}
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 18px", background:C.gray50, borderRadius:14, flexWrap:"wrap", gap:10 }}>
-              <div>
-                <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>Two-Factor Authentication</div>
-                <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>Enhanced security for your account</div>
-              </div>
-              <ProfileToggle on={twoFA} onToggle={()=>setTwoFA(v=>!v)}/>
-            </div>
-          </div>
-        </ProfileSection>
-
-        {/* ── Preferences ── */}
-        <ProfileSection icon="bell" label="Preferences & Notifications">
-          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-            {[
-              { label:"Email Notifications", sub:"Updates on course progress and activity", on:notifEmail, toggle:()=>setNotifEmail(v=>!v) },
-              { label:"Mentor Messages",      sub:"Real-time chat alerts and mentorship pings", on:notifMentor, toggle:()=>setNotifMentor(v=>!v) },
-              { label:"Public Profile",       sub:"Make your profile visible to other students", on:publicProfile, toggle:()=>setPublicProfile(v=>!v) },
-            ].map(row=>(
-              <div key={row.label} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 18px", background:C.gray50, borderRadius:14, gap:16 }}>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{row.label}</div>
-                  <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{row.sub}</div>
-                </div>
-                <ProfileToggle on={row.on} onToggle={row.toggle}/>
-              </div>
-            ))}
-          </div>
-        </ProfileSection>
-
-        {/* Save */}
-        <div style={{ display:"flex", justifyContent:"flex-end", marginBottom:32 }}>
-          <Btn onClick={save}><Icon name="floppy-disk" size={14} color="#fff"/> Save Changes</Btn>
-        </div>
-
-        {/* ── Danger Zone ── */}
-        <div style={{ borderTop:`1px solid ${C.errorBorder}`, paddingTop:24 }}>
-          <div style={{ background:C.errorLight, border:`1px solid ${C.errorBorder}`, borderRadius:20, padding:"24px 28px", display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:16 }}>
-            <div>
-              <div style={{ fontWeight:800, fontSize:16, color:C.error, marginBottom:4 }}>Deactivate Account</div>
-              <div style={{ fontSize:14, color:C.gray500 }}>Permanently remove your profile and all learning progress. This cannot be undone.</div>
-            </div>
-            <button onClick={()=>toast({type:"error",title:"Are you sure?",message:"This action is permanent."})}
-              style={{ padding:"10px 22px", background:C.white, color:C.error, border:`1px solid ${C.errorBorder}`, borderRadius:99, fontSize:14, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:8 }}>
-              <Icon name="trash" size={14} color={C.error}/> Deactivate Account
-            </button>
-          </div>
+        {/* ── Content ── */}
+        <div style={{ flex:1, minWidth:0, padding:"32px 24px", boxSizing:"border-box" }}>
+          {renderContent()}
         </div>
 
       </div>
@@ -9680,7 +9844,8 @@ export default function App() {
     }
   }
 
-  function nav(p) { setPage(p); sessionStorage.setItem("page", p); setActiveSession(null); setEditingSession(null); if (p === "sessions") setSessionsDeepLink(null); }
+  const scrollContainerRef = useRef(null);
+  function nav(p) { setPage(p); sessionStorage.setItem("page", p); setActiveSession(null); setEditingSession(null); if (p === "sessions") setSessionsDeepLink(null); if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0; }
   function navToSeason(seasonId) { setSessionsDeepLink(seasonId); setPage("sessions"); setActiveSession(null); }
 
   function openEdit(s) {
@@ -9766,16 +9931,6 @@ export default function App() {
       };
       return (
         <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
-          {/* Breadcrumb */}
-          <div style={{ display:"flex", alignItems:"center", gap:4, marginBottom:24, fontSize:14, fontWeight:500, color:C.gray500 }}>
-            <button onClick={()=>{ setPastSeasonPageId(null); nav("dashboard"); }}
-              style={{ background:"none", border:"none", cursor:"pointer", padding:0, fontSize:14, fontWeight:500, color:C.gray500 }}
-              onMouseEnter={e=>e.currentTarget.style.color=C.gray900} onMouseLeave={e=>e.currentTarget.style.color=C.gray500}>
-              My Learnings
-            </button>
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="m14.413 10.663-6.25 6.25a.939.939 0 1 1-1.328-1.328L12.42 10 6.836 4.413a.939.939 0 1 1 1.328-1.328l6.25 6.25a.94.94 0 0 1-.001 1.328" fill="#CBD5E1"/></svg>
-            <span style={{ color:"#6366f1", fontWeight:600 }}>{season?.name}</span>
-          </div>
           {/* Page title */}
           <div style={{ marginBottom:20 }}>
             <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900 }}>{season?.name}</h1>
@@ -9896,8 +10051,16 @@ export default function App() {
         onBrowseSelect={(season, year) => { setDashFilter({ season, year }); nav("dashboard"); }}
       />
       <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-        <TabBar active={activePage} onChange={nav} isAdmin={isAdmin}/>
-        <div style={{ flex:1, overflowY:"auto" }}>{renderPage()}<Footer/></div>
+        {activePage !== "profile" && <TabBar
+          active={activePage}
+          onChange={nav}
+          isAdmin={isAdmin}
+          breadcrumbs={activePage === "past-season" && pastSeasonPageId ? [
+            { label:"My Learnings", onClick:() => { setPastSeasonPageId(null); nav("dashboard"); } },
+            { label: seasons.find(s => s.id === pastSeasonPageId)?.name || "Past Season" },
+          ] : null}
+        />}
+        <div ref={scrollContainerRef} style={{ flex:1, overflowY:"auto" }}>{renderPage()}<Footer/></div>
       </div>
       {/* Session Assessment Modal */}
       {assessmentSession && (

@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "skills": {
+    "emil-design-eng": {
+      "source": "emilkowalski/skill",
+      "sourceType": "github",
+      "computedHash": "8bdf9e4e6de7a4969147bf4828a4ad2c5aacd9fba4b690b250a85e0467ca387d"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "063a0e6448123cd359ad0044cc46b0e490cc7964d45ef4bb9fd842bd2ffbca67"
+    },
+    "screenshot-analyzer": {
+      "source": "notedit/happy-skills",
+      "sourceType": "github",
+      "computedHash": "2e80eada26ce14a4e8c1cf01c39a156e25a943f71c7f98fc2f7e5ba37b5ccb09"
+    }
+  }
+}
