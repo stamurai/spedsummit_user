@@ -8156,7 +8156,7 @@ function LandingPage({ onGetStarted }) {
       `}</style>
 
       {/* ── Nav ── */}
-      <header style={{ position:"sticky", top:0, zIndex:100, width:"100%", borderBottom: navScrolled ? `1px solid ${T.border}` : "1px solid transparent", background: navScrolled ? "rgba(255,255,255,0.95)" : "transparent", backdropFilter: navScrolled ? "blur(12px)" : "none", transition:"background 0.2s, border-color 0.2s, backdrop-filter 0.2s" }}>
+      <header style={{ position:"sticky", top:0, zIndex:100, width:"100%", borderBottom: navScrolled ? `1px solid ${T.border}` : "1px solid transparent", background: navScrolled ? "rgba(254,245,236,0.95)" : "transparent", backdropFilter: navScrolled ? "blur(12px)" : "none", transition:"background 0.2s, border-color 0.2s, backdrop-filter 0.2s" }}>
         <nav style={{ maxWidth:1024, margin:"0 auto", height:56, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 24px" }}>
           <div style={{ display:"flex", alignItems:"center", cursor:"pointer", borderRadius:8, padding:"6px 8px", transition:"background .12s" }}
             onClick={()=>window.scrollTo({ top:0, behavior:"smooth" })}
@@ -8197,7 +8197,7 @@ function LandingPage({ onGetStarted }) {
       </header>
       {/* Mobile menu portal */}
       {navOpen && createPortal(
-        <div style={{ position:"fixed", top:56, left:0, right:0, bottom:0, zIndex:99, background:"rgba(255,255,255,0.97)", backdropFilter:"blur(12px)", borderTop:`1px solid ${T.border}`, display:"flex", flexDirection:"column", padding:"16px 24px 32px" }}>
+        <div style={{ position:"fixed", top:56, left:0, right:0, bottom:0, zIndex:99, background:"rgba(254,245,236,0.97)", backdropFilter:"blur(12px)", borderTop:`1px solid ${T.border}`, display:"flex", flexDirection:"column", padding:"16px 24px 32px" }}>
           <div style={{ display:"flex", flexDirection:"column", gap:4, flex:1 }}>
             {[["Sessions","sessions"],["Instructors","instructors"],["FAQ","help"]].map(([l,id])=>(
               <button key={l} onClick={()=>{ document.getElementById(id)?.scrollIntoView({ behavior:"smooth" }); setNavOpen(false); }}
