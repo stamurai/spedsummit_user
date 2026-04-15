@@ -3394,47 +3394,13 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   );
 
   return (
-    <div ref={containerRef} style={{ display:"flex", background:C.gray50 }}>
+    <div ref={containerRef} style={{ display:"flex", background:C.white, alignItems:"flex-start" }}>
 
       {/* ── Main content area ── */}
-      <div style={{ flex:1, padding: narrow ? 14 : 20, minWidth:0 }}>
-
-        {/* Breadcrumb */}
-        {(() => {
-          const sourceLabels = { dashboard:"My Learnings", sessions:"All Sessions", schedules:"Schedules", certifications:"My Certificates" };
-          const rootLabel = sourceLabels[sessionSource] || "Sessions";
-          const crumbs = [
-            { label: rootLabel, onClick: onBack },
-            ...(backLabel ? [{ label: backLabel }] : []),
-            { label: session.title },
-          ];
-          return (
-            <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:16, flexWrap:"wrap" }}>
-              {crumbs.map((crumb, i) => (
-                <span key={i} style={{ display:"inline-flex", alignItems:"center", gap:6 }}>
-                  {i > 0 && <span style={{ color:C.gray300, fontSize:13, userSelect:"none" }}>›</span>}
-                  {crumb.onClick ? (
-                    <button onClick={crumb.onClick}
-                      style={{ background:"none", border:"none", padding:0, cursor:"pointer", fontSize:13, fontWeight:500, color:C.gray500, fontFamily:"inherit" }}
-                      onMouseEnter={e => e.currentTarget.style.color = C.gray700}
-                      onMouseLeave={e => e.currentTarget.style.color = C.gray500}>
-                      {crumb.label}
-                    </button>
-                  ) : (
-                    <span style={{ fontSize:13, fontWeight: i === crumbs.length - 1 ? 600 : 500, color: i === crumbs.length - 1 ? C.gray900 : C.gray500,
-                      ...(i === crumbs.length - 1 ? { overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:320 } : {}) }}>
-                      {crumb.label}
-                    </span>
-                  )}
-                </span>
-              ))}
-            </div>
-          );
-        })()}
-
+      <div style={{ flex:1, minWidth:0 }}>
 
         {/* ── Video Player ── */}
-        <div style={{ borderRadius:16, overflow:"hidden", marginBottom:18, position:"relative", background:"#0f172a", boxShadow:"0 4px 24px rgba(0,0,0,0.15)", paddingBottom:"56.25%", height:0 }}>
+        <div style={{ position:"relative", background:"#0f172a", paddingBottom:"56.25%", height:0 }}>
           <div style={{ position:"absolute", inset:0 }}>
             {(session.vimeoUrl || lesson?.vimeoUrl) ? (
               <VimeoPlayer url={session.vimeoUrl || lesson?.vimeoUrl} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onProgress={pct => { setProgress(pct); onUpdateProgress?.(session.id, pct); if (pct >= 80) { setUnlockedIndices(prev => { const next = new Set(prev); next.add(activeLesson + 1); return next; }); } }}/>
@@ -3454,10 +3420,9 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           </div>
         </div>
 
-        {/* ── Bottom Tabs (Udemy-style) ── */}
-        <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, overflow:"hidden", marginBottom:20 }}>
-          {/* Tab bar */}
-          <div style={{ display:"flex", borderBottom:`1px solid ${C.gray200}` }}>
+        {/* ── Bottom Tabs ── */}
+        <div style={{ background:C.white }}>
+          <div style={{ display:"flex", padding:"0 24px", borderBottom:`1px solid ${C.gray200}` }}>
             {[
               { key:"overview",   label:"Overview"   },
               { key:"instructor", label:"Instructor" },
@@ -3466,7 +3431,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               const isActive = bottomTab === tab.key;
               return (
                 <button key={tab.key} onClick={() => setBottomTab(tab.key)}
-                  style={{ padding:"14px 20px", border:"none", background:"none", cursor:"pointer", fontSize:14, fontWeight: isActive ? 700 : 500, color: isActive ? C.gray900 : C.gray500, borderBottom: isActive ? `2px solid ${C.gray900}` : "2px solid transparent", marginBottom:-1, whiteSpace:"nowrap", transition:"color .15s", display:"flex", alignItems:"center", gap:6 }}>
+                  style={{ padding:"14px 16px", border:"none", background:"none", cursor:"pointer", fontSize:14, fontWeight: isActive ? 600 : 400, color: isActive ? C.gray900 : C.gray500, borderBottom: isActive ? `2px solid ${C.gray900}` : "2px solid transparent", marginBottom:-1, whiteSpace:"nowrap", transition:"color .15s", display:"flex", alignItems:"center", gap:6 }}>
                   {tab.label}
                   {tab.count > 0 && <span style={{ fontSize:12, fontWeight:700, color: isActive ? C.primary : C.gray400, background: isActive ? C.primaryLight : C.gray100, borderRadius:99, padding:"1px 7px" }}>{tab.count}</span>}
                 </button>
@@ -3547,7 +3512,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
 
           {/* ── Community ── */}
           {bottomTab === "community" && (
-            <div style={{ padding:"20px 24px", background:C.gray50, minHeight:400 }}>
+            <div style={{ padding:"20px 24px", background:C.white, minHeight:400 }}>
               {/* Quick post */}
               <div style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"12px 14px", marginBottom:14, display:"flex", gap:10, alignItems:"center" }}>
                 <Avatar name={userProfile.name} size={32}/>
@@ -4577,15 +4542,15 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
       {/* Metrics */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:14, marginBottom:24 }}>
         {[
-          {label:"Course Enrollments", val:"12,842", delta:"+15% vs prev", color:C.primary,     bg:C.primaryLight},
-          {label:"Student Rating",     val:"8.4/10", delta:"Top 1%",      color:C.primaryDark, bg:C.primaryLight},
-          {label:"Total Site Visits",  val:"83",     delta:"+23 today",   color:C.success,     bg:C.successLight},
-          {label:"Total Revenue",      val:"$4,210", delta:"+8% vs prev", color:C.warning,     bg:C.warningLight},
+          {label:"Course Enrollments", val:"12,842", delta:"+15% vs prev"},
+          {label:"Student Rating",     val:"8.4/10", delta:"Top 1%"     },
+          {label:"Total Site Visits",  val:"83",     delta:"+23 today"  },
+          {label:"Total Revenue",      val:"$4,210", delta:"+8% vs prev"},
         ].map(m=>(
           <div key={m.label} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"18px 20px" }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-              <div style={{ fontSize:30, fontWeight:900, color:m.color, lineHeight:1 }}>{m.val}</div>
-              <span style={{ fontSize:12, fontWeight:700, color:m.color, background:m.bg, padding:"2px 7px", borderRadius:6 }}>{m.delta}</span>
+              <div style={{ fontSize:30, fontWeight:900, color:C.gray900, lineHeight:1 }}>{m.val}</div>
+              <span style={{ fontSize:12, fontWeight:700, color:C.gray500, background:C.gray100, padding:"2px 7px", borderRadius:6 }}>{m.delta}</span>
             </div>
             <div style={{ fontSize:13, fontWeight:600, color:C.gray600 }}>{m.label}</div>
           </div>
@@ -4674,9 +4639,9 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast, adminSessions = A
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
         {[
           {label:"Total",    val:adminSessions.length,                                    color:C.gray900},
-          {label:"Live",     val:adminSessions.filter(s=>s.status==="LIVE").length,       color:C.success},
-          {label:"Drafts",   val:adminSessions.filter(s=>s.status==="DRAFT").length,      color:C.warning},
-          {label:"Archived", val:adminSessions.filter(s=>s.status==="ARCHIVED").length,   color:C.gray600},
+          {label:"Live",     val:adminSessions.filter(s=>s.status==="LIVE").length,       color:C.gray900},
+          {label:"Drafts",   val:adminSessions.filter(s=>s.status==="DRAFT").length,      color:C.gray900},
+          {label:"Archived", val:adminSessions.filter(s=>s.status==="ARCHIVED").length,   color:C.gray900},
         ].map(s=>(
           <div key={s.label} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"18px 20px" }}>
             <div style={{ fontSize:30, fontWeight:900, color:s.color, lineHeight:1, marginBottom:6 }}>{s.val}</div>
@@ -4986,15 +4951,15 @@ function AnalyticsPage({ onEditSession }) {
       {/* Metric cards */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:14, marginBottom:24 }}>
         {[
-          { label:"Total Views",      val:stat.views.toLocaleString(),    delta:stat.viewsDelta+" vs prev", color:C.primary,  bg:C.primaryLight  },
-          { label:"Watch Time (hrs)", val:stat.watch.toLocaleString(),    delta:stat.watchDelta+" vs prev", color:"#7c3aed",  bg:"rgba(124,58,237,0.12)" },
-          { label:"Completion Rate",  val:`${stat.completion}%`,          delta:stat.compDelta+" vs prev",  color:C.success,  bg:C.successLight  },
-          { label:"Enrolled",         val:stat.enrolled.toLocaleString(), delta:"Active learners",          color:C.warning,  bg:C.warningLight  },
+          { label:"Total Views",      val:stat.views.toLocaleString(),    delta:stat.viewsDelta+" vs prev" },
+          { label:"Watch Time (hrs)", val:stat.watch.toLocaleString(),    delta:stat.watchDelta+" vs prev" },
+          { label:"Completion Rate",  val:`${stat.completion}%`,          delta:stat.compDelta+" vs prev"  },
+          { label:"Enrolled",         val:stat.enrolled.toLocaleString(), delta:"Active learners"          },
         ].map(m => (
           <div key={m.label} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"18px 20px" }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-              <div style={{ fontSize:30, fontWeight:900, color:m.color, lineHeight:1 }}>{m.val}</div>
-              <span style={{ fontSize:12, fontWeight:700, color:m.color, background:m.bg, padding:"2px 7px", borderRadius:6 }}>{m.delta}</span>
+              <div style={{ fontSize:30, fontWeight:900, color:C.gray900, lineHeight:1 }}>{m.val}</div>
+              <span style={{ fontSize:12, fontWeight:700, color:C.gray500, background:C.gray100, padding:"2px 7px", borderRadius:6 }}>{m.delta}</span>
             </div>
             <div style={{ fontSize:13, fontWeight:600, color:C.gray600 }}>{m.label}</div>
           </div>
@@ -7981,202 +7946,6 @@ function QuizOverlay({ T, onComplete }) {
   );
 }
 
-// Fixed card dimensions — every card shares these so the stack is uniform
-const CARD_W = 340;
-const CARD_H = 440;
-const CARD_STYLE_BASE = {
-  width: CARD_W, height: CARD_H,
-  background: "#fff", borderRadius: 18,
-  border: "1px solid #e5e7eb",
-  boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
-  overflow: "hidden",
-  display: "flex", flexDirection: "column",
-};
-
-function HeroCardStack({ T }) {
-  const CARDS = [
-    {
-      id: "watch",
-      render: () => (
-        <div style={{ ...CARD_STYLE_BASE, padding: 24 }}>
-          {/* header */}
-          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14, flexShrink:0 }}>
-            <div>
-              <div style={{ fontSize:10, fontWeight:700, color:"#8a46ff", letterSpacing:.5, textTransform:"uppercase" }}>Now Playing</div>
-              <div style={{ fontSize:14, fontWeight:700, color:T.text, lineHeight:1.3 }}>Mindfulness for SPED Educators</div>
-            </div>
-          </div>
-          {/* thumbnail — flex-grows to fill remaining space */}
-          <div style={{ flex:1, borderRadius:12, overflow:"hidden", marginBottom:14 }}>
-            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&h=300&fit=crop&auto=format" alt="Session" style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%", display:"block" }}/>
-          </div>
-          {/* instructor row */}
-          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10, flexShrink:0 }}>
-            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=40&h=40&fit=crop&auto=format" alt="" style={{ width:26, height:26, borderRadius:"50%", objectFit:"cover" }}/>
-            <span style={{ fontSize:12, color:T.muted }}>Tara Roehl · 45 min</span>
-          </div>
-          {/* progress */}
-          <div style={{ flexShrink:0 }}>
-            <div style={{ height:5, background:"#e5e7eb", borderRadius:99, overflow:"hidden", marginBottom:4 }}>
-              <div style={{ width:"62%", height:"100%", background:"linear-gradient(90deg,#6366f1,#8a46ff)", borderRadius:99 }}/>
-            </div>
-            <div style={{ fontSize:11, color:T.muted }}>62% complete</div>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: "quiz",
-      render: () => (
-        <div style={{ ...CARD_STYLE_BASE, padding: 24 }}>
-          {/* header */}
-          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16, flexShrink:0 }}>
-            <div>
-              <div style={{ fontSize:10, fontWeight:700, color:"#0ea5e9", letterSpacing:.5, textTransform:"uppercase" }}>Knowledge Check</div>
-              <div style={{ fontSize:14, fontWeight:700, color:T.text }}>Question 2 of 5</div>
-            </div>
-          </div>
-          {/* question */}
-          <div style={{ fontSize:15, fontWeight:700, color:T.text, marginBottom:18, lineHeight:1.5, flexShrink:0 }}>
-            Which technique helps regulate the nervous system before class?
-          </div>
-          {/* answers — flex:1 to fill */}
-          <div style={{ flex:1, display:"flex", flexDirection:"column", gap:10 }}>
-            {[
-              { label:"Box breathing exercises", correct:true  },
-              { label:"Checking emails quickly", correct:false },
-              { label:"Skipping your morning coffee", correct:false },
-              { label:"Reviewing your lesson plan", correct:false },
-            ].map((opt, i) => (
-              <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:12, background: opt.correct ? "rgba(16,185,129,0.08)" : "#f9fafb", border: opt.correct ? "1.5px solid rgba(16,185,129,0.4)" : "1.5px solid #e5e7eb" }}>
-                <div style={{ width:18, height:18, borderRadius:"50%", flexShrink:0, background: opt.correct ? "#10b981" : "#e5e7eb", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  {opt.correct && <Icon name="check" size={10} color="#fff"/>}
-                </div>
-                <span style={{ fontSize:13, color: opt.correct ? "#059669" : T.muted, fontWeight: opt.correct ? 600 : 400 }}>{opt.label}</span>
-              </div>
-            ))}
-          </div>
-          {/* score */}
-          <div style={{ marginTop:14, fontSize:12, color:"#10b981", fontWeight:700, display:"flex", alignItems:"center", gap:5, flexShrink:0 }}>
-            <Icon name="check-circle" size={13} color="#10b981"/> Correct! · Score: 92%
-          </div>
-        </div>
-      )
-    },
-    {
-      id: "cert",
-      render: () => (
-        <div style={{ ...CARD_STYLE_BASE, padding: 32, alignItems:"center", justifyContent:"center", textAlign:"center" }}>
-          <div style={{ fontSize:10, fontWeight:700, color:T.muted, textTransform:"uppercase", letterSpacing:1.5, marginBottom:10, flexShrink:0 }}>Certificate of Completion</div>
-          <div style={{ fontSize:26, fontWeight:800, color:T.text, letterSpacing:-.5, marginBottom:6, flexShrink:0 }}>Sarah Johnson</div>
-          <div style={{ fontSize:13, color:T.muted, lineHeight:1.7, marginBottom:24, flexShrink:0 }}>
-            Successfully completed all 9 sessions of<br/>
-            <strong style={{ color:T.text }}>SPED Summit 2026</strong>
-          </div>
-          <div style={{ width:"100%", background:"rgba(99,102,241,0.06)", border:"1px solid rgba(99,102,241,0.2)", borderRadius:14, padding:"14px 16px", marginBottom:20, flexShrink:0 }}>
-            {["9 sessions watched","All quizzes passed","Certificate issued Jan 2026"].map((s,i)=>(
-              <div key={i} style={{ fontSize:12, color:"#6366f1", fontWeight:600, display:"flex", alignItems:"center", gap:6, marginBottom:i<2?6:0 }}>
-                <Icon name="check-circle" size={12} color="#6366f1"/> {s}
-              </div>
-            ))}
-          </div>
-          <div style={{ display:"flex", gap:8, width:"100%", flexShrink:0 }}>
-            <button style={{ flex:1, padding:"11px 0", background:"#6366f1", color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-              <Icon name="download" size={13} color="#fff"/> Download
-            </button>
-            <button style={{ flex:1, padding:"11px 0", background:"#f9fafb", color:T.text, border:`1px solid ${T.border}`, borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-              <Icon name="share-network" size={13} color={T.text}/> Share
-            </button>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: "win",
-      render: () => (
-        <div style={{ ...CARD_STYLE_BASE, padding: 28, alignItems:"center", justifyContent:"center", textAlign:"center" }}>
-          <div style={{ fontSize:20, fontWeight:800, color:T.text, marginBottom:8, letterSpacing:-.3, flexShrink:0 }}>You're in the Draw!</div>
-          <div style={{ fontSize:13, color:T.muted, lineHeight:1.7, marginBottom:22, flexShrink:0 }}>
-            Your certificate entered you in the <strong style={{ color:T.text }}>Ablespace Pro</strong> prize draw.<br/>Good luck! 🎉
-          </div>
-          {/* checklist */}
-          <div style={{ width:"100%", background:"rgba(245,158,11,0.07)", border:"1px solid rgba(245,158,11,0.25)", borderRadius:14, padding:"16px 18px", textAlign:"left", marginBottom:20, flexShrink:0 }}>
-            {["Watch all 9 expert sessions ✓","Pass every knowledge check ✓","Certificate = your entry ticket ✓"].map((s,i)=>(
-              <div key={i} style={{ fontSize:13, color:"#92400e", fontWeight:600, marginBottom:i<2?10:0 }}>{s}</div>
-            ))}
-          </div>
-          {/* draw info strip */}
-          <div style={{ width:"100%", background:"#f9fafb", border:"1px solid #e5e7eb", borderRadius:12, padding:"12px 16px", display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
-            <div style={{ textAlign:"left" }}>
-              <div style={{ fontSize:11, color:T.muted, fontWeight:500 }}>Draw date</div>
-              <div style={{ fontSize:13, fontWeight:700, color:T.text }}>Jan 31, 2026</div>
-            </div>
-            <div style={{ width:1, height:32, background:T.border }}/>
-            <div style={{ textAlign:"right" }}>
-              <div style={{ fontSize:11, color:T.muted, fontWeight:500 }}>Winners</div>
-              <div style={{ fontSize:13, fontWeight:700, color:T.text }}>Multiple</div>
-            </div>
-          </div>
-        </div>
-      )
-    },
-  ];
-
-  const [cards, setCards] = useState(CARDS);
-
-  const moveToEnd = (idx) => setCards(prev => [...prev.slice(idx + 1), prev[idx]]);
-
-  useEffect(() => {
-    const t = setInterval(() => moveToEnd(0), 3500);
-    return () => clearInterval(t);
-  }, []);
-
-  // Back cards fan DOWNWARD — like a physical deck on a table
-  // i=0 is front (highest zIndex), i=1,2,3 peek below it
-  const BASE_TOP = 40;   // nudge entire stack slightly downward
-  const OFFSET   = 18;   // px each card shifts down
-  const SCALE_S  = 0.055; // scale shrinks per step
-  const spring = { type:"spring", stiffness:160, damping:24 };
-
-  // Container height = card height + total bottom peek of all back cards
-  const containerH = CARD_H + BASE_TOP + OFFSET * (cards.length - 1);
-
-  return (
-    <div style={{ display:"flex", justifyContent:"center", paddingTop:16, paddingBottom:24 }}>
-      <div style={{ position:"relative", width:CARD_W, height:containerH }}>
-        {/* Render back-to-front so front card sits on top visually */}
-        {[...cards].reverse().map(({ id, render }, ri) => {
-          const i = cards.length - 1 - ri; // real depth index (0=front)
-          return (
-            <motion.div
-              key={id}
-              style={{
-                position:"absolute", left:0,
-                width:"100%", height:CARD_H,
-                cursor: i === 0 ? "grab" : "default",
-                userSelect:"none",
-              }}
-              animate={{
-                top: BASE_TOP + i * OFFSET,                        // keep full stack slightly lower
-                scale: 1 - i * SCALE_S,                            // back cards shrink
-                filter: `brightness(${Math.max(0.55, 1 - i * 0.15)})`, // back cards dim
-                zIndex: cards.length - i,                          // front = highest zIndex
-              }}
-              transition={spring}
-              drag={i === 0 ? "y" : false}
-              dragConstraints={{ top: 0, bottom: 0 }}
-              dragMomentum={false}
-              onDragEnd={() => moveToEnd(0)}
-              whileDrag={{ rotate: -2, scale: 1.02, zIndex: 99 }}
-            >
-              {render()}
-            </motion.div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 /* ── Testimonial components defined at module level so Framer Motion never resets ── */
 const V1_TESTIMONIALS = [
@@ -8505,7 +8274,7 @@ function LandingPage({ onGetStarted }) {
       )}
 
       {/* ── Hero ── */}
-      <section style={{ paddingTop:0, paddingBottom:0, background:T.bg, position:"relative", overflow:"hidden", minHeight:"180vh", marginTop:56 }}
+      <section style={{ paddingTop:0, paddingBottom:0, background:T.bg, position:"relative", overflow:"hidden", minHeight:"100vh", marginTop:56 }}
         onMouseMove={e=>{ heroMouseX.set(e.clientX); heroMouseY.set(e.clientY); }}>
 
         {/* ── Infinite grid background ── */}
@@ -8532,7 +8301,7 @@ function LandingPage({ onGetStarted }) {
         })()}
 
         {/* ── Centered content wrapper ── */}
-        <div style={{ position:"absolute", top:0, left:0, right:0, bottom:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", zIndex:1, paddingBottom:240 }}>
+        <div style={{ position:"absolute", top:0, left:0, right:0, bottom:320, zIndex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"0 24px" }}>
 
         {/* ── Text block ── */}
         <div style={{ maxWidth:780, width:"100%", padding:"0 24px", textAlign:"center" }}>
@@ -8578,10 +8347,9 @@ function LandingPage({ onGetStarted }) {
           <p style={{ margin:"16px 0 0", fontSize:13, color:T.muted }}>No signup required to preview sessions</p>
         </div>
 
-        {/* ── Card Stack ── */}
-        <HeroCardStack T={T}/>
 
         </div>{/* end centered content wrapper */}
+
 
         {/* Staggered collage — absolutely pinned to bottom */}
         {(()=>{
@@ -8599,7 +8367,7 @@ function LandingPage({ onGetStarted }) {
           const CARD_W = 150, CARD_H = 190;
           const n = experts.length;
           return (
-            <div style={{ position:"absolute", bottom:0, left:0, right:0, height:280, overflow:"hidden" }}>
+            <div style={{ position:"absolute", bottom:0, left:0, right:0, height:280, overflow:"hidden", zIndex:2 }}>
               <div style={{ display:"flex", justifyContent:"center", gap:10 }}>
                 {cols.map((col, ci) => {
                   const top = experts[ci % n];

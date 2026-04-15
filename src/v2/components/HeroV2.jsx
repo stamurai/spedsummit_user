@@ -58,8 +58,6 @@ export default function HeroV2({ onGetStarted, isLoggedIn, onGoToDashboard }) {
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
         <div style={{ position: 'absolute', top: '5%', left: '5%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle,rgba(245,158,11,0.08) 0%,transparent 70%)', filter: 'blur(48px)' }} />
         <div style={{ position: 'absolute', top: '30%', right: '0%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle,rgba(245,158,11,0.06) 0%,transparent 70%)', filter: 'blur(48px)' }} />
-        {/* Subtle dot grid */}
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, #e5e7eb 1px, transparent 1px)', backgroundSize: '28px 28px', opacity: 0.6 }} />
       </div>
 
       <motion.div style={{ y, opacity, position: 'relative', zIndex: 1, width: '100%', maxWidth: 1200, margin: '0 auto', padding: '60px 40px 80px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}
