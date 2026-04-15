@@ -8034,7 +8034,7 @@ function LandingPage({ onGetStarted }) {
   },[heroTab]);
 
   const T = {
-    bg:        "#ffffff",
+    bg:        "#FEF5EC",
     bgSection: "#F9FAFB",
     bgHighlight:"#EFF6FF",
     text:      "#111827",
