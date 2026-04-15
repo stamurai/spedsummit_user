@@ -7955,22 +7955,7 @@ function LandingPage({ onGetStarted }) {
   const [instructorPage, setInstructorPage] = useState(0);
   const [testimonialPage, setTestimonialPage] = useState(0);
   const [heroTab, setHeroTab] = useState("watch");
-  const heroMouseX = useMotionValue(0);
-  const heroMouseY = useMotionValue(0);
-  const [heroMaskCx, setHeroMaskCx] = useState("50%");
-  const [heroMaskCy, setHeroMaskCy] = useState("50%");
-  useEffect(()=>{
-    const un = heroMouseX.on("change", v => {
-      setHeroMaskCx(`${(v / window.innerWidth * 100).toFixed(1)}%`);
-    });
-    return un;
-  },[heroMouseX]);
-  useEffect(()=>{
-    const un = heroMouseY.on("change", v => {
-      setHeroMaskCy(`${(v / window.innerHeight * 100).toFixed(1)}%`);
-    });
-    return un;
-  },[heroMouseY]);
+
   const [navOpen, setNavOpen] = useState(false);
   const [navScrolled, setNavScrolled] = useState(false);
 
@@ -8229,31 +8214,8 @@ function LandingPage({ onGetStarted }) {
       )}
 
       {/* ── Hero ── */}
-      <section style={{ paddingTop:0, paddingBottom:0, background:T.bg, position:"relative", overflow:"hidden", minHeight:"100vh", marginTop:56 }}
-        onMouseMove={e=>{ heroMouseX.set(e.clientX); heroMouseY.set(e.clientY); }}>
+      <section style={{ paddingTop:0, paddingBottom:0, background:T.bg, position:"relative", overflow:"hidden", minHeight:"100vh", marginTop:56 }}>
 
-        {/* ── Infinite grid background ── */}
-        {(()=>{
-          const CELL = 40;
-          return (
-            <svg style={{ position:"absolute", inset:0, width:"100%", height:"100%", pointerEvents:"none", zIndex:0 }} aria-hidden="true">
-              <defs>
-                <pattern id="hero-grid" x="0" y="0" width={CELL} height={CELL} patternUnits="userSpaceOnUse">
-                  <path d={`M ${CELL} 0 L 0 0 0 ${CELL}`} fill="none" stroke={T.text} strokeWidth="0.5"/>
-                </pattern>
-                <radialGradient id="hero-grid-reveal" cx={heroMaskCx} cy={heroMaskCy} r="28%" gradientUnits="objectBoundingBox">
-                  <stop offset="0%" stopColor="white" stopOpacity="0.07"/>
-                  <stop offset="100%" stopColor="white" stopOpacity="0"/>
-                </radialGradient>
-                <mask id="hero-grid-mask">
-                  <rect width="100%" height="100%" fill="url(#hero-grid-reveal)"/>
-                </mask>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#hero-grid)" opacity="0.04"/>
-              <rect width="100%" height="100%" fill="url(#hero-grid)" mask="url(#hero-grid-mask)"/>
-            </svg>
-          );
-        })()}
 
         {/* ── Centered content wrapper ── */}
         <div style={{ position:"absolute", top:0, left:0, right:0, bottom:320, zIndex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"0 24px" }}>
