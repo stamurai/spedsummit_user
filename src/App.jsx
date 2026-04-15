@@ -718,11 +718,12 @@ function UploadZone({ accept, label, hint, icon, preview, onFile, aspect="16/9",
    TOP BAR  +  NOTIFICATION POPOVER
 ───────────────────────────────────────────────────────────────────────────── */
 const NOTIF_DATA = [
-  { id:1, type:"session",  icon:"play-circle", color:C.primary,  bg:C.primaryLight,  title:"New session available",        body:"\"AI & Advanced Technologies in SPED\" is now unlocked for you.", time:"2m ago",  read:false },
-  { id:2, type:"community",icon:"chat-circle", color:"#7c3aed",  bg:C.primaryLight,  title:"Tara Roehl replied to your post", body:"\"Great point! The DHH strategies also apply here — check out…\"", time:"18m ago", read:false },
-  { id:3, type:"reward",   icon:"star",        color:C.warning,  bg:C.warningLight,  title:"You earned a new badge 🏆",    body:"\"Knowledge Seeker\" — You completed 3 quizzes this week.",       time:"1h ago",  read:false },
-  { id:4, type:"schedule", icon:"calendar",    color:C.success,  bg:C.successLight,  title:"Session starting in 30 min",   body:"\"Paraeducators & Team Collaboration\" starts at 2:00 PM EST.",   time:"30m ago", read:true  },
-  { id:5, type:"system",   icon:"info",        color:C.gray500,  bg:C.gray100,       title:"Platform update",              body:"New analytics features are live. Check your admin dashboard.",    time:"3h ago",  read:true  },
+  { id:1, img:"https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=80&h=80&fit=crop&auto=format", user:"Tara Roehl",    action:"replied to your comment in", target:"Mental Health & Wellness",           time:"2 minutes ago",  read:false },
+  { id:2, img:"https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=80&h=80&fit=crop&auto=format", user:"Casey Harrison", action:"mentioned you in",             target:"Accommodations & Inclusion thread", time:"45 minutes ago", read:false },
+  { id:3, img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&auto=format", user:"Jordan Smith",   action:"shared",                       target:"Empowering Language & Literacy",    time:"4 hours ago",    read:false },
+  { id:4, img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=80&h=80&fit=crop&auto=format", user:"Morgan Lee",     action:"assigned you to",              target:"Paraeducator collaboration task",   time:"12 hours ago",   read:true  },
+  { id:5, img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&auto=format", user:"Farwa Husain",   action:"commented on",                 target:"AI in Special Education",           time:"2 days ago",     read:true  },
+  { id:6, img:"https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=80&h=80&fit=crop&auto=format", user:"Dr. Emily Tran", action:"replied to your post in",      target:"SPED Summit community",             time:"2 weeks ago",    read:true  },
 ];
 
 function NotificationPopover({ onClose, anchorRef }) {
@@ -741,89 +742,63 @@ function NotificationPopover({ onClose, anchorRef }) {
 
   function markRead(id) { setNotifs(ns => ns.map(n => n.id === id ? { ...n, read:true } : n)); }
   function markAllRead() { setNotifs(ns => ns.map(n => ({ ...n, read:true }))); }
-  function dismiss(id) { setNotifs(ns => ns.filter(n => n.id !== id)); }
 
   return (
     <div ref={ref} style={{
       position:"absolute", top:"calc(100% + 8px)", right:0,
-      width:420, background:C.white, borderRadius:16,
-      border:`1px solid ${C.gray200}`, boxShadow:"0 16px 40px rgba(0,0,0,0.14)",
-      zIndex:300, overflow:"hidden", animation:"fadeIn .18s ease"
+      width:360, background:C.white, borderRadius:14,
+      border:`1px solid ${C.gray200}`, boxShadow:"0 8px 32px rgba(0,0,0,0.12)",
+      zIndex:300, animation:"fadeIn .18s ease"
     }}>
       {/* Header */}
-      <div style={{ padding:"14px 16px 12px", borderBottom:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-          <span style={{ fontWeight:800, fontSize:16, color:C.gray900 }}>Notifications</span>
-          {unreadCount > 0 && (
-            <span style={{ background:C.error, color:"#fff", fontSize:12, fontWeight:800, padding:"1px 7px", borderRadius:99 }}>{unreadCount}</span>
-          )}
-        </div>
+      <div style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between", padding:"10px 14px 8px" }}>
+        <span style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>Notifications</span>
         {unreadCount > 0 && (
           <button onClick={markAllRead}
-            style={{ fontSize:12, fontWeight:600, color:C.primary, background:"none", border:"none", cursor:"pointer", padding:"2px 4px", borderRadius:5 }}
-            onMouseEnter={e => e.currentTarget.style.background = C.primaryLight}
-            onMouseLeave={e => e.currentTarget.style.background = "none"}>
-            Mark all read
+            style={{ fontSize:12, fontWeight:500, color:C.gray600, background:"none", border:"none", cursor:"pointer", padding:0, fontFamily:"inherit" }}
+            onMouseEnter={e => e.currentTarget.style.textDecoration = "underline"}
+            onMouseLeave={e => e.currentTarget.style.textDecoration = "none"}>
+            Mark all as read
           </button>
         )}
       </div>
 
+      {/* Divider */}
+      <div style={{ height:1, background:C.gray200, margin:"0 4px" }}/>
+
       {/* List */}
-      <div style={{ maxHeight:400, overflowY:"auto" }}>
+      <div>
         {notifs.length === 0 && (
-          <div style={{ padding:"40px 20px", textAlign:"left" }}>
-            <div style={{ fontSize:32, marginBottom:8 }}>🎉</div>
-            <div style={{ fontWeight:600, fontSize:14, color:C.gray700 }}>All caught up!</div>
-            <div style={{ fontSize:12, color:C.gray400, marginTop:4 }}>No new notifications.</div>
+          <div style={{ padding:"32px 16px", textAlign:"center" }}>
+            <div style={{ fontSize:13, color:C.gray500 }}>You're all caught up!</div>
           </div>
         )}
-        {notifs.map((n, i) => (
+        {notifs.map(n => (
           <div key={n.id}
             onClick={() => markRead(n.id)}
-            style={{
-              display:"flex", alignItems:"flex-start", gap:12, padding:"12px 16px",
-              borderBottom: i < notifs.length - 1 ? `1px solid ${C.gray100}` : "none",
-              background: n.read ? C.white : C.primaryLight,
-              cursor:"pointer", transition:"background .15s", position:"relative"
-            }}
+            style={{ borderRadius:8, padding:"8px 10px", margin:"2px 4px", cursor:"pointer", transition:"background .12s" }}
             onMouseEnter={e => e.currentTarget.style.background = C.gray50}
-            onMouseLeave={e => e.currentTarget.style.background = n.read ? C.white : C.primaryLight}>
-            {/* Icon badge */}
-            <div style={{ width:36, height:36, borderRadius:10, background:n.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:1 }}>
-              <Icon name={n.icon} size={17} color={n.color}/>
-            </div>
-            {/* Content */}
-            <div style={{ flex:1, minWidth:0 }}>
-              <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:6 }}>
-                <span style={{ fontSize:14, fontWeight: n.read ? 500 : 700, color:C.gray900, lineHeight:1.3 }}>{n.title}</span>
-                <span style={{ fontSize:12, color:C.gray400, whiteSpace:"nowrap", flexShrink:0 }}>{n.time}</span>
+            onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+            <div style={{ position:"relative", display:"flex", alignItems:"flex-start", gap:10, paddingRight:16 }}>
+              {/* Avatar */}
+              <img src={n.img} alt={n.user} style={{ width:36, height:36, borderRadius:8, objectFit:"cover", flexShrink:0 }}/>
+              {/* Text */}
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:13, color:C.gray600, lineHeight:1.45 }}>
+                  <span style={{ fontWeight:600, color:C.gray900 }}>{n.user}</span>
+                  {" "}{n.action}{" "}
+                  <span style={{ fontWeight:600, color:C.gray900 }}>{n.target}</span>.
+                </div>
+                <div style={{ fontSize:12, color:C.gray400, marginTop:3 }}>{n.time}</div>
               </div>
-              <p style={{ margin:"3px 0 0", fontSize:12, color:C.gray500, lineHeight:1.5, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{n.body}</p>
+              {/* Unread dot */}
+              {!n.read && (
+                <div style={{ position:"absolute", right:0, top:"50%", transform:"translateY(-50%)", width:7, height:7, borderRadius:"50%", background:C.primary, flexShrink:0 }}/>
+              )}
             </div>
-            {/* Unread dot */}
-            {!n.read && (
-              <div style={{ width:7, height:7, borderRadius:"50%", background:C.primary, flexShrink:0, marginTop:5 }}/>
-            )}
-            {/* Dismiss ×  */}
-            <button
-              onClick={e => { e.stopPropagation(); dismiss(n.id); }}
-              style={{ position:"absolute", top:10, right:12, width:20, height:20, borderRadius:5, background:"none", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", opacity:0, transition:"opacity .15s" }}
-              onMouseEnter={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.background = C.gray100; }}
-              onMouseLeave={e => { e.currentTarget.style.opacity = "0"; e.currentTarget.style.background = "none"; }}>
-              <Icon name="x" size={12} color={C.gray500}/>
-            </button>
           </div>
         ))}
       </div>
-
-      {/* Footer */}
-      {notifs.length > 0 && (
-        <div style={{ padding:"10px 16px", borderTop:`1px solid ${C.gray100}`, textAlign:"left" }}>
-          <button style={{ fontSize:12, fontWeight:600, color:C.primary, background:"none", border:"none", cursor:"pointer" }}>
-            View all notifications
-          </button>
-        </div>
-      )}
     </div>
   );
 }
@@ -1246,18 +1221,20 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
       </div>
 
       {/* Right actions */}
-      <div style={{ flexShrink:0, display:"flex", alignItems:"center", gap:6 }}>
+      <div style={{ flexShrink:0, display:"flex", alignItems:"center", gap:12 }}>
         {/* Notification button + popover — user only */}
         {!isAdmin && (
           <div style={{ position:"relative" }} ref={notifBtnRef}>
             <button
               onClick={() => setShowNotif(v => !v)}
-              style={{ width:36, height:36, borderRadius:"50%", border:"none", background: showNotif ? C.primaryLight : C.gray100, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", transition:"background .15s" }}
-              onMouseEnter={e => { if (!showNotif) e.currentTarget.style.background = C.gray200; }}
-              onMouseLeave={e => { if (!showNotif) e.currentTarget.style.background = C.gray100; }}>
-              <Icon name="bell" size={18} color={showNotif ? C.primary : C.gray600}/>
+              style={{ width:36, height:36, borderRadius:"50%", border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", transition:"background .15s" }}
+              onMouseEnter={e => { if (!showNotif) e.currentTarget.style.background = C.gray50; }}
+              onMouseLeave={e => { e.currentTarget.style.background = C.white; }}>
+              <Icon name="bell" size={17} color={C.gray700}/>
               {unread > 0 && (
-                <span style={{ position:"absolute", top:5, right:5, width:8, height:8, borderRadius:"50%", background:C.error, border:`2px solid ${C.white}` }}/>
+                <span style={{ position:"absolute", top:-7, left:"100%", transform:"translateX(-50%)", minWidth:18, height:18, borderRadius:99, background:C.gray900, color:"#fff", fontSize:11, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center", padding:"0 4px", lineHeight:1 }}>
+                  {unread > 99 ? "99+" : unread}
+                </span>
               )}
             </button>
             {showNotif && <NotificationPopover onClose={() => setShowNotif(false)} anchorRef={notifBtnRef}/>}
@@ -1385,7 +1362,7 @@ function TabBar({ active, onChange, isAdmin, breadcrumbs }) {
         .tabbar-wrap {
           background: var(--c-white);
           border-bottom: 1px solid var(--c-gray200);
-          padding: 0 20px;
+          padding: 0 28px;
           display: flex;
           align-items: stretch;
           flex-shrink: 0;
@@ -2499,12 +2476,12 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
           <div style={{ width:200, flexShrink:0, display:"flex", flexDirection:"column", gap:0, paddingTop:4 }}>
             {/* Progress card */}
             <div style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:"16px 18px", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", marginBottom:20 }}>
-              <div style={{ fontSize:13, fontWeight:800, color:C.gray900, marginBottom:2 }}>My Progress</div>
-              <div style={{ fontSize:11, color:C.gray500, marginBottom:8 }}>{completed} of {totalEnrolled} sessions</div>
+              <div style={{ fontSize:15, fontWeight:800, color:C.gray900, marginBottom:3 }}>My Progress</div>
+              <div style={{ fontSize:13, color:C.gray500, marginBottom:10 }}>{completed} of {totalEnrolled} sessions</div>
               <div style={{ width:"100%", height:5, background:C.gray200, borderRadius:99, overflow:"hidden" }}>
                 <div style={{ width:`${pct}%`, height:"100%", background:ringColor, borderRadius:99, transition:"width 0.8s cubic-bezier(0.23,1,0.32,1)" }}/>
               </div>
-              <div style={{ fontSize:11, fontWeight:700, color:ringColor, marginTop:5 }}>{pct}% complete</div>
+              <div style={{ fontSize:13, fontWeight:700, color:ringColor, marginTop:6 }}>{pct}% complete</div>
             </div>
             {/* Stats */}
             <div style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, boxShadow:"0 1px 4px rgba(0,0,0,0.04)", overflow:"hidden" }}>
@@ -3417,10 +3394,10 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   );
 
   return (
-    <div ref={containerRef} style={{ display:"flex", height:"100%", background:C.gray50 }}>
+    <div ref={containerRef} style={{ display:"flex", background:C.gray50 }}>
 
-      {/* ── Main scroll area ── */}
-      <div style={{ flex:1, overflowY:"auto", padding: narrow ? 14 : 20, minWidth:0 }}>
+      {/* ── Main content area ── */}
+      <div style={{ flex:1, padding: narrow ? 14 : 20, minWidth:0 }}>
 
         {/* Breadcrumb */}
         {(() => {
@@ -3678,12 +3655,17 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
         display: narrow ? "none" : "flex",
         flexDirection: "column",
         flexShrink: 0,
+        alignSelf: "flex-start",
+        position: "sticky",
+        top: 0,
+        maxHeight: "100vh",
+        overflowY: "auto",
       }}>
-        <div style={{ padding:"14px 16px 12px", borderBottom:`1px solid ${C.gray100}`, flexShrink:0 }}>
+        <div style={{ padding:"14px 16px 12px", borderBottom:`1px solid ${C.gray100}`, flexShrink:0, position:"sticky", top:0, background:C.white, zIndex:1 }}>
           <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>Course Content</div>
           <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{session.lessons.length} lessons · {session.duration}</div>
         </div>
-        <div style={{ flex:1, overflowY:"auto" }}>
+        <div>
           {(() => {
             // Group lessons into sections by sectionTitle markers
             const sections = [];
@@ -4082,21 +4064,23 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange }) {
         </div>
 
         {/* Fields */}
-        {[
-          { label:"Full name",           key:"name",     type:"text" },
-          { label:"Professional title",  key:"title",    type:"text" },
-          { label:"Email address",       key:"email",    type:"email" },
-          { label:"Phone number",        key:"phone",    type:"tel" },
-        ].map(f => (
-          <div key={f.key} style={{ display:"flex", alignItems:"center", padding:"14px 0", borderBottom:`1px solid ${C.gray200}`, gap:16 }}>
-            <div style={{ width:160, fontSize:14, fontWeight:600, color:C.gray600, flexShrink:0 }}>{f.label}</div>
-            <input type={f.type} style={{...inputSt, flex:1}} value={form[f.key]} onChange={e=>setForm(v=>({...v,[f.key]:e.target.value}))}
-              onFocus={e=>e.target.style.borderColor=C.primary} onBlur={e=>e.target.style.borderColor=C.gray200}/>
-          </div>
-        ))}
-        <div style={{ display:"flex", alignItems:"center", padding:"14px 0", borderBottom:`1px solid ${C.gray200}`, gap:16 }}>
-          <div style={{ width:160, fontSize:14, fontWeight:600, color:C.gray600, flexShrink:0 }}>Language</div>
-          <select style={{...inputSt, flex:1, appearance:"none"}} value={form.language} onChange={e=>setForm(f=>({...f,language:e.target.value}))}>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
+          {[
+            { label:"Full name",          key:"name",  type:"text"  },
+            { label:"Professional title", key:"title", type:"text"  },
+            { label:"Email address",      key:"email", type:"email" },
+            { label:"Phone number",       key:"phone", type:"tel"   },
+          ].map(f => (
+            <div key={f.key}>
+              <div style={{ fontSize:13, fontWeight:600, color:C.gray600, marginBottom:6 }}>{f.label}</div>
+              <input type={f.type} style={inputSt} value={form[f.key]} onChange={e=>setForm(v=>({...v,[f.key]:e.target.value}))}
+                onFocus={e=>e.target.style.borderColor=C.primary} onBlur={e=>e.target.style.borderColor=C.gray200}/>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginBottom:16 }}>
+          <div style={{ fontSize:13, fontWeight:600, color:C.gray600, marginBottom:6 }}>Language</div>
+          <select style={{...inputSt, appearance:"none"}} value={form.language} onChange={e=>setForm(f=>({...f,language:e.target.value}))}>
             {["English (US)","Spanish","French","German","Mandarin"].map(l=><option key={l}>{l}</option>)}
           </select>
         </div>
@@ -4174,20 +4158,24 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange }) {
             <h2 style={{ margin:"0 0 4px", fontSize:20, fontWeight:800, color:C.gray900 }}>Password and security</h2>
             <p style={{ margin:0, fontSize:14, color:C.gray500 }}>Manage your passwords, login preferences and recovery methods.</p>
           </div>
-          <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.8, textTransform:"uppercase", marginBottom:12 }}>Login &amp; recovery</div>
-          {[
-            { label:"Change password",           sub:"Last updated 3 months ago",             action:()=>setChangingPassword(true) },
-            { label:"Two-factor authentication", sub:"Enhanced security for your account",    action:null, toggle: <ProfileToggle on={twoFA} onToggle={()=>setTwoFA(v=>!v)}/> },
-          ].map((row,i,arr) => (
-            <div key={row.label} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 0", borderBottom: i<arr.length-1?`1px solid ${C.gray200}`:"none", gap:12, cursor: row.action?"pointer":"default" }}
-              onClick={row.action||undefined}>
-              <div>
-                <div style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{row.label}</div>
-                <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{row.sub}</div>
+          <div style={{ border:`1px solid ${C.gray200}`, borderRadius:14, overflow:"hidden" }}>
+            {[
+              { label:"Change password",           sub:"Last updated 3 months ago",          action:()=>setChangingPassword(true), toggle:null },
+              { label:"Two-factor authentication", sub:"Enhanced security for your account", action:null, toggle:<ProfileToggle on={twoFA} onToggle={()=>setTwoFA(v=>!v)}/> },
+            ].map((row,i,arr) => (
+              <div key={row.label}
+                style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"16px 20px", borderBottom:i<arr.length-1?`1px solid ${C.gray200}`:"none", gap:12, cursor:row.action?"pointer":"default", background:C.white, transition:"background .12s" }}
+                onClick={row.action||undefined}
+                onMouseEnter={e=>{ if(row.action) e.currentTarget.style.background=C.gray50; }}
+                onMouseLeave={e=>{ e.currentTarget.style.background=C.white; }}>
+                <div>
+                  <div style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{row.label}</div>
+                  <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{row.sub}</div>
+                </div>
+                {row.toggle || <Icon name="caret-right" size={16} color={C.gray400}/>}
               </div>
-              {row.toggle || <Icon name="caret-right" size={16} color={C.gray400}/>}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       );
     }
@@ -4198,19 +4186,21 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange }) {
           <h2 style={{ margin:"0 0 4px", fontSize:20, fontWeight:800, color:C.gray900 }}>Notifications</h2>
           <p style={{ margin:0, fontSize:14, color:C.gray500 }}>Choose how and when you want to be notified.</p>
         </div>
-        {[
-          { label:"Email Notifications", sub:"Updates on course progress and activity", on:notifEmail, toggle:()=>setNotifEmail(v=>!v) },
-          { label:"Mentor Messages",     sub:"Real-time chat alerts and mentorship pings", on:notifMentor, toggle:()=>setNotifMentor(v=>!v) },
-          { label:"Public Profile",      sub:"Make your profile visible to other students", on:publicProfile, toggle:()=>setPublicProfile(v=>!v) },
-        ].map((row,i,arr) => (
-          <div key={row.label} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 0", borderBottom:i<arr.length-1?`1px solid ${C.gray200}`:"none", gap:16 }}>
-            <div>
-              <div style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{row.label}</div>
-              <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{row.sub}</div>
+        <div style={{ border:`1px solid ${C.gray200}`, borderRadius:14, overflow:"hidden" }}>
+          {[
+            { label:"Email Notifications", sub:"Updates on course progress and activity",         on:notifEmail,    toggle:()=>setNotifEmail(v=>!v) },
+            { label:"Mentor Messages",     sub:"Real-time chat alerts and mentorship pings",      on:notifMentor,   toggle:()=>setNotifMentor(v=>!v) },
+            { label:"Public Profile",      sub:"Make your profile visible to other students",     on:publicProfile, toggle:()=>setPublicProfile(v=>!v) },
+          ].map((row,i,arr) => (
+            <div key={row.label} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"16px 20px", borderBottom:i<arr.length-1?`1px solid ${C.gray200}`:"none", gap:16, background:C.white }}>
+              <div>
+                <div style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{row.label}</div>
+                <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{row.sub}</div>
+              </div>
+              <ProfileToggle on={row.on} onToggle={row.toggle}/>
             </div>
-            <ProfileToggle on={row.on} onToggle={row.toggle}/>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     );
 
@@ -4220,15 +4210,17 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange }) {
           <h2 style={{ margin:"0 0 4px", fontSize:20, fontWeight:800, color:C.gray900 }}>Deactivate account</h2>
           <p style={{ margin:0, fontSize:14, color:C.gray500 }}>Permanently delete your account and all associated data.</p>
         </div>
-        <div style={{ background:C.errorLight, border:`1px solid ${C.errorBorder}`, borderRadius:12, padding:"20px 24px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, flexWrap:"wrap" }}>
-          <div>
-            <div style={{ fontWeight:700, fontSize:15, color:C.error, marginBottom:4 }}>Deactivate Account</div>
-            <div style={{ fontSize:14, color:C.gray600 }}>Permanently remove your profile and all learning progress. This cannot be undone.</div>
+        <div style={{ border:`1px solid ${C.gray200}`, borderRadius:14, overflow:"hidden" }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"16px 20px", gap:16, background:C.white }}>
+            <div>
+              <div style={{ fontSize:14, fontWeight:600, color:C.error }}>Deactivate Account</div>
+              <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>Permanently remove your profile and all learning progress. This cannot be undone.</div>
+            </div>
+            <button onClick={()=>toast({type:"error",title:"Are you sure?",message:"This action is permanent."})}
+              style={{ padding:"8px 18px", background:"transparent", color:C.error, border:`1px solid ${C.errorBorder}`, borderRadius:8, fontSize:13, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap", flexShrink:0 }}>
+              Deactivate
+            </button>
           </div>
-          <button onClick={()=>toast({type:"error",title:"Are you sure?",message:"This action is permanent."})}
-            style={{ padding:"10px 20px", background:"transparent", color:C.error, border:`1px solid ${C.error}`, borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap" }}>
-            Deactivate Account
-          </button>
         </div>
       </div>
     );
@@ -10004,17 +9996,33 @@ export default function App() {
         onOpenSession={openSession}
         onNavigate={nav}
         userName={userName}
-        onBrowseSelect={(season, year) => { setDashFilter({ season, year }); nav("dashboard"); }}
+        onBrowseSelect={(season, year) => {
+          if (season === "all") {
+            // Year filter — find first season matching that year
+            const match = seasons.find(s => s.name.includes(year));
+            if (match) { setPastSeasonPageId(match.id); nav("past-season"); }
+          } else {
+            // Specific season name (e.g. "Spring", "Winter")
+            const match = seasons.find(s => s.name === `${season} ${year}`);
+            if (match) { setPastSeasonPageId(match.id); nav("past-season"); }
+            else { setDashFilter({ season, year }); nav("sessions"); }
+          }
+        }}
       />
       <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-        {activePage !== "profile" && page !== "session-detail" && page !== "admin-create" && page !== "admin-edit" && <TabBar
+        {activePage !== "profile" && page !== "session-detail" && page !== "admin-create" && page !== "admin-edit" && page !== "past-season" && <TabBar
           active={activePage}
           onChange={nav}
           isAdmin={isAdmin}
-          breadcrumbs={activePage === "past-season" && pastSeasonPageId ? [
-            { label:"My Learnings", onClick:() => { setPastSeasonPageId(null); nav("dashboard"); } },
+        />}
+        {page === "past-season" && pastSeasonPageId && <TabBar
+          active={activePage}
+          onChange={nav}
+          isAdmin={isAdmin}
+          breadcrumbs={[
+            { label: isAdmin ? "Overview" : "My Learnings", onClick:() => { setPastSeasonPageId(null); nav(isAdmin ? "admin-overview" : "dashboard"); } },
             { label: seasons.find(s => s.id === pastSeasonPageId)?.name || "Past Season" },
-          ] : null}
+          ]}
         />}
         {(page === "admin-create" || page === "admin-edit") && <TabBar
           active={activePage}
