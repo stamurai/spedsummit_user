@@ -8797,7 +8797,7 @@ function LandingPage({ onGetStarted }) {
                         </div>
                         <button
                           onClick={e=>{ e.stopPropagation(); setSelectedSession(s); }}
-                          style={{ display:"inline-flex", alignItems:"center", padding:"7px 13px", background:C.primary, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"opacity 0.15s" }}
+                          style={{ display:"inline-flex", alignItems:"center", padding:"7px 13px", background:T.blue, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"opacity 0.15s" }}
                           onMouseEnter={e=>e.currentTarget.style.opacity="0.85"}
                           onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
                           {ctaLabel}
