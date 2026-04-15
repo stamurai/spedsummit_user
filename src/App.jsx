@@ -8628,7 +8628,7 @@ function LandingPage({ onGetStarted }) {
 
           {/* Apply banner */}
           <div style={{ maxWidth:1200, margin:"48px auto 0", padding:"0 24px" }}>
-            <div style={{ borderRadius:16, border:`1px solid ${T.border}`, background:"rgba(250,250,250,1)", padding:24, display:"flex", alignItems:"center", gap:24 }}>
+            <div style={{ borderRadius:16, border:`1px solid ${T.border}`, background:"#FEF5EC", padding:24, display:"flex", alignItems:"center", gap:24 }}>
               <div style={{ width:56, height:56, borderRadius:12, background:"#ede9fe", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                 <Icon name="student" size={28} color="#7c3aed"/>
               </div>
@@ -8660,7 +8660,7 @@ function LandingPage({ onGetStarted }) {
               onMouseMove={e=>{ const r=ref.current.getBoundingClientRect(); setPos({ x:e.clientX-r.left, y:e.clientY-r.top }); }}
               onMouseEnter={e=>{ setOpacity(1); e.currentTarget.style.borderColor=T.border; e.currentTarget.style.boxShadow="0 4px 24px rgba(0,0,0,0.08)"; }}
               onMouseLeave={e=>{ setOpacity(0); e.currentTarget.style.borderColor=T.border; e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"; }}
-              style={{ position:"relative", overflow:"hidden", borderRadius:16, border:`1px solid ${T.border}`, background:"#ffffff", transition:"box-shadow 0.2s, border-color 0.2s", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", ...style }}
+              style={{ position:"relative", overflow:"hidden", borderRadius:16, border:`1px solid ${T.border}`, background:"#FEF5EC", transition:"box-shadow 0.2s, border-color 0.2s", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", ...style }}
             >
               <div style={{ pointerEvents:"none", position:"absolute", inset:-1, transition:"opacity 0.3s", opacity, background:`radial-gradient(500px circle at ${pos.x}px ${pos.y}px, ${spotlightColor}, transparent 40%)`, zIndex:0 }}/>
               <div style={{ position:"relative", zIndex:1 }}>{children}</div>
@@ -8767,7 +8767,7 @@ function LandingPage({ onGetStarted }) {
                   const instrRole= INSTRUCTOR_ROLES[s.instructor] || "Instructor";
                   return (
                     <div key={s.id}
-                      style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:12, display:"flex", alignItems:"stretch", overflow:"hidden", cursor:"pointer" }}
+                      style={{ background:"#FEF5EC", border:`1px solid ${T.border}`, borderRadius:12, display:"flex", alignItems:"stretch", overflow:"hidden", cursor:"pointer" }}
                       onClick={()=>setSelectedSession(s)}>
 
                       {/* ── Left: image fills full card height, name+role overlaid via gradient ── */}
