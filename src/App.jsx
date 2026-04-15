@@ -8226,7 +8226,7 @@ function LandingPage({ onGetStarted }) {
 
           {/* Rating badge */}
           <div className="animate-fade-in-up" style={{ opacity:0, animationDelay:"0.2s", marginBottom:24 }}>
-            <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:T.hover, border:`1px solid ${T.border}`, borderRadius:8, padding:"5px 14px" }}>
+            <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"#FEF5EC", border:`1px solid ${T.border}`, borderRadius:8, padding:"5px 14px" }}>
               <div style={{ width:22, height:22, border:`1px solid ${T.border}`, borderRadius:5, display:"flex", alignItems:"center", justifyContent:"center" }}>
                 <Icon name="calendar" size={12} color="#f59e0b"/>
               </div>
