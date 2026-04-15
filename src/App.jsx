@@ -7911,7 +7911,7 @@ const V1_T_CARD_W = 320;
 
 function V1TestiCard({ t }) {
   return (
-    <div style={{ background:"#ffffff", border:"1px solid #e5e7eb", borderRadius:20, padding:24, width:V1_T_CARD_W, boxSizing:"border-box", boxShadow:"0 2px 12px rgba(0,0,0,0.05)", flexShrink:0 }}>
+    <div style={{ background:"#FEF5EC", border:"1px solid #E5E7EB", borderRadius:20, padding:24, width:V1_T_CARD_W, boxSizing:"border-box", boxShadow:"0 2px 12px rgba(0,0,0,0.03)", flexShrink:0 }}>
       <p style={{ margin:"0 0 18px", fontSize:14, color:"#4b5563", lineHeight:1.7 }}>"{t.text}"</p>
       <div style={{ display:"flex", alignItems:"center", gap:12 }}>
         <img src={t.img} alt={t.name} style={{ width:40, height:40, borderRadius:"50%", objectFit:"cover", flexShrink:0 }}/>
