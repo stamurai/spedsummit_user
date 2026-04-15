@@ -8035,7 +8035,7 @@ function LandingPage({ onGetStarted }) {
 
   const T = {
     bg:        "#FEF5EC",
-    bgSection: "#F9FAFB",
+    bgSection: "#FEF5EC",
     bgHighlight:"#EFF6FF",
     text:      "#111827",
     secondary: "#374151",
@@ -8349,7 +8349,7 @@ function LandingPage({ onGetStarted }) {
       </section>
 
       {/* ── Bento Features ── */}
-      <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#ffffff" }}>
+      <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
 
           {/* Header */}
@@ -8678,7 +8678,7 @@ function LandingPage({ onGetStarted }) {
         ];
 
         return (
-          <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#ffffff" }}>
+          <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
             <div style={{ maxWidth:1100, margin:"0 auto" }}>
               {/* Header */}
               <div style={{ textAlign:"center", marginBottom:64 }}>
@@ -8813,7 +8813,7 @@ function LandingPage({ onGetStarted }) {
       </section>
 
       {/* ── Community ── */}
-      <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#ffffff", textAlign:"center" }}>
+      <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg, textAlign:"center" }}>
         <div style={{ maxWidth:560, margin:"0 auto" }}>
           <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Community</p>
           <h2 style={{ margin:"0 0 12px", fontSize:"clamp(32px,4vw,48px)", fontWeight:800, color:T.text, letterSpacing:-1, lineHeight:1.2 }}>Connect with educators across the country</h2>
@@ -8838,7 +8838,7 @@ function LandingPage({ onGetStarted }) {
       </section>
 
       {/* ── Testimonials (V2 style) ── */}
-      <section style={{ background:"#ffffff", padding:"80px 24px 48px", borderBottom:`1px solid ${T.border}` }}>
+      <section style={{ background:T.bg, padding:"80px 24px 48px", borderBottom:`1px solid ${T.border}` }}>
         <style>{`.t1-col2{display:none}.t1-col3{display:none}@media(min-width:768px){.t1-col2{display:block}}@media(min-width:1100px){.t1-col3{display:block}}`}</style>
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
           <div style={{ textAlign:"center", marginBottom:64 }}>
@@ -8859,7 +8859,7 @@ function LandingPage({ onGetStarted }) {
       </section>
 
       {/* ── FAQ ── */}
-      <section id="help" style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#ffffff" }}>
+      <section id="help" style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
         <div style={{ maxWidth:680, margin:"0 auto" }}>
           <div style={{ textAlign:"center", marginBottom:40 }}>
             <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>FAQ</p>
