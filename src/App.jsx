@@ -8217,14 +8217,6 @@ function LandingPage({ onGetStarted }) {
       {/* ── Hero ── */}
       <section style={{ paddingTop:0, paddingBottom:0, background:T.bg, position:"relative", overflow:"hidden", minHeight:"100vh", marginTop:56 }}>
 
-        {/* WebGL gradient wave background */}
-        <GradientWave
-          colors={["#ffffff", "#fde68a", "#fbbf24", "#f59e0b", "#ffffff", "#fffbeb"]}
-          shadowPower={3}
-          darkenTop={false}
-          noiseFrequency={[0.0001, 0.0002]}
-          deform={{ incline: 0.15, noiseAmp: 80, noiseFlow: 1.8 }}
-        />
 
         {/* ── Centered content wrapper ── */}
         <div style={{ position:"absolute", top:0, left:0, right:0, bottom:320, zIndex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"0 24px" }}>
