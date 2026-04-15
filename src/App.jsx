@@ -3338,14 +3338,19 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
     setPlaying(false);
   }
 
-  // Responsive: detect if the container is narrow
+  // Responsive: detect if the container is narrow + measure video height for sidebar
   const containerRef = useRef(null);
+  const videoRef = useRef(null);
   const [narrow, setNarrow] = useState(false);
+  const [videoHeight, setVideoHeight] = useState(0);
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
     const obs = new ResizeObserver(([entry]) => {
-      setNarrow(entry.contentRect.width < 780);
+      const w = entry.contentRect.width;
+      setNarrow(w < 780);
+      // sidebar width is 272; video takes remaining width at 16:9
+      setVideoHeight((w - 272) * 0.5625);
     });
     obs.observe(el);
     return () => obs.disconnect();
@@ -3394,367 +3399,309 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   );
 
   return (
-    <div ref={containerRef} style={{ display:"flex", background:C.white, alignItems:"flex-start" }}>
+    <div ref={containerRef} style={{ background:C.white }}>
 
-      {/* ── Main content area ── */}
-      <div style={{ flex:1, minWidth:0 }}>
+      {/* ── Top row: Video + Sidebar ── */}
+      <div style={{ display:"flex", alignItems:"flex-start" }}>
 
         {/* ── Video Player ── */}
-        <div style={{ position:"relative", background:"#0f172a", paddingBottom:"56.25%", height:0 }}>
-          <div style={{ position:"absolute", inset:0 }}>
-            {(session.vimeoUrl || lesson?.vimeoUrl) ? (
-              <VimeoPlayer url={session.vimeoUrl || lesson?.vimeoUrl} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onProgress={pct => { setProgress(pct); onUpdateProgress?.(session.id, pct); if (pct >= 80) { setUnlockedIndices(prev => { const next = new Set(prev); next.add(activeLesson + 1); return next; }); } }}/>
-            ) : (
-              <>
-                <SessionThumb id={session.id} height="100%" overlay={!playing}/>
-                <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  <button onClick={() => setPlaying(p => !p)}
-                    style={{ width:58, height:58, borderRadius:"50%", background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", border:"2px solid rgba(255,255,255,0.45)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"transform .2s" }}
-                    onMouseEnter={e => e.currentTarget.style.transform="scale(1.1)"}
-                    onMouseLeave={e => e.currentTarget.style.transform=""}>
-                    <Icon name={playing ? "pause" : "play"} size={22} color="#fff"/>
-                  </button>
-                </div>
-              </>
-            )}
+        <div style={{ flex:1, minWidth:0 }}>
+          <div ref={videoRef} style={{ position:"relative", background:"#0f172a", paddingBottom:"56.25%", height:0 }}>
+            <div style={{ position:"absolute", inset:0 }}>
+              {(session.vimeoUrl || lesson?.vimeoUrl) ? (
+                <VimeoPlayer url={session.vimeoUrl || lesson?.vimeoUrl} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onProgress={pct => { setProgress(pct); onUpdateProgress?.(session.id, pct); if (pct >= 80) { setUnlockedIndices(prev => { const next = new Set(prev); next.add(activeLesson + 1); return next; }); } }}/>
+              ) : (
+                <>
+                  <SessionThumb id={session.id} height="100%" overlay={!playing}/>
+                  <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <button onClick={() => setPlaying(p => !p)}
+                      style={{ width:58, height:58, borderRadius:"50%", background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", border:"2px solid rgba(255,255,255,0.45)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"transform .2s" }}
+                      onMouseEnter={e => e.currentTarget.style.transform="scale(1.1)"}
+                      onMouseLeave={e => e.currentTarget.style.transform=""}>
+                      <Icon name={playing ? "pause" : "play"} size={22} color="#fff"/>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* ── Bottom Tabs ── */}
-        <div style={{ background:C.white }}>
-          <div style={{ display:"flex", padding:"0 24px", borderBottom:`1px solid ${C.gray200}` }}>
-            {[
-              { key:"overview",   label:"Overview"   },
-              { key:"instructor", label:"Instructor" },
-              { key:"community",  label:"Community"  },
-            ].map(tab => {
-              const isActive = bottomTab === tab.key;
-              return (
-                <button key={tab.key} onClick={() => setBottomTab(tab.key)}
-                  style={{ padding:"14px 16px", border:"none", background:"none", cursor:"pointer", fontSize:14, fontWeight: isActive ? 600 : 400, color: isActive ? C.gray900 : C.gray500, borderBottom: isActive ? `2px solid ${C.gray900}` : "2px solid transparent", marginBottom:-1, whiteSpace:"nowrap", transition:"color .15s", display:"flex", alignItems:"center", gap:6 }}>
-                  {tab.label}
-                  {tab.count > 0 && <span style={{ fontSize:12, fontWeight:700, color: isActive ? C.primary : C.gray400, background: isActive ? C.primaryLight : C.gray100, borderRadius:99, padding:"1px 7px" }}>{tab.count}</span>}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* ── Overview ── */}
-          {bottomTab === "overview" && (
-            <div style={{ padding:"22px 24px" }}>
-              <h2 style={{ margin:"0 0 14px", fontSize:20, fontWeight:700, color:C.gray900, lineHeight:1.4 }}>{session.title}</h2>
-              <div style={{ display:"flex", gap:28, marginBottom:18 }}>
-                <div>
-                  <div style={{ fontSize:22, fontWeight:800, color:"#b45309" }}>4.8 <span style={{ fontSize:16 }}>★</span></div>
-                  <div style={{ fontSize:12, color:C.gray400 }}>3,148 ratings</div>
-                </div>
-                <div>
-                  <div style={{ fontSize:22, fontWeight:800, color:C.gray900 }}>1,240</div>
-                  <div style={{ fontSize:12, color:C.gray400 }}>Students</div>
-                </div>
-                <div>
-                  <div style={{ fontSize:22, fontWeight:800, color:C.gray900 }}>{session.duration}</div>
-                  <div style={{ fontSize:12, color:C.gray400 }}>Total</div>
-                </div>
-              </div>
-              <p style={{ margin:"0 0 16px", fontSize:14, color:C.gray600, lineHeight:1.75 }}>{session.description}</p>
-              <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-                {["Special Education","IEP Strategies","Inclusive Classrooms","MTSS","Behavior Support"].map(tag => (
-                  <span key={tag} style={{ padding:"4px 12px", background:C.gray100, borderRadius:99, fontSize:12, color:C.gray600, fontWeight:500 }}>{tag}</span>
-                ))}
-              </div>
+        {/* ── Sidebar: Course Content (alongside video only) ── */}
+        {!narrow && (
+          <div style={{
+            width: 272,
+            borderLeft: `1px solid ${C.gray200}`,
+            background: C.white,
+            flexShrink: 0,
+            height: videoHeight || `calc((100vw - 272px) * 0.5625)`,
+            overflowY: "auto",
+          }}>
+            <div style={{ padding:"14px 16px 12px", borderBottom:`1px solid ${C.gray100}`, position:"sticky", top:0, background:C.white, zIndex:1 }}>
+              <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>Course Content</div>
+              <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{session.lessons.length} lessons · {session.duration}</div>
             </div>
-          )}
-
-          {/* ── Instructor ── */}
-          {bottomTab === "instructor" && (
-            <div style={{ padding:"22px 24px" }}>
-              <div style={{ display:"flex", gap:16, alignItems:"flex-start", marginBottom:20 }}>
-                <Avatar name={session.instructor} src={INSTRUCTOR_AVATARS[session.instructor]} size={68}/>
-                <div>
-                  <div style={{ fontWeight:800, fontSize:18, color:C.gray900, marginBottom:2 }}>{session.instructor}</div>
-                  <div style={{ fontSize:14, color:C.gray500, marginBottom:10 }}>Special Education Instructor · SPED Summit Faculty</div>
-                  <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-                    {[
-                      { label:"Twitter", color:"#000",
-                        svg:<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.732-8.855L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> },
-                      { label:"LinkedIn", color:"#0a66c2",
-                        svg:<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg> },
-                      { label:"Website", color:"#5e6278",
-                        svg:<svg width="12" height="12" viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm87.63,96H175.8c-1.42-28.1-10.6-54.2-25.8-74.11A88.17,88.17,0,0,1,215.63,120ZM128,216c-19.27,0-37.07-28.68-39.73-72h79.46C165.07,187.32,147.27,216,128,216Zm-39.73-88C90.93,84.68,108.73,56,128,56s37.07,28.68,39.73,72ZM105.93,45.89C90.73,65.8,81.55,91.9,80.13,120H40.37A88.17,88.17,0,0,1,105.93,45.89ZM40.37,136H80.13c1.42,28.1,10.6,54.2,25.8,74.11A88.17,88.17,0,0,1,40.37,136Zm109.77,74.11c15.2-19.91,24.38-46,25.8-74.11h39.76A88.17,88.17,0,0,1,150.14,210.11Z"/></svg> },
-                    ].map(s => (
-                      <button key={s.label} onClick={() => toast({ type:"info", message:`Opening ${s.label}…` })}
-                        style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 12px", border:`1px solid ${C.gray200}`, borderRadius:99, fontSize:12, fontWeight:600, color:s.color, background:C.white, cursor:"pointer" }}>
-                        <span style={{ color:s.color, display:"flex", alignItems:"center" }}>{s.svg}</span>{s.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div style={{ display:"flex", gap:0, padding:"14px 0", borderTop:`1px solid ${C.gray100}`, borderBottom:`1px solid ${C.gray100}`, marginBottom:18 }}>
-                {[
-                  { val:"4.8 ★", label:"Rating"   },
-                  { val:"4,200+", label:"Students" },
-                  { val:"12",     label:"Sessions" },
-                  { val:"Gold",   label:"Faculty Tier" },
-                ].map((s,i) => (
-                  <div key={s.label} style={{ flex:1, textAlign:"center", borderLeft: i > 0 ? `1px solid ${C.gray100}` : "none", padding:"4px 0" }}>
-                    <div style={{ fontWeight:800, fontSize:16, color:C.gray900 }}>{s.val}</div>
-                    <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{s.label}</div>
-                  </div>
-                ))}
-              </div>
-              <p style={{ margin:0, fontSize:14, color:C.gray600, lineHeight:1.8 }}>
-                {session.instructor} is a nationally recognized special education expert with over 15 years of classroom and leadership experience. Specializing in IEP development, inclusive instructional design, and MTSS frameworks, they have trained thousands of educators across the country. Their evidence-based approach blends practical strategies with the latest research to empower teachers and improve outcomes for students with disabilities.
-              </p>
-            </div>
-          )}
-
-          {/* ── Community ── */}
-          {bottomTab === "community" && (
-            <div style={{ padding:"20px 24px", background:C.white, minHeight:400 }}>
-              {/* Quick post */}
-              <div style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"12px 14px", marginBottom:14, display:"flex", gap:10, alignItems:"center" }}>
-                <Avatar name={userProfile.name} size={32}/>
-                <input ref={chatInputRef} value={communityNewPost} onChange={e=>setCommunityNewPost(e.target.value)}
-                  onKeyDown={e=>{ if(e.key==="Enter" && communityNewPost.trim()) {
-                    setCommunityPosts(ps=>[{id:Date.now(),author:"You",role:"USER",time:"just now",title:communityNewPost.slice(0,80),body:"",tags:[],likes:0,replies:0,type:"post",liked:false,saved:false},...ps]);
-                    setCommunityNewPost("");
-                    toast({ type:"success", message:"Posted!" });
-                  }}}
-                  placeholder="Share something with the community…"
-                  style={{ flex:1, padding:"8px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:14, outline:"none", color:C.gray700, background:C.white }}/>
-                <Btn size="sm" onClick={() => {
-                  if (!communityNewPost.trim()) return;
-                  setCommunityPosts(ps=>[{id:Date.now(),author:"You",role:"USER",time:"just now",title:communityNewPost.slice(0,80),body:"",tags:[],likes:0,replies:0,type:"post",liked:false,saved:false},...ps]);
-                  setCommunityNewPost("");
-                  toast({ type:"success", message:"Posted!" });
-                }}>Post</Btn>
-              </div>
-
-              {/* Posts */}
-              {communityPosts.map(post => (
-                <div key={post.id} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"16px 18px", marginBottom:12 }}>
-                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
-                    <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-                      <Avatar name={post.author} size={36}/>
-                      <div>
-                        <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"wrap" }}>
-                          <span style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{post.author}</span>
-                          {post.role==="MENTOR" && <Badge label="MENTOR" color={C.success} bg={C.successLight} size={12}/>}
-                          {post.type==="question" && <Badge label="QUESTION" color={C.primary} bg={C.primaryLight} size={12}/>}
+            <div>
+              {(() => {
+                const sections = [];
+                let currentSection = null;
+                session.lessons.forEach((l, i) => {
+                  if (l.sectionTitle) {
+                    currentSection = { title: l.sectionTitle, lessons: [] };
+                    sections.push(currentSection);
+                  } else if (!currentSection) {
+                    currentSection = { title: "Introduction", lessons: [] };
+                    sections.push(currentSection);
+                  }
+                  currentSection.lessons.push({ ...l, _index: i });
+                });
+                return sections.map((sec, si) => {
+                  const secKey = `sec-${si}`;
+                  const isCollapsed = collapsedSections[secKey];
+                  const completedCount = sec.lessons.filter(l => l.status === "completed").length;
+                  return (
+                    <div key={secKey} style={{ borderBottom:`1px solid ${C.gray100}` }}>
+                      <button onClick={() => setCollapsedSections(s => ({ ...s, [secKey]: !s[secKey] }))}
+                        style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 16px", background:C.gray50, border:"none", cursor:"pointer", textAlign:"left", gap:8 }}>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ fontSize:12, fontWeight:700, color:C.gray900 }}>{si === 0 ? "" : `${si}. `}{sec.title}</div>
+                          <div style={{ fontSize:12, color:C.gray400, marginTop:1 }}>{sec.lessons.length} lesson{sec.lessons.length!==1?"s":""}{completedCount>0 ? ` · ${completedCount} done` : ""}</div>
                         </div>
-                        <div style={{ fontSize:12, color:C.gray400 }}>{post.time}</div>
-                      </div>
-                    </div>
-                    <div style={{ position:"relative" }}>
-                      <button onClick={()=>setCommunityOpenMenu(communityOpenMenu===post.id?null:post.id)}
-                        style={{ width:28, height:28, borderRadius:6, border:"none", background:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}
-                        onMouseEnter={e=>e.currentTarget.style.background=C.gray100} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                        <Icon name="dots-three" size={16} color={C.gray500}/>
+                        <Icon name={isCollapsed ? "caret-down" : "caret-up"} size={13} color={C.gray400}/>
                       </button>
-                      {communityOpenMenu===post.id && (
-                        <DropdownMenu
-                          items={[
-                            { icon:"bookmark", label:post.saved?"Unsave":"Save", action:()=>{ setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,saved:!p.saved}:p)); toast({type:"success",message:post.saved?"Removed":"Saved!"}); setCommunityOpenMenu(null); } },
-                            { icon:"share-network", label:"Share", action:()=>{ toast({type:"info",message:"Link copied!"}); setCommunityOpenMenu(null); } },
-                            { icon:"flag", label:"Report", action:()=>{ toast({type:"warning",message:"Report submitted."}); setCommunityOpenMenu(null); } },
-                            ...(post.author==="You"?[{ icon:"trash", label:"Delete", danger:true, action:()=>{ setCommunityPosts(ps=>ps.filter(p=>p.id!==post.id)); toast({type:"success",message:"Deleted."}); setCommunityOpenMenu(null); } }]:[]),
-                          ]}
-                          onClose={()=>setCommunityOpenMenu(null)}
-                        />
+                      {!isCollapsed && (
+                        <div style={{ padding:"4px 0 8px" }}>
+                          {sec.lessons.map(l => {
+                            const i = l._index;
+                            const isActive = i === activeLesson && l.type !== "quiz";
+                            const locked = !unlockedIndices.has(i) && l.type !== "material";
+                            const isQuiz = l.type === "quiz";
+                            const quizDone = isQuiz && l.status === "completed";
+                            const isPreview = i === 0 || l.status === "available";
+                            return (
+                              <div key={String(l.id)} onClick={() => switchLesson(i)}
+                                style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"10px 16px", background: isActive ? C.primaryLight : "transparent", borderLeft: isActive ? `3px solid ${C.primary}` : "3px solid transparent", cursor: locked ? "default" : "pointer", transition:"background .1s" }}
+                                onMouseEnter={e => { if (!locked && !isActive) e.currentTarget.style.background = C.gray50; }}
+                                onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}>
+                                <div style={{ marginTop:1, flexShrink:0 }}>
+                                  {l.status === "completed" || quizDone
+                                    ? <div style={{ width:18, height:18, borderRadius:"50%", background:C.success, display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="check" size={12} color="#fff"/></div>
+                                    : locked ? <Icon name="lock" size={14} color={C.gray300}/>
+                                    : isActive ? <div style={{ width:18, height:18, borderRadius:"50%", background:C.primary, display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="play" size={12} color="#fff"/></div>
+                                    : <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${C.gray300}` }}/>}
+                                </div>
+                                <div style={{ flex:1, minWidth:0 }}>
+                                  <div style={{ fontSize:12, fontWeight: isActive ? 700 : 400, color: locked ? C.gray400 : isQuiz ? "#7c3aed" : C.gray900, lineHeight:1.4 }}>{l.title}</div>
+                                  <div style={{ fontSize:12, color: isQuiz ? "#a855f7" : C.gray400, marginTop:2 }}>
+                                    {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
+                                  </div>
+                                  {isPreview && !locked && !isActive && <span style={{ display:"inline-block", fontSize:12, fontWeight:600, color:C.gray500, background:C.gray100, borderRadius:4, padding:"1px 6px", marginTop:3 }}>Preview</span>}
+                                </div>
+                              </div>
+                            );
+                          })}
+                          {(SESSION_RESOURCES[session.id] || {})[sec.title]?.map(r => {
+                            const isDone = !!downloaded[r.id];
+                            const typeColor = r.type==="PDF" ? { bg:"#fef2f2", color:"#dc2626" } : r.type==="PPTX" ? { bg:"#fff7ed", color:"#ea580c" } : r.type==="ZIP" ? { bg:"#f5f3ff", color:"#7c3aed" } : { bg:C.primaryLight, color:C.primary };
+                            return (
+                              <div key={r.id} style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"10px 16px", background:"transparent", borderLeft:"3px solid transparent", transition:"background .1s" }}
+                                onMouseEnter={e => e.currentTarget.style.background = C.gray50}
+                                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                                <div style={{ marginTop:1, width:18, height:18, borderRadius:4, background:typeColor.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                                  <Icon name="paperclip" size={12} color={typeColor.color}/>
+                                </div>
+                                <div style={{ flex:1, minWidth:0 }}>
+                                  <div style={{ fontSize:12, fontWeight:400, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{r.title}</div>
+                                  <div style={{ display:"flex", gap:5, alignItems:"center", marginTop:2 }}>
+                                    <span style={{ fontSize:12, fontWeight:700, color:typeColor.color, background:typeColor.bg, borderRadius:4, padding:"1px 5px" }}>{r.type}</span>
+                                    <span style={{ fontSize:12, color:C.gray400 }}>{r.size}</span>
+                                  </div>
+                                </div>
+                                <button onClick={() => { setDownloaded(d=>({...d,[r.id]:true})); toast({ type:"success", message:`Downloading ${r.title}` }); }}
+                                  style={{ width:26, height:26, borderRadius:"50%", border:"none", cursor: isDone?"default":"pointer", display:"flex", alignItems:"center", justifyContent:"center", background: isDone ? C.successLight : C.gray100, flexShrink:0, marginTop:1 }}
+                                  onMouseEnter={e => { if (!isDone) e.currentTarget.style.background = C.primaryLight; }}
+                                  onMouseLeave={e => { if (!isDone) e.currentTarget.style.background = C.gray100; }}>
+                                  <Icon name={isDone?"check":"download"} size={12} color={isDone ? C.success : C.gray500}/>
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
                       )}
                     </div>
-                  </div>
-                  <div style={{ fontSize:14, fontWeight:700, color:C.gray900, marginBottom:5, lineHeight:1.4 }}>{post.title}</div>
-                  {post.body && <p style={{ margin:"0 0 8px", fontSize:14, color:C.gray600, lineHeight:1.6, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{post.body}</p>}
-                  {post.tags.length>0 && <div style={{ display:"flex", gap:6, marginBottom:8 }}>{post.tags.map(t=><span key={t} style={{ fontSize:12, background:C.gray100, color:C.gray600, padding:"2px 8px", borderRadius:99 }}>{t}</span>)}</div>}
-                  <div style={{ display:"flex", gap:2, paddingTop:10, borderTop:`1px solid ${C.gray100}` }}>
-                    <button onClick={()=>setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,liked:!p.liked,likes:p.liked?p.likes-1:p.likes+1}:p))}
-                      style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", borderRadius:8, border:"none", background:post.liked?C.errorLight:"transparent", color:post.liked?C.error:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
-                      <Icon name={post.liked?"heart":"heart-straight"} size={14} color={post.liked?C.error:C.gray500}/>{post.likes}
+                  );
+                });
+              })()}
+            </div>
+          </div>
+        )}
+
+      </div>{/* end top row */}
+
+      {/* ── Full-width Tabs + Content ── */}
+      <div style={{ background:C.white }}>
+        <div style={{ display:"flex", padding:"0 24px", borderBottom:`1px solid ${C.gray200}` }}>
+          {[
+            { key:"overview",   label:"Overview"   },
+            { key:"instructor", label:"Instructor" },
+            { key:"community",  label:"Community"  },
+          ].map(tab => {
+            const isActive = bottomTab === tab.key;
+            return (
+              <button key={tab.key} onClick={() => setBottomTab(tab.key)}
+                style={{ padding:"14px 16px", border:"none", background:"none", cursor:"pointer", fontSize:14, fontWeight: isActive ? 600 : 400, color: isActive ? C.gray900 : C.gray500, borderBottom: isActive ? `2px solid ${C.gray900}` : "2px solid transparent", marginBottom:-1, whiteSpace:"nowrap", transition:"color .15s" }}>
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Overview */}
+        {bottomTab === "overview" && (
+          <div style={{ padding:"22px 24px" }}>
+            <h2 style={{ margin:"0 0 14px", fontSize:20, fontWeight:700, color:C.gray900, lineHeight:1.4 }}>{session.title}</h2>
+            <div style={{ display:"flex", gap:28, marginBottom:18 }}>
+              <div>
+                <div style={{ fontSize:22, fontWeight:800, color:"#b45309" }}>4.8 <span style={{ fontSize:16 }}>★</span></div>
+                <div style={{ fontSize:12, color:C.gray400 }}>3,148 ratings</div>
+              </div>
+              <div>
+                <div style={{ fontSize:22, fontWeight:800, color:C.gray900 }}>1,240</div>
+                <div style={{ fontSize:12, color:C.gray400 }}>Students</div>
+              </div>
+              <div>
+                <div style={{ fontSize:22, fontWeight:800, color:C.gray900 }}>{session.duration}</div>
+                <div style={{ fontSize:12, color:C.gray400 }}>Total</div>
+              </div>
+            </div>
+            <p style={{ margin:"0 0 16px", fontSize:14, color:C.gray600, lineHeight:1.75 }}>{session.description}</p>
+            <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+              {["Special Education","IEP Strategies","Inclusive Classrooms","MTSS","Behavior Support"].map(tag => (
+                <span key={tag} style={{ padding:"4px 12px", background:C.gray100, borderRadius:8, fontSize:12, color:C.gray600, fontWeight:500 }}>{tag}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Instructor */}
+        {bottomTab === "instructor" && (
+          <div style={{ padding:"22px 24px" }}>
+            <div style={{ display:"flex", gap:16, alignItems:"flex-start", marginBottom:20 }}>
+              <Avatar name={session.instructor} src={INSTRUCTOR_AVATARS[session.instructor]} size={68}/>
+              <div>
+                <div style={{ fontWeight:800, fontSize:18, color:C.gray900, marginBottom:2 }}>{session.instructor}</div>
+                <div style={{ fontSize:14, color:C.gray500, marginBottom:10 }}>Special Education Instructor · SPED Summit Faculty</div>
+                <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+                  {[
+                    { label:"Twitter", svg:<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.732-8.855L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> },
+                    { label:"LinkedIn", svg:<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg> },
+                    { label:"Website", svg:<svg width="12" height="12" viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm87.63,96H175.8c-1.42-28.1-10.6-54.2-25.8-74.11A88.17,88.17,0,0,1,215.63,120ZM128,216c-19.27,0-37.07-28.68-39.73-72h79.46C165.07,187.32,147.27,216,128,216Zm-39.73-88C90.93,84.68,108.73,56,128,56s37.07,28.68,39.73,72ZM105.93,45.89C90.73,65.8,81.55,91.9,80.13,120H40.37A88.17,88.17,0,0,1,105.93,45.89ZM40.37,136H80.13c1.42,28.1,10.6,54.2,25.8,74.11A88.17,88.17,0,0,1,40.37,136Zm109.77,74.11c15.2-19.91,24.38-46,25.8-74.11h39.76A88.17,88.17,0,0,1,150.14,210.11Z"/></svg> },
+                  ].map(s => (
+                    <button key={s.label} onClick={() => toast({ type:"info", message:`Opening ${s.label}…` })}
+                      style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:12, fontWeight:600, color:C.gray700, background:C.white, cursor:"pointer" }}
+                      onMouseEnter={e=>e.currentTarget.style.background=C.gray100} onMouseLeave={e=>e.currentTarget.style.background=C.white}>
+                      <span style={{ color:C.gray600, display:"flex", alignItems:"center" }}>{s.svg}</span>{s.label}
                     </button>
-                    <button onClick={()=>setCommunityReplyingTo(communityReplyingTo===post.id?null:post.id)}
-                      style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", borderRadius:8, border:"none", background:"transparent", color:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}
-                      onMouseEnter={e=>e.currentTarget.style.background=C.gray100} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                      <Icon name="chat-circle" size={14} color={C.gray500}/>{post.replies}
-                    </button>
-                    <button onClick={()=>toast({type:"info",message:"Link copied!"})}
-                      style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", borderRadius:8, border:"none", background:"transparent", color:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}
-                      onMouseEnter={e=>e.currentTarget.style.background=C.gray100} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                      <Icon name="share-network" size={14} color={C.gray500}/>Share
-                    </button>
-                    {post.saved && <Icon name="bookmark" size={15} color={C.primary} style={{ marginLeft:"auto", alignSelf:"center" }}/>}
-                  </div>
-                  {/* Inline reply */}
-                  {communityReplyingTo===post.id && (
-                    <div style={{ marginTop:10, display:"flex", gap:8 }}>
-                      <Avatar name={userProfile.name} size={26}/>
-                      <div style={{ flex:1, display:"flex", gap:8 }}>
-                        <input value={communityReplyText} onChange={e=>setCommunityReplyText(e.target.value)}
-                          onKeyDown={e=>{ if(e.key==="Enter" && communityReplyText.trim()) {
-                            setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1}:p));
-                            setCommunityReplyingTo(null); setCommunityReplyText("");
-                            toast({type:"success",message:"Reply posted!"});
-                          }}}
-                          placeholder="Write a reply…"
-                          style={{ flex:1, padding:"6px 10px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:12, outline:"none", color:C.gray700, background:C.white }}/>
-                        <Btn size="sm" onClick={()=>{ if(!communityReplyText.trim()) return; setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1}:p)); setCommunityReplyingTo(null); setCommunityReplyText(""); toast({type:"success",message:"Reply posted!"}); }}>Reply</Btn>
-                      </div>
-                    </div>
-                  )}
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div style={{ display:"flex", gap:0, padding:"14px 0", borderTop:`1px solid ${C.gray100}`, borderBottom:`1px solid ${C.gray100}`, marginBottom:18 }}>
+              {[{ val:"4.8 ★", label:"Rating" },{ val:"4,200+", label:"Students" },{ val:"12", label:"Sessions" },{ val:"Gold", label:"Faculty Tier" }].map((s,i) => (
+                <div key={s.label} style={{ flex:1, textAlign:"center", borderLeft: i > 0 ? `1px solid ${C.gray100}` : "none", padding:"4px 0" }}>
+                  <div style={{ fontWeight:800, fontSize:16, color:C.gray900 }}>{s.val}</div>
+                  <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{s.label}</div>
                 </div>
               ))}
             </div>
-          )}
+            <p style={{ margin:0, fontSize:14, color:C.gray600, lineHeight:1.8 }}>
+              {session.instructor} is a nationally recognized special education expert with over 15 years of classroom and leadership experience. Specializing in IEP development, inclusive instructional design, and MTSS frameworks, they have trained thousands of educators across the country. Their evidence-based approach blends practical strategies with the latest research to empower teachers and improve outcomes for students with disabilities.
+            </p>
+          </div>
+        )}
 
-        </div>
-
-      </div>
-
-      {/* ── Right panel: Course Content (lessons only) ── */}
-      <div style={{
-        width: narrow ? "100%" : 272,
-        borderLeft: `1px solid ${C.gray200}`,
-        background: C.white,
-        display: narrow ? "none" : "flex",
-        flexDirection: "column",
-        flexShrink: 0,
-        alignSelf: "flex-start",
-        position: "sticky",
-        top: 0,
-        maxHeight: "100vh",
-        overflowY: "auto",
-      }}>
-        <div style={{ padding:"14px 16px 12px", borderBottom:`1px solid ${C.gray100}`, flexShrink:0, position:"sticky", top:0, background:C.white, zIndex:1 }}>
-          <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>Course Content</div>
-          <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{session.lessons.length} lessons · {session.duration}</div>
-        </div>
-        <div>
-          {(() => {
-            // Group lessons into sections by sectionTitle markers
-            const sections = [];
-            let currentSection = null;
-            session.lessons.forEach((l, i) => {
-              if (l.sectionTitle) {
-                currentSection = { title: l.sectionTitle, lessons: [] };
-                sections.push(currentSection);
-              } else if (!currentSection) {
-                currentSection = { title: "Introduction", lessons: [] };
-                sections.push(currentSection);
-              }
-              currentSection.lessons.push({ ...l, _index: i });
-            });
-
-            return sections.map((sec, si) => {
-              const secKey = `sec-${si}`;
-              const isCollapsed = collapsedSections[secKey];
-              const completedCount = sec.lessons.filter(l => l.status === "completed").length;
-              return (
-                <div key={secKey} style={{ borderBottom:`1px solid ${C.gray100}` }}>
-                  {/* Section header */}
-                  <button
-                    onClick={() => setCollapsedSections(s => ({ ...s, [secKey]: !s[secKey] }))}
-                    style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between",
-                      padding:"12px 16px", background:C.gray50, border:"none", cursor:"pointer", textAlign:"left",
-                      gap:8 }}>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontSize:12, fontWeight:700, color:C.gray900 }}>
-                        {si === 0 ? "" : `${si}. `}{sec.title}
+        {/* Community */}
+        {bottomTab === "community" && (
+          <div style={{ padding:"20px 24px", background:C.white, minHeight:400 }}>
+            <div style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"12px 14px", marginBottom:14, display:"flex", gap:10, alignItems:"center" }}>
+              <Avatar name={userProfile.name} size={32}/>
+              <input ref={chatInputRef} value={communityNewPost} onChange={e=>setCommunityNewPost(e.target.value)}
+                onKeyDown={e=>{ if(e.key==="Enter" && communityNewPost.trim()) { setCommunityPosts(ps=>[{id:Date.now(),author:"You",role:"USER",time:"just now",title:communityNewPost.slice(0,80),body:"",tags:[],likes:0,replies:0,type:"post",liked:false,saved:false},...ps]); setCommunityNewPost(""); toast({ type:"success", message:"Posted!" }); }}}
+                placeholder="Share something with the community…"
+                style={{ flex:1, padding:"8px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:14, outline:"none", color:C.gray700, background:C.white }}/>
+              <Btn size="sm" onClick={() => { if (!communityNewPost.trim()) return; setCommunityPosts(ps=>[{id:Date.now(),author:"You",role:"USER",time:"just now",title:communityNewPost.slice(0,80),body:"",tags:[],likes:0,replies:0,type:"post",liked:false,saved:false},...ps]); setCommunityNewPost(""); toast({ type:"success", message:"Posted!" }); }}>Post</Btn>
+            </div>
+            {communityPosts.map(post => (
+              <div key={post.id} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"16px 18px", marginBottom:12 }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
+                  <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+                    <Avatar name={post.author} size={36}/>
+                    <div>
+                      <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"wrap" }}>
+                        <span style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{post.author}</span>
+                        {post.role==="MENTOR" && <Badge label="MENTOR" color={C.success} bg={C.successLight} size={12}/>}
+                        {post.type==="question" && <Badge label="QUESTION" color={C.primary} bg={C.primaryLight} size={12}/>}
                       </div>
-                      <div style={{ fontSize:12, color:C.gray400, marginTop:1 }}>
-                        {sec.lessons.length} lesson{sec.lessons.length!==1?"s":""}{completedCount>0 ? ` · ${completedCount} done` : ""}
-                      </div>
+                      <div style={{ fontSize:12, color:C.gray400 }}>{post.time}</div>
                     </div>
-                    <Icon name={isCollapsed ? "caret-down" : "caret-up"} size={13} color={C.gray400}/>
-                  </button>
-
-                  {/* Lessons */}
-                  {!isCollapsed && (
-                    <div style={{ padding:"4px 0 8px" }}>
-                      {sec.lessons.map(l => {
-                        const i = l._index;
-                        const isActive = i === activeLesson && l.type !== "quiz";
-                        const locked = !unlockedIndices.has(i) && l.type !== "material";
-                        const isQuiz = l.type === "quiz";
-                        const quizDone = isQuiz && l.status === "completed";
-                        const quizAvailable = isQuiz && (l.status === "active" || l.status === "available");
-                        const isPreview = i === 0 || l.status === "available";
-                        return (
-                          <div key={String(l.id)} onClick={() => switchLesson(i)}
-                            style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"10px 16px",
-                              background: isActive ? C.primaryLight : "transparent",
-                              borderLeft: isActive ? `3px solid ${C.primary}` : "3px solid transparent",
-                              cursor: locked ? "default" : "pointer", transition:"background .1s" }}
-                            onMouseEnter={e => { if (!locked && !isActive) e.currentTarget.style.background = C.gray50; }}
-                            onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}>
-
-                            {/* Status icon */}
-                            <div style={{ marginTop:1, flexShrink:0 }}>
-                              {l.status === "completed" || quizDone
-                                ? <div style={{ width:18, height:18, borderRadius:"50%", background:C.success, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                                    <Icon name="check" size={12} color="#fff"/>
-                                  </div>
-                                : locked
-                                  ? <Icon name="lock" size={14} color={C.gray300}/>
-                                  : isActive
-                                    ? <div style={{ width:18, height:18, borderRadius:"50%", background:C.primary, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                                        <Icon name="play" size={12} color="#fff"/>
-                                      </div>
-                                    : <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${C.gray300}` }}/>
-                              }
-                            </div>
-
-                            {/* Content */}
-                            <div style={{ flex:1, minWidth:0 }}>
-                              <div style={{ fontSize:12, fontWeight: isActive ? 700 : 400, color: locked ? C.gray400 : isQuiz ? "#7c3aed" : C.gray900, lineHeight:1.4 }}>{l.title}</div>
-                              <div style={{ fontSize:12, color: isQuiz ? "#a855f7" : C.gray400, marginTop:2 }}>
-                                {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
-                              </div>
-                              {isPreview && !locked && !isActive && (
-                                <span style={{ display:"inline-block", fontSize:12, fontWeight:600, color:C.gray500, background:C.gray100, borderRadius:4, padding:"1px 6px", marginTop:3 }}>Preview</span>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                      {/* Section resources — same row style as lessons */}
-                      {(SESSION_RESOURCES[session.id] || {})[sec.title]?.map(r => {
-                        const isDone = !!downloaded[r.id];
-                        const typeColor = r.type==="PDF" ? { bg:"#fef2f2", color:"#dc2626" } : r.type==="PPTX" ? { bg:"#fff7ed", color:"#ea580c" } : r.type==="ZIP" ? { bg:"#f5f3ff", color:"#7c3aed" } : { bg:C.primaryLight, color:C.primary };
-                        return (
-                          <div key={r.id}
-                            style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"10px 16px", background:"transparent", borderLeft:"3px solid transparent", transition:"background .1s" }}
-                            onMouseEnter={e => e.currentTarget.style.background = C.gray50}
-                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                            {/* File icon chip */}
-                            <div style={{ marginTop:1, width:18, height:18, borderRadius:4, background:typeColor.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                              <Icon name="paperclip" size={12} color={typeColor.color}/>
-                            </div>
-                            <div style={{ flex:1, minWidth:0 }}>
-                              <div style={{ fontSize:12, fontWeight:400, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{r.title}</div>
-                              <div style={{ display:"flex", gap:5, alignItems:"center", marginTop:2 }}>
-                                <span style={{ fontSize:12, fontWeight:700, color:typeColor.color, background:typeColor.bg, borderRadius:4, padding:"1px 5px" }}>{r.type}</span>
-                                <span style={{ fontSize:12, color:C.gray400 }}>{r.size}</span>
-                              </div>
-                            </div>
-                            <button onClick={() => { setDownloaded(d=>({...d,[r.id]:true})); toast({ type:"success", message:`Downloading ${r.title}` }); }}
-                              style={{ width:26, height:26, borderRadius:"50%", border:"none", cursor: isDone?"default":"pointer", display:"flex", alignItems:"center", justifyContent:"center", background: isDone ? C.successLight : C.gray100, flexShrink:0, marginTop:1 }}
-                              onMouseEnter={e => { if (!isDone) e.currentTarget.style.background = C.primaryLight; }}
-                              onMouseLeave={e => { if (!isDone) e.currentTarget.style.background = C.gray100; }}>
-                              <Icon name={isDone?"check":"download"} size={12} color={isDone ? C.success : C.gray500}/>
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                  </div>
+                  <div style={{ position:"relative" }}>
+                    <button onClick={()=>setCommunityOpenMenu(communityOpenMenu===post.id?null:post.id)}
+                      style={{ width:28, height:28, borderRadius:6, border:"none", background:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}
+                      onMouseEnter={e=>e.currentTarget.style.background=C.gray100} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                      <Icon name="dots-three" size={16} color={C.gray500}/>
+                    </button>
+                    {communityOpenMenu===post.id && (
+                      <DropdownMenu
+                        items={[
+                          { icon:"bookmark", label:post.saved?"Unsave":"Save", action:()=>{ setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,saved:!p.saved}:p)); toast({type:"success",message:post.saved?"Removed":"Saved!"}); setCommunityOpenMenu(null); } },
+                          { icon:"share-network", label:"Share", action:()=>{ toast({type:"info",message:"Link copied!"}); setCommunityOpenMenu(null); } },
+                          { icon:"flag", label:"Report", action:()=>{ toast({type:"warning",message:"Report submitted."}); setCommunityOpenMenu(null); } },
+                          ...(post.author==="You"?[{ icon:"trash", label:"Delete", danger:true, action:()=>{ setCommunityPosts(ps=>ps.filter(p=>p.id!==post.id)); toast({type:"success",message:"Deleted."}); setCommunityOpenMenu(null); } }]:[]),
+                        ]}
+                        onClose={()=>setCommunityOpenMenu(null)}
+                      />
+                    )}
+                  </div>
                 </div>
-              );
-            });
-          })()}
-        </div>
+                <div style={{ fontSize:14, fontWeight:700, color:C.gray900, marginBottom:5, lineHeight:1.4 }}>{post.title}</div>
+                {post.body && <p style={{ margin:"0 0 8px", fontSize:14, color:C.gray600, lineHeight:1.6, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{post.body}</p>}
+                {post.tags.length>0 && <div style={{ display:"flex", gap:6, marginBottom:8 }}>{post.tags.map(t=><span key={t} style={{ fontSize:12, background:C.gray100, color:C.gray600, padding:"2px 8px", borderRadius:99 }}>{t}</span>)}</div>}
+                <div style={{ display:"flex", gap:2, paddingTop:10, borderTop:`1px solid ${C.gray100}` }}>
+                  <button onClick={()=>setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,liked:!p.liked,likes:p.liked?p.likes-1:p.likes+1}:p))}
+                    style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", borderRadius:8, border:"none", background:post.liked?C.errorLight:"transparent", color:post.liked?C.error:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
+                    <Icon name={post.liked?"heart":"heart-straight"} size={14} color={post.liked?C.error:C.gray500}/>{post.likes}
+                  </button>
+                  <button onClick={()=>setCommunityReplyingTo(communityReplyingTo===post.id?null:post.id)}
+                    style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", borderRadius:8, border:"none", background:"transparent", color:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}
+                    onMouseEnter={e=>e.currentTarget.style.background=C.gray100} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                    <Icon name="chat-circle" size={14} color={C.gray500}/>{post.replies}
+                  </button>
+                  <button onClick={()=>toast({type:"info",message:"Link copied!"})}
+                    style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", borderRadius:8, border:"none", background:"transparent", color:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}
+                    onMouseEnter={e=>e.currentTarget.style.background=C.gray100} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                    <Icon name="share-network" size={14} color={C.gray500}/>Share
+                  </button>
+                  {post.saved && <Icon name="bookmark" size={15} color={C.primary} style={{ marginLeft:"auto", alignSelf:"center" }}/>}
+                </div>
+                {communityReplyingTo===post.id && (
+                  <div style={{ marginTop:10, display:"flex", gap:8 }}>
+                    <Avatar name={userProfile.name} size={26}/>
+                    <div style={{ flex:1, display:"flex", gap:8 }}>
+                      <input value={communityReplyText} onChange={e=>setCommunityReplyText(e.target.value)}
+                        onKeyDown={e=>{ if(e.key==="Enter" && communityReplyText.trim()) { setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1}:p)); setCommunityReplyingTo(null); setCommunityReplyText(""); toast({type:"success",message:"Reply posted!"}); }}}
+                        placeholder="Write a reply…"
+                        style={{ flex:1, padding:"6px 10px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:12, outline:"none", color:C.gray700, background:C.white }}/>
+                      <Btn size="sm" onClick={()=>{ if(!communityReplyText.trim()) return; setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1}:p)); setCommunityReplyingTo(null); setCommunityReplyText(""); toast({type:"success",message:"Reply posted!"}); }}>Reply</Btn>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
+
     </div>
   );
 }
@@ -7873,7 +7820,7 @@ function WatchOverlay({ T }) {
           <span>Session progress</span>
           <span style={{ fontWeight:700, color: done ? "#059669" : T.text, transition:"color .3s" }}>{pct}%</span>
         </div>
-        <div style={{ height:6, background:"#f1f0ef", borderRadius:3, overflow:"hidden" }}>
+        <div style={{ height:6, background:T.hover, borderRadius:3, overflow:"hidden" }}>
           <div style={{ height:"100%", width:`${pct}%`, borderRadius:3, transition:"width 0.025s linear",
             background: done ? "linear-gradient(90deg,#059669,#10b981)" : "linear-gradient(90deg,#8a46ff,#e83e8c)" }}/>
         </div>
@@ -7917,7 +7864,7 @@ function QuizOverlay({ T, onComplete }) {
           }
         </span>
       </div>
-      <div style={{ height:4, background:"#f1f0ef", borderRadius:2, overflow:"hidden", marginBottom:18 }}>
+      <div style={{ height:4, background:T.hover, borderRadius:2, overflow:"hidden", marginBottom:18 }}>
         <div style={{ height:"100%", width:`${pct}%`, borderRadius:2, transition:"width 0.02s linear",
           background: done ? "linear-gradient(90deg,#059669,#10b981)" : "linear-gradient(90deg,#8a46ff,#e83e8c)" }}/>
       </div>
@@ -7936,7 +7883,7 @@ function QuizOverlay({ T, onComplete }) {
           animationDelay:`${oi*0.08+0.3}s` }}>
           <span style={{ width:24, height:24, borderRadius:6, flexShrink:0, display:"inline-flex", alignItems:"center", justifyContent:"center",
             fontSize:11, fontWeight:700,
-            background: opt.correct ? "#8a46ff" : "#f1f0ef",
+            background: opt.correct ? "#8a46ff" : T.hover,
             color:      opt.correct ? "#fff"    : T.muted }}>{opt.label}</span>
           <span style={{ fontSize:13, color: opt.correct ? "#7c3aed" : T.text, fontWeight: opt.correct ? 600 : 400 }}>{opt.text}</span>
           {opt.correct && <Icon name="check-circle" size={15} color="#8a46ff" style={{ marginLeft:"auto" }}/>}
@@ -8100,18 +8047,37 @@ function LandingPage({ onGetStarted }) {
     return ()=>clearTimeout(t);
   },[heroTab]);
 
+  const T = {
+    bg:        "#ffffff",
+    bgSection: "#F9FAFB",
+    bgHighlight:"#EFF6FF",
+    text:      "#111827",
+    secondary: "#374151",
+    muted:     "#6B7280",
+    border:    "#E5E7EB",
+    borderStrong:"#D1D5DB",
+    hover:     "#F3F4F6",
+    blue:      "#2563EB",
+    blueHov:   "#1D4ED8",
+    blueBg:    "#DBEAFE",
+    orange:    "#F59E0B",
+    green:     "#10B981",
+    purple:    "#8B5CF6",
+    error:     "#EF4444",
+  };
+
   if (selectedInstructor) {
     const instr = selectedInstructor;
     const paras = instr.bio.split("\n\n");
     return (
-      <div style={{ minHeight:"100vh", fontFamily:"Inter,'Segoe UI',system-ui,sans-serif", background:"#fff", color:"#37352f" }}>
+      <div style={{ minHeight:"100vh", fontFamily:"Inter,'Segoe UI',system-ui,sans-serif", background:"#fff", color:T.text }}>
         {/* Nav */}
-        <nav style={{ position:"sticky", top:0, zIndex:100, background:"rgba(255,255,255,0.95)", backdropFilter:"blur(8px)", borderBottom:"1px solid rgba(55,53,47,0.09)", height:60, display:"flex", alignItems:"center", padding:"0 24px" }}>
+        <nav style={{ position:"sticky", top:0, zIndex:100, background:"rgba(255,255,255,0.95)", backdropFilter:"blur(8px)", borderBottom:`1px solid ${T.border}`, height:60, display:"flex", alignItems:"center", padding:"0 24px" }}>
           <div style={{ maxWidth:1024, margin:"0 auto", width:"100%", display:"flex", alignItems:"center" }}>
             <button onClick={()=>{ setSelectedInstructor(null); window.scrollTo(0,0); }}
-              style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", fontSize:14, color:"#787774", cursor:"pointer", padding:"4px 8px", borderRadius:6, transition:"background .12s, color .12s" }}
-              onMouseEnter={e=>{ e.currentTarget.style.background="rgba(55,53,47,0.06)"; e.currentTarget.style.color="#37352f"; }}
-              onMouseLeave={e=>{ e.currentTarget.style.background="none"; e.currentTarget.style.color="#787774"; }}>
+              style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", fontSize:14, color:T.muted, cursor:"pointer", padding:"4px 8px", borderRadius:6, transition:"background .12s, color .12s" }}
+              onMouseEnter={e=>{ e.currentTarget.style.background=T.hover; e.currentTarget.style.color=T.text; }}
+              onMouseLeave={e=>{ e.currentTarget.style.background="none"; e.currentTarget.style.color=T.muted; }}>
               <Icon name="arrow-left" size={16} color="currentColor"/>
               Back
             </button>
@@ -8123,33 +8089,33 @@ function LandingPage({ onGetStarted }) {
           <div>
             {/* Header */}
             <div style={{ display:"flex", alignItems:"flex-start", gap:20, marginBottom:32 }}>
-              <div style={{ width:120, height:120, borderRadius:16, overflow:"hidden", flexShrink:0, background:"#f1f0ef" }}>
+              <div style={{ width:120, height:120, borderRadius:16, overflow:"hidden", flexShrink:0, background:T.hover }}>
                 <img src={instr.img} alt={instr.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 20%", display:"block" }}/>
               </div>
               <div style={{ paddingTop:4 }}>
-                <h1 style={{ margin:"0 0 6px", fontSize:28, fontWeight:700, color:"#37352f", letterSpacing:-.5 }}>{instr.name}</h1>
-                <p style={{ margin:"0 0 4px", fontSize:15, color:"#787774" }}>{instr.role}</p>
-                <p style={{ margin:0, fontSize:13, color:"#787774" }}>{instr.org}</p>
+                <h1 style={{ margin:"0 0 6px", fontSize:28, fontWeight:700, color:T.text, letterSpacing:-.5 }}>{instr.name}</h1>
+                <p style={{ margin:"0 0 4px", fontSize:15, color:T.muted }}>{instr.role}</p>
+                <p style={{ margin:0, fontSize:13, color:T.muted }}>{instr.org}</p>
               </div>
             </div>
             {/* Bio paragraphs */}
-            <div style={{ borderTop:"1px solid rgba(55,53,47,0.09)", paddingTop:28 }}>
+            <div style={{ borderTop:`1px solid ${T.border}`, paddingTop:28 }}>
               {paras.map((p,i)=>(
-                <p key={i} style={{ margin:"0 0 20px", fontSize:15, color:"#37352f", lineHeight:1.75 }}>{p}</p>
+                <p key={i} style={{ margin:"0 0 20px", fontSize:15, color:T.text, lineHeight:1.75 }}>{p}</p>
               ))}
             </div>
           </div>
 
           {/* Right: Session info */}
           <div style={{ paddingTop:8 }}>
-            <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:"#0070d7", letterSpacing:.5, textTransform:"uppercase" }}>Session</p>
-            <h2 style={{ margin:"0 0 16px", fontSize:28, fontWeight:700, color:"#37352f", letterSpacing:-.5, lineHeight:1.2 }}>{instr.session}</h2>
-            <p style={{ margin:"0 0 24px", fontSize:15, color:"#787774", lineHeight:1.7 }}>{instr.sessionDesc}</p>
+            <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.blue, letterSpacing:.5, textTransform:"uppercase" }}>Session</p>
+            <h2 style={{ margin:"0 0 16px", fontSize:28, fontWeight:700, color:T.text, letterSpacing:-.5, lineHeight:1.2 }}>{instr.session}</h2>
+            <p style={{ margin:"0 0 24px", fontSize:15, color:T.muted, lineHeight:1.7 }}>{instr.sessionDesc}</p>
 
-            <p style={{ margin:"0 0 14px", fontSize:14, color:"#37352f", fontWeight:500 }}>In this session:</p>
+            <p style={{ margin:"0 0 14px", fontSize:14, color:T.text, fontWeight:500 }}>In this session:</p>
             <ul style={{ margin:"0 0 36px", padding:0, listStyle:"none", display:"flex", flexDirection:"column", gap:12 }}>
               {instr.highlights.map((h,i)=>(
-                <li key={i} style={{ display:"flex", alignItems:"flex-start", gap:10, fontSize:14, color:"#37352f", lineHeight:1.6 }}>
+                <li key={i} style={{ display:"flex", alignItems:"flex-start", gap:10, fontSize:14, color:T.text, lineHeight:1.6 }}>
                   <span style={{ color:"#8a46ff", fontWeight:700, flexShrink:0, marginTop:1 }}>•</span>
                   {h}
                 </li>
@@ -8157,9 +8123,9 @@ function LandingPage({ onGetStarted }) {
             </ul>
 
             <button onClick={()=>setShowAuth(true)}
-              style={{ padding:"0 20px", height:40, background:"#0070d7", color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
+              style={{ padding:"0 20px", height:40, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
               onMouseEnter={e=>e.currentTarget.style.background="#005bb5"}
-              onMouseLeave={e=>e.currentTarget.style.background="#0070d7"}>
+              onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
               Register for this session
             </button>
           </div>
@@ -8194,17 +8160,6 @@ function LandingPage({ onGetStarted }) {
     "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=480&h=260&fit=crop&auto=format",
   ];
   const allSessions = SESSIONS.filter(s => !isSessionArchived(s.id));
-
-  const T = {
-    bg:       "#ffffff",
-    text:     "#1e293b",
-    muted:    "#6b7280",
-    border:   "#e5e7eb",
-    hover:    "#f3f4f6",
-    blue:     "#6366f1",
-    blueHov:  "#4f46e5",
-    pink:     "#818cf8",
-  };
 
   return (
     <div style={{ minHeight:"100vh", fontFamily:"Inter,'Segoe UI',system-ui,sans-serif", background:T.bg, overflowX:"clip", color:T.text }}>
@@ -8308,7 +8263,7 @@ function LandingPage({ onGetStarted }) {
 
           {/* Rating badge */}
           <div className="animate-fade-in-up" style={{ opacity:0, animationDelay:"0.2s", marginBottom:24 }}>
-            <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"#f1f0ef", border:`1px solid ${T.border}`, borderRadius:8, padding:"5px 14px" }}>
+            <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:T.hover, border:`1px solid ${T.border}`, borderRadius:8, padding:"5px 14px" }}>
               <div style={{ width:22, height:22, border:`1px solid ${T.border}`, borderRadius:5, display:"flex", alignItems:"center", justifyContent:"center" }}>
                 <Icon name="calendar" size={12} color="#f59e0b"/>
               </div>
@@ -8319,7 +8274,7 @@ function LandingPage({ onGetStarted }) {
           {/* Main heading */}
           <h1 className="animate-fade-in-up" style={{ opacity:0, animationDelay:"0.3s", margin:"0 0 20px", fontSize:72, fontWeight:800, color:T.text, lineHeight:1.08, letterSpacing:-3 }}>
             Watch. Learn. Earn.<br/>
-            <span style={{ background:"linear-gradient(90deg,#8a46ff 0%,#c026d3 50%,#e83e8c 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>
+            <span style={{ background:"linear-gradient(90deg,#2563EB 0%,#8B5CF6 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>
               Get Certified.
             </span>
           </h1>
@@ -8338,7 +8293,7 @@ function LandingPage({ onGetStarted }) {
               Start learning — it's free
             </button>
             <button onClick={()=>document.getElementById("sessions")?.scrollIntoView({ behavior:"smooth" })}
-              style={{ padding:"0 26px", height:44, background:"transparent", color:T.text, border:`1px solid rgba(55,53,47,0.2)`, borderRadius:10, fontSize:15, fontWeight:500, cursor:"pointer", transition:"background .12s" }}
+              style={{ padding:"0 26px", height:44, background:"transparent", color:T.text, border:`1px solid ${T.borderStrong}`, borderRadius:10, fontSize:15, fontWeight:500, cursor:"pointer", transition:"background .12s" }}
               onMouseEnter={e=>e.currentTarget.style.background=T.hover}
               onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
               View sessions
@@ -9068,7 +9023,7 @@ function LandingPageV2({ onGetStarted }) {
     hover:   "rgba(0,0,0,0.04)",
     accent:  "#8a46ff",
     pink:    "#e83e8c",
-    blue:    "#0070d7",
+    blue:    T.blue,
   };
 
   const experts = [
@@ -9085,14 +9040,14 @@ function LandingPageV2({ onGetStarted }) {
 
   const BUBBLES = [
     { icon:"student",      size:70, bg:"linear-gradient(135deg,#8a46ff,#a855f7)", top:"14%", left:"7%",   dur:4.5, del:0    },
-    { icon:"book-open",    size:52, bg:"linear-gradient(135deg,#0070d7,#3b82f6)", top:"32%", left:"4%",   dur:5.2, del:0.8  },
+    { icon:"book-open",    size:52, bg:`linear-gradient(135deg,${T.blue},#3b82f6)`, top:"32%", left:"4%",   dur:5.2, del:0.8  },
     { icon:"star",         size:42, bg:"linear-gradient(135deg,#f59e0b,#fbbf24)", top:"58%", left:"8%",   dur:3.8, del:1.5  },
     { icon:"certificate",  size:56, bg:"linear-gradient(135deg,#059669,#10b981)", top:"74%", left:"5%",   dur:4.2, del:0.3  },
     { icon:"trophy",       size:62, bg:"linear-gradient(135deg,#f59e0b,#f97316)", top:"15%", right:"7%",  dur:3.9, del:1.2  },
     { icon:"lightning",    size:42, bg:"linear-gradient(135deg,#e83e8c,#ec4899)", top:"38%", right:"4%",  dur:5.5, del:0.5  },
     { icon:"gift",         size:50, bg:"linear-gradient(135deg,#6366f1,#8b5cf6)", top:"62%", right:"6%",  dur:4.0, del:2.0  },
     { icon:"medal",        size:46, bg:"linear-gradient(135deg,#0891b2,#06b6d4)", top:"80%", right:"8%",  dur:4.7, del:0.9  },
-    { icon:"check-circle", size:30, bg:"linear-gradient(135deg,#059669,#0070d7)", top:"88%", left:"14%",  dur:3.5, del:0.4  },
+    { icon:"check-circle", size:30, bg:`linear-gradient(135deg,${T.green},${T.blue})`, top:"88%", left:"14%",  dur:3.5, del:0.4  },
     { icon:"users",        size:34, bg:"linear-gradient(135deg,#8a46ff,#e83e8c)", top:"8%",  right:"18%", dur:6.0, del:1.8  },
   ];
 
@@ -9244,7 +9199,7 @@ function LandingPageV2({ onGetStarted }) {
           <div style={{ position:"relative", height:420 }}>
             {[
               { top:0,   left:0,   right:40, bg:"#8a46ff", icon:"play-circle", label:"Session in progress", sub:"Mindfulness for SPED Educators", pct:65 },
-              { top:160, left:40,  right:0,  bg:"#0070d7", icon:"certificate",  label:"Certificate earned",  sub:"Sarah Johnson · SPED Summit 2026", pct:100 },
+              { top:160, left:40,  right:0,  bg:T.blue, icon:"certificate",  label:"Certificate earned",  sub:"Sarah Johnson · SPED Summit 2026", pct:100 },
               { top:290, left:0,   right:60, bg:"#059669", icon:"trophy",       label:"Prize draw entered",  sub:"Ablespace Pro · Jan 31 2026", pct:null },
             ].map((card,i)=>(
               <div key={i} style={{ position:"absolute", top:card.top, left:card.left, right:card.right, background:"#fff", borderRadius:18, padding:"18px 20px", boxShadow:"0 12px 40px rgba(0,0,0,0.1)", border:"1px solid rgba(0,0,0,0.05)" }}>
@@ -9258,7 +9213,7 @@ function LandingPageV2({ onGetStarted }) {
                   </div>
                 </div>
                 {card.pct !== null && (
-                  <div style={{ height:4, background:"#f1f0ef", borderRadius:2, overflow:"hidden" }}>
+                  <div style={{ height:4, background:T.hover, borderRadius:2, overflow:"hidden" }}>
                     <div style={{ height:"100%", width:`${card.pct}%`, background:card.bg, borderRadius:2 }}/>
                   </div>
                 )}
