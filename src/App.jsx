@@ -1348,8 +1348,8 @@ function Sidebar({ active, onChange, isAdmin }) {
 function TabBar({ active, onChange, isAdmin, breadcrumbs }) {
   const userNav = [
     { id:"dashboard",      label:"My Learnings"    },
-    { id:"certifications", label:"My Certificates" },
     { id:"past-sessions",  label:"Past Sessions"   },
+    { id:"certifications", label:"My Certificates" },
   ];
   const adminNav = [
     { id:"admin-overview",  label:"Overview"    },
