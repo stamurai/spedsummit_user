@@ -2418,53 +2418,6 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                 )}
               </div>
 
-              {/* ── PAST SESSIONS — season folder cards ── */}
-              {completedSessions.length > 0 && (
-                <>
-                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16, gap:10 }}>
-                    <div style={{ fontSize:16, fontWeight:800, color:C.gray900 }}>Past Sessions</div>
-                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                      <div style={{ position:"relative", display:"inline-flex", alignItems:"center" }}>
-                        <select value={filterSeason} onChange={e=>{ setFilterSeason(e.target.value); onFilterChange?.({ season:e.target.value, year:filterYear }); }}
-                          style={{ appearance:"none", WebkitAppearance:"none", background:C.white, border:`1px solid ${C.gray200}`, borderRadius:8, padding:"5px 28px 5px 10px", fontSize:13, fontWeight:500, color:C.gray900, cursor:"pointer", outline:"none", fontFamily:"inherit" }}>
-                          <option value="all">All Seasons</option>
-                          {seasonOptions.map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                        <Icon name="caret-down" size={13} color="#71717a" style={{ position:"absolute", right:8, pointerEvents:"none" }}/>
-                      </div>
-                      <div style={{ position:"relative", display:"inline-flex", alignItems:"center" }}>
-                        <select value={filterYear} onChange={e=>{ setFilterYear(e.target.value); onFilterChange?.({ season:filterSeason, year:e.target.value }); }}
-                          style={{ appearance:"none", WebkitAppearance:"none", background:C.white, border:`1px solid ${C.gray200}`, borderRadius:8, padding:"5px 28px 5px 10px", fontSize:13, fontWeight:500, color:C.gray900, cursor:"pointer", outline:"none", fontFamily:"inherit" }}>
-                          <option value="all">All Years</option>
-                          {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
-                        </select>
-                        <Icon name="caret-down" size={13} color="#71717a" style={{ position:"absolute", right:8, pointerEvents:"none" }}/>
-                      </div>
-                    </div>
-                  </div>
-                  {(() => {
-                    const filtered = SEASONS.filter(season => {
-                      const [sName, sYear] = season.name.split(" ");
-                      if (filterSeason !== "all" && sName !== filterSeason) return false;
-                      if (filterYear   !== "all" && sYear !== filterYear)   return false;
-                      return true;
-                    });
-                    if (!filtered.length) return (
-                      <div style={{ textAlign:"center", padding:"40px 0", color:C.gray400, fontSize:14 }}>No seasons match the selected filters.</div>
-                    );
-                    return (
-                      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px, 1fr))", gap:20 }}>
-                        {filtered.map(season => {
-                          const seasonCompleted = filteredCompleted.filter(s => season.sessionIds.includes(s.id));
-                          return (
-                            <SeasonFolderCard key={season.id} season={season} sessions={seasonCompleted} onOpen={() => onOpenPastSeason?.(season.id)}/>
-                          );
-                        })}
-                      </div>
-                    );
-                  })()}
-                </>
-              )}
             </>
           );
         })()}
