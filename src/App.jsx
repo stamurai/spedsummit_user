@@ -4181,10 +4181,63 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    REWARDS
 ───────────────────────────────────────────────────────────────────────────── */
+function PastSessionsTab() {
+  return (
+    <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
+      <div style={{ marginBottom:20 }}>
+        <h2 style={{ margin:"0 0 4px", fontSize:18, fontWeight:800, color:C.gray900 }}>Past Sessions</h2>
+        <p style={{ margin:0, fontSize:14, color:C.gray500, lineHeight:1.5 }}>
+          Unlock full replay access with a subscription.
+        </p>
+      </div>
+
+      <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+        {SESSIONS.map(s => (
+          <div key={s.id} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:16, padding:"14px 16px", position:"relative", overflow:"hidden" }}>
+            {/* Thumbnail */}
+            <div style={{ width:80, height:52, borderRadius:8, overflow:"hidden", flexShrink:0, position:"relative" }}>
+              <SessionThumb id={s.id} height={52} noPlayHover/>
+              {/* Lock overlay */}
+              <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.45)", display:"flex", alignItems:"center", justifyContent:"center", borderRadius:8 }}>
+                <Icon name="lock" size={16} color="#fff"/>
+              </div>
+            </div>
+
+            {/* Info */}
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
+              <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{s.instructor}</div>
+              {s.duration && <div style={{ fontSize:11, color:C.gray400, marginTop:3 }}>{s.duration}</div>}
+            </div>
+
+            {/* Lock badge */}
+            <div style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 12px", borderRadius:99, background:C.gray100, border:`1px solid ${C.gray200}`, flexShrink:0 }}>
+              <Icon name="lock" size={12} color={C.gray500}/>
+              <span style={{ fontSize:12, fontWeight:600, color:C.gray600 }}>Subscribers only</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Upgrade CTA */}
+      <div style={{ marginTop:24, borderRadius:16, background:"linear-gradient(135deg,#1e40af 0%,#6366f1 100%)", padding:"28px 24px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:20, flexWrap:"wrap" }}>
+        <div>
+          <div style={{ fontSize:16, fontWeight:800, color:"#fff", marginBottom:4 }}>Get unlimited access to all past sessions</div>
+          <div style={{ fontSize:13, color:"rgba(255,255,255,0.75)", lineHeight:1.5 }}>Subscribe to replay any session at any time, as many times as you want.</div>
+        </div>
+        <button style={{ padding:"10px 22px", borderRadius:10, background:"#fff", color:"#1e40af", border:"none", fontSize:14, fontWeight:700, cursor:"pointer", flexShrink:0, whiteSpace:"nowrap" }}>
+          Unlock Access
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertificateClick, userName = "Alex Johnson" }) {
   const [activeSeason,  setActiveSeason]  = useState(null);
   const [activeSession, setActiveSession] = useState(null);
   const [shareCert, setShareCert] = useState(null); // { certUrl, sessionTitle }
+  const [mainTab, setMainTab] = useState("certs"); // "certs" | "past"
 
   const totalEarned = SEASONS.reduce((acc, season) => {
     return acc + season.sessionIds.filter(id => quizStates[id]?.status === "passed").length;
@@ -4388,8 +4441,25 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
   }
 
   /* ── Flat list overview: season headers + session rows ── */
+  if (mainTab === "past") return <PastSessionsTab />;
+
   return (
     <div style={{ padding:"28px 32px", background:C.gray50, minHeight:"100%" }}>
+
+      {/* ── Tab bar ── */}
+      <div style={{ display:"flex", gap:4, marginBottom:28, background:C.gray100, borderRadius:10, padding:4, width:"fit-content" }}>
+        {[{ key:"certs", label:"My Certificates", icon:"certificate" }, { key:"past", label:"Past Sessions", icon:"video" }].map(tab => (
+          <button key={tab.key} onClick={()=>setMainTab(tab.key)}
+            style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 16px", borderRadius:7, border:"none", cursor:"pointer", fontSize:13, fontWeight:600, fontFamily:"inherit", transition:"all 0.15s",
+              background: mainTab===tab.key ? C.white : "transparent",
+              color: mainTab===tab.key ? C.gray900 : C.gray500,
+              boxShadow: mainTab===tab.key ? "0 1px 4px rgba(0,0,0,0.10)" : "none",
+            }}>
+            <Icon name={tab.icon} size={14} color={mainTab===tab.key ? C.gray700 : C.gray400}/>
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
       <div style={{ display:"flex", flexDirection:"column", gap:32 }}>
         {SEASONS.map(season => {
