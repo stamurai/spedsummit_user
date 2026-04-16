@@ -4183,64 +4183,82 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange }) {
    REWARDS
 ───────────────────────────────────────────────────────────────────────────── */
 function PastSessionsTab() {
+  const [filterSeason, setFilterSeason] = useState("all");
+  const [filterYear,   setFilterYear]   = useState("all");
+  const seasonOptions = [...new Set(SEASONS.map(s => s.name.split(" ")[0]))];
+  const yearOptions   = [...new Set(SEASONS.map(s => s.name.split(" ")[1]))].sort((a,b) => b - a);
+
+  const filtered = SEASONS.filter(season => {
+    const [sName, sYear] = season.name.split(" ");
+    if (filterSeason !== "all" && sName !== filterSeason) return false;
+    if (filterYear   !== "all" && sYear !== filterYear)   return false;
+    return true;
+  });
+
   return (
     <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
-      <div style={{ marginBottom:20 }}>
-        <h2 style={{ margin:"0 0 4px", fontSize:18, fontWeight:800, color:C.gray900 }}>Past Sessions</h2>
-        <p style={{ margin:0, fontSize:14, color:C.gray500, lineHeight:1.5 }}>Unlock full replay access with a subscription.</p>
+      {/* Header row */}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, gap:10 }}>
+        <div style={{ fontSize:16, fontWeight:800, color:C.gray900 }}>Past Sessions</div>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <div style={{ position:"relative", display:"inline-flex", alignItems:"center" }}>
+            <select value={filterSeason} onChange={e=>setFilterSeason(e.target.value)}
+              style={{ appearance:"none", WebkitAppearance:"none", background:C.white, border:`1px solid ${C.gray200}`, borderRadius:8, padding:"5px 28px 5px 10px", fontSize:13, fontWeight:500, color:C.gray900, cursor:"pointer", outline:"none", fontFamily:"inherit" }}>
+              <option value="all">All Seasons</option>
+              {seasonOptions.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <Icon name="caret-down" size={13} color="#71717a" style={{ position:"absolute", right:8, pointerEvents:"none" }}/>
+          </div>
+          <div style={{ position:"relative", display:"inline-flex", alignItems:"center" }}>
+            <select value={filterYear} onChange={e=>setFilterYear(e.target.value)}
+              style={{ appearance:"none", WebkitAppearance:"none", background:C.white, border:`1px solid ${C.gray200}`, borderRadius:8, padding:"5px 28px 5px 10px", fontSize:13, fontWeight:500, color:C.gray900, cursor:"pointer", outline:"none", fontFamily:"inherit" }}>
+              <option value="all">All Years</option>
+              {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+            <Icon name="caret-down" size={13} color="#71717a" style={{ position:"absolute", right:8, pointerEvents:"none" }}/>
+          </div>
+        </div>
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px, 1fr))", gap:20 }}>
-        {SEASONS.map(season => {
-          const thumbSrc = INSTRUCTOR_AVATARS[SESSIONS.find(s => season.sessionIds.includes(s.id))?.instructor]
-            || "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&h=340&fit=crop";
-          return (
-            <div key={season.id} style={{ borderRadius:16, border:`1px solid ${C.gray200}`, background:C.white, overflow:"hidden", boxShadow:"0 2px 8px rgba(0,0,0,0.06)" }}>
-              {/* Top image with lock overlay */}
-              <div style={{ position:"relative", height:144, overflow:"hidden", background:"#1f2937" }}>
-                <img src={thumbSrc} alt={season.name}
-                  style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 20%" }}
-                  onError={e => e.currentTarget.src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&h=340&fit=crop"}/>
-                <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.42)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  <div style={{ width:48, height:48, borderRadius:"50%", background:"rgba(255,255,255,0.15)", border:"2px solid rgba(255,255,255,0.5)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <Icon name="lock" size={22} color="#fff"/>
+      {filtered.length === 0 ? (
+        <div style={{ textAlign:"center", padding:"40px 0", color:C.gray400, fontSize:14 }}>No seasons match the selected filters.</div>
+      ) : (
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px, 1fr))", gap:20 }}>
+          {filtered.map(season => {
+            const thumbSrc = INSTRUCTOR_AVATARS[SESSIONS.find(s => season.sessionIds.includes(s.id))?.instructor]
+              || "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&h=340&fit=crop";
+            return (
+              <div key={season.id} style={{ borderRadius:16, border:`1px solid ${C.gray200}`, background:C.white, overflow:"hidden", boxShadow:"0 2px 8px rgba(0,0,0,0.06)" }}>
+                <div style={{ position:"relative", height:144, overflow:"hidden", background:"#1f2937" }}>
+                  <img src={thumbSrc} alt={season.name}
+                    style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 20%" }}
+                    onError={e => e.currentTarget.src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&h=340&fit=crop"}/>
+                  <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.42)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <div style={{ width:48, height:48, borderRadius:"50%", background:"rgba(255,255,255,0.15)", border:"2px solid rgba(255,255,255,0.5)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      <Icon name="lock" size={22} color="#fff"/>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Body */}
-              <div style={{ padding:"16px 16px 10px" }}>
-                <div style={{ fontSize:17, fontWeight:800, color:C.gray900, lineHeight:1.3, marginBottom:10 }}>{season.name}</div>
-                <p style={{ margin:"0 0 10px", fontSize:13, color:C.gray600, lineHeight:1.6 }}>{season.description}</p>
-                <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-                  <span style={{ fontSize:11, fontWeight:600, color:C.gray700, background:C.gray200, borderRadius:8, padding:"3px 10px" }}>{season.sessionIds.length} sessions</span>
-                  {season.updatedAt && <span style={{ fontSize:11, fontWeight:600, color:C.gray700, background:C.gray200, borderRadius:8, padding:"3px 10px" }}>Updated {season.updatedAt}</span>}
+                <div style={{ padding:"16px 16px 10px" }}>
+                  <div style={{ fontSize:17, fontWeight:800, color:C.gray900, lineHeight:1.3, marginBottom:10 }}>{season.name}</div>
+                  <p style={{ margin:"0 0 10px", fontSize:13, color:C.gray600, lineHeight:1.6 }}>{season.description}</p>
+                  <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                    <span style={{ fontSize:11, fontWeight:600, color:C.gray700, background:C.gray200, borderRadius:8, padding:"3px 10px" }}>{season.sessionIds.length} sessions</span>
+                    {season.updatedAt && <span style={{ fontSize:11, fontWeight:600, color:C.gray700, background:C.gray200, borderRadius:8, padding:"3px 10px" }}>Updated {season.updatedAt}</span>}
+                  </div>
+                </div>
+                <div style={{ padding:"10px 16px", borderTop:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:5 }}>
+                    <Icon name="lock" size={12} color={C.gray400}/>
+                    <span style={{ fontSize:12, fontWeight:600, color:C.gray500 }}>Subscribers only</span>
+                  </div>
+                  <span style={{ fontSize:12, fontWeight:600, color:C.gray300 }}>View all →</span>
                 </div>
               </div>
-
-              {/* Footer */}
-              <div style={{ padding:"10px 16px", borderTop:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-                  <Icon name="lock" size={12} color={C.gray400}/>
-                  <span style={{ fontSize:12, fontWeight:600, color:C.gray500 }}>Subscribers only</span>
-                </div>
-                <span style={{ fontSize:12, fontWeight:600, color:C.gray300 }}>View all →</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Upgrade CTA */}
-      <div style={{ marginTop:24, borderRadius:16, background:"linear-gradient(135deg,#1e40af 0%,#6366f1 100%)", padding:"28px 24px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:20, flexWrap:"wrap" }}>
-        <div>
-          <div style={{ fontSize:16, fontWeight:800, color:"#fff", marginBottom:4 }}>Get unlimited access to all past sessions</div>
-          <div style={{ fontSize:13, color:"rgba(255,255,255,0.75)", lineHeight:1.5 }}>Subscribe to replay any session at any time, as many times as you want.</div>
+            );
+          })}
         </div>
-        <button style={{ padding:"10px 22px", borderRadius:10, background:"#fff", color:"#1e40af", border:"none", fontSize:14, fontWeight:700, cursor:"pointer", flexShrink:0, whiteSpace:"nowrap" }}>
-          Unlock Access
-        </button>
-      </div>
+      )}
     </div>
   );
 }
