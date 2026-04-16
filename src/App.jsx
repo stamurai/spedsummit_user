@@ -4183,41 +4183,51 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange }) {
    REWARDS
 ───────────────────────────────────────────────────────────────────────────── */
 function PastSessionsTab() {
+  const catColors = { MANAGEMENT:{c:"#2563eb",bg:"rgba(37,99,235,0.12)"}, LEADERSHIP:{c:"#7c3aed",bg:"rgba(124,58,237,0.12)"}, COMMUNICATION:{c:"#0ea5e9",bg:"rgba(14,165,233,0.12)"}, TEAMWORK:{c:"#f97316",bg:"rgba(249,115,22,0.12)"}, TECHNOLOGY:{c:"#6366f1",bg:"rgba(99,102,241,0.12)"}, ACCESSIBILITY:{c:"#ec4899",bg:"rgba(236,72,153,0.12)"} };
+
   return (
     <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
       <div style={{ marginBottom:20 }}>
         <h2 style={{ margin:"0 0 4px", fontSize:18, fontWeight:800, color:C.gray900 }}>Past Sessions</h2>
-        <p style={{ margin:0, fontSize:14, color:C.gray500, lineHeight:1.5 }}>
-          Unlock full replay access with a subscription.
-        </p>
+        <p style={{ margin:0, fontSize:14, color:C.gray500, lineHeight:1.5 }}>Unlock full replay access with a subscription.</p>
       </div>
 
-      <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-        {SESSIONS.map(s => (
-          <div key={s.id} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:16, padding:"14px 16px", position:"relative", overflow:"hidden" }}>
-            {/* Thumbnail */}
-            <div style={{ width:80, height:52, borderRadius:8, overflow:"hidden", flexShrink:0, position:"relative" }}>
-              <SessionThumb id={s.id} height={52} noPlayHover/>
-              {/* Lock overlay */}
-              <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.45)", display:"flex", alignItems:"center", justifyContent:"center", borderRadius:8 }}>
-                <Icon name="lock" size={16} color="#fff"/>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))", gap:16 }}>
+        {SESSIONS.map(s => {
+          const cc = catColors[s.category] || { c:C.primary, bg:"rgba(54,153,255,0.12)" };
+          return (
+            <div key={s.id} style={{ background:C.white, borderRadius:14, overflow:"hidden", boxShadow:"0 1px 3px rgba(0,0,0,0.07)", border:`1px solid ${C.gray200}`, display:"flex", flexDirection:"column", opacity:0.85 }}>
+              {/* Thumbnail with lock overlay */}
+              <div style={{ position:"relative", flexShrink:0 }}>
+                <SessionThumb id={s.id} height={152} noPlayHover/>
+                <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.45)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <div style={{ width:44, height:44, borderRadius:"50%", background:"rgba(255,255,255,0.15)", border:"2px solid rgba(255,255,255,0.5)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <Icon name="lock" size={20} color="#fff"/>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card body */}
+              <div style={{ padding:"14px 16px 16px", flex:1, display:"flex", flexDirection:"column" }}>
+                <div style={{ marginBottom:8 }}>
+                  <Badge label={s.category} color={cc.c} bg={cc.bg} size={12}/>
+                </div>
+                <div style={{ fontWeight:700, fontSize:14, color:C.gray900, marginBottom:4, lineHeight:1.4, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
+                  {s.title}
+                </div>
+                <div style={{ fontSize:12, color:C.gray500, marginBottom:12 }}>by {s.instructor}</div>
+
+                <div style={{ marginTop:"auto", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                  {s.duration && <span style={{ fontSize:12, color:C.gray400 }}>{s.duration}</span>}
+                  <div style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 11px", borderRadius:99, background:C.gray100, border:`1px solid ${C.gray200}` }}>
+                    <Icon name="lock" size={11} color={C.gray500}/>
+                    <span style={{ fontSize:11, fontWeight:600, color:C.gray600 }}>Subscribers only</span>
+                  </div>
+                </div>
               </div>
             </div>
-
-            {/* Info */}
-            <div style={{ flex:1, minWidth:0 }}>
-              <div style={{ fontSize:14, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
-              <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{s.instructor}</div>
-              {s.duration && <div style={{ fontSize:11, color:C.gray400, marginTop:3 }}>{s.duration}</div>}
-            </div>
-
-            {/* Lock badge */}
-            <div style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 12px", borderRadius:99, background:C.gray100, border:`1px solid ${C.gray200}`, flexShrink:0 }}>
-              <Icon name="lock" size={12} color={C.gray500}/>
-              <span style={{ fontSize:12, fontWeight:600, color:C.gray600 }}>Subscribers only</span>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Upgrade CTA */}
