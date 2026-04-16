@@ -1349,6 +1349,7 @@ function TabBar({ active, onChange, isAdmin, breadcrumbs }) {
   const userNav = [
     { id:"dashboard",      label:"My Learnings"    },
     { id:"certifications", label:"My Certificates" },
+    { id:"past-sessions",  label:"Past Sessions"   },
   ];
   const adminNav = [
     { id:"admin-overview",  label:"Overview"    },
@@ -4237,7 +4238,6 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
   const [activeSeason,  setActiveSeason]  = useState(null);
   const [activeSession, setActiveSession] = useState(null);
   const [shareCert, setShareCert] = useState(null); // { certUrl, sessionTitle }
-  const [mainTab, setMainTab] = useState("certs"); // "certs" | "past"
 
   const totalEarned = SEASONS.reduce((acc, season) => {
     return acc + season.sessionIds.filter(id => quizStates[id]?.status === "passed").length;
@@ -4441,25 +4441,8 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
   }
 
   /* ── Flat list overview: season headers + session rows ── */
-  if (mainTab === "past") return <PastSessionsTab />;
-
   return (
     <div style={{ padding:"28px 32px", background:C.gray50, minHeight:"100%" }}>
-
-      {/* ── Tab bar ── */}
-      <div style={{ display:"flex", gap:4, marginBottom:28, background:C.gray100, borderRadius:10, padding:4, width:"fit-content" }}>
-        {[{ key:"certs", label:"My Certificates", icon:"certificate" }, { key:"past", label:"Past Sessions", icon:"video" }].map(tab => (
-          <button key={tab.key} onClick={()=>setMainTab(tab.key)}
-            style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 16px", borderRadius:7, border:"none", cursor:"pointer", fontSize:13, fontWeight:600, fontFamily:"inherit", transition:"all 0.15s",
-              background: mainTab===tab.key ? C.white : "transparent",
-              color: mainTab===tab.key ? C.gray900 : C.gray500,
-              boxShadow: mainTab===tab.key ? "0 1px 4px rgba(0,0,0,0.10)" : "none",
-            }}>
-            <Icon name={tab.icon} size={14} color={mainTab===tab.key ? C.gray700 : C.gray400}/>
-            {tab.label}
-          </button>
-        ))}
-      </div>
 
       <div style={{ display:"flex", flexDirection:"column", gap:32 }}>
         {SEASONS.map(season => {
@@ -9691,6 +9674,7 @@ export default function App() {
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
     if (page==="community") return <CommunityPage toast={toast}/>;
     if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick} userName={userName}/>;
+    if (page==="past-sessions")  return <PastSessionsTab />;
     if (page==="profile")   return <ProfilePage toast={toast} userName={userName} onNameChange={setUserName}/>;
     return null;
   }
