@@ -4183,8 +4183,6 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange }) {
    REWARDS
 ───────────────────────────────────────────────────────────────────────────── */
 function PastSessionsTab() {
-  const catColors = { MANAGEMENT:{c:"#2563eb",bg:"rgba(37,99,235,0.12)"}, LEADERSHIP:{c:"#7c3aed",bg:"rgba(124,58,237,0.12)"}, COMMUNICATION:{c:"#0ea5e9",bg:"rgba(14,165,233,0.12)"}, TEAMWORK:{c:"#f97316",bg:"rgba(249,115,22,0.12)"}, TECHNOLOGY:{c:"#6366f1",bg:"rgba(99,102,241,0.12)"}, ACCESSIBILITY:{c:"#ec4899",bg:"rgba(236,72,153,0.12)"} };
-
   return (
     <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
       <div style={{ marginBottom:20 }}>
@@ -4192,38 +4190,41 @@ function PastSessionsTab() {
         <p style={{ margin:0, fontSize:14, color:C.gray500, lineHeight:1.5 }}>Unlock full replay access with a subscription.</p>
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))", gap:16 }}>
-        {SESSIONS.map(s => {
-          const cc = catColors[s.category] || { c:C.primary, bg:"rgba(54,153,255,0.12)" };
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px, 1fr))", gap:20 }}>
+        {SEASONS.map(season => {
+          const thumbSrc = INSTRUCTOR_AVATARS[SESSIONS.find(s => season.sessionIds.includes(s.id))?.instructor]
+            || "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&h=340&fit=crop";
           return (
-            <div key={s.id} style={{ background:C.white, borderRadius:14, overflow:"hidden", boxShadow:"0 1px 3px rgba(0,0,0,0.07)", border:`1px solid ${C.gray200}`, display:"flex", flexDirection:"column", opacity:0.85 }}>
-              {/* Thumbnail with lock overlay */}
-              <div style={{ position:"relative", flexShrink:0 }}>
-                <SessionThumb id={s.id} height={152} noPlayHover/>
-                <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.45)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  <div style={{ width:44, height:44, borderRadius:"50%", background:"rgba(255,255,255,0.15)", border:"2px solid rgba(255,255,255,0.5)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <Icon name="lock" size={20} color="#fff"/>
+            <div key={season.id} style={{ borderRadius:16, border:`1px solid ${C.gray200}`, background:C.white, overflow:"hidden", boxShadow:"0 2px 8px rgba(0,0,0,0.06)" }}>
+              {/* Top image with lock overlay */}
+              <div style={{ position:"relative", height:144, overflow:"hidden", background:"#1f2937" }}>
+                <img src={thumbSrc} alt={season.name}
+                  style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 20%" }}
+                  onError={e => e.currentTarget.src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&h=340&fit=crop"}/>
+                <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.42)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <div style={{ width:48, height:48, borderRadius:"50%", background:"rgba(255,255,255,0.15)", border:"2px solid rgba(255,255,255,0.5)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <Icon name="lock" size={22} color="#fff"/>
                   </div>
                 </div>
               </div>
 
-              {/* Card body */}
-              <div style={{ padding:"14px 16px 16px", flex:1, display:"flex", flexDirection:"column" }}>
-                <div style={{ marginBottom:8 }}>
-                  <Badge label={s.category} color={cc.c} bg={cc.bg} size={12}/>
+              {/* Body */}
+              <div style={{ padding:"16px 16px 10px" }}>
+                <div style={{ fontSize:17, fontWeight:800, color:C.gray900, lineHeight:1.3, marginBottom:10 }}>{season.name}</div>
+                <p style={{ margin:"0 0 10px", fontSize:13, color:C.gray600, lineHeight:1.6 }}>{season.description}</p>
+                <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                  <span style={{ fontSize:11, fontWeight:600, color:C.gray700, background:C.gray200, borderRadius:8, padding:"3px 10px" }}>{season.sessionIds.length} sessions</span>
+                  {season.updatedAt && <span style={{ fontSize:11, fontWeight:600, color:C.gray700, background:C.gray200, borderRadius:8, padding:"3px 10px" }}>Updated {season.updatedAt}</span>}
                 </div>
-                <div style={{ fontWeight:700, fontSize:14, color:C.gray900, marginBottom:4, lineHeight:1.4, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
-                  {s.title}
-                </div>
-                <div style={{ fontSize:12, color:C.gray500, marginBottom:12 }}>by {s.instructor}</div>
+              </div>
 
-                <div style={{ marginTop:"auto", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                  {s.duration && <span style={{ fontSize:12, color:C.gray400 }}>{s.duration}</span>}
-                  <div style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 11px", borderRadius:99, background:C.gray100, border:`1px solid ${C.gray200}` }}>
-                    <Icon name="lock" size={11} color={C.gray500}/>
-                    <span style={{ fontSize:11, fontWeight:600, color:C.gray600 }}>Subscribers only</span>
-                  </div>
+              {/* Footer */}
+              <div style={{ padding:"10px 16px", borderTop:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:5 }}>
+                  <Icon name="lock" size={12} color={C.gray400}/>
+                  <span style={{ fontSize:12, fontWeight:600, color:C.gray500 }}>Subscribers only</span>
                 </div>
+                <span style={{ fontSize:12, fontWeight:600, color:C.gray300 }}>View all →</span>
               </div>
             </div>
           );
