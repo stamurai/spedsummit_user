@@ -8422,40 +8422,10 @@ function LandingPage({ onGetStarted }) {
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: "-60px" }}
-                style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gridTemplateRows:"repeat(3, minmax(160px,auto))", gap:20 }}
+                style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gridTemplateRows:"repeat(2, minmax(160px,auto))", gap:20 }}
               >
-                {/* Slot 1 — Certificate System (tall, col 1, rows 1-3) */}
-                <motion.div variants={itemVariants} style={{ gridColumn:"1", gridRow:"1 / 4" }}>
-                  <div style={{ ...cardBase, display:"flex", flexDirection:"column", height:"100%" }}>
-                    <div style={{ padding:"24px 24px 0" }}>
-                      <div style={{ width:48, height:48, borderRadius:12, background:"rgba(245,158,11,0.12)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>
-                        <Icon name="certificate" size={24} color="#f59e0b"/>
-                      </div>
-                      <div style={{ fontSize:18, fontWeight:800, color:T.text, marginBottom:8, lineHeight:1.3 }}>Instant Certificates</div>
-                      <div style={{ fontSize:14, color:T.muted, lineHeight:1.65 }}>
-                        Complete a session, pass the quiz, and download a verified PDF certificate — instantly. No waiting, no chasing approvals.
-                      </div>
-                    </div>
-                    <div style={{ marginTop:"auto", padding:"0 24px 24px" }}>
-                      {/* Mini certificate preview */}
-                      <div style={{ marginTop:24, borderRadius:12, border:`1px solid ${T.border}`, padding:"14px 16px", background:"#fffbeb" }}>
-                        <div style={{ fontSize:10, fontWeight:700, color:"#92400e", letterSpacing:1.5, textTransform:"uppercase", marginBottom:6 }}>Certificate of Completion</div>
-                        <div style={{ fontSize:13, fontWeight:700, color:"#78350f", marginBottom:2 }}>Alex Johnson</div>
-                        <div style={{ fontSize:11, color:"#a16207" }}>Foundations of Inclusion · SPED Summit</div>
-                        <div style={{ marginTop:10, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                          <div style={{ fontSize:10, color:"#a16207" }}>Spring 2026</div>
-                          <div style={{ width:28, height:28, borderRadius:"50%", background:"rgba(245,158,11,0.2)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                            <Icon name="check" size={13} color="#f59e0b"/>
-                          </div>
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-                </motion.div>
-
-                {/* Slot 2 — Learners Connected (col 2, row 1) */}
-                <motion.div variants={itemVariants} style={{ gridColumn:"2", gridRow:"1" }}>
+                {/* Slot 1 — Learners Connected (col 1, row 1) */}
+                <motion.div variants={itemVariants} style={{ gridColumn:"1", gridRow:"1" }}>
                   <div style={{ ...cardBase, padding:"22px 22px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
                     <div>
                       <div style={{ fontSize:15, fontWeight:700, color:T.text, marginBottom:3 }}>Learners Connected</div>
@@ -8477,10 +8447,9 @@ function LandingPage({ onGetStarted }) {
                   </div>
                 </motion.div>
 
-                {/* Slot 3 — Big stat (col 3, row 1) */}
-                <motion.div variants={itemVariants} style={{ gridColumn:"3", gridRow:"1" }}>
+                {/* Slot 2 — Big stat (col 2, row 1) */}
+                <motion.div variants={itemVariants} style={{ gridColumn:"2", gridRow:"1" }}>
                   <div style={{ ...cardBase, position:"relative", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    {/* Dot grid background */}
                     <div style={{ position:"absolute", inset:0, backgroundImage:"radial-gradient(rgba(0,0,0,0.12) 1px, transparent 1px)", backgroundSize:"16px 16px", opacity:0.5 }}/>
                     <div style={{ position:"relative", textAlign:"center" }}>
                       <div style={{ fontSize:64, fontWeight:900, color:T.text, letterSpacing:-3, lineHeight:1 }}>100%</div>
@@ -8489,8 +8458,8 @@ function LandingPage({ onGetStarted }) {
                   </div>
                 </motion.div>
 
-                {/* Slot 4 — Progress (col 2, row 2) */}
-                <motion.div variants={itemVariants} style={{ gridColumn:"2", gridRow:"2" }}>
+                {/* Slot 3 — Completion Rate (col 1, row 2) */}
+                <motion.div variants={itemVariants} style={{ gridColumn:"1", gridRow:"2" }}>
                   <div style={{ ...cardBase, padding:"22px 22px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
                     <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
                       <div>
@@ -8508,8 +8477,8 @@ function LandingPage({ onGetStarted }) {
                   </div>
                 </motion.div>
 
-                {/* Slot 5 — Self-paced (col 3, row 2) */}
-                <motion.div variants={itemVariants} style={{ gridColumn:"3", gridRow:"2" }}>
+                {/* Slot 4 — Self-paced (col 2, row 2) */}
+                <motion.div variants={itemVariants} style={{ gridColumn:"2", gridRow:"2" }}>
                   <div style={{ ...cardBase, padding:"22px 22px", display:"flex", flexDirection:"column", justifyContent:"flex-end" }}>
                     <div style={{ width:40, height:40, borderRadius:10, background:"rgba(16,185,129,0.1)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:14 }}>
                       <Icon name="play-circle" size={20} color="#10b981"/>
@@ -8517,24 +8486,6 @@ function LandingPage({ onGetStarted }) {
                     <div style={{ fontSize:15, fontWeight:700, color:T.text, marginBottom:6 }}>Learn at Your Pace</div>
                     <div style={{ fontSize:13, color:T.muted, lineHeight:1.55 }}>
                       All sessions recorded. Rewatch anytime, on any device.
-                    </div>
-                  </div>
-                </motion.div>
-
-                {/* Slot 6 — Quick Access (col 2-3, row 3) */}
-                <motion.div variants={itemVariants} style={{ gridColumn:"2 / 4", gridRow:"3" }}>
-                  <div style={{ ...cardBase, padding:"22px 24px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:24, flexWrap:"wrap" }}>
-                    <div>
-                      <div style={{ fontSize:15, fontWeight:700, color:T.text, marginBottom:4 }}>Everything Included</div>
-                      <div style={{ fontSize:13, color:T.muted }}>Sessions · Quizzes · Certificates · Community · Replays · Giveaways</div>
-                    </div>
-                    <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
-                      {["Sessions", "Quizzes", "Certificate"].map((label, i) => (
-                        <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"center", height:32, padding:"0 12px", borderRadius:8, border:`1px solid ${T.border}`, background:T.bg, fontSize:12, fontWeight:600, color:T.muted }}>
-                          {label}
-                        </div>
-                      ))}
-
                     </div>
                   </div>
                 </motion.div>
