@@ -4176,7 +4176,7 @@ function PastSessionsTab({ onOpenSeason }) {
       {filtered.length === 0 ? (
         <div style={{ textAlign:"center", padding:"40px 0", color:C.gray400, fontSize:14 }}>No seasons match the selected filters.</div>
       ) : (
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px, 1fr))", gap:20 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16 }}>
           {filtered.map(season => {
             const thumbSrc = INSTRUCTOR_AVATARS[SESSIONS.find(s => season.sessionIds.includes(s.id))?.instructor]
               || "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&h=340&fit=crop";
@@ -8025,8 +8025,8 @@ function V1PricingCardOnly({ onGetStarted, onClose }) {
           .v1pco-right { border-radius:0 20px 20px 0; }
         }
         @media(max-width:699px){
-          .v1pco-left { border-radius:20px 20px 0 0; }
-          .v1pco-right { border-radius:0 0 20px 20px; }
+          .v1pco-left { border-radius:20px 20px 0 0; padding:24px 20px; }
+          .v1pco-right { border-radius:0 0 20px 20px; padding:24px 20px; }
         }
       `}</style>
       <div style={{ borderRadius:20, overflow:"hidden", position:"relative" }}>
@@ -9828,6 +9828,15 @@ export default function App() {
       };
       return (
         <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
+          <style>{`
+            .ps-session-card { display:flex; flex-direction:row; align-items:stretch; min-height:235px; }
+            .ps-session-thumb { flex-shrink:0; width:200px; position:relative; }
+            .ps-session-thumb img { width:100%; height:100%; object-fit:cover; object-position:top center; display:block; }
+            @media(max-width:600px){
+              .ps-session-card { flex-direction:column; min-height:unset; }
+              .ps-session-thumb { width:100%; height:180px; }
+            }
+          `}</style>
           {/* Page title */}
           <div style={{ marginBottom:20 }}>
             <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900 }}>{season?.name}</h1>
@@ -9838,12 +9847,11 @@ export default function App() {
               const catBadge = CAT_BADGE_PS[s.category] || { label:s.category, bg:C.gray100, color:C.gray700 };
               const instrRole = INST_ROLES_PS[s.instructor] || "Instructor";
               return (
-                <div key={s.id}
-                  style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, display:"flex", alignItems:"stretch", overflow:"hidden", cursor:"pointer", minHeight:235 }}
+                <div key={s.id} className="ps-session-card"
+                  style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, overflow:"hidden", cursor:"pointer" }}
                   onClick={()=>setShowPricingOverlay(true)}>
-                  <div style={{ flexShrink:0, width:200, position:"relative" }}>
-                    <img src={INSTRUCTOR_AVATARS[s.instructor]} alt={s.instructor}
-                      style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top center", display:"block" }}/>
+                  <div className="ps-session-thumb">
+                    <img src={INSTRUCTOR_AVATARS[s.instructor]} alt={s.instructor}/>
                     <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.25) 45%,transparent 75%)" }}/>
                     <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"0 10px 10px" }}>
                       <div style={{ fontSize:15, fontWeight:700, color:"#fff", lineHeight:1.25 }}>{s.instructor}</div>
@@ -9969,6 +9977,7 @@ export default function App() {
           isAdmin={isAdmin}
           breadcrumbs={[
             { label: isAdmin ? "Overview" : "My Learnings", onClick:() => { setPastSeasonPageId(null); nav(isAdmin ? "admin-overview" : "dashboard"); } },
+            { label: "Past Sessions", onClick:() => { setPastSeasonPageId(null); nav("past-sessions"); } },
             { label: seasons.find(s => s.id === pastSeasonPageId)?.name || "Past Season" },
           ]}
         />}
@@ -9997,9 +10006,14 @@ export default function App() {
       {showPricingOverlay && (
         <div
           onClick={() => setShowPricingOverlay(false)}
-          style={{ position:"fixed", inset:0, zIndex:1000, background:"rgba(0,0,0,0.55)", display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}
+          style={{ position:"fixed", inset:0, zIndex:1000, background:"rgba(0,0,0,0.55)", display:"flex", alignItems:"center", justifyContent:"center", padding:"20px" }}
         >
-          <div onClick={e => e.stopPropagation()} style={{ maxWidth:880, width:"100%", maxHeight:"90vh", overflowY:"auto", borderRadius:20, background:"#fff" }}>
+          <style>{`
+            @media(max-width:600px){
+              .pricing-overlay-card { max-height:100vh !important; border-radius:16px !important; margin:0 !important; }
+            }
+          `}</style>
+          <div onClick={e => e.stopPropagation()} className="pricing-overlay-card" style={{ maxWidth:880, width:"100%", maxHeight:"90vh", overflowY:"auto", borderRadius:20, background:"#fff" }}>
             <V1PricingCardOnly onGetStarted={() => setShowPricingOverlay(false)} onClose={() => setShowPricingOverlay(false)} />
           </div>
         </div>
