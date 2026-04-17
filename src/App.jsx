@@ -2251,6 +2251,26 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
         .db-course-row { transition:box-shadow 150ms ease; }
         .db-course-row:hover { box-shadow:0 2px 12px rgba(0,0,0,0.08); }
         .db-cal-day:hover { background:var(--c-gray100) !important; }
+
+        /* ── Dashboard mobile layout ── */
+        .db-main-wrap { display:flex; align-items:flex-start; gap:20; padding:28px 32px; }
+        .db-right-panel { width:200px; flex-shrink:0; }
+        @media(max-width:700px){
+          .db-main-wrap { flex-direction:column; padding:16px; gap:0; }
+          .db-right-panel { width:100%; margin-bottom:20px; order:-1; }
+          .db-right-panel-inner { display:flex; gap:12px; }
+          .db-right-progress { flex:1; min-width:0; margin-bottom:0 !important; }
+          .db-right-stats { flex:1; min-width:0; }
+        }
+
+        /* ── Session cards mobile ── */
+        .db-session-card-row { display:flex; align-items:stretch; overflow:hidden; cursor:pointer; min-height:235px; }
+        .db-session-card-thumb { flex-shrink:0; width:200px; position:relative; }
+        .db-session-card-thumb img { width:100%; height:100%; object-fit:cover; object-position:top center; display:block; }
+        @media(max-width:600px){
+          .db-session-card-row { flex-direction:column; min-height:unset; }
+          .db-session-card-thumb { width:100%; height:180px; }
+        }
       `}</style>
       {calendarItem && (
         <AddToCalendarModal item={calendarItem} onClose={() => setCalendarItem(null)}
@@ -2262,7 +2282,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
       )}
 
       {/* ── MAIN CONTENT ── */}
-      <div style={{ display:"flex", alignItems:"flex-start", gap:20, padding:"28px 32px" }}>
+      <div className="db-main-wrap">
       <div style={{ flex:1, minWidth:0 }}>
 
         {/* Greeting header */}
@@ -2288,12 +2308,11 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
             const schedItem = SCHEDULE.find(i => i.id === s.id);
             const typeLabel = schedItem ? schedItem.type.charAt(0) + schedItem.type.slice(1).toLowerCase() : "Session";
             return (
-              <div key={s.id} className="db-course-row"
-                style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, display:"flex", alignItems:"stretch", overflow:"hidden", cursor:"pointer", minHeight:235 }}
+              <div key={s.id} className="db-course-row db-session-card-row"
+                style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12 }}
                 onClick={() => onOpenSession(s)}>
-                <div style={{ flexShrink:0, width:200, position:"relative" }}>
-                  <img src={INSTRUCTOR_AVATARS[s.instructor]} alt={s.instructor}
-                    style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top center", display:"block" }}/>
+                <div className="db-session-card-thumb">
+                  <img src={INSTRUCTOR_AVATARS[s.instructor]} alt={s.instructor}/>
                   <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.25) 45%, transparent 75%)" }}/>
                   <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"0 10px 10px" }}>
                     <div style={{ fontSize:15, fontWeight:700, color:"#fff", lineHeight:1.25 }}>{s.instructor}</div>
@@ -2428,9 +2447,10 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
       {(()=>{
         const ringColor = pct === 100 ? "#10b981" : C.primary;
         return (
-          <div style={{ width:200, flexShrink:0, display:"flex", flexDirection:"column", gap:0, paddingTop:4 }}>
+          <div className="db-right-panel" style={{ display:"flex", flexDirection:"column", gap:0, paddingTop:4 }}>
+          <div className="db-right-panel-inner">
             {/* Progress card */}
-            <div style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:"16px 18px", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", marginBottom:20 }}>
+            <div className="db-right-progress" style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:"16px 18px", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", marginBottom:20 }}>
               <div style={{ fontSize:15, fontWeight:800, color:C.gray900, marginBottom:3 }}>My Progress</div>
               <div style={{ fontSize:13, color:C.gray500, marginBottom:10 }}>{completed} of {totalEnrolled} sessions</div>
               <div style={{ width:"100%", height:5, background:C.gray200, borderRadius:99, overflow:"hidden" }}>
@@ -2439,7 +2459,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
               <div style={{ fontSize:13, fontWeight:700, color:ringColor, marginTop:6 }}>{pct}% complete</div>
             </div>
             {/* Stats */}
-            <div style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, boxShadow:"0 1px 4px rgba(0,0,0,0.04)", overflow:"hidden" }}>
+            <div className="db-right-stats" style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, boxShadow:"0 1px 4px rgba(0,0,0,0.04)", overflow:"hidden" }}>
               {[
                 { label:"Sessions Watched",    val: completed },
                 { label:"Certificates Earned", val: certsEarned },
@@ -2451,6 +2471,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                 </div>
               ))}
             </div>
+          </div>{/* end db-right-panel-inner */}
           </div>
         );
       })()}
