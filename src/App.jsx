@@ -1345,6 +1345,88 @@ function Sidebar({ active, onChange, isAdmin }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    TAB BAR  (horizontal top nav — replaces sidebar for logged-in users)
 ───────────────────────────────────────────────────────────────────────────── */
+/* ── LimelightBottomNav ─────────────────────────────────────────────────────── */
+function LimelightBottomNav({ active, onChange, isAdmin }) {
+  const userItems = [
+    { id:'dashboard',      icon:'house',        label:'My Learnings' },
+    { id:'sessions',       icon:'compass',      label:'Browse'       },
+    { id:'past-sessions',  icon:'clock',        label:'Past'         },
+    { id:'certifications', icon:'certificate',  label:'Certs'        },
+    { id:'profile',        icon:'user',         label:'Profile'      },
+  ];
+  const adminItems = [
+    { id:'admin-overview',  icon:'house',       label:'Overview'  },
+    { id:'admin-sessions',  icon:'video',       label:'Sessions'  },
+    { id:'admin-analytics', icon:'chart-bar',   label:'Analytics' },
+    { id:'profile',         icon:'user',        label:'Profile'   },
+  ];
+  const items = isAdmin ? adminItems : userItems;
+  const activeIdx = Math.max(0, items.findIndex(i => i.id === active));
+
+  const [llLeft, setLlLeft] = useState(-999);
+  const [ready,  setReady]  = useState(false);
+  const itemRefs = useRef([]);
+  const navRef   = useRef(null);
+
+  useEffect(() => {
+    const el = itemRefs.current[activeIdx];
+    if (el) {
+      const left = el.offsetLeft + el.offsetWidth / 2 - 22;
+      setLlLeft(left);
+      if (!ready) setTimeout(() => setReady(true), 50);
+    }
+  }, [activeIdx, items.length]);
+
+  return (
+    <nav ref={navRef} style={{
+      position:'fixed', bottom:0, left:0, right:0, height:64,
+      background:C.white, borderTop:`1px solid ${C.gray200}`,
+      display:'flex', alignItems:'stretch', zIndex:200,
+      boxShadow:'0 -2px 16px rgba(0,0,0,0.07)',
+    }}>
+      {/* Limelight indicator */}
+      <div style={{
+        position:'absolute', top:0, left:llLeft,
+        width:44, height:3, borderRadius:99,
+        background:C.primary,
+        boxShadow:`0 0 20px 6px rgba(99,102,241,0.35)`,
+        transition: ready ? 'left 0.35s cubic-bezier(0.34,1.56,0.64,1)' : 'none',
+        pointerEvents:'none',
+        zIndex:10,
+      }}>
+        {/* Glow cone */}
+        <div style={{
+          position:'absolute', left:'-30%', top:3,
+          width:'160%', height:56,
+          background:'linear-gradient(to bottom, rgba(99,102,241,0.18), transparent)',
+          clipPath:'polygon(5% 100%, 25% 0, 75% 0, 95% 100%)',
+          pointerEvents:'none',
+        }}/>
+      </div>
+
+      {items.map((item, i) => {
+        const isAct = i === activeIdx;
+        return (
+          <button key={item.id}
+            ref={el => itemRefs.current[i] = el}
+            onClick={() => onChange(item.id)}
+            style={{
+              flex:1, display:'flex', flexDirection:'column', alignItems:'center',
+              justifyContent:'center', gap:3, background:'none', border:'none',
+              cursor:'pointer', padding:'8px 2px', fontFamily:'inherit',
+              WebkitTapHighlightColor:'transparent',
+            }}>
+            <Icon name={item.icon} size={22} color={isAct ? C.primary : C.gray400}/>
+            <span style={{ fontSize:10, fontWeight: isAct ? 700 : 500, color: isAct ? C.primary : C.gray400, lineHeight:1 }}>
+              {item.label}
+            </span>
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
 function TabBar({ active, onChange, isAdmin, breadcrumbs }) {
   const userNav = [
     { id:"dashboard",      label:"My Learnings"    },
@@ -2259,8 +2341,8 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
           .db-main-wrap { flex-direction:column; padding:16px; gap:0; }
           .db-right-panel { width:100%; margin-bottom:20px; order:-1; }
           .db-right-panel-inner { display:flex; gap:12px; }
-          .db-right-progress { flex:1; min-width:0; margin-bottom:0 !important; }
-          .db-right-stats { flex:1; min-width:0; }
+          .db-right-progress { flex:1 1 0; min-width:0; margin-bottom:0 !important; }
+          .db-right-stats { flex:1 1 0; min-width:0; }
         }
 
         /* ── Session cards mobile ── */
@@ -9987,31 +10069,49 @@ export default function App() {
         }}
       />
       <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-        {activePage !== "profile" && page !== "session-detail" && page !== "admin-create" && page !== "admin-edit" && page !== "past-season" && <TabBar
-          active={activePage}
-          onChange={nav}
-          isAdmin={isAdmin}
-        />}
-        {page === "past-season" && pastSeasonPageId && <TabBar
-          active={activePage}
-          onChange={nav}
-          isAdmin={isAdmin}
-          breadcrumbs={[
-            { label: isAdmin ? "Overview" : "My Learnings", onClick:() => { setPastSeasonPageId(null); nav(isAdmin ? "admin-overview" : "dashboard"); } },
-            { label: "Past Sessions", onClick:() => { setPastSeasonPageId(null); nav("past-sessions"); } },
-            { label: seasons.find(s => s.id === pastSeasonPageId)?.name || "Past Season" },
-          ]}
-        />}
-        {(page === "admin-create" || page === "admin-edit") && <TabBar
-          active={activePage}
-          onChange={nav}
-          isAdmin={isAdmin}
-          breadcrumbs={[
-            { label:"My Sessions", onClick:() => nav("admin-sessions") },
-            { label: page === "admin-edit" ? (editingSession?.title || "Edit Session") : "Create New Session" },
-          ]}
-        />}
-        <div ref={scrollContainerRef} style={{ flex:1, overflowY:"auto" }}>{renderPage()}<Footer onNavigate={nav}/></div>
+        <style>{`
+          .app-tabbar-wrap { display: block; }
+          .app-bottom-nav  { display: none; }
+          @media(max-width: 767px) {
+            .app-tabbar-wrap { display: none !important; }
+            .app-bottom-nav  { display: flex !important; }
+            .app-scroll-area { padding-bottom: 72px; }
+          }
+        `}</style>
+
+        <div className="app-tabbar-wrap">
+          {activePage !== "profile" && page !== "session-detail" && page !== "admin-create" && page !== "admin-edit" && page !== "past-season" && <TabBar
+            active={activePage}
+            onChange={nav}
+            isAdmin={isAdmin}
+          />}
+          {page === "past-season" && pastSeasonPageId && <TabBar
+            active={activePage}
+            onChange={nav}
+            isAdmin={isAdmin}
+            breadcrumbs={[
+              { label: isAdmin ? "Overview" : "My Learnings", onClick:() => { setPastSeasonPageId(null); nav(isAdmin ? "admin-overview" : "dashboard"); } },
+              { label: "Past Sessions", onClick:() => { setPastSeasonPageId(null); nav("past-sessions"); } },
+              { label: seasons.find(s => s.id === pastSeasonPageId)?.name || "Past Season" },
+            ]}
+          />}
+          {(page === "admin-create" || page === "admin-edit") && <TabBar
+            active={activePage}
+            onChange={nav}
+            isAdmin={isAdmin}
+            breadcrumbs={[
+              { label:"My Sessions", onClick:() => nav("admin-sessions") },
+              { label: page === "admin-edit" ? (editingSession?.title || "Edit Session") : "Create New Session" },
+            ]}
+          />}
+        </div>
+
+        <div ref={scrollContainerRef} className="app-scroll-area" style={{ flex:1, overflowY:"auto" }}>{renderPage()}<Footer onNavigate={nav}/></div>
+      </div>
+
+      {/* Mobile bottom nav */}
+      <div className="app-bottom-nav" style={{ display:"none" }}>
+        <LimelightBottomNav active={activePage} onChange={nav} isAdmin={isAdmin} />
       </div>
       {/* Session Assessment Modal */}
       {assessmentSession && (
