@@ -5,7 +5,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import LandingV2 from "./v2/LandingV2";
 import { GradientWave } from "./components/GradientWave";
-import { motion, useMotionValue, useMotionTemplate, useAnimationFrame } from "framer-motion";
+import { motion, useMotionValue, useMotionTemplate, useAnimationFrame, useInView, AnimatePresence } from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PHOSPHOR ICONS  (inline SVG, consistent 20px/24px strokes)
@@ -4135,7 +4135,7 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    REWARDS
 ───────────────────────────────────────────────────────────────────────────── */
-function PastSessionsTab() {
+function PastSessionsTab({ onOpenSeason }) {
   const [filterSeason, setFilterSeason] = useState("all");
   const [filterYear,   setFilterYear]   = useState("all");
   const seasonOptions = [...new Set(SEASONS.map(s => s.name.split(" ")[0]))];
@@ -4181,16 +4181,14 @@ function PastSessionsTab() {
             const thumbSrc = INSTRUCTOR_AVATARS[SESSIONS.find(s => season.sessionIds.includes(s.id))?.instructor]
               || "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&h=340&fit=crop";
             return (
-              <div key={season.id} style={{ borderRadius:16, border:`1px solid ${C.gray200}`, background:C.white, overflow:"hidden", boxShadow:"0 2px 8px rgba(0,0,0,0.06)" }}>
+              <div key={season.id}
+                onClick={() => onOpenSeason?.(season.id)}
+                style={{ borderRadius:16, border:`1px solid ${C.gray200}`, background:C.white, overflow:"hidden", boxShadow:"0 2px 8px rgba(0,0,0,0.06)", cursor:"pointer" }}>
                 <div style={{ position:"relative", height:144, overflow:"hidden", background:"#1f2937" }}>
                   <img src={thumbSrc} alt={season.name}
                     style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 20%" }}
                     onError={e => e.currentTarget.src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&h=340&fit=crop"}/>
-                  <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.42)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <div style={{ width:48, height:48, borderRadius:"50%", background:"rgba(255,255,255,0.15)", border:"2px solid rgba(255,255,255,0.5)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                      <Icon name="lock" size={22} color="#fff"/>
-                    </div>
-                  </div>
+                  <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.25)" }}/>
                 </div>
                 <div style={{ padding:"16px 16px 10px" }}>
                   <div style={{ fontSize:17, fontWeight:800, color:C.gray900, lineHeight:1.3, marginBottom:10 }}>{season.name}</div>
@@ -4200,12 +4198,8 @@ function PastSessionsTab() {
                     {season.updatedAt && <span style={{ fontSize:11, fontWeight:600, color:C.gray700, background:C.gray200, borderRadius:8, padding:"3px 10px" }}>Updated {season.updatedAt}</span>}
                   </div>
                 </div>
-                <div style={{ padding:"10px 16px", borderTop:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-                    <Icon name="lock" size={12} color={C.gray400}/>
-                    <span style={{ fontSize:12, fontWeight:600, color:C.gray500 }}>Subscribers only</span>
-                  </div>
-                  <span style={{ fontSize:12, fontWeight:600, color:C.gray300 }}>View all →</span>
+                <div style={{ padding:"10px 16px", borderTop:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", justifyContent:"flex-end" }}>
+                  <span style={{ fontSize:12, fontWeight:600, color:C.primary }}>View all →</span>
                 </div>
               </div>
             );
@@ -7983,6 +7977,288 @@ function V1TestiCol({ items, duration }) {
   );
 }
 
+const V1_PRICING_FEATURES = [
+  "9 expert-led SPED sessions",
+  "Interactive quizzes after each session",
+  "Downloadable completion certificate",
+  "Giveaway entry — win Ablespace Pro ($120/yr)",
+  "Lifetime on-demand replay access",
+  "Educator community (4,200+ members)",
+  "Self-paced — learn on your schedule",
+  "No signup fees, ever",
+];
+
+const V1_PRICING_TESTI = V1_TESTIMONIALS.slice(0, 6).map((t, i) => ({
+  id: i,
+  name: t.name,
+  role: t.role,
+  content: t.text,
+  rating: 5,
+  avatar: t.img,
+}));
+
+function SubscribePage({ onBack, onGetStarted }) {
+  return (
+    <div style={{ background:"#fff", minHeight:"100%", padding:"32px 24px 64px" }}>
+      <V1PricingCardOnly onGetStarted={onGetStarted} />
+    </div>
+  );
+}
+
+function V1PricingCardOnly({ onGetStarted, onClose }) {
+  const [testiIdx, setTestiIdx] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTestiIdx(p => (p + 1) % V1_PRICING_TESTI.length), 5000);
+    return () => clearInterval(id);
+  }, []);
+  const testi = V1_PRICING_TESTI[testiIdx];
+  return (
+    <div>
+      <style>{`
+        .v1pco-wrap { display:flex; flex-direction:column; gap:0; }
+        @media(min-width:700px){ .v1pco-wrap { flex-direction:row; } }
+        .v1pco-left { flex:1; padding:36px 32px; background:#fff; display:flex; flex-direction:column; }
+        .v1pco-right { flex:1; padding:36px 32px; background:#fff; border-top:1px solid #E5E7EB; display:flex; flex-direction:column; }
+        @media(min-width:700px){
+          .v1pco-right { border-top:none; border-left:1px solid #E5E7EB; }
+          .v1pco-left { border-radius:20px 0 0 20px; }
+          .v1pco-right { border-radius:0 20px 20px 0; }
+        }
+        @media(max-width:699px){
+          .v1pco-left { border-radius:20px 20px 0 0; }
+          .v1pco-right { border-radius:0 0 20px 20px; }
+        }
+      `}</style>
+      <div style={{ borderRadius:20, overflow:"hidden", position:"relative" }}>
+        {onClose && (
+          <button onClick={onClose} aria-label="Close"
+            style={{ position:"absolute", top:14, right:14, zIndex:10, width:28, height:28, borderRadius:8, border:`1px solid ${C.gray200}`, background:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <Icon name="x" size={14} color={C.gray500}/>
+          </button>
+        )}
+        <div className="v1pco-wrap">
+          {/* Left */}
+          <div className="v1pco-left">
+            <h3 style={{ margin:"0 0 8px", fontSize:22, fontWeight:800, color:"#111827", lineHeight:1.2 }}>Full Summit Access</h3>
+            <p style={{ margin:"0 0 24px", fontSize:14, color:"#6B7280", lineHeight:1.6 }}>Build your next SPED skill set with this comprehensive free summit</p>
+            <div style={{ display:"flex", alignItems:"baseline", gap:10, marginBottom:8 }}>
+              <span style={{ fontSize:"clamp(44px,7vw,64px)", fontWeight:900, lineHeight:1, letterSpacing:-2, color:"#111827" }}>$0</span>
+              <span style={{ fontSize:16, color:"#9ca3af", marginBottom:6 }}>/forever</span>
+            </div>
+            <div style={{ marginBottom:32, marginTop:8 }}>
+              {[
+                { label:"One-time registration, lifetime access", icon:<PhosphorIcons.Infinity size={16} color="#9ca3af" weight="regular"/> },
+                { label:"Free verified certificate included",     icon:<PhosphorIcons.Certificate size={16} color="#9ca3af" weight="regular"/> },
+                { label:"Created by educators for educators",     icon:<PhosphorIcons.Heart size={16} color="#9ca3af" weight="regular"/> },
+              ].map((b, i) => (
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:13 }}>
+                  {b.icon}
+                  <span style={{ fontSize:14, color:"#374151" }}>{b.label}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop:"auto" }}>
+              <button
+                onClick={onGetStarted}
+                style={{ width:"100%", padding:"15px", fontSize:15, fontWeight:800, background:"#2563EB", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, transition:"background 0.15s, transform 0.12s" }}
+                onMouseEnter={e=>{ e.currentTarget.style.background="#1D4ED8"; e.currentTarget.style.transform="translateY(-1px)"; }}
+                onMouseLeave={e=>{ e.currentTarget.style.background="#2563EB"; e.currentTarget.style.transform="none"; }}
+              >
+                Get started
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+          {/* Right */}
+          <div className="v1pco-right">
+            <div style={{ marginBottom:20 }}>
+              <h4 style={{ margin:0, fontSize:15, fontWeight:700, color:"#111827" }}>Included Features</h4>
+            </div>
+            <div style={{ marginBottom:24, display:"flex", flexDirection:"column", gap:10 }}>
+              {V1_PRICING_FEATURES.map((feat, i) => (
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:12 }}>
+                  <div style={{ width:20, height:20, borderRadius:"50%", background:"rgba(245,158,11,0.1)", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5.5l2.5 2.5 4.5-5" stroke="#f59e0b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </div>
+                  <span style={{ fontSize:14, color:"#374151" }}>{feat}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ borderTop:"1px solid #E5E7EB", paddingTop:20, marginTop:"auto" }}>
+              <AnimatePresence mode="wait">
+                <motion.div key={testi.id}
+                  initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-10 }}
+                  transition={{ duration:0.35 }}>
+                  <p style={{ margin:"0 0 12px", fontSize:14, color:"#374151", lineHeight:1.65, fontStyle:"italic" }}>"{testi.content}"</p>
+                  <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                    <img src={testi.avatar} alt={testi.name} style={{ width:32, height:32, borderRadius:"50%", objectFit:"cover" }}/>
+                    <div>
+                      <div style={{ fontSize:13, fontWeight:700, color:"#111827" }}>{testi.name}</div>
+                      <div style={{ fontSize:12, color:"#9ca3af" }}>{testi.role}</div>
+                    </div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function V1PricingSection({ onGetStarted }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, amount: 0.2 });
+  const [testiIdx, setTestiIdx] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setTestiIdx(p => (p + 1) % V1_PRICING_TESTI.length), 5000);
+    return () => clearInterval(id);
+  }, []);
+
+  const testi = V1_PRICING_TESTI[testiIdx];
+
+  return (
+    <section id="pricing" ref={ref} style={{ background:"#FEF5EC", padding:"80px 24px", borderBottom:"1px solid #E5E7EB" }}>
+      <style>{`
+        .v1pc-wrap { display:flex; flex-direction:column; gap:0; }
+        @media(min-width:800px){ .v1pc-wrap { flex-direction:row; } }
+        .v1pc-left { flex:1; padding:40px 36px; background:#FEF5EC; display:flex; flex-direction:column; }
+        .v1pc-right { flex:1; padding:40px 36px; background:#FEF5EC; border-top:1px solid #E5E7EB; display:flex; flex-direction:column; }
+        @media(min-width:800px){
+          .v1pc-right { border-top:none; border-left:1px solid #E5E7EB; }
+          .v1pc-left { border-radius:20px 0 0 20px; }
+          .v1pc-right { border-radius:0 20px 20px 0; }
+        }
+        @media(max-width:799px){
+          .v1pc-left { border-radius:20px 20px 0 0; }
+          .v1pc-right { border-radius:0 0 20px 20px; }
+        }
+      `}</style>
+
+      {/* Section header */}
+      <div style={{ maxWidth:760, margin:"0 auto 48px", textAlign:"center" }}>
+        <p style={{ margin:"0 0 12px", fontSize:13, fontWeight:700, color:"#6B7280", letterSpacing:1, textTransform:"uppercase" }}>Simple Pricing</p>
+        <h2 style={{ margin:"0 0 16px", fontSize:"clamp(28px,4vw,48px)", fontWeight:900, color:"#111827", letterSpacing:-1.5, lineHeight:1.1 }}>
+          One summit, endless possibilities
+        </h2>
+        <p style={{ margin:0, fontSize:17, color:"#6B7280", lineHeight:1.6, maxWidth:520, marginInline:"auto" }}>
+          Everything you need to grow as a special education professional
+        </p>
+      </div>
+
+      {/* Card */}
+      <motion.div
+        initial={{ opacity:0, y:30 }}
+        animate={inView ? { opacity:1, y:0 } : {}}
+        transition={{ duration:0.6, ease:[0.22,1,0.36,1] }}
+        style={{ maxWidth:860, margin:"0 auto", border:"1.5px solid #E5E7EB", borderRadius:20, overflow:"hidden", boxShadow:"0 4px 32px rgba(0,0,0,0.08)" }}
+      >
+        <div className="v1pc-wrap">
+
+          {/* ── Left: price + benefits + CTA ── */}
+          <div className="v1pc-left">
+            {/* Title */}
+            <h3 style={{ margin:"0 0 8px", fontSize:22, fontWeight:800, color:"#111827", lineHeight:1.2 }}>
+              Full Summit Access
+            </h3>
+            <p style={{ margin:"0 0 24px", fontSize:14, color:"#6B7280", lineHeight:1.6 }}>
+              Build your next SPED skill set with this comprehensive free summit
+            </p>
+
+            {/* Price */}
+            <div style={{ display:"flex", alignItems:"baseline", gap:10, marginBottom:8 }}>
+              <span style={{ fontSize:"clamp(44px,7vw,64px)", fontWeight:900, lineHeight:1, letterSpacing:-2, color:"#111827" }}>$0</span>
+              <span style={{ fontSize:16, color:"#9ca3af", marginBottom:6 }}>/forever</span>
+            </div>
+
+            {/* Benefits */}
+            <div style={{ marginBottom:32, marginTop:8 }}>
+              {[
+                { label:"One-time registration, lifetime access", icon:<PhosphorIcons.Infinity size={16} color="#9ca3af" weight="regular"/> },
+                { label:"Free verified certificate included",     icon:<PhosphorIcons.Certificate size={16} color="#9ca3af" weight="regular"/> },
+                { label:"Created by educators for educators",     icon:<PhosphorIcons.Heart size={16} color="#9ca3af" weight="regular"/> },
+              ].map((b, i) => (
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:13 }}>
+                  {b.icon}
+                  <span style={{ fontSize:14, color:"#374151" }}>{b.label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA */}
+            <div style={{ marginTop:"auto" }}>
+              <button
+                onClick={onGetStarted}
+                style={{ width:"100%", padding:"15px", fontSize:15, fontWeight:800, background:"#2563EB", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, transition:"background 0.15s, transform 0.12s" }}
+                onMouseEnter={e=>{ e.currentTarget.style.background="#1D4ED8"; e.currentTarget.style.transform="translateY(-1px)"; }}
+                onMouseLeave={e=>{ e.currentTarget.style.background="#2563EB"; e.currentTarget.style.transform="none"; }}
+              >
+                Get started
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ marginLeft:"auto" }}><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+
+          {/* ── Right: features + testimonials ── */}
+          <div className="v1pc-right">
+            {/* Features title */}
+            <div style={{ marginBottom:20 }}>
+              <h4 style={{ margin:0, fontSize:15, fontWeight:700, color:"#111827" }}>Included Features</h4>
+            </div>
+
+            {/* Feature list */}
+            <div style={{ marginBottom:24, display:"flex", flexDirection:"column", gap:10 }}>
+              {V1_PRICING_FEATURES.map((feat, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity:0, x:20 }}
+                  animate={inView ? { opacity:1, x:0 } : {}}
+                  transition={{ delay: 0.4 + i * 0.05, duration:0.45 }}
+                  style={{ display:"flex", alignItems:"center", gap:12 }}
+                >
+                  <div style={{ width:20, height:20, borderRadius:"50%", background:"rgba(245,158,11,0.1)", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5.5l2.5 2.5 4.5-5" stroke="#f59e0b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </div>
+                  <span style={{ fontSize:14, color:"#374151" }}>{feat}</span>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Separator */}
+            <div style={{ height:1, background:"#E5E7EB", margin:"4px 0 20px" }} />
+
+            {/* Rotating testimonial */}
+            <div style={{ border:"1px solid #E5E7EB", borderRadius:14, padding:20, position:"relative", minHeight:148, overflow:"hidden" }}>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={testiIdx}
+                  initial={{ opacity:0, y:16 }}
+                  animate={{ opacity:1, y:0 }}
+                  exit={{ opacity:0, y:-16 }}
+                  transition={{ duration:0.45 }}
+                  style={{ position:"absolute", inset:0, padding:20 }}
+                >
+                  <p style={{ margin:"0 0 14px", fontSize:13, color:"#4b5563", lineHeight:1.65, fontStyle:"italic" }}>"{testi.content}"</p>
+                  <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                    <img src={testi.avatar} alt={testi.name} style={{ width:32, height:32, borderRadius:"50%", objectFit:"cover", flexShrink:0 }}/>
+                    <div>
+                      <div style={{ fontSize:13, fontWeight:700, color:"#111827", lineHeight:1.2 }}>{testi.name}</div>
+                      <div style={{ fontSize:11, color:"#9ca3af", marginTop:2 }}>{testi.role}</div>
+                    </div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+          </div>{/* end right column */}
+        </div>{/* end v1pc-wrap */}
+      </motion.div>{/* end card */}
+    </section>
+  );
+}
+
 function LandingPage({ onGetStarted }) {
   const [showAuth, setShowAuth] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
@@ -8204,7 +8480,7 @@ function LandingPage({ onGetStarted }) {
             {[["Sessions","sessions"],["Instructors","instructors"],["FAQ","help"]].map(([l,id])=>(
               <button key={l} onClick={()=>document.getElementById(id)?.scrollIntoView({ behavior:"smooth" })}
                 style={{ background:"none", border:"none", fontSize:14, color:T.muted, fontWeight:500, cursor:"pointer", padding:"6px 14px", borderRadius:8, height:36, transition:"background .12s, color .12s" }}
-                onMouseEnter={e=>{ e.currentTarget.style.background=T.hover; e.currentTarget.style.color=T.text; }}
+                onMouseEnter={e=>{ e.currentTarget.style.background="rgba(245,158,11,0.1)"; e.currentTarget.style.color=T.text; }}
                 onMouseLeave={e=>{ e.currentTarget.style.background="none"; e.currentTarget.style.color=T.muted; }}>{l}</button>
             ))}
             <button onClick={()=>setShowAuth(true)}
@@ -8237,7 +8513,7 @@ function LandingPage({ onGetStarted }) {
             {[["Sessions","sessions"],["Instructors","instructors"],["FAQ","help"]].map(([l,id])=>(
               <button key={l} onClick={()=>{ document.getElementById(id)?.scrollIntoView({ behavior:"smooth" }); setNavOpen(false); }}
                 style={{ background:"none", border:"none", fontSize:16, color:T.text, fontWeight:600, cursor:"pointer", padding:"12px 16px", borderRadius:10, textAlign:"left", transition:"background .15s" }}
-                onMouseEnter={e=>e.currentTarget.style.background=T.hover}
+                onMouseEnter={e=>e.currentTarget.style.background="rgba(245,158,11,0.1)"}
                 onMouseLeave={e=>e.currentTarget.style.background="none"}>{l}</button>
             ))}
           </div>
@@ -8844,6 +9120,9 @@ function LandingPage({ onGetStarted }) {
         </div>
       </section>
 
+      {/* ── Pricing ── */}
+      <V1PricingSection onGetStarted={onGetStarted} />
+
       {/* ── FAQ ── */}
       <section id="help" style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
         <div style={{ maxWidth:680, margin:"0 auto" }}>
@@ -9356,6 +9635,7 @@ export default function App() {
   const [scheduleRegistrations, setScheduleRegistrations] = useState({});
   const [sessionsDeepLink, setSessionsDeepLink] = useState(null);
   const [pastSeasonPageId, setPastSeasonPageId] = useState(null);
+  const [showPricingOverlay, setShowPricingOverlay] = useState(false);
   const [dashFilter, setDashFilter] = useState({ season:"all", year:"all" });
   const [adminSessions, setAdminSessions] = useState(() => {
     try { const s = localStorage.getItem("adminSessions"); return s ? JSON.parse(s) : ADMIN_SESSIONS_DATA; } catch { return ADMIN_SESSIONS_DATA; }
@@ -9560,7 +9840,7 @@ export default function App() {
               return (
                 <div key={s.id}
                   style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, display:"flex", alignItems:"stretch", overflow:"hidden", cursor:"pointer", minHeight:235 }}
-                  onClick={()=>openSession(s)}>
+                  onClick={()=>setShowPricingOverlay(true)}>
                   <div style={{ flexShrink:0, width:200, position:"relative" }}>
                     <img src={INSTRUCTOR_AVATARS[s.instructor]} alt={s.instructor}
                       style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top center", display:"block" }}/>
@@ -9581,17 +9861,12 @@ export default function App() {
                       {s.description}
                     </div>
                     <div style={{ display:"flex", alignItems:"center", gap:12, marginTop:"auto", paddingTop:12 }}>
-                      <button onClick={e=>{ e.stopPropagation(); openSession(s); }}
-                        style={{ display:"inline-flex", alignItems:"center", padding:"7px 13px", background:C.primary, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}
-                        onMouseEnter={e=>e.currentTarget.style.opacity="0.85"}
-                        onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-                        {s.status==="completed" ? "Watch Again" : s.status==="in-progress" ? "Resume" : "Watch Now"}
+                      <button onClick={e=>{ e.stopPropagation(); setShowPricingOverlay(true); }}
+                        style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"7px 14px", background:C.primary, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit", transition:"background 0.15s" }}
+                        onMouseEnter={e=>e.currentTarget.style.background=C.primaryDark}
+                        onMouseLeave={e=>e.currentTarget.style.background=C.primary}>
+                        Subscribe
                       </button>
-                      {s.status==="completed" && (
-                        <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, color:C.success }}>
-                          <Icon name="check-circle" size={13} color={C.success}/> Certificate earned
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -9607,7 +9882,7 @@ export default function App() {
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
     if (page==="community") return <CommunityPage toast={toast}/>;
     if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick} userName={userName}/>;
-    if (page==="past-sessions")  return <PastSessionsTab />;
+    if (page==="past-sessions")  return <PastSessionsTab onOpenSeason={(id) => { setPastSeasonPageId(id); nav("past-season"); }} />;
     if (page==="profile")   return <ProfilePage toast={toast} userName={userName} onNameChange={setUserName}/>;
     return null;
   }
@@ -9717,6 +9992,17 @@ export default function App() {
           onSaveProgress={handleSaveProgress}
           onFinish={handleAssessmentFinish}
         />
+      )}
+      {/* Pricing Overlay */}
+      {showPricingOverlay && (
+        <div
+          onClick={() => setShowPricingOverlay(false)}
+          style={{ position:"fixed", inset:0, zIndex:1000, background:"rgba(0,0,0,0.55)", display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}
+        >
+          <div onClick={e => e.stopPropagation()} style={{ maxWidth:880, width:"100%", maxHeight:"90vh", overflowY:"auto", borderRadius:20, background:"#fff" }}>
+            <V1PricingCardOnly onGetStarted={() => setShowPricingOverlay(false)} onClose={() => setShowPricingOverlay(false)} />
+          </div>
+        </div>
       )}
       {/* Review Modal */}
       {reviewSession && (
