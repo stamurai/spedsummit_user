@@ -8875,7 +8875,8 @@ function SpAccordionFeature({ T }) {
           .sp-acc-wrap { display:flex; gap:64px; align-items:flex-start; }
           .sp-acc-img  { width:55%; flex-shrink:0; position:sticky; top:80px; }
           .sp-acc-list { flex:1; }
-          @media(max-width:768px){ .sp-acc-wrap { flex-direction:column; gap:32px; } .sp-acc-img { width:100%; position:static; } }
+          @media(max-width:768px){ .sp-acc-wrap { flex-direction:column; gap:32px; } .sp-acc-img { display:none !important; } .sp-acc-mobile-img { display:block !important; } }
+          @media(min-width:769px){ .sp-acc-mobile-img { display:none !important; } }
           .sp-acc-item { border-bottom:1px solid ${T.border}; }
           .sp-acc-trigger { width:100%; background:none; border:none; cursor:pointer; padding:20px 0; display:flex; align-items:center; justify-content:space-between; gap:12; text-align:left; font-family:inherit; }
           .sp-acc-trigger:hover h6 { color:${T.text}; }
@@ -8899,11 +8900,13 @@ function SpAccordionFeature({ T }) {
                       <path d="M6 9l6 6 6-6"/>
                     </svg>
                   </button>
-                  <div className="sp-acc-content" style={{ maxHeight: isOpen ? 300 : 0, opacity: isOpen ? 1 : 0 }}>
-                    <p style={{ margin:"0 0 20px", fontSize:14, color:T.muted, lineHeight:1.7 }}>{f.description}</p>
-                    {/* Mobile image */}
-                    <div style={{ display:"none" }} className="sp-acc-mobile-img">
-                      <img src={f.image} alt={f.title} style={{ width:"100%", borderRadius:12, marginBottom:20, objectFit:"cover", maxHeight:240 }}/>
+                  <div className="sp-acc-content" style={{ maxHeight: isOpen ? 800 : 0, opacity: isOpen ? 1 : 0 }}>
+                    <p style={{ margin:"0 0 16px", fontSize:14, color:T.muted, lineHeight:1.7 }}>{f.description}</p>
+                    {/* Mobile image — shown inline below description */}
+                    <div className="sp-acc-mobile-img" style={{ marginBottom:20 }}>
+                      <div style={{ width:"100%", aspectRatio:"1840/1424", overflow:"hidden" }}>
+                        <img src={f.image} alt={f.title} style={{ width:"100%", height:"100%", objectFit:"contain", objectPosition:"top center", display:"block" }}/>
+                      </div>
                     </div>
                   </div>
                 </div>
