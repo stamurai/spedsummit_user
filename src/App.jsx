@@ -8862,7 +8862,7 @@ function SpAccordionFeature({ T }) {
       <div style={{ maxWidth:1100, margin:"0 auto" }}>
         {/* Header */}
         <div style={{ textAlign:"center", marginBottom:52 }}>
-          <p style={{ margin:"0 0 10px", fontSize:13, fontWeight:700, color:T.muted, letterSpacing:1, textTransform:"uppercase" }}>By the numbers</p>
+          <p style={{ margin:"0 0 10px", fontSize:13, fontWeight:700, color:T.muted, letterSpacing:1, textTransform:"uppercase" }}>AbleSpace Features</p>
           <h2 style={{ margin:"0 0 14px", fontSize:"clamp(28px,4vw,42px)", fontWeight:800, color:T.text, letterSpacing:-1.2, lineHeight:1.15 }}>
             AI-Powered IEP Goal Tracking
           </h2>
@@ -9531,7 +9531,7 @@ function LandingPage({ onGetStarted }) {
             <div style={{ maxWidth:1100, margin:"0 auto" }}>
               {/* Section header */}
               <div style={{ textAlign:"center", marginBottom:52 }}>
-                <p style={{ margin:"0 0 10px", fontSize:13, fontWeight:700, color:T.muted, letterSpacing:1, textTransform:"uppercase" }}>By the numbers</p>
+                <p style={{ margin:"0 0 10px", fontSize:13, fontWeight:700, color:T.muted, letterSpacing:1, textTransform:"uppercase" }}>AbleSpace Features</p>
                 <h2 style={{ margin:"0 0 14px", fontSize:"clamp(28px,4vw,42px)", fontWeight:800, color:T.text, letterSpacing:-1.2, lineHeight:1.15 }}>
                   AI-Powered IEP Goal Tracking
                 </h2>
