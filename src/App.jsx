@@ -8822,7 +8822,7 @@ function SpAccordionFeature({ T }) {
       id: 1,
       title: "IEP Goal Tracking",
       description: "No more carrying binders full of data sheets. AbleSpace allows you to collect data on your goals with a single click.",
-      image: "/IEP Tracking.png?v=2",
+      image: "/IEP Tracking.png?v=3",
     },
     {
       id: 2,
