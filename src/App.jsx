@@ -5030,33 +5030,42 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
    ADMIN OVERVIEW
 ───────────────────────────────────────────────────────────────────────────── */
 function AdminOverview({ onNavigate, onEditSession, toast }) {
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
   return (
-    <div style={{ padding:24, background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+    <div style={{ padding: isMobile ? "16px" : "24px", background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+      <style>{`
+        .ao-metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+        .ao-bottom  { display:grid; grid-template-columns:3fr 2fr; gap:14px; margin-bottom:0; }
+        @media(max-width:640px){
+          .ao-metrics { grid-template-columns:repeat(2,1fr) !important; gap:10px !important; }
+          .ao-bottom  { grid-template-columns:1fr !important; }
+        }
+      `}</style>
       <div style={{ marginBottom:22 }}>
-        <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:700, color:C.gray900, letterSpacing:-0.3, lineHeight:1.25 }}>Overview</h1>
-        <p style={{ margin:0, color:C.gray600, fontSize:16, lineHeight:1.5 }}>Your teaching performance at a glance.</p>
+        <h1 style={{ margin:"0 0 4px", fontSize: isMobile ? 18 : 22, fontWeight:700, color:C.gray900, letterSpacing:-0.3, lineHeight:1.25 }}>Overview</h1>
+        <p style={{ margin:0, color:C.gray600, fontSize: isMobile ? 14 : 16, lineHeight:1.5 }}>Your teaching performance at a glance.</p>
       </div>
 
       {/* Metrics */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:14, marginBottom:24 }}>
+      <div className="ao-metrics">
         {[
           {label:"Course Enrollments", val:"12,842", delta:"+15% vs prev"},
           {label:"Student Rating",     val:"8.4/10", delta:"Top 1%"     },
           {label:"Total Site Visits",  val:"83",     delta:"+23 today"  },
           {label:"Total Revenue",      val:"$4,210", delta:"+8% vs prev"},
         ].map(m=>(
-          <div key={m.label} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"18px 20px" }}>
-            <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-              <div style={{ fontSize:30, fontWeight:900, color:C.gray900, lineHeight:1 }}>{m.val}</div>
-              <span style={{ fontSize:12, fontWeight:700, color:C.gray500, background:C.gray100, padding:"2px 7px", borderRadius:6 }}>{m.delta}</span>
+          <div key={m.label} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding: isMobile ? "14px 14px" : "18px 20px" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4 }}>
+              <div style={{ fontSize: isMobile ? 22 : 30, fontWeight:900, color:C.gray900, lineHeight:1 }}>{m.val}</div>
+              <span style={{ fontSize:11, fontWeight:700, color:C.gray500, background:C.gray100, padding:"2px 6px", borderRadius:6 }}>{m.delta}</span>
             </div>
-            <div style={{ fontSize:14, fontWeight:600, color:C.gray600, lineHeight:1.5 }}>{m.label}</div>
+            <div style={{ fontSize: isMobile ? 12 : 14, fontWeight:600, color:C.gray600, lineHeight:1.5 }}>{m.label}</div>
           </div>
         ))}
       </div>
 
       {/* Recent activity + growth */}
-      <div style={{ display:"grid", gridTemplateColumns:"3fr 2fr", gap:14, marginBottom:0 }}>
+      <div className="ao-bottom">
         {/* Recent sessions snapshot */}
         <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"20px 20px 8px" }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
@@ -5119,22 +5128,27 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
 function AdminSessionsPage({ onNavigate, onEditSession, toast, adminSessions = ADMIN_SESSIONS_DATA, setAdminSessions }) {
   const [filter, setFilter] = useState("ALL");
   const statuses = ["ALL", "LIVE", "DRAFT", "ARCHIVED"];
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
   const filtered = filter === "ALL" ? adminSessions :
                    adminSessions.filter(s => s.status === filter);
   const archived = adminSessions.filter(s => s.status === "ARCHIVED");
 
   return (
-    <div style={{ padding:24, background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+    <div style={{ padding: isMobile ? "16px" : "24px", background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+      <style>{`
+        .as-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
+        @media(max-width:640px){ .as-stats { grid-template-columns:repeat(2,1fr) !important; } }
+      `}</style>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:22 }}>
         <div>
-            <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:700, color:C.gray900, letterSpacing:-0.3, lineHeight:1.25 }}>My Sessions</h1>
-          <p style={{ margin:0, color:C.gray600, fontSize:16, lineHeight:1.5 }}>Manage, publish and track all your content.</p>
+            <h1 style={{ margin:"0 0 4px", fontSize: isMobile ? 18 : 22, fontWeight:700, color:C.gray900, letterSpacing:-0.3, lineHeight:1.25 }}>My Sessions</h1>
+          <p style={{ margin:0, color:C.gray600, fontSize: isMobile ? 14 : 16, lineHeight:1.5 }}>Manage, publish and track all your content.</p>
         </div>
         <Btn onClick={()=>onNavigate("admin-create")}><Icon name="plus" size={14} color="#fff"/>New Session</Btn>
       </div>
 
       {/* Summary stats */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
+      <div className="as-stats">
         {[
           {label:"Total",    val:adminSessions.length,                                    color:C.gray900},
           {label:"Live",     val:adminSessions.filter(s=>s.status==="LIVE").length,       color:C.gray900},
@@ -5354,6 +5368,7 @@ function MiniBarChart48({ data }) {
 function AnalyticsPage({ onEditSession }) {
   const [range,     setRange]     = useState("28d");
   const [showRange, setShowRange] = useState(false);
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
 
   const RANGES = [
     { key:"7d",  label:"Last 7 days",  dates:"Mar 17 – Mar 23, 2026" },
@@ -5408,10 +5423,19 @@ function AnalyticsPage({ onEditSession }) {
   ];
 
   return (
-    <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
+    <div style={{ padding: isMobile ? "16px" : "24px", background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+      <style>{`
+        .aa-metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+        .aa-bottom  { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+        @media(max-width:640px){
+          .aa-metrics { grid-template-columns:repeat(2,1fr) !important; gap:10px !important; }
+          .aa-bottom  { grid-template-columns:1fr !important; }
+          .aa-header  { flex-direction:column !important; gap:12px !important; align-items:flex-start !important; }
+        }
+      `}</style>
 
       {/* Header */}
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:22 }}>
+      <div className="aa-header" style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:22 }}>
         <div>
             <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:700, color:C.gray900, letterSpacing:-0.3, lineHeight:1.25 }}>Analytics</h1>
           <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>Track engagement, performance and learner outcomes.</p>
@@ -5447,19 +5471,19 @@ function AnalyticsPage({ onEditSession }) {
       </div>
 
       {/* Metric cards */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:14, marginBottom:24 }}>
+      <div className="aa-metrics">
         {[
           { label:"Total Views",      val:stat.views.toLocaleString(),    delta:stat.viewsDelta+" vs prev" },
           { label:"Watch Time (hrs)", val:stat.watch.toLocaleString(),    delta:stat.watchDelta+" vs prev" },
           { label:"Completion Rate",  val:`${stat.completion}%`,          delta:stat.compDelta+" vs prev"  },
           { label:"Enrolled",         val:stat.enrolled.toLocaleString(), delta:"Active learners"          },
         ].map(m => (
-          <div key={m.label} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"18px 20px" }}>
-            <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-              <div style={{ fontSize:30, fontWeight:900, color:C.gray900, lineHeight:1 }}>{m.val}</div>
-              <span style={{ fontSize:12, fontWeight:700, color:C.gray500, background:C.gray100, padding:"2px 7px", borderRadius:6 }}>{m.delta}</span>
+          <div key={m.label} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding: isMobile ? "14px" : "18px 20px" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4 }}>
+              <div style={{ fontSize: isMobile ? 22 : 30, fontWeight:900, color:C.gray900, lineHeight:1 }}>{m.val}</div>
+              <span style={{ fontSize:11, fontWeight:700, color:C.gray500, background:C.gray100, padding:"2px 6px", borderRadius:6 }}>{m.delta}</span>
             </div>
-            <div style={{ fontSize:14, fontWeight:600, color:C.gray600, lineHeight:1.5 }}>{m.label}</div>
+            <div style={{ fontSize: isMobile ? 12 : 14, fontWeight:600, color:C.gray600, lineHeight:1.5 }}>{m.label}</div>
           </div>
         ))}
       </div>
@@ -5474,7 +5498,7 @@ function AnalyticsPage({ onEditSession }) {
       </div>
 
       {/* Bottom row: top sessions + smart insights */}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
+      <div className="aa-bottom">
 
         {/* Top sessions */}
         <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:20 }}>
