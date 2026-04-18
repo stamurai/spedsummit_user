@@ -125,7 +125,7 @@ export function TestimonialsResponsive() {
   const { ref, isInView } = useScrollAnimation();
 
   return (
-    <section style={{ background: "#ffffff", padding: "80px 32px 48px" }}>
+    <section style={{ background: "transparent", padding: "80px 32px 48px" }}>
       <style>{`
         .t-col-2 { display: none; }
         .t-col-3 { display: none; }
