@@ -961,6 +961,182 @@ function Footer({ onNavigate }) {
   );
 }
 
+const RECENT_SEARCHES_KEY = "sped_recent_searches";
+function getRecentSearches() {
+  try { return JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) || "[]"); } catch { return []; }
+}
+function saveRecentSearch(q) {
+  if (!q.trim()) return;
+  const prev = getRecentSearches().filter(s => s !== q.trim()).slice(0, 9);
+  try { localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify([q.trim(), ...prev])); } catch {}
+}
+
+function MobileSearchPage({ onOpenSession, onNavigate, onClose }) {
+  const [query, setQuery] = useState("");
+  const [recents, setRecents] = useState(getRecentSearches);
+  const inputRef = useRef(null);
+
+  useEffect(() => { setTimeout(() => inputRef.current?.focus(), 80); }, []);
+  useEffect(() => {
+    document.body.classList.add('hide-bottom-nav');
+    return () => document.body.classList.remove('hide-bottom-nav');
+  }, []);
+
+  const q = query.trim().toLowerCase();
+  const sessionResults = q.length < 1 ? [] : SESSIONS.filter(s =>
+    s.title.toLowerCase().includes(q) ||
+    s.instructor.toLowerCase().includes(q) ||
+    s.category.toLowerCase().includes(q) ||
+    s.description.toLowerCase().includes(q)
+  ).slice(0, 6);
+  const pageResults = q.length < 1 ? [] : SEARCH_PAGES.filter(p => p.label.toLowerCase().includes(q));
+  const instructorResults = q.length < 1 ? [] : [...new Map(
+    SESSIONS.filter(s => s.instructor.toLowerCase().includes(q)).map(s => [s.instructor, s])
+  ).values()].slice(0, 3);
+  const hasResults = sessionResults.length > 0 || pageResults.length > 0 || instructorResults.length > 0;
+
+  function pick(fn) {
+    saveRecentSearch(query);
+    setRecents(getRecentSearches());
+    fn();
+    onClose();
+  }
+
+  function pickRecent(r) {
+    setQuery(r);
+  }
+
+  function removeRecent(r, e) {
+    e.stopPropagation();
+    const updated = getRecentSearches().filter(s => s !== r);
+    try { localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated)); } catch {}
+    setRecents(updated);
+  }
+
+  return (
+    <div style={{ position:"fixed", inset:0, zIndex:999, background:C.white, display:"flex", flexDirection:"column", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+      {/* Header */}
+      <div style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 16px", borderBottom:`1px solid ${C.gray200}` }}>
+        <div style={{ flex:1, display:"flex", alignItems:"center", gap:8, background:C.gray50, border:`1px solid ${C.gray200}`, borderRadius:10, padding:"8px 12px" }}>
+          <Icon name="magnifying-glass" size={16} color={C.gray400}/>
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search sessions, topics, instructors…"
+            style={{ flex:1, border:"none", background:"none", outline:"none", fontSize:15, color:C.gray900, fontFamily:"inherit" }}
+          />
+          {query.length > 0 && (
+            <button onClick={() => setQuery("")} style={{ background:"none", border:"none", cursor:"pointer", display:"flex", padding:0 }}>
+              <Icon name="x-circle" size={16} color={C.gray400}/>
+            </button>
+          )}
+        </div>
+        <button onClick={onClose} style={{ background:"none", border:"none", cursor:"pointer", fontSize:15, fontWeight:600, color:C.primary, padding:"4px 0", flexShrink:0 }}>
+          Cancel
+        </button>
+      </div>
+
+      {/* Body */}
+      <div style={{ flex:1, overflowY:"auto" }}>
+
+        {/* No query — show recents + quick links */}
+        {q.length === 0 && (
+          <div>
+            {recents.length > 0 && (
+              <div style={{ padding:"20px 16px 8px" }}>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+                  <span style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase" }}>Recent Searches</span>
+                  <button onClick={() => { localStorage.removeItem(RECENT_SEARCHES_KEY); setRecents([]); }}
+                    style={{ background:"none", border:"none", cursor:"pointer", fontSize:12, fontWeight:600, color:C.primary }}>Clear all</button>
+                </div>
+                {recents.map(r => (
+                  <button key={r} onClick={() => pickRecent(r)}
+                    style={{ width:"100%", display:"flex", alignItems:"center", gap:12, padding:"11px 4px", background:"none", border:"none", cursor:"pointer", borderBottom:`1px solid ${C.gray100}`, textAlign:"left" }}>
+                    <Icon name="clock-counter-clockwise" size={16} color={C.gray400}/>
+                    <span style={{ flex:1, fontSize:14, color:C.gray700 }}>{r}</span>
+                    <span onClick={e => removeRecent(r, e)} style={{ padding:"2px 4px", cursor:"pointer" }}>
+                      <Icon name="x" size={13} color={C.gray400}/>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+            <div style={{ padding:`${recents.length > 0 ? 8 : 20}px 16px 8px` }}>
+              <div style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:12 }}>Quick Links</div>
+              {SEARCH_PAGES.map(p => (
+                <button key={p.id} onClick={() => pick(() => onNavigate(p.id))}
+                  style={{ width:"100%", display:"flex", alignItems:"center", gap:12, padding:"12px 4px", background:"none", border:"none", cursor:"pointer", borderBottom:`1px solid ${C.gray100}`, textAlign:"left" }}>
+                  <div style={{ width:32, height:32, borderRadius:8, background:C.primaryLight, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    <Icon name={p.icon} size={15} color={C.primary}/>
+                  </div>
+                  <span style={{ fontSize:14, fontWeight:500, color:C.gray800 }}>{p.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Has query — show results */}
+        {q.length > 0 && !hasResults && (
+          <div style={{ padding:"48px 16px", textAlign:"center", color:C.gray400, fontSize:14 }}>
+            No results for "<strong style={{ color:C.gray600 }}>{query}</strong>"
+          </div>
+        )}
+
+        {pageResults.length > 0 && (
+          <div style={{ padding:"16px 16px 4px" }}>
+            <div style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:8 }}>Pages</div>
+            {pageResults.map(p => (
+              <button key={p.id} onClick={() => pick(() => onNavigate(p.id))}
+                style={{ width:"100%", display:"flex", alignItems:"center", gap:12, padding:"12px 4px", background:"none", border:"none", cursor:"pointer", borderBottom:`1px solid ${C.gray100}`, textAlign:"left" }}>
+                <div style={{ width:32, height:32, borderRadius:8, background:C.primaryLight, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <Icon name={p.icon} size={15} color={C.primary}/>
+                </div>
+                <span style={{ fontSize:14, fontWeight:600, color:C.gray800 }}>{p.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {instructorResults.length > 0 && (
+          <div style={{ padding:"16px 16px 4px" }}>
+            <div style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:8 }}>Instructors</div>
+            {instructorResults.map(s => (
+              <button key={s.instructor} onClick={() => pick(() => onOpenSession(s))}
+                style={{ width:"100%", display:"flex", alignItems:"center", gap:12, padding:"12px 4px", background:"none", border:"none", cursor:"pointer", borderBottom:`1px solid ${C.gray100}`, textAlign:"left" }}>
+                <Avatar name={s.instructor} src={INSTRUCTOR_AVATARS[s.instructor]} size={32}/>
+                <div>
+                  <div style={{ fontSize:14, fontWeight:600, color:C.gray800 }}>{s.instructor}</div>
+                  <div style={{ fontSize:12, color:C.gray400 }}>{s.category}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {sessionResults.length > 0 && (
+          <div style={{ padding:"16px 16px 24px" }}>
+            <div style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:8 }}>Sessions</div>
+            {sessionResults.map(s => (
+              <button key={s.id} onClick={() => pick(() => onOpenSession(s))}
+                style={{ width:"100%", display:"flex", alignItems:"center", gap:12, padding:"12px 4px", background:"none", border:"none", cursor:"pointer", borderBottom:`1px solid ${C.gray100}`, textAlign:"left" }}>
+                <div style={{ width:32, height:32, borderRadius:8, background:C.primaryLight, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <Icon name="play-circle" size={15} color={C.primary}/>
+                </div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:14, fontWeight:600, color:C.gray800, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
+                  <div style={{ fontSize:12, color:C.gray400 }}>{s.instructor} · {s.category}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function SearchBar({ onOpenSession, onNavigate }) {
   const [query, setQuery]   = useState("");
   const [open,  setOpen]    = useState(false);
@@ -1187,6 +1363,7 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
   const [showNotif, setShowNotif] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showReferModal, setShowReferModal] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showBrowse, setShowBrowse] = useState(false);
   const browseRef = useRef(null);
   const avatarBtnRef = useRef(null);
@@ -1269,10 +1446,18 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
         )}
       </div>
 
-      {/* Search — centered */}
-      <div style={{ flex:1, display:"flex", justifyContent:"center", padding:"0 16px" }}>
+      {/* Search — centered, hidden on mobile */}
+      <div className="topbar-search" style={{ flex:1, display:"flex", justifyContent:"center", padding:"0 16px" }}>
         <SearchBar onOpenSession={onOpenSession} onNavigate={onNavigate}/>
       </div>
+
+      {/* Mobile search icon */}
+      <button className="topbar-search-icon" onClick={() => setShowMobileSearch(true)}
+        style={{ display:"none", width:36, height:36, borderRadius:"50%", border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", alignItems:"center", justifyContent:"center", flexShrink:0, marginLeft:"auto", marginRight:8 }}>
+        <Icon name="magnifying-glass" size={17} color={C.gray700}/>
+      </button>
+
+      {showMobileSearch && <MobileSearchPage onOpenSession={onOpenSession} onNavigate={onNavigate} onClose={() => setShowMobileSearch(false)}/>}
 
       {/* Right actions */}
       <div style={{ flexShrink:0, display:"flex", alignItems:"center", gap:12 }}>
@@ -1403,8 +1588,8 @@ function LimelightBottomNav({ active, onChange, isAdmin, onNotif, notifCount = 0
   const userItems = [
     { id:'dashboard',      icon:'house',            label:'My Learnings' },
     { id:'past-sessions',  icon:'squares-four',  label:'Browse'       },
-    { id:'certifications', icon:'certificate',       label:'Certs'        },
-    { id:'__notif__',      icon:'bell',              label:'Alerts'       },
+    { id:'certifications', icon:'certificate',       label:'Achievements'  },
+    { id:'__notif__',      icon:'bell',              label:'Notifications' },
   ];
   const adminItems = [
     { id:'admin-overview',  icon:'house',       label:'Overview'  },
@@ -2522,7 +2707,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                 return (
                   <div style={{ marginBottom:32 }}>
                     <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
-                      <div style={{ fontSize:16, fontWeight:800, color:C.gray900 }}>Upcoming Session</div>
+                      <div style={{ fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3 }}>Upcoming Session</div>
                       <button onClick={() => setCalDaySession(null)}
                         style={{ background:"none", border:"none", cursor:"pointer", color:"#707685", fontSize:20, lineHeight:1, padding:"2px 6px" }}
                         aria-label="Close">×</button>
@@ -2575,7 +2760,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
               {/* ── CONTINUE LEARNING ── */}
               <div style={{ marginBottom:32 }}>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16, gap:10 }}>
-                  <div style={{ fontSize:16, fontWeight:800, color:C.gray900 }}>Continue watching</div>
+                  <div style={{ fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3 }}>Continue watching</div>
                 </div>
                 {filteredInProgress.length > 0 ? (
                   <div className="db-continue-list" style={isMobile ? { display:"flex", flexDirection:"row", overflowX:"scroll", overflowY:"hidden", gap:12, paddingTop:0, paddingBottom:8, paddingLeft:16, paddingRight:0, marginLeft:-16, marginRight:-16, width:"calc(100% + 32px)", boxSizing:"border-box", WebkitOverflowScrolling:"touch", scrollSnapType:"x mandatory", scrollPaddingLeft:16, touchAction:"pan-x", overscrollBehaviorX:"contain" } : { display:"flex", flexDirection:"column", gap:12 }}>
@@ -2597,7 +2782,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
               {/* ── UPCOMING SESSIONS ── */}
               {upcomingSchedule.length > 0 && (
                 <div style={{ marginBottom:32 }} className="db-upcoming-section">
-                  <div style={{ fontSize:16, fontWeight:800, color:C.gray900, marginBottom:16 }}>Upcoming sessions</div>
+                  <div style={{ fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3, marginBottom:16 }}>Upcoming sessions</div>
                   <div className="db-upcoming-list" style={isMobile ? { display:"flex", flexDirection:"column", gap:12 } : {}}>
                     {upcomingSchedule.slice(0,4).map((item) => {
                       const typeColor = SCHEDULE_TYPE_COLORS[item.type];
@@ -4445,9 +4630,17 @@ function PastSessionsTab({ onOpenSeason }) {
   return (
     <div style={{ padding:24, background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       {/* Header row */}
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, gap:10 }}>
-        <div style={{ fontSize:16, fontWeight:800, color:C.gray900 }}>Past Sessions</div>
-        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+      <style>{`
+        @media(max-width:600px){
+          .ps-header-row { flex-direction:column !important; align-items:flex-start !important; }
+          .ps-filters { width:100%; }
+          .ps-filters > div { flex:1; }
+          .ps-filters select { width:100%; }
+        }
+      `}</style>
+      <div className="ps-header-row" style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, gap:10 }}>
+        <div style={{ fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3 }}>Past Sessions</div>
+        <div className="ps-filters" style={{ display:"flex", alignItems:"center", gap:8 }}>
           <div style={{ position:"relative", display:"inline-flex", alignItems:"center" }}>
             <select value={filterSeason} onChange={e=>setFilterSeason(e.target.value)}
               style={{ appearance:"none", WebkitAppearance:"none", background:C.white, border:`1px solid ${C.gray200}`, borderRadius:8, padding:"5px 28px 5px 10px", fontSize:13, fontWeight:500, color:C.gray900, cursor:"pointer", outline:"none", fontFamily:"inherit" }}>
@@ -4741,7 +4934,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
             <div key={season.id}>
               {/* Season header */}
               <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
-                <h2 style={{ margin:0, fontSize:15, fontWeight:800, color:C.gray900 }}>{season.name}</h2>
+                <h2 style={{ margin:0, fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3 }}>{season.name}</h2>
                 {allEarned && (
                   <span style={{ display:"inline-flex", alignItems:"center", gap:4, background:"rgba(16,185,129,0.1)", borderRadius:99, padding:"3px 10px" }}>
                     <Icon name="medal" size={12} color={C.success}/>
@@ -10374,6 +10567,9 @@ export default function App() {
             .app-scroll-area.no-bottom-nav { padding-bottom: 0 !important; }
             .topbar-browse          { display: none !important; }
             .topbar-notif           { display: none !important; }
+            .topbar-search          { display: none !important; }
+            .topbar-search-icon     { display: flex !important; }
+            body.hide-bottom-nav .app-bottom-nav { display: none !important; }
           }
         `}</style>
 
