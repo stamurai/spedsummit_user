@@ -8822,7 +8822,7 @@ function SpAccordionFeature({ T }) {
       id: 1,
       title: "IEP Goal Tracking",
       description: "No more carrying binders full of data sheets. AbleSpace allows you to collect data on your goals with a single click.",
-      image: "/IEP Tracking.png",
+      image: "/IEP Tracking.png?v=2",
     },
     {
       id: 2,
@@ -8840,13 +8840,13 @@ function SpAccordionFeature({ T }) {
       id: 4,
       title: "Service Time Tracking",
       description: "Automatically track service time both at a session and goal levels. Service time tracking reports are automatically generated.",
-      image: "/service time.png",
+      image: "/service time.png?v=2",
     },
     {
       id: 5,
       title: "Collaboration",
       description: "Paraprofessionals and assistants can collect data for you. Safe and secure sharing among accounts.",
-      image: "/collaboration.png",
+      image: "/collaboration.png?v=2",
     },
     {
       id: 6,
