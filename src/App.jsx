@@ -8828,7 +8828,7 @@ function SpAccordionFeature({ T }) {
       id: 2,
       title: "Graphs",
       description: "Choose from over 20 automatically built graphs to visualize progress on your goals.",
-      image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&h=600&fit=crop&auto=format",
+      image: "/graph.png",
     },
     {
       id: 3,
