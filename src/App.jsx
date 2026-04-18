@@ -1999,7 +1999,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 /* ─────────────────────────────────────────────────────────────────────────────
    DASHBOARD
 ───────────────────────────────────────────────────────────────────────────── */
-function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS, externalFilter, onFilterChange }) {
+function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS, externalFilter, onFilterChange, isAdmin = false }) {
   const [vw, setVw] = useState(window.innerWidth);
   useEffect(() => {
     const handler = () => setVw(window.innerWidth);
@@ -2577,7 +2577,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
         .db-cal-day:hover { background:var(--c-gray100) !important; }
 
         /* ── Dashboard layout ── */
-        .db-main-wrap { display:flex; align-items:flex-start; gap:20px; padding:28px 32px; max-width:1200px; margin:0 auto; box-sizing:border-box; width:100%; }
+        .db-main-wrap { display:flex; align-items:flex-start; gap:20px; padding:28px 24px; max-width:1200px; margin:0 auto; box-sizing:border-box; width:100%; }
         .db-right-panel { width:200px; flex-shrink:0; }
 
         /* ── Session cards ── */
@@ -2756,7 +2756,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
               })()}
 
               {/* ── CONTINUE LEARNING ── */}
-              {filteredInProgress.length > 0 && <div style={{ marginBottom:32 }}>
+              {!isAdmin && filteredInProgress.length > 0 && <div style={{ marginBottom:32 }}>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16, gap:10 }}>
                   <div style={{ fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3 }}>Continue watching</div>
                 </div>
@@ -4645,7 +4645,7 @@ function PastSessionsTab({ onOpenSeason }) {
   });
 
   return (
-    <div style={{ padding:"24px 16px", background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+    <div style={{ padding:"24px 24px", background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       {/* Header row */}
       <style>{`
         @media(max-width:600px){
@@ -4928,7 +4928,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
 
   /* ── Flat list overview: season headers + session rows ── */
   return (
-    <div style={{ padding:"24px 16px", background:C.gray50, minHeight:"100%" }}>
+    <div style={{ padding:"24px 24px", background:C.gray50, minHeight:"100%" }}>
       <style>{`
         @media(max-width:600px){
           .cert-row { flex-wrap: wrap; gap: 10px !important; padding: 14px 14px !important; }
@@ -10941,7 +10941,7 @@ export default function App() {
         </div>
       );
     }
-    if (page==="dashboard") return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenPastSeason={(id)=>{ setPastSeasonPageId(id); nav("past-season"); }} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={sessions} externalFilter={dashFilter} onFilterChange={setDashFilter}/>;
+    if (page==="dashboard") return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenPastSeason={(id)=>{ setPastSeasonPageId(id); nav("past-season"); }} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={sessions} externalFilter={dashFilter} onFilterChange={setDashFilter} isAdmin={isAdmin}/>;
     if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={sessions} seasons={seasons}/>;
     if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
