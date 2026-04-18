@@ -5068,7 +5068,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
           {ADMIN_SESSIONS_DATA.map((s,i,arr)=>{
             const sc = ADMIN_STATUS_COLORS[s.status] || ADMIN_STATUS_COLORS.DRAFT;
             return (
-              <div key={s.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 0", borderBottom:i<arr.length-1?`1px solid ${C.gray100}`:"none" }}>
+              <div key={s.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 0", borderBottom:i<arr.length-1?`1px solid ${C.gray100}`:"none" }}>
                 <AdminThumb idx={i}/>
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontWeight:600, fontSize:14, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
