@@ -1024,7 +1024,7 @@ function MobileSearchPage({ onOpenSession, onNavigate, onClose }) {
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search sessions, topics, instructors…"
-            style={{ flex:1, minWidth:0, width:0, border:"none", background:"none", outline:"none", fontSize:15, color:C.gray900, fontFamily:"inherit" }}
+            style={{ flex:1, minWidth:0, width:0, border:"none", background:"none", outline:"none", fontSize:15, color:C.gray900, fontFamily:"inherit", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}
           />
           {query.length > 0 && (
             <button onClick={() => setQuery("")} style={{ background:"none", border:"none", cursor:"pointer", display:"flex", padding:0 }}>
