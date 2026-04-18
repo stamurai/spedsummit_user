@@ -91,13 +91,10 @@ function TestimonialsColumn({ testimonials, duration = 10 }) {
               <div
                 key={i}
                 style={{
-                  background: C.bgCard,
-                  border: `1px solid ${C.border}`,
-                  borderRadius: 20,
-                  padding: "24px",
+                  background: "transparent",
+                  padding: "24px 0",
                   width: CARD_WIDTH,
                   boxSizing: "border-box",
-                  boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
                   flexShrink: 0,
                 }}
               >
