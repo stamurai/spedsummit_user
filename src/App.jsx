@@ -8867,7 +8867,7 @@ function SpAccordionFeature({ T }) {
             AI-Powered IEP Goal Tracking
           </h2>
           <p style={{ margin:"0 auto", fontSize:16, color:T.muted, lineHeight:1.7, maxWidth:480 }}>
-            Real progress, real certificates, real community — all completely free.
+            Track IEP goals, services, and accommodations in one place - with AI-powered speed and accuracy.
           </p>
         </div>
 
@@ -9536,7 +9536,7 @@ function LandingPage({ onGetStarted }) {
                   AI-Powered IEP Goal Tracking
                 </h2>
                 <p style={{ margin:"0 auto", fontSize:16, color:T.muted, lineHeight:1.7, maxWidth:480 }}>
-                  Real progress, real certificates, real community — all completely free.
+                  Track IEP goals, services, and accommodations in one place - with AI-powered speed and accuracy.
                 </p>
               </div>
 
