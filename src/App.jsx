@@ -3776,6 +3776,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               ) : (
                 <>
                   <SessionThumb id={session.id} height="100%" overlay={!playing}/>
+                  {/* Center play/pause */}
                   <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                     <button onClick={() => setPlaying(p => !p)}
                       style={{ width:58, height:58, borderRadius:"50%", background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", border:"2px solid rgba(255,255,255,0.45)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"transform .2s" }}
@@ -3783,6 +3784,29 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                       onMouseLeave={e => e.currentTarget.style.transform=""}>
                       <Icon name={playing ? "pause" : "play"} size={22} color="#fff"/>
                     </button>
+                  </div>
+                  {/* Bottom controls bar */}
+                  <div style={{ position:"absolute", bottom:0, left:0, right:0, background:"linear-gradient(transparent, rgba(0,0,0,0.75))", padding:"24px 14px 10px", display:"flex", flexDirection:"column", gap:6 }}>
+                    {/* Progress bar */}
+                    <div style={{ position:"relative", height:4, background:"rgba(255,255,255,0.3)", borderRadius:2, cursor:"pointer" }}
+                      onClick={e => { const r = e.currentTarget.getBoundingClientRect(); const pct = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)); setProgress(pct * 100); onUpdateProgress?.(session.id, pct * 100); }}>
+                      <div style={{ height:"100%", width:`${progress || 0}%`, background:"#6490E8", borderRadius:2, transition:"width 0.1s" }}/>
+                      <div style={{ position:"absolute", top:"50%", left:`${progress || 0}%`, transform:"translate(-50%,-50%)", width:12, height:12, borderRadius:"50%", background:"#fff", boxShadow:"0 1px 4px rgba(0,0,0,0.4)" }}/>
+                    </div>
+                    {/* Controls row */}
+                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                      <button onClick={() => setPlaying(p => !p)} style={{ background:"none", border:"none", cursor:"pointer", padding:0, display:"flex", flexShrink:0 }}>
+                        <Icon name={playing ? "pause" : "play"} size={18} color="#fff"/>
+                      </button>
+                      <span style={{ fontSize:11, color:"rgba(255,255,255,0.8)", fontFamily:"'Inter',sans-serif", flexShrink:0 }}>
+                        {Math.floor((progress||0)/100 * (session.durationSec||0) / 60)}:{String(Math.floor((progress||0)/100 * (session.durationSec||0) % 60)).padStart(2,"0")} / {Math.floor((session.durationSec||0)/60)}:{String((session.durationSec||0)%60).padStart(2,"0")}
+                      </span>
+                      <div style={{ flex:1 }}/>
+                      <button style={{ background:"none", border:"none", cursor:"pointer", padding:0, display:"flex" }}
+                        onClick={() => { const el = videoRef.current; if (el?.requestFullscreen) el.requestFullscreen(); }}>
+                        <Icon name="corners-out" size={16} color="#fff"/>
+                      </button>
+                    </div>
                   </div>
                 </>
               )}
