@@ -8840,7 +8840,7 @@ function SpAccordionFeature({ T }) {
       id: 4,
       title: "Service Time Tracking",
       description: "Automatically track service time both at a session and goal levels. Service time tracking reports are automatically generated.",
-      image: "/service time.png?v=2",
+      image: "/service time.png?v=3",
     },
     {
       id: 5,
