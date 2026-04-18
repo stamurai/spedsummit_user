@@ -8834,7 +8834,7 @@ function SpAccordionFeature({ T }) {
       id: 3,
       title: "Beautiful pre-built reports",
       description: "Data is automatically analyzed and beautiful reports are auto-generated to carry to your next IEP meeting.",
-      image: "/reports.png",
+      image: "/reports.png?v=2",
     },
     {
       id: 4,
