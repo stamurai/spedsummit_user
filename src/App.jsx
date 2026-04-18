@@ -8852,7 +8852,7 @@ function SpAccordionFeature({ T }) {
       id: 6,
       title: "AI-Generated Progress Notes",
       description: "Automatically generate goal-aligned progress notes with structured insights and compliant documentation.",
-      image: "/Progress note.png",
+      image: "/Progress note.png?v=2",
     },
   ];
   const [activeId, setActiveId] = useState(1);
