@@ -7788,7 +7788,7 @@ function AuthModal({ onClose, onLogin }) {
                 <>
                   <button onClick={()=>onLogin("user")}
                     style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"11px 16px", border:"1px solid #e2e8f0", borderRadius:8, background:"#fff", fontSize:14, fontWeight:500, color:"#0f172a", cursor:"pointer", marginBottom:16, fontFamily:"inherit", transition:"border-color .15s" }}
-                    onMouseEnter={e=>e.currentTarget.style.borderColor="#f59e0b"}
+                    onMouseEnter={e=>e.currentTarget.style.borderColor="#6490E8"}
                     onMouseLeave={e=>e.currentTarget.style.borderColor="#e2e8f0"}>
                     <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-3.59-13.46-8.71l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
                     Continue with Google
@@ -7805,33 +7805,33 @@ function AuthModal({ onClose, onLogin }) {
                 <div style={{ marginBottom:12 }}>
                   <label style={{ display:"block", fontSize:12, fontWeight:600, color:"#2B2E33", marginBottom:5 }}>Email</label>
                   <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Work Email" type="email" required style={inp}
-                    onFocus={e=>e.target.style.borderColor="#f59e0b"} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
+                    onFocus={e=>e.target.style.borderColor="#6490E8"} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
                 </div>
                 <div style={{ marginBottom:16 }}>
                   <label style={{ display:"block", fontSize:12, fontWeight:600, color:"#2B2E33", marginBottom:5 }}>Password</label>
                   <input value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your password" type="password" required style={inp}
-                    onFocus={e=>e.target.style.borderColor="#f59e0b"} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
+                    onFocus={e=>e.target.style.borderColor="#6490E8"} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
                 </div>
                 <button type="submit"
-                  style={{ width:"100%", padding:"12px", borderRadius:8, border:"none", background:"#f59e0b", color:"#000", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit", transition:"background .15s" }}
-                  onMouseEnter={e=>e.currentTarget.style.background="#d97706"}
-                  onMouseLeave={e=>e.currentTarget.style.background="#f59e0b"}>
+                  style={{ width:"100%", padding:"12px", borderRadius:8, border:"none", background:"#6490E8", color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit", transition:"background .15s" }}
+                  onMouseEnter={e=>e.currentTarget.style.background="#4f7de0"}
+                  onMouseLeave={e=>e.currentTarget.style.background="#6490E8"}>
                   {isAdmin ? "Sign In" : "Continue"}
                 </button>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:12 }}>
                   <label style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
-                    <input type="checkbox" checked={keepSigned} onChange={e=>setKeepSigned(e.target.checked)} style={{ width:14, height:14, accentColor:"#f59e0b", cursor:"pointer" }}/>
+                    <input type="checkbox" checked={keepSigned} onChange={e=>setKeepSigned(e.target.checked)} style={{ width:14, height:14, accentColor:"#6490E8", cursor:"pointer" }}/>
                     <span style={{ fontSize:13, color:"#2B2E33" }}>Keep me signed in</span>
                   </label>
-                  <span style={{ fontSize:13, color:"#d97706", cursor:"pointer", fontWeight:500, textDecoration:"underline" }}>Forgot password?</span>
+                  <span style={{ fontSize:13, color:"#6490E8", cursor:"pointer", fontWeight:500, textDecoration:"underline" }}>Forgot password?</span>
                 </div>
               </form>
 
               <p style={{ textAlign:"center", fontSize:12, color:"#94a3b8", margin:"20px 0 0", lineHeight:1.6 }}>
                 {new Date().getFullYear()} All Rights Reserved.{" "}
-                <span onClick={()=>setLegalModal("privacy")} style={{ color:"#d97706", cursor:"pointer" }}>Privacy</span>
+                <span onClick={()=>setLegalModal("privacy")} style={{ color:"#6490E8", cursor:"pointer" }}>Privacy</span>
                 {" "}and{" "}
-                <span onClick={()=>setLegalModal("terms")} style={{ color:"#d97706", cursor:"pointer" }}>Terms</span>.
+                <span onClick={()=>setLegalModal("terms")} style={{ color:"#6490E8", cursor:"pointer" }}>Terms</span>.
               </p>
             </div>
           </>
@@ -8617,9 +8617,9 @@ function V1PricingCardOnly({ onGetStarted, onClose }) {
             <div style={{ marginTop:"auto" }}>
               <button
                 onClick={onGetStarted}
-                style={{ width:"100%", padding:"15px", fontSize:15, fontWeight:800, background:"#f59e0b", color:"#000", border:"none", borderRadius:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, transition:"background 0.15s, transform 0.12s" }}
-                onMouseEnter={e=>{ e.currentTarget.style.background="#d97706"; e.currentTarget.style.transform="translateY(-1px)"; }}
-                onMouseLeave={e=>{ e.currentTarget.style.background="#f59e0b"; e.currentTarget.style.transform="none"; }}
+                style={{ width:"100%", padding:"15px", fontSize:15, fontWeight:800, background:"#6490E8", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, transition:"background 0.15s, transform 0.12s" }}
+                onMouseEnter={e=>{ e.currentTarget.style.background="#4f7de0"; e.currentTarget.style.transform="translateY(-1px)"; }}
+                onMouseLeave={e=>{ e.currentTarget.style.background="#6490E8"; e.currentTarget.style.transform="none"; }}
               >
                 Start for free
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -8748,9 +8748,9 @@ function V1PricingSection({ onGetStarted }) {
             <div style={{ marginTop:"auto" }}>
               <button
                 onClick={onGetStarted}
-                style={{ width:"100%", padding:"15px", fontSize:15, fontWeight:800, background:"#f59e0b", color:"#000", border:"none", borderRadius:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, transition:"background 0.15s, transform 0.12s" }}
-                onMouseEnter={e=>{ e.currentTarget.style.background="#d97706"; e.currentTarget.style.transform="translateY(-1px)"; }}
-                onMouseLeave={e=>{ e.currentTarget.style.background="#f59e0b"; e.currentTarget.style.transform="none"; }}
+                style={{ width:"100%", padding:"15px", fontSize:15, fontWeight:800, background:"#6490E8", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, transition:"background 0.15s, transform 0.12s" }}
+                onMouseEnter={e=>{ e.currentTarget.style.background="#4f7de0"; e.currentTarget.style.transform="translateY(-1px)"; }}
+                onMouseLeave={e=>{ e.currentTarget.style.background="#6490E8"; e.currentTarget.style.transform="none"; }}
               >
                 Start for free
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ marginLeft:"auto" }}><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
