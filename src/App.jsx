@@ -8913,8 +8913,10 @@ function SpAccordionFeature({ T }) {
 
           {/* Right: image preview */}
           <div className="sp-acc-img">
-            <img src={active.image} alt={active.title}
-              style={{ width: "100%", height:"auto", display:"block", transition:"opacity 0.3s ease" }}/>
+            <div style={{ width:"100%", aspectRatio:"1840/1424", overflow:"hidden" }}>
+              <img src={active.image} alt={active.title}
+                style={{ width:"100%", height:"100%", objectFit:"contain", objectPosition:"top center", display:"block", transition:"opacity 0.3s ease" }}/>
+            </div>
           </div>
         </div>
       </div>
