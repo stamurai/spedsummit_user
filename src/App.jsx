@@ -5056,7 +5056,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
       </div>
 
       {/* Recent activity + growth */}
-      <div style={{ display:"grid", gridTemplateColumns:"3fr 2fr", gap:14, marginBottom:14 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"3fr 2fr", gap:14, marginBottom:0 }}>
         {/* Recent sessions snapshot */}
         <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"20px 20px 8px" }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
