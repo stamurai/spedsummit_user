@@ -883,8 +883,6 @@ function SpedLogo({ height = 34 }) {
    SEARCH BAR
 ───────────────────────────────────────────────────────────────────────────── */
 const SEARCH_PAGES = [
-  { id:"dashboard",        label:"My Learnings", icon:"house",       type:"page" },
-  { id:"schedules",        label:"Schedules",    icon:"calendar",    type:"page" },
   { id:"certifications",   label:"My Certificates", icon:"certificate", type:"page" },
   { id:"profile",          label:"My Profile",   icon:"user-circle", type:"page" },
 ];
