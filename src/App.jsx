@@ -817,7 +817,7 @@ function NotificationsPage() {
   function markAllRead() { setNotifs(ns => ns.map(n => ({ ...n, read:true }))); }
 
   return (
-    <div style={{ background:C.gray50, minHeight:"100%", padding:"20px 16px", width:"100%", boxSizing:"border-box", overflow:"hidden" }}>
+    <div style={{ background:C.gray50, minHeight:"100%", padding:"24px 16px", width:"100%", boxSizing:"border-box", overflow:"hidden" }}>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
         <h1 style={{ margin:0, fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3 }}>Notifications</h1>
         {unreadCount > 0 && (
@@ -2628,7 +2628,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
       )}
 
       {/* ── MAIN CONTENT ── */}
-      <div className="db-main-wrap" style={isMobile ? { flexDirection:"column", padding:"20px 16px", gap:0, width:"100%", boxSizing:"border-box" } : {}}>
+      <div className="db-main-wrap" style={isMobile ? { flexDirection:"column", padding:"24px 16px", gap:0, width:"100%", boxSizing:"border-box" } : {}}>
       <div style={{ flex:1, minWidth:0, width:"100%", boxSizing:"border-box" }}>
 
 
@@ -4518,7 +4518,7 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange, onBack })
   const sectionLabels = { personal:"Personal details", security:"Password and security", notifications:"Notifications", danger:"Deactivate account" };
 
   return (
-    <div style={{ minHeight:"100vh", background:C.gray50, display:"flex", flexDirection:"column", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+    <div style={{ minHeight:"100%", background:C.gray50, display:"flex", flexDirection:"column", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       <style>{`
         .profile-wrap { max-width:960px; width:100%; margin:0 auto; display:flex; gap:0; align-items:stretch; flex:1; box-sizing:border-box; }
         .profile-sidebar { width:260px; flex-shrink:0; margin-right:8px; padding:32px 24px; box-sizing:border-box; }
@@ -4538,7 +4538,7 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange, onBack })
       {/* ── Mobile: Hub (section list) ── */}
       {!mobileDrilled && (
         <div className="profile-mobile-hub" style={{ flex:1 }}>
-          <div style={{ padding:"16px 16px 16px" }}>
+          <div style={{ padding:"16px 16px 12px" }}>
             <button onClick={onBack} style={{ display:"inline-flex", alignItems:"center", gap:6, background:"none", border:"none", padding:"0 0 12px", cursor:"pointer", color:C.gray500, fontSize:13, fontWeight:600, fontFamily:"inherit" }}>
               <Icon name="arrow-left" size={16} color={C.gray500}/>
               Back
@@ -4631,7 +4631,7 @@ function PastSessionsTab({ onOpenSeason }) {
   });
 
   return (
-    <div style={{ padding:24, background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+    <div style={{ padding:"24px 16px", background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       {/* Header row */}
       <style>{`
         @media(max-width:600px){
@@ -4914,7 +4914,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
 
   /* ── Flat list overview: season headers + session rows ── */
   return (
-    <div style={{ padding:"20px 20px", background:C.gray50, minHeight:"100%" }}>
+    <div style={{ padding:"24px 16px", background:C.gray50, minHeight:"100%" }}>
       <style>{`
         @media(max-width:600px){
           .cert-row { flex-wrap: wrap; gap: 10px !important; padding: 14px 14px !important; }
@@ -10862,7 +10862,7 @@ export default function App() {
         "ACCESSIBILITY": {"label":"Accessibility", "bg":"rgba(139,92,246,0.15)",  "color":"#a78bfa"},
       };
       return (
-        <div style={{ padding:24, background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+        <div style={{ padding:"24px 16px", background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
           <style>{`
             .ps-session-card { display:flex; flex-direction:row; align-items:stretch; height:235px; }
             .ps-session-thumb { flex-shrink:0; width:200px; position:relative; }
