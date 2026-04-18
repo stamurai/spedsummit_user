@@ -5033,7 +5033,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
   return (
     <div style={{ padding:24, background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       <div style={{ marginBottom:22 }}>
-        <h1 style={{ margin:"0 0 4px", fontSize:30, fontWeight:700, color:C.gray900, letterSpacing:-0.5, lineHeight:1.25 }}>Overview</h1>
+        <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:700, color:C.gray900, letterSpacing:-0.3, lineHeight:1.25 }}>Overview</h1>
         <p style={{ margin:0, color:C.gray600, fontSize:16, lineHeight:1.5 }}>Your teaching performance at a glance.</p>
       </div>
 
@@ -5127,7 +5127,7 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast, adminSessions = A
     <div style={{ padding:24, background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:22 }}>
         <div>
-            <h1 style={{ margin:"0 0 4px", fontSize:30, fontWeight:700, color:C.gray900, letterSpacing:-0.5, lineHeight:1.25 }}>My Sessions</h1>
+            <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:700, color:C.gray900, letterSpacing:-0.3, lineHeight:1.25 }}>My Sessions</h1>
           <p style={{ margin:0, color:C.gray600, fontSize:16, lineHeight:1.5 }}>Manage, publish and track all your content.</p>
         </div>
         <Btn onClick={()=>onNavigate("admin-create")}><Icon name="plus" size={14} color="#fff"/>New Session</Btn>
