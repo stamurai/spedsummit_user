@@ -5097,7 +5097,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
             { icon:"trophy",           color:"#8b5cf6", title:"Certificates & Rewards",   body:"Offering a certificate increases completion by 35%." },
             { icon:"megaphone",        color:"#ef4444", title:"Promote Before Going Live", body:"A teaser post 3 days early makes learners 50% more likely to register." },
           ].map((tip, i, arr) => (
-            <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:12, padding:"10px 0", borderBottom: i < arr.length-1 ? `1px solid ${C.gray100}` : "none" }}>
+            <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:12, padding:"14px 0", borderBottom: i < arr.length-1 ? `1px solid ${C.gray100}` : "none" }}>
               <div style={{ width:30, height:30, borderRadius:8, background:`${tip.color}18`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:1 }}>
                 <Icon name={tip.icon} size={14} color={tip.color}/>
               </div>
