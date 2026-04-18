@@ -8795,7 +8795,7 @@ function V1PricingSection({ onGetStarted }) {
                   animate={{ opacity:1, y:0 }}
                   exit={{ opacity:0, y:-16 }}
                   transition={{ duration:0.45 }}
-                  style={{ position:"absolute", inset:0, padding:20 }}
+                  style={{ position:"absolute", inset:0, padding:"16px 0" }}
                 >
                   <p style={{ margin:"0 0 14px", fontSize:13, color:"#5D636F", lineHeight:1.65, fontStyle:"italic" }}>"{testi.content}"</p>
                   <div style={{ display:"flex", alignItems:"center", gap:10 }}>
