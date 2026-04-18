@@ -5413,7 +5413,7 @@ function AnalyticsPage({ onEditSession }) {
       {/* Header */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:22 }}>
         <div>
-            <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900 }}>Analytics</h1>
+            <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:700, color:C.gray900, letterSpacing:-0.3, lineHeight:1.25 }}>Analytics</h1>
           <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>Track engagement, performance and learner outcomes.</p>
         </div>
         {/* Date range picker */}
