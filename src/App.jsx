@@ -1023,7 +1023,7 @@ function MobileSearchPage({ onOpenSession, onNavigate, onClose }) {
             ref={inputRef}
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Search sessions, topics…"
+            placeholder="Search sessions…"
             style={{ flex:1, minWidth:0, width:0, border:"none", background:"none", outline:"none", fontSize:15, color:C.gray900, fontFamily:"inherit" }}
           />
           {query.length > 0 && (
