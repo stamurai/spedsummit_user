@@ -5058,7 +5058,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
       {/* Recent activity + growth */}
       <div style={{ display:"grid", gridTemplateColumns:"3fr 2fr", gap:14, marginBottom:14 }}>
         {/* Recent sessions snapshot */}
-        <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:20 }}>
+        <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"20px 20px 8px" }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
             <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900 }}>Recent Sessions</h2>
             <button onClick={()=>onNavigate("admin-sessions")} style={{ background:"none", border:"none", color:C.primary, fontSize:12, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:4 }}>
