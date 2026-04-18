@@ -4634,6 +4634,7 @@ function ProfilePage({ toast, userName = "Alex Johnson", onNameChange, onBack })
 function PastSessionsTab({ onOpenSeason }) {
   const [filterSeason, setFilterSeason] = useState("all");
   const [filterYear,   setFilterYear]   = useState("all");
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
   const seasonOptions = [...new Set(SEASONS.map(s => s.name.split(" ")[0]))];
   const yearOptions   = [...new Set(SEASONS.map(s => s.name.split(" ")[1]))].sort((a,b) => b - a);
 
@@ -4645,7 +4646,7 @@ function PastSessionsTab({ onOpenSeason }) {
   });
 
   return (
-    <div style={{ padding:"24px 24px", background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+    <div style={{ padding: isMobile ? "16px 16px" : "24px 24px", background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       {/* Header row */}
       <style>{`
         @media(max-width:600px){
@@ -4718,6 +4719,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
   const [activeSeason,  setActiveSeason]  = useState(null);
   const [activeSession, setActiveSession] = useState(null);
   const [shareCert, setShareCert] = useState(null); // { certUrl, sessionTitle }
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
 
   const totalEarned = SEASONS.reduce((acc, season) => {
     return acc + season.sessionIds.filter(id => quizStates[id]?.status === "passed").length;
@@ -4928,7 +4930,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
 
   /* ── Flat list overview: season headers + session rows ── */
   return (
-    <div style={{ padding:"24px 24px", background:C.gray50, minHeight:"100%" }}>
+    <div style={{ padding: isMobile ? "16px 16px" : "24px 24px", background:C.gray50, minHeight:"100%" }}>
       <style>{`
         @media(max-width:600px){
           .cert-row { flex-wrap: wrap; gap: 10px !important; padding: 14px 14px !important; }
