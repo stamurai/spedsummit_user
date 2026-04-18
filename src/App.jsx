@@ -11040,7 +11040,7 @@ export default function App() {
           />}
         </div>
 
-        <div ref={scrollContainerRef} className={`app-scroll-area${(page==="profile"||page==="session-detail"||page==="past-season"||activeSession||sessionsDeepLink)?" no-bottom-nav":""}`} style={{ flex:1, overflowY:"auto", overflowX:"clip" }}>{renderPage()}<Footer onNavigate={nav}/></div>
+        <div ref={scrollContainerRef} className={`app-scroll-area${(page==="profile"||page==="session-detail"||page==="past-season"||activeSession||sessionsDeepLink)?" no-bottom-nav":""}`} style={{ flex:1, overflowY:"auto", overflowX:"clip" }}>{renderPage()}{page !== "profile" && <Footer onNavigate={nav}/>}</div>
       </div>
 
       {/* Mobile bottom nav — hidden when drilling into sub-pages */}
