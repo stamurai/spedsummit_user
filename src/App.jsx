@@ -5060,7 +5060,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
         {/* Recent sessions snapshot */}
         <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"20px 20px 8px" }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
-            <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900 }}>Recent Sessions</h2>
+            <h2 style={{ margin:0, fontSize:16, fontWeight:700, color:C.gray900, lineHeight:1.5 }}>Recent Sessions</h2>
             <button onClick={()=>onNavigate("admin-sessions")} style={{ background:"none", border:"none", color:C.primary, fontSize:12, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:4 }}>
               View all <Icon name="caret-right" size={13} color={C.primary}/>
             </button>
@@ -5089,7 +5089,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
 
         {/* Engagement Guide */}
         <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:20 }}>
-          <h2 style={{ margin:"0 0 16px", fontSize:16, fontWeight:800, color:C.gray900 }}>Engagement Guide</h2>
+          <h2 style={{ margin:"0 0 16px", fontSize:16, fontWeight:700, color:C.gray900, lineHeight:1.5 }}>Engagement Guide</h2>
           {[
             { icon:"clock",            color:"#f59e0b", title:"Optimal Scheduling",       body:"Sessions at 10 AM–2 PM EST see 40% higher live attendance." },
             { icon:"bell",             color:"#3b82f6", title:"Pre-Session Reminders",    body:"Learners who get both 24h and 1h reminders show 2× higher show-up rates." },
@@ -5467,7 +5467,7 @@ function AnalyticsPage({ onEditSession }) {
       {/* Views over time — linear gradient chart */}
       <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"20px 24px", marginBottom:14 }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
-          <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:C.gray900 }}>Views over time</h2>
+          <h2 style={{ margin:0, fontSize:16, fontWeight:700, color:C.gray900, lineHeight:1.5 }}>Views over time</h2>
           <span style={{ fontSize:12, color:C.gray400 }}>{activeRange.dates}</span>
         </div>
         <LineAreaChart data={trend} color={C.primary}/>
@@ -5478,7 +5478,7 @@ function AnalyticsPage({ onEditSession }) {
 
         {/* Top sessions */}
         <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:20 }}>
-          <h2 style={{ margin:"0 0 14px", fontSize:16, fontWeight:800, color:C.gray900 }}>Top Sessions</h2>
+          <h2 style={{ margin:"0 0 14px", fontSize:16, fontWeight:700, color:C.gray900, lineHeight:1.5 }}>Top Sessions</h2>
           {/* Header */}
           <div style={{ display:"grid", gridTemplateColumns:"16px 56px 1fr 72px 44px", gap:"0 10px",
             padding:"4px 0 8px", borderBottom:`1px solid ${C.gray100}`, marginBottom:2 }}>
@@ -5515,7 +5515,7 @@ function AnalyticsPage({ onEditSession }) {
 
         {/* Smart Insights */}
         <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:20 }}>
-          <h2 style={{ margin:"0 0 20px", fontSize:16, fontWeight:800, color:C.gray900 }}>Smart Insights</h2>
+          <h2 style={{ margin:"0 0 20px", fontSize:16, fontWeight:700, color:C.gray900, lineHeight:1.5 }}>Smart Insights</h2>
           {INSIGHTS.map((ins,i) => (
             <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0",
               borderBottom:i<INSIGHTS.length-1?`1px solid ${C.gray100}`:"none" }}>
