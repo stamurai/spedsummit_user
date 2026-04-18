@@ -8580,14 +8580,22 @@ function V1PricingCardOnly({ onGetStarted, onClose }) {
       `}</style>
       <div style={{ borderRadius:20, overflow:"hidden", position:"relative" }}>
         {onClose && (
-          <button onClick={onClose} aria-label="Close"
+          <button onClick={onClose} aria-label="Close" className="v1pco-close-x"
             style={{ position:"absolute", top:14, right:14, zIndex:10, width:28, height:28, borderRadius:8, border:`1px solid ${C.gray200}`, background:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
             <Icon name="x" size={14} color={C.gray500}/>
           </button>
         )}
+        <style>{`.v1pco-close-x { display:flex; } @media(max-width:767px){ .v1pco-close-x { display:none !important; } }`}</style>
         <div className="v1pco-wrap">
           {/* Left */}
           <div className="v1pco-left">
+            {onClose && (
+              <button onClick={onClose} aria-label="Back" className="v1pco-back-btn"
+                style={{ display:"none", alignItems:"center", gap:6, background:"none", border:"none", cursor:"pointer", color:C.gray600, fontSize:14, fontWeight:600, padding:"0 0 16px", fontFamily:"inherit" }}>
+                <Icon name="arrow-left" size={16} color={C.gray600}/> Back
+              </button>
+            )}
+            <style>{`@media(max-width:767px){ .v1pco-back-btn { display:flex !important; } }`}</style>
             <h3 style={{ margin:"0 0 8px", fontSize:22, fontWeight:800, color:"#111827", lineHeight:1.2 }}>Full Summit Access</h3>
             <p style={{ margin:"0 0 24px", fontSize:14, color:"#6B7280", lineHeight:1.6 }}>Build your next SPED skill set with this comprehensive free summit</p>
             <div style={{ display:"flex", alignItems:"baseline", gap:10, marginBottom:8 }}>
@@ -8805,6 +8813,206 @@ function V1PricingSection({ onGetStarted }) {
         </div>{/* end v1pc-wrap */}
       </motion.div>{/* end card */}
     </section>
+  );
+}
+
+function SpAccordionFeature({ T }) {
+  const FEATURES = [
+    {
+      id: 1,
+      title: "IEP Goal Tracking",
+      description: "No more carrying binders full of data sheets. AbleSpace allows you to collect data on your goals with a single click.",
+      image: "/IEP Tracking.png",
+    },
+    {
+      id: 2,
+      title: "Graphs",
+      description: "Choose from over 20 automatically built graphs to visualize progress on your goals.",
+      image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&h=600&fit=crop&auto=format",
+    },
+    {
+      id: 3,
+      title: "Beautiful pre-built reports",
+      description: "Data is automatically analyzed and beautiful reports are auto-generated to carry to your next IEP meeting.",
+      image: "/reports.png",
+    },
+    {
+      id: 4,
+      title: "Service Time Tracking",
+      description: "Automatically track service time both at a session and goal levels. Service time tracking reports are automatically generated.",
+      image: "/service time.png",
+    },
+    {
+      id: 5,
+      title: "Collaboration",
+      description: "Paraprofessionals and assistants can collect data for you. Safe and secure sharing among accounts.",
+      image: "/collaboration.png",
+    },
+    {
+      id: 6,
+      title: "AI-Generated Progress Notes",
+      description: "Automatically generate goal-aligned progress notes with structured insights and compliant documentation.",
+      image: "/Progress note.png",
+    },
+  ];
+  const [activeId, setActiveId] = useState(1);
+  const active = FEATURES.find(f => f.id === activeId);
+  return (
+    <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
+      <div style={{ maxWidth:1100, margin:"0 auto" }}>
+        {/* Header */}
+        <div style={{ textAlign:"center", marginBottom:52 }}>
+          <p style={{ margin:"0 0 10px", fontSize:13, fontWeight:700, color:T.muted, letterSpacing:1, textTransform:"uppercase" }}>By the numbers</p>
+          <h2 style={{ margin:"0 0 14px", fontSize:"clamp(28px,4vw,42px)", fontWeight:800, color:T.text, letterSpacing:-1.2, lineHeight:1.15 }}>
+            Educators everywhere are learning with us
+          </h2>
+          <p style={{ margin:"0 auto", fontSize:16, color:T.muted, lineHeight:1.7, maxWidth:480 }}>
+            Real progress, real certificates, real community — all completely free.
+          </p>
+        </div>
+
+        <style>{`
+          .sp-acc-wrap { display:flex; gap:64px; align-items:flex-start; }
+          .sp-acc-img  { width:55%; flex-shrink:0; position:sticky; top:80px; }
+          .sp-acc-list { flex:1; }
+          @media(max-width:768px){ .sp-acc-wrap { flex-direction:column; gap:32px; } .sp-acc-img { width:100%; position:static; } }
+          .sp-acc-item { border-bottom:1px solid ${T.border}; }
+          .sp-acc-trigger { width:100%; background:none; border:none; cursor:pointer; padding:20px 0; display:flex; align-items:center; justify-content:space-between; gap:12; text-align:left; font-family:inherit; }
+          .sp-acc-trigger:hover h6 { color:${T.text}; }
+          .sp-acc-chevron { transition:transform 0.25s ease; flex-shrink:0; }
+          .sp-acc-chevron.open { transform:rotate(180deg); }
+          .sp-acc-content { overflow:hidden; transition:max-height 0.3s ease, opacity 0.3s ease; }
+        `}</style>
+
+        <div className="sp-acc-wrap">
+          {/* Left: accordion */}
+          <div className="sp-acc-list">
+            {FEATURES.map(f => {
+              const isOpen = activeId === f.id;
+              return (
+                <div key={f.id} className="sp-acc-item">
+                  <button className="sp-acc-trigger" onClick={() => setActiveId(f.id)}>
+                    <h6 style={{ margin:0, fontSize:18, fontWeight:700, lineHeight:1.3, color: isOpen ? T.text : T.muted, transition:"color 0.2s" }}>
+                      {f.title}
+                    </h6>
+                    <svg className={`sp-acc-chevron${isOpen?" open":""}`} width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M6 9l6 6 6-6"/>
+                    </svg>
+                  </button>
+                  <div className="sp-acc-content" style={{ maxHeight: isOpen ? 300 : 0, opacity: isOpen ? 1 : 0 }}>
+                    <p style={{ margin:"0 0 20px", fontSize:14, color:T.muted, lineHeight:1.7 }}>{f.description}</p>
+                    {/* Mobile image */}
+                    <div style={{ display:"none" }} className="sp-acc-mobile-img">
+                      <img src={f.image} alt={f.title} style={{ width:"100%", borderRadius:12, marginBottom:20, objectFit:"cover", maxHeight:240 }}/>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Right: image preview */}
+          <div className="sp-acc-img">
+            <img src={active.image} alt={active.title}
+              style={{ width: "100%", height:"auto", display:"block", transition:"opacity 0.3s ease", borderRadius:16, border:`1px solid ${T.border}`, margin:"0 auto" }}/>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SpBentoChart({ T }) {
+  const [hovered, setHovered] = useState(null);
+  const CHART_DATA = [
+    { month:"May",  desktop:56,  mobile:224 },
+    { month:"Jun",  desktop:90,  mobile:300 },
+    { month:"Jul",  desktop:126, mobile:252 },
+    { month:"Aug",  desktop:205, mobile:410 },
+    { month:"Sep",  desktop:200, mobile:126 },
+    { month:"Oct",  desktop:400, mobile:800 },
+  ];
+  const W = 280, H = 110, pad = 8;
+  const maxV = Math.max(...CHART_DATA.flatMap(d => [d.desktop, d.mobile]));
+  function makePts(key) {
+    return CHART_DATA.map((d,i) => [
+      pad + (i / (CHART_DATA.length-1)) * (W - pad*2),
+      H - pad - ((d[key] / maxV) * (H - pad*2)),
+    ]);
+  }
+  function smoothPath(points) {
+    let d = `M ${points[0][0]},${points[0][1]}`;
+    for (let i = 1; i < points.length; i++) {
+      const p = points[i-1], c = points[i];
+      const cp1x = p[0] + (c[0]-p[0]) * 0.4, cp2x = p[0] + (c[0]-p[0]) * 0.6;
+      d += ` C ${cp1x},${p[1]} ${cp2x},${c[1]} ${c[0]},${c[1]}`;
+    }
+    return d;
+  }
+  const ptsD = makePts("desktop"), ptsM = makePts("mobile");
+  const lineD = smoothPath(ptsD), lineM = smoothPath(ptsM);
+  const areaD = lineD + ` L${ptsD[ptsD.length-1][0]},${H} L${ptsD[0][0]},${H} Z`;
+  const areaM = lineM + ` L${ptsM[ptsM.length-1][0]},${H} L${ptsM[0][0]},${H} Z`;
+  const h = hovered !== null ? CHART_DATA[hovered] : null;
+  const hx = hovered !== null ? ptsD[hovered][0] : null;
+  return (
+    <div style={{ position:"relative", padding:"8px 0" }}>
+      <svg viewBox={`0 0 ${W} ${H+12}`} style={{ width:"100%", height:"auto", overflow:"visible", display:"block" }}>
+        <defs>
+          <linearGradient id="spgd" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={T.blue} stopOpacity={0.35}/><stop offset="100%" stopColor={T.blue} stopOpacity={0}/>
+          </linearGradient>
+          <linearGradient id="spgm" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#60a5fa" stopOpacity={0.5}/><stop offset="100%" stopColor="#60a5fa" stopOpacity={0}/>
+          </linearGradient>
+        </defs>
+        <path d={areaM} fill="url(#spgm)"/>
+        <path d={lineM} fill="none" stroke="#60a5fa" strokeWidth={2} strokeLinecap="round"/>
+        <path d={areaD} fill="url(#spgd)"/>
+        <path d={lineD} fill="none" stroke={T.blue} strokeWidth={2} strokeLinecap="round"/>
+        {/* Month labels */}
+        {CHART_DATA.map((d,i) => (
+          <text key={i} x={ptsD[i][0]} y={H+10} textAnchor="middle" fontSize={8} fill={T.muted}>{d.month}</text>
+        ))}
+        {/* Hover vertical line */}
+        {hovered !== null && (
+          <line x1={hx} y1={pad} x2={hx} y2={H} stroke={T.muted} strokeWidth={1} strokeDasharray="3,2" opacity={0.5}/>
+        )}
+        {/* Hover dots */}
+        {hovered !== null && <>
+          <circle cx={hx} cy={ptsM[hovered][1]} r={4} fill="#fff" stroke="#60a5fa" strokeWidth={2}/>
+          <circle cx={hx} cy={ptsD[hovered][1]} r={4} fill="#fff" stroke={T.blue} strokeWidth={2}/>
+        </>}
+        {/* Invisible hover hit areas */}
+        {CHART_DATA.map((d,i) => (
+          <rect key={i} x={ptsD[i][0] - (W/(CHART_DATA.length*2))} y={0} width={W/CHART_DATA.length} height={H}
+            fill="transparent" style={{ cursor:"crosshair" }}
+            onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}/>
+        ))}
+      </svg>
+      {/* Tooltip */}
+      {h && (
+        <div style={{
+          position:"absolute", top:8,
+          left: hovered > 3 ? "auto" : `calc(${(hx/W)*100}% + 8px)`,
+          right: hovered > 3 ? `calc(${((W-hx)/W)*100}% + 8px)` : "auto",
+          background:"#1f2028", color:"#fff", borderRadius:10, padding:"10px 14px",
+          fontSize:11, boxShadow:"0 4px 16px rgba(0,0,0,0.25)", pointerEvents:"none", zIndex:10, minWidth:170,
+        }}>
+          <div style={{ fontWeight:700, marginBottom:6, fontSize:12 }}>{h.month}</div>
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+            <span style={{ width:8, height:8, borderRadius:2, background:"#60a5fa", display:"inline-block" }}/>
+            <span style={{ color:"rgba(255,255,255,0.6)", flex:1 }}>Mobile sessions</span>
+            <span style={{ fontWeight:700 }}>{h.mobile}</span>
+          </div>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <span style={{ width:8, height:8, borderRadius:2, background:T.blue, display:"inline-block" }}/>
+            <span style={{ color:"rgba(255,255,255,0.6)", flex:1 }}>Desktop sessions</span>
+            <span style={{ fontWeight:700 }}>{h.desktop}</span>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -9095,7 +9303,9 @@ function LandingPage({ onGetStarted }) {
             ))}
           </div>
           <button onClick={()=>{ setNavOpen(false); setShowAuth(true); }}
-            style={{ width:"100%", padding:"14px", fontSize:15, fontWeight:700, background:T.blue, color:"#fff", border:"none", borderRadius:12, cursor:"pointer" }}>
+            style={{ width:"100%", padding:"14px", fontSize:15, fontWeight:700, background:T.blue, color:"#fff", border:"none", borderRadius:12, cursor:"pointer", transition:"background .15s" }}
+            onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
+            onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
             Start for free
           </button>
         </div>,
@@ -9145,9 +9355,9 @@ function LandingPage({ onGetStarted }) {
               Start for free
             </button>
             <button onClick={()=>document.getElementById("sessions")?.scrollIntoView({ behavior:"smooth" })}
-              style={{ padding:"0 26px", height:44, minWidth:200, background:"transparent", color:T.text, border:`1px solid ${T.borderStrong}`, borderRadius:10, fontSize:15, fontWeight:500, cursor:"pointer", transition:"background .12s" }}
-              onMouseEnter={e=>e.currentTarget.style.background=T.hover}
-              onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+              style={{ padding:"0 26px", height:44, minWidth:200, background:"transparent", color:T.text, border:`1px solid ${T.borderStrong}`, borderRadius:10, fontSize:15, fontWeight:500, cursor:"pointer", transition:"background .15s, border-color .15s" }}
+              onMouseEnter={e=>{ e.currentTarget.style.background="rgba(0,0,0,0.06)"; e.currentTarget.style.borderColor="rgba(0,0,0,0.3)"; }}
+              onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor=T.borderStrong; }}>
               View sessions
             </button>
           </div>
@@ -9222,7 +9432,14 @@ function LandingPage({ onGetStarted }) {
 
       {/* ── Stats strip ── */}
       <section style={{ padding:"40px 24px", borderBottom:`1px solid ${T.border}` }}>
-        <div className="lp-stats-strip" style={{ maxWidth:1024, margin:"0 auto", display:"flex", justifyContent:"center", gap:64, flexWrap:"wrap" }}>
+        <style>{`
+          .lp-stats-strip { display:flex; justify-content:center; gap:64px; flex-wrap:wrap; }
+          @media(max-width:600px){
+            .lp-stats-strip { display:grid; grid-template-columns:1fr 1fr; gap:32px 16px; }
+            .lp-stats-strip .lp-stat-num { font-size:28px !important; }
+          }
+        `}</style>
+        <div className="lp-stats-strip" style={{ maxWidth:1024, margin:"0 auto" }}>
           {[
             { n:"4,200+", label:"educators enrolled" },
             { n:"9",      label:"expert sessions" },
@@ -9230,12 +9447,216 @@ function LandingPage({ onGetStarted }) {
             { n:"$10k+",  label:"in prizes" },
           ].map((s,i)=>(
             <div key={i} style={{ textAlign:"center" }}>
-              <div style={{ fontSize:36, fontWeight:800, color:T.text, letterSpacing:-1.5, lineHeight:1 }}>{s.n}</div>
+              <div className="lp-stat-num" style={{ fontSize:36, fontWeight:800, color:T.text, letterSpacing:-1.5, lineHeight:1 }}>{s.n}</div>
               <div style={{ fontSize:14, color:T.muted, marginTop:6 }}>{s.label}</div>
             </div>
           ))}
         </div>
       </section>
+
+      {/* ── Social Proof Bento (moved below FAQ) ── */}
+      {false && (() => {
+        const CHART_DATA = [
+          { month:"May",  desktop:56,  mobile:224 },
+          { month:"Jun",  desktop:90,  mobile:300 },
+          { month:"Jul",  desktop:126, mobile:252 },
+          { month:"Aug",  desktop:205, mobile:410 },
+          { month:"Sep",  desktop:200, mobile:126 },
+          { month:"Oct",  desktop:400, mobile:800 },
+        ];
+        const W = 280, H = 110, pad = 8;
+        const allVals = CHART_DATA.flatMap(d => [d.desktop, d.mobile]);
+        const maxV = Math.max(...allVals);
+        function makePts(key) {
+          return CHART_DATA.map((d,i) => [
+            pad + (i / (CHART_DATA.length-1)) * (W - pad*2),
+            H - pad - ((d[key] / maxV) * (H - pad*2)),
+          ]);
+        }
+        function smoothPath(points) {
+          if (points.length < 2) return "";
+          let d = `M ${points[0][0]},${points[0][1]}`;
+          for (let i = 1; i < points.length; i++) {
+            const prev = points[i-1], curr = points[i];
+            const cp1x = prev[0] + (curr[0]-prev[0]) * 0.4;
+            const cp2x = prev[0] + (curr[0]-prev[0]) * 0.6;
+            d += ` C ${cp1x},${prev[1]} ${cp2x},${curr[1]} ${curr[0]},${curr[1]}`;
+          }
+          return d;
+        }
+        const ptsDesktop = makePts("desktop");
+        const ptsMobile  = makePts("mobile");
+        const lineDesktop = smoothPath(ptsDesktop);
+        const lineMobile  = smoothPath(ptsMobile);
+        const areaDesktop = lineDesktop + ` L${ptsDesktop[ptsDesktop.length-1][0]},${H} L${ptsDesktop[0][0]},${H} Z`;
+        const areaMobile  = lineMobile  + ` L${ptsMobile[ptsMobile.length-1][0]},${H} L${ptsMobile[0][0]},${H} Z`;
+        // keep legacy refs so SVG below compiles
+        const pts = ptsDesktop;
+        const linePath = lineDesktop;
+        const area = areaDesktop;
+
+        const NOTIFS = [
+          { icon:"certificate", label:"Certificate Issued", sub:"Tara Roehl · Mindfulness session", grad:"linear-gradient(135deg,#6490E8,#a78bfa)", time:"2m ago" },
+          { icon:"play-circle",  label:"New Session Live",  sub:"AAC Implementation · Dr. Sarah Kim", grad:"linear-gradient(135deg,#10B981,#6490E8)", time:"5m ago" },
+          { icon:"star",         label:"Quiz Passed",       sub:"Behavior Strategies · 92% score",   grad:"linear-gradient(135deg,#F59E0B,#ef4444)", time:"11m ago" },
+          { icon:"users",        label:"Community Post",    sub:"4,200+ educators are now enrolled",  grad:"linear-gradient(135deg,#e83e8c,#6490E8)", time:"18m ago" },
+          { icon:"trophy",       label:"Giveaway Entry",    sub:"You're entered to win Ablespace Pro", grad:"linear-gradient(135deg,#F59E0B,#10B981)", time:"24m ago" },
+        ];
+
+        /* Dotted map SVG — simple grid of dots */
+        const DOT_COLS = 36, DOT_ROWS = 18;
+        /* approximate land mask by col/row — just skip obvious ocean zones */
+        function isLand(c, r) {
+          if (r < 2 || r > 15) return false;
+          if (c < 2 || c > 33) return false;
+          // rough patches to mimic continents
+          if (r >= 2 && r <= 8  && c >= 3  && c <= 10) return true;  // N.America
+          if (r >= 9 && r <= 14 && c >= 5  && c <= 9)  return true;  // S.America
+          if (r >= 3 && r <= 10 && c >= 12 && c <= 18) return true;  // Europe/Africa
+          if (r >= 3 && r <= 11 && c >= 19 && c <= 30) return true;  // Asia
+          if (r >= 11&& r <= 15 && c >= 25 && c <= 32) return true;  // SE Asia / Australia
+          return false;
+        }
+        const dots = [];
+        for (let r = 0; r < DOT_ROWS; r++) {
+          for (let c = 0; c < DOT_COLS; c++) {
+            if (isLand(c, r)) dots.push({ cx: (c+0.5)*(100/DOT_COLS), cy: (r+0.5)*(50/DOT_ROWS) });
+          }
+        }
+
+        return (
+          <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
+            <div style={{ maxWidth:1100, margin:"0 auto" }}>
+              {/* Section header */}
+              <div style={{ textAlign:"center", marginBottom:52 }}>
+                <p style={{ margin:"0 0 10px", fontSize:13, fontWeight:700, color:T.muted, letterSpacing:1, textTransform:"uppercase" }}>By the numbers</p>
+                <h2 style={{ margin:"0 0 14px", fontSize:"clamp(28px,4vw,42px)", fontWeight:800, color:T.text, letterSpacing:-1.2, lineHeight:1.15 }}>
+                  Educators everywhere are learning with us
+                </h2>
+                <p style={{ margin:"0 auto", fontSize:16, color:T.muted, lineHeight:1.7, maxWidth:480 }}>
+                  Real progress, real certificates, real community — all completely free.
+                </p>
+              </div>
+
+              {/* 2×2 grid */}
+              <style>{`
+                .sp-bento { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:auto auto; border-radius:20px; overflow:hidden; border:1px solid ${T.border}; box-shadow:0 4px 32px rgba(0,0,0,0.06); }
+                @media(max-width:700px){ .sp-bento { grid-template-columns:1fr; } }
+              `}</style>
+              <div className="sp-bento">
+
+                {/* Cell 1 — Map */}
+                <div style={{ padding:"32px 28px", background:"#fff", borderRight:`1px solid ${T.border}`, borderBottom:`1px solid ${T.border}` }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:7, fontSize:12, fontWeight:600, color:T.muted, marginBottom:12, textTransform:"uppercase", letterSpacing:0.8 }}>
+                    <Icon name="globe" size={13} color={T.muted}/> Global reach
+                  </div>
+                  <h3 style={{ margin:"0 0 6px", fontSize:18, fontWeight:700, color:T.text, lineHeight:1.3 }}>
+                    Educators from 40+ countries
+                  </h3>
+                  <p style={{ margin:"0 0 20px", fontSize:13, color:T.muted, lineHeight:1.6 }}>
+                    SPED Summit connects specialists worldwide — live and on-demand.
+                  </p>
+                  {/* Map */}
+                  <div style={{ position:"relative", background:"rgba(0,0,0,0.04)", borderRadius:12, padding:"16px 12px 8px" }}>
+                    <svg viewBox="0 0 100 50" style={{ width:"100%", height:"auto" }}>
+                      {dots.map((d,i) => <circle key={i} cx={d.cx} cy={d.cy} r={0.6} fill={T.blue} opacity={0.55}/>)}
+                      {/* Highlight dots for key cities */}
+                      <circle cx={18} cy={15} r={1.5} fill={T.blue} opacity={0.9}/>
+                      <circle cx={47} cy={18} r={1.5} fill={T.orange} opacity={0.9}/>
+                      <circle cx={65} cy={12} r={1.5} fill={T.blue} opacity={0.9}/>
+                      <circle cx={75} cy={22} r={1.5} fill={T.green} opacity={0.9}/>
+                    </svg>
+                    <div style={{ position:"absolute", top:12, left:"50%", transform:"translateX(-50%)", background:"#fff", borderRadius:8, padding:"4px 10px", fontSize:11, fontWeight:600, color:T.text, boxShadow:"0 2px 8px rgba(0,0,0,0.1)", whiteSpace:"nowrap", display:"flex", alignItems:"center", gap:5 }}>
+                      <span style={{ width:6, height:6, borderRadius:"50%", background:T.green, display:"inline-block" }}/>
+                      Live: US, UK, AU, CA
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cell 2 — Notification feed */}
+                <div style={{ padding:"32px 28px", background:"#fff", borderBottom:`1px solid ${T.border}` }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:7, fontSize:12, fontWeight:600, color:T.muted, marginBottom:12, textTransform:"uppercase", letterSpacing:0.8 }}>
+                    <Icon name="bell" size={13} color={T.muted}/> Live activity
+                  </div>
+                  <h3 style={{ margin:"0 0 20px", fontSize:18, fontWeight:700, color:T.text, lineHeight:1.3 }}>
+                    Something's always happening
+                  </h3>
+                  <div style={{ position:"relative", height:220, overflow:"hidden" }}>
+                    <div style={{ position:"absolute", inset:"0 0 0 0", pointerEvents:"none", zIndex:2, background:"linear-gradient(to bottom, transparent 70%, #fff 100%)" }}/>
+                    <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                      {NOTIFS.map((n,i) => (
+                        <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 12px", background:T.bg, borderRadius:10, border:`1px solid ${T.border}`, animation:`v2FadeSlideUp 0.4s ease both`, animationDelay:`${i*0.1}s` }}>
+                          <div style={{ width:34, height:34, borderRadius:9, background:n.grad, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                            <Icon name={n.icon} size={16} color="#fff" weight="fill"/>
+                          </div>
+                          <div style={{ flex:1, minWidth:0 }}>
+                            <div style={{ fontSize:12, fontWeight:700, color:T.text, marginBottom:1 }}>{n.label}</div>
+                            <div style={{ fontSize:11, color:T.muted, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{n.sub}</div>
+                          </div>
+                          <div style={{ fontSize:10, color:T.muted, flexShrink:0 }}>{n.time}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cell 3 — Chart */}
+                <div style={{ padding:"32px 28px", background:"#fff", borderRight:`1px solid ${T.border}` }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:7, fontSize:12, fontWeight:600, color:T.muted, marginBottom:12, textTransform:"uppercase", letterSpacing:0.8 }}>
+                    <Icon name="trend-up" size={13} color={T.muted}/> Engagement
+                  </div>
+                  <h3 style={{ margin:"0 0 6px", fontSize:18, fontWeight:700, color:T.text, lineHeight:1.3 }}>
+                    Completion rates keep climbing
+                  </h3>
+                  <p style={{ margin:"0 0 20px", fontSize:13, color:T.muted, lineHeight:1.6 }}>
+                    Educators who start keep coming back — session after session.
+                  </p>
+                  {/* SVG area chart */}
+                  <div style={{ background:T.bg, borderRadius:12, padding:"16px 12px 8px" }}>
+                    <svg viewBox={`0 0 ${W} ${H}`} style={{ width:"100%", height:"auto", overflow:"visible" }}>
+                      <defs>
+                        <linearGradient id="sp-chart-grad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={T.blue} stopOpacity={0.25}/>
+                          <stop offset="100%" stopColor={T.blue} stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <path d={area} fill="url(#sp-chart-grad)"/>
+                      <polyline points={polyline} fill="none" stroke={T.blue} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round"/>
+                      {pts.map(([x,y],i) => (
+                        <circle key={i} cx={x} cy={y} r={3} fill="#fff" stroke={T.blue} strokeWidth={1.5}/>
+                      ))}
+                      {/* Month labels */}
+                      {CHART_DATA.map((d,i) => {
+                        const x = pad + (i / (CHART_DATA.length-1)) * (W - pad*2);
+                        return <text key={i} x={x} y={H+2} textAnchor="middle" fontSize={8} fill={T.muted}>{d.month}</text>;
+                      })}
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Cell 4 — Two feature cards */}
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", background:T.bg }}>
+                  {[
+                    { icon:"certificate", title:"Free Certificate", sub:"Earn & download", desc:"Verified completion certificates for every session you finish.", grad:"linear-gradient(135deg,#6490E8,#a78bfa)" },
+                    { icon:"trophy",      title:"Win Prizes",       sub:"$10k+ in prizes", desc:"Giveaway entries every time you complete a quiz or session.", grad:"linear-gradient(135deg,#F59E0B,#ef4444)" },
+                  ].map((f,i) => (
+                    <div key={i} style={{ padding:"28px 22px", borderLeft: i===1 ? `1px solid ${T.border}` : "none", display:"flex", flexDirection:"column", gap:12 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:7, fontSize:12, fontWeight:600, color:T.muted, textTransform:"uppercase", letterSpacing:0.8 }}>
+                        <Icon name={f.icon} size={13} color={T.muted}/> {f.sub}
+                      </div>
+                      <div>
+                        <div style={{ fontSize:16, fontWeight:700, color:T.text, marginBottom:6 }}>{f.title}</div>
+                        <div style={{ fontSize:12, color:T.muted, lineHeight:1.6 }}>{f.desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+              </div>
+            </div>
+          </section>
+        );
+      })()}
 
       {/* ── Bento Features ── */}
       <section className="lp-section-pad" style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
@@ -9304,9 +9725,8 @@ function LandingPage({ onGetStarted }) {
 
                 {/* Slot 2 — Big stat (col 2, row 1) */}
                 <motion.div variants={itemVariants} style={{ gridColumn:"2", gridRow:"1" }}>
-                  <div className="lp-bento-card" style={{ ...cardBase, position:"relative", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <div style={{ position:"absolute", inset:0, backgroundImage:"radial-gradient(rgba(0,0,0,0.12) 1px, transparent 1px)", backgroundSize:"16px 16px", opacity:0.5 }}/>
-                    <div style={{ position:"relative", textAlign:"center" }}>
+                  <div className="lp-bento-card" style={{ ...cardBase, position:"relative", display:"flex", flexDirection:"column", justifyContent:"flex-end", padding:"22px 22px" }}>
+                    <div style={{ position:"relative" }}>
                       <div style={{ fontSize:"clamp(36px,10vw,64px)", fontWeight:900, color:T.text, letterSpacing:-3, lineHeight:1 }}>100%</div>
                       <div style={{ fontSize:13, color:T.muted, marginTop:4, fontWeight:500 }}>Free to attend</div>
                     </div>
@@ -9753,6 +10173,9 @@ function LandingPage({ onGetStarted }) {
         </div>
       </section>
 
+      {/* ── Accordion Feature Section ── */}
+      <SpAccordionFeature T={T} />
+
       {/* ── Footer ── */}
       <footer style={{ background:T.bg }}>
 
@@ -9775,9 +10198,9 @@ function LandingPage({ onGetStarted }) {
                 Start for free
               </button>
               <button onClick={()=>document.getElementById("sessions")?.scrollIntoView({ behavior:"smooth" })}
-                style={{ padding:"0 24px", height:42, background:"transparent", color:T.text, border:`1px solid ${T.border}`, borderRadius:8, fontSize:14, fontWeight:500, cursor:"pointer", transition:"background .12s" }}
-                onMouseEnter={e=>e.currentTarget.style.background=T.hover}
-                onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                style={{ padding:"0 24px", height:42, background:"transparent", color:T.text, border:`1px solid ${T.border}`, borderRadius:8, fontSize:14, fontWeight:500, cursor:"pointer", transition:"background .15s, border-color .15s" }}
+                onMouseEnter={e=>{ e.currentTarget.style.background="rgba(0,0,0,0.06)"; e.currentTarget.style.borderColor="rgba(0,0,0,0.3)"; }}
+                onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor=T.border; }}>
                 View sessions
               </button>
             </div>
@@ -10241,6 +10664,7 @@ export default function App() {
   const [scheduleRegistrations, setScheduleRegistrations] = useState({});
   const [sessionsDeepLink, setSessionsDeepLink] = useState(null);
   const [pastSeasonPageId, setPastSeasonPageId] = useState(null);
+  const [pastSeasonOrigin, setPastSeasonOrigin] = useState("browse");
   const [showPricingOverlay, setShowPricingOverlay] = useState(false);
   const [dashFilter, setDashFilter] = useState({ season:"all", year:"all" });
   const [adminSessions, setAdminSessions] = useState(() => {
@@ -10443,9 +10867,17 @@ export default function App() {
               .ps-session-thumb { width:100%; height:180px; flex-shrink:0; }
             }
           `}</style>
+          {/* Back button — mobile only */}
+          <button className="ps-back-btn" onClick={() => { setPastSeasonPageId(null); nav(pastSeasonOrigin); }}
+            style={{ display:"none", alignItems:"center", gap:6, background:"none", border:"none", cursor:"pointer", padding:"0 0 16px", color:C.gray600, fontSize:14, fontWeight:600, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+            <Icon name="arrow-left" size={16} color={C.gray600}/>
+            Back
+          </button>
+          <style>{`.ps-back-btn { display:none; } @media(max-width:767px){ .ps-back-btn { display:flex !important; } }`}</style>
+
           {/* Page title */}
           <div style={{ marginBottom:20 }}>
-            <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3 }}>{season?.name}</h1>
+            <h1 style={{ margin:"0 0 4px", fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3 }}>{season?.name}</h1>
             <div style={{ fontSize:13, color:C.gray500 }}>Past Season · {seasonSessions.length} session{seasonSessions.length!==1?"s":""}</div>
           </div>
           <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
@@ -10496,7 +10928,7 @@ export default function App() {
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
     if (page==="community") return <CommunityPage toast={toast}/>;
     if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick} userName={userName}/>;
-    if (page==="past-sessions")  return <PastSessionsTab onOpenSeason={(id) => { setPastSeasonPageId(id); nav("past-season"); }} />;
+    if (page==="past-sessions")  return <PastSessionsTab onOpenSeason={(id) => { setPastSeasonPageId(id); setPastSeasonOrigin("past-sessions"); nav("past-season"); }} />;
     if (page==="notifications")  return <NotificationsPage />;
     if (page==="profile")   return <ProfilePage toast={toast} userName={userName} onNameChange={setUserName} onBack={() => nav("dashboard")}/>;
     return null;
@@ -10550,11 +10982,11 @@ export default function App() {
           if (season === "all") {
             // Year filter — find first season matching that year
             const match = seasons.find(s => s.name.includes(year));
-            if (match) { setPastSeasonPageId(match.id); nav("past-season"); }
+            if (match) { setPastSeasonPageId(match.id); setPastSeasonOrigin("browse"); nav("past-season"); }
           } else {
             // Specific season name (e.g. "Spring", "Winter")
             const match = seasons.find(s => s.name === `${season} ${year}`);
-            if (match) { setPastSeasonPageId(match.id); nav("past-season"); }
+            if (match) { setPastSeasonPageId(match.id); setPastSeasonOrigin("browse"); nav("past-season"); }
             else { setDashFilter({ season, year }); nav("sessions"); }
           }
         }}
@@ -10603,14 +11035,14 @@ export default function App() {
           />}
         </div>
 
-        <div ref={scrollContainerRef} className={`app-scroll-area${(page==="profile"||page==="session-detail"||activeSession||sessionsDeepLink)?" no-bottom-nav":""}`} style={{ flex:1, overflowY:"auto", overflowX:"clip" }}>{renderPage()}<Footer onNavigate={nav}/></div>
+        <div ref={scrollContainerRef} className={`app-scroll-area${(page==="profile"||page==="session-detail"||page==="past-season"||activeSession||sessionsDeepLink)?" no-bottom-nav":""}`} style={{ flex:1, overflowY:"auto", overflowX:"clip" }}>{renderPage()}<Footer onNavigate={nav}/></div>
       </div>
 
       {/* Mobile bottom nav — hidden when drilling into sub-pages */}
       {!(page === "profile" || page === "session-detail" || activeSession || sessionsDeepLink) && (
         <div className="app-bottom-nav" style={{ display:"none" }}>
           <LimelightBottomNav
-            active={page === "notifications" ? "__notif__" : activePage}
+            active={page === "notifications" ? "__notif__" : page === "past-season" ? "past-sessions" : activePage}
             onChange={nav}
             isAdmin={isAdmin}
             notifCount={NOTIF_DATA.filter(n => !n.read).length}
@@ -10629,21 +11061,37 @@ export default function App() {
           onFinish={handleAssessmentFinish}
         />
       )}
-      {/* Pricing Overlay */}
+      {/* Pricing Overlay / Page */}
       {showPricingOverlay && (
-        <div
-          onClick={() => setShowPricingOverlay(false)}
-          style={{ position:"fixed", inset:0, zIndex:1000, background:"rgba(0,0,0,0.55)", display:"flex", alignItems:"center", justifyContent:"center", padding:"20px" }}
-        >
-          <style>{`
-            @media(max-width:600px){
-              .pricing-overlay-card { max-height:100vh !important; border-radius:16px !important; margin:0 !important; }
-            }
-          `}</style>
-          <div onClick={e => e.stopPropagation()} className="pricing-overlay-card" style={{ maxWidth:880, width:"100%", maxHeight:"90vh", overflowY:"auto", borderRadius:20, background:"#fff" }}>
-            <V1PricingCardOnly onGetStarted={() => setShowPricingOverlay(false)} onClose={() => setShowPricingOverlay(false)} />
-          </div>
-        </div>
+        window.innerWidth <= 767
+          ? /* Mobile: full-screen page */
+            <div style={{ position:"fixed", inset:0, zIndex:1000, background:"#fff", display:"flex", flexDirection:"column" }}>
+              <TopBar
+                onToggleAdmin={toggleAdmin}
+                isAdmin={isAdmin}
+                toast={toast}
+                isDark={isDark}
+                onToggleDarkMode={() => setIsDark(v => !v)}
+                onLogout={() => { sessionStorage.clear(); setIsLoggedIn(false); setPage("dashboard"); setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); setShowPricingOverlay(false); }}
+                onNavigateProfile={() => { setShowPricingOverlay(false); nav("profile"); }}
+                onOpenSession={openSession}
+                onNavigate={nav}
+                userName={userName}
+              />
+              <div style={{ flex:1, overflowY:"auto" }}>
+                <V1PricingCardOnly onGetStarted={() => setShowPricingOverlay(false)} onClose={() => setShowPricingOverlay(false)} />
+                <Footer onNavigate={nav} />
+              </div>
+            </div>
+          : /* Desktop: modal overlay */
+            <div
+              onClick={() => setShowPricingOverlay(false)}
+              style={{ position:"fixed", inset:0, zIndex:1000, background:"rgba(0,0,0,0.55)", display:"flex", alignItems:"center", justifyContent:"center", padding:"20px" }}
+            >
+              <div onClick={e => e.stopPropagation()} style={{ maxWidth:880, width:"100%", maxHeight:"90vh", overflowY:"auto", borderRadius:20, background:"#fff" }}>
+                <V1PricingCardOnly onGetStarted={() => setShowPricingOverlay(false)} onClose={() => setShowPricingOverlay(false)} />
+              </div>
+            </div>
       )}
       {/* Review Modal */}
       {reviewSession && (
