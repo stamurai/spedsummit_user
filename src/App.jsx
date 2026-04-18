@@ -9360,9 +9360,9 @@ function LandingPage({ onGetStarted }) {
               Start for free
             </button>
             <button onClick={()=>document.getElementById("sessions")?.scrollIntoView({ behavior:"smooth" })}
-              style={{ padding:"0 26px", height:44, minWidth:200, background:"transparent", color:T.text, border:`1px solid ${T.borderStrong}`, borderRadius:10, fontSize:15, fontWeight:500, cursor:"pointer", transition:"background .15s, border-color .15s" }}
-              onMouseEnter={e=>{ e.currentTarget.style.background="rgba(0,0,0,0.06)"; e.currentTarget.style.borderColor="rgba(0,0,0,0.3)"; }}
-              onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor=T.borderStrong; }}>
+              style={{ padding:"0 26px", height:44, minWidth:200, background:"transparent", color:T.text, border:`1.5px solid ${T.border}`, borderRadius:10, fontSize:15, fontWeight:500, cursor:"pointer", transition:"background .15s, border-color .15s" }}
+              onMouseEnter={e=>{ e.currentTarget.style.background="rgba(0,0,0,0.04)"; e.currentTarget.style.borderColor="#a0a4a6"; }}
+              onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor=T.border; }}>
               View sessions
             </button>
           </div>
