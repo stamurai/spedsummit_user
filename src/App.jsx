@@ -2790,7 +2790,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                               <div className="instr-role" style={{ fontSize:13, color:"rgba(255,255,255,0.72)", marginTop:3, lineHeight:1.3 }}>{instrRole}</div>
                             </div>
                           </div>
-                          <div className="db-session-card-body" style={{ flex:1, minWidth:0, padding: isMobile ? "14px 16px" : "24px 28px", display:"flex", flexDirection:"column" }}>
+                          <div className="db-session-card-body" style={{ flex:1, minWidth:0, padding: isMobile ? "12px 14px" : "24px 28px", display:"flex", flexDirection:"column" }}>
                             <div style={{ marginBottom:12 }}>
                               <span style={{ display:"inline-block", fontSize:11, fontWeight:600, padding:"3px 9px", borderRadius:4, background:catBadge.bg, color:catBadge.color, letterSpacing:.2, textTransform:"uppercase" }}>
                                 {catBadge.label}
@@ -2800,7 +2800,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                             <div className="db-upcoming-desc" style={{ fontSize:13, color:C.gray600, lineHeight:1.6, marginBottom:10, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
                               {session?.description || ""}
                             </div>
-                            <div style={{ marginTop:"auto", paddingTop:16 }}>
+                            <div style={{ paddingTop:8 }}>
                               <div style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:13, fontWeight:600, color:C.gray600, background:C.gray50, border:`1px solid ${C.gray200}`, borderRadius:8, padding:"7px 13px", cursor:"default" }}>
                                 <Icon name="calendar" size={13} color={C.gray500}/>
                                 Available {item.date}
