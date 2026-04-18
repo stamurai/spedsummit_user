@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useScrollAnimation, fadeUp, stagger } from '../hooks/useScrollAnimation';
 
 const C = {
-  text:   '#262626',
-  muted:  '#6b7280',
+  text:   '#2B2E33',
+  muted:  '#5D636F',
   border: '#e5e7eb',
   bgCard: '#ffffff',
 };
@@ -58,6 +58,7 @@ function FAQItem({ item, isOpen, onToggle }) {
     >
       <button
         onClick={onToggle}
+        className="faq-item-btn"
         style={{
           width: '100%', background: 'none', border: 'none', cursor: 'pointer',
           padding: '22px 24px', display: 'flex', alignItems: 'center',
@@ -92,7 +93,7 @@ function FAQItem({ item, isOpen, onToggle }) {
             transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             style={{ overflow: 'hidden' }}
           >
-            <div style={{ padding: '0 24px 22px', fontSize: 15, color: '#4b5563', lineHeight: 1.7 }}>
+            <div style={{ padding: '0 24px 22px', fontSize: 15, color: '#5D636F', lineHeight: 1.7 }}>
               {item.a}
             </div>
           </motion.div>
@@ -107,7 +108,13 @@ export default function FAQAccordion() {
   const { ref, isInView } = useScrollAnimation();
 
   return (
-    <section id="faq-v2" style={{ background: '#ffffff', padding: '48px 32px 120px' }}>
+    <section id="faq-v2" className="faq-section" style={{ background: '#ffffff', padding: '48px 32px 120px' }}>
+      <style>{`
+        @media (max-width: 767px) {
+          .faq-section { padding: 40px 16px 64px !important; }
+          .faq-item-btn { padding: 16px 16px !important; }
+        }
+      `}</style>
       <div style={{ maxWidth: 760, margin: '0 auto' }}>
         {/* Header */}
         <motion.div

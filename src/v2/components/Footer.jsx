@@ -3,8 +3,8 @@ import { useScrollAnimation, fadeUp, stagger } from '../hooks/useScrollAnimation
 import { Button } from './Button';
 
 const C = {
-  text:   '#262626',
-  muted:  '#6b7280',
+  text:   '#2B2E33',
+  muted:  '#5D636F',
   border: '#e5e7eb',
 };
 
@@ -13,13 +13,22 @@ export default function Footer({ onGetStarted }) {
 
   return (
     <>
+      <style>{`
+        @media (max-width: 767px) {
+          .footer-cta-section { padding: 0 16px 64px !important; }
+          .footer-cta-band { padding: 40px 20px !important; }
+          .footer-bar { padding: 24px 16px !important; }
+          .footer-bar-inner { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
+        }
+      `}</style>
       {/* Final CTA band */}
-      <section style={{ background: '#ffffff', padding: '0 32px 120px' }}>
+      <section className="footer-cta-section" style={{ background: '#ffffff', padding: '0 32px 120px' }}>
         <motion.div
           ref={ref}
           variants={stagger(0.1)}
           initial="hidden"
           animate={isInView ? 'visible' : 'hidden'}
+          className="footer-cta-band"
           style={{
             maxWidth: 860, margin: '0 auto',
             background: 'linear-gradient(135deg,rgba(245,158,11,0.1) 0%,rgba(217,119,6,0.06) 100%)',
@@ -60,8 +69,8 @@ export default function Footer({ onGetStarted }) {
       </section>
 
       {/* Footer bar */}
-      <footer style={{ borderTop: `1px solid ${C.border}`, background: '#ffffff', padding: '36px 32px' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+      <footer className="footer-bar" style={{ borderTop: `1px solid ${C.border}`, background: '#ffffff', padding: '36px 32px' }}>
+        <div className="footer-bar-inner" style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
             <img src="/Container.png" alt="SPED Summit" style={{ height: 24, display: 'block' }} />
             <span style={{ fontSize: 13, color: C.muted }}>© 2026 SPED Summit. All rights reserved.</span>

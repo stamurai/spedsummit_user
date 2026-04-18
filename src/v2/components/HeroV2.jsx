@@ -68,6 +68,13 @@ export default function HeroV2({ onGetStarted, isLoggedIn, onGoToDashboard }) {
             .hero-grid { grid-template-columns: 1fr !important; }
             .hero-collage { height: 340px !important; }
           }
+          @media (max-width: 767px) {
+            .hero-grid { padding: 20px 20px 48px !important; }
+            .hero-collage { display: none !important; }
+            .hero-stats { gap: 20px !important; }
+            .hero-cta-row { flex-direction: column !important; }
+            .hero-cta-row > * { width: 100% !important; }
+          }
         `}</style>
 
         {/* ── Left: text ── */}
@@ -86,7 +93,7 @@ export default function HeroV2({ onGetStarted, isLoggedIn, onGoToDashboard }) {
 
           {/* Headline */}
           <motion.h1 variants={itemVariants}
-            style={{ margin: '0 0 24px', fontSize: 'clamp(40px,5.5vw,72px)', fontWeight: 900, lineHeight: 1.06, letterSpacing: -2.5, color: '#262626' }}
+            style={{ margin: '0 0 24px', fontSize: 'clamp(40px,5.5vw,72px)', fontWeight: 900, lineHeight: 1.06, letterSpacing: -2.5, color: '#2B2E33' }}
           >
             The Best SPED<br />
             Training.{' '}
@@ -97,13 +104,13 @@ export default function HeroV2({ onGetStarted, isLoggedIn, onGoToDashboard }) {
 
           {/* Subtitle */}
           <motion.p variants={itemVariants}
-            style={{ margin: '0 0 40px', fontSize: 18, color: '#6b7280', lineHeight: 1.7, maxWidth: 460 }}
+            style={{ margin: '0 0 40px', fontSize: 18, color: '#5D636F', lineHeight: 1.7, maxWidth: 460 }}
           >
             9 expert-led sessions, interactive quizzes, real downloadable certificates, and a chance to win Ablespace Pro — completely free.
           </motion.p>
 
           {/* CTAs */}
-          <motion.div variants={itemVariants} style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 52 }}>
+          <motion.div variants={itemVariants} className="hero-cta-row" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 52 }}>
             {isLoggedIn
               ? <Button size="lg" onClick={onGoToDashboard}>Go to my dashboard →</Button>
               : <Button size="lg" onClick={onGetStarted}>Start learning for free →</Button>
@@ -114,11 +121,11 @@ export default function HeroV2({ onGetStarted, isLoggedIn, onGoToDashboard }) {
           </motion.div>
 
           {/* Stats */}
-          <motion.div variants={itemVariants} style={{ display: 'flex', flexWrap: 'wrap', gap: 32 }}>
+          <motion.div variants={itemVariants} className="hero-stats" style={{ display: 'flex', flexWrap: 'wrap', gap: 32 }}>
             {STATS.map(({ value, label }, i) => (
               <div key={i}>
-                <div style={{ fontSize: 18, fontWeight: 800, color: '#262626', lineHeight: 1.2 }}>{value}</div>
-                <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>{label}</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: '#2B2E33', lineHeight: 1.2 }}>{value}</div>
+                <div style={{ fontSize: 12, color: '#5D636F', marginTop: 2 }}>{label}</div>
               </div>
             ))}
           </motion.div>

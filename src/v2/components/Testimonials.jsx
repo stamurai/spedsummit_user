@@ -3,8 +3,8 @@ import { motion } from "framer-motion";
 import { useScrollAnimation, fadeUp, stagger } from "../hooks/useScrollAnimation";
 
 const C = {
-  text:   "#262626",
-  muted:  "#6b7280",
+  text:   "#2B2E33",
+  muted:  "#5D636F",
   border: "#e5e7eb",
   bgCard: "#ffffff",
 };
@@ -101,7 +101,7 @@ function TestimonialsColumn({ testimonials, duration = 10 }) {
                   flexShrink: 0,
                 }}
               >
-                <p style={{ margin: 0, fontSize: 14, color: "#4b5563", lineHeight: 1.7 }}>
+                <p style={{ margin: 0, fontSize: 14, color: "#5D636F", lineHeight: 1.7 }}>
                   "{text}"
                 </p>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 18 }}>

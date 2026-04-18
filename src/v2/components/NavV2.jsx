@@ -35,7 +35,7 @@ function ProfileMenu({ isAdmin, userName, onGoToDashboard }) {
         <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, boxShadow: '0 8px 28px rgba(0,0,0,0.12)', minWidth: 180, zIndex: 200, overflow: 'hidden' }}>
           <div style={{ padding: '12px 16px', borderBottom: '1px solid #f3f4f6' }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>{userName}</div>
-            <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>{isAdmin ? 'Admin' : 'Learner'}</div>
+            <div style={{ fontSize: 12, color: '#707685', marginTop: 2 }}>{isAdmin ? 'Admin' : 'Learner'}</div>
           </div>
           {items.map(item => (
             <button key={item.label} onClick={() => { setOpen(false); onGoToDashboard?.(); }}
@@ -130,9 +130,9 @@ export default function NavV2({ onGetStarted, isLoggedIn, isAdmin, userName, onG
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }} className="v2-nav-desktop">
             {LINKS.map(({ label, href }) => (
               <a key={label} href={href}
-                style={{ fontSize: 14, color: '#6b7280', fontWeight: 500, padding: '6px 14px', borderRadius: 8, textDecoration: 'none', transition: 'color 0.15s, background 0.15s' }}
-                onMouseEnter={e => { e.currentTarget.style.color = '#262626'; e.currentTarget.style.background = 'rgba(0,0,0,0.05)'; }}
-                onMouseLeave={e => { e.currentTarget.style.color = '#6b7280'; e.currentTarget.style.background = 'transparent'; }}
+                style={{ fontSize: 14, color: '#5D636F', fontWeight: 500, padding: '6px 14px', borderRadius: 8, textDecoration: 'none', transition: 'color 0.15s, background 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#2B2E33'; e.currentTarget.style.background = 'rgba(0,0,0,0.05)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = '#5D636F'; e.currentTarget.style.background = 'transparent'; }}
               >{label}</a>
             ))}
             {isLoggedIn
@@ -147,7 +147,7 @@ export default function NavV2({ onGetStarted, isLoggedIn, isAdmin, userName, onG
 
           {/* Mobile hamburger */}
           <button onClick={() => setOpen(o => !o)} className="v2-nav-hamburger" aria-label="Toggle menu"
-            style={{ display: 'none', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 8, border: '1px solid #e5e7eb', background: '#ffffff', cursor: 'pointer', color: '#262626' }}>
+            style={{ display: 'none', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 8, border: '1px solid #e5e7eb', background: '#ffffff', cursor: 'pointer', color: '#2B2E33' }}>
             <MenuToggleIcon open={open} />
           </button>
         </nav>
@@ -164,7 +164,7 @@ export default function NavV2({ onGetStarted, isLoggedIn, isAdmin, userName, onG
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
             {LINKS.map(({ label, href }) => (
               <a key={label} href={href} onClick={() => setOpen(false)}
-                style={{ fontSize: 16, color: '#262626', fontWeight: 600, padding: '12px 16px', borderRadius: 10, textDecoration: 'none', transition: 'background 0.15s' }}
+                style={{ fontSize: 16, color: '#2B2E33', fontWeight: 600, padding: '12px 16px', borderRadius: 10, textDecoration: 'none', transition: 'background 0.15s' }}
                 onMouseEnter={e => e.currentTarget.style.background = '#f3f4f6'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >{label}</a>

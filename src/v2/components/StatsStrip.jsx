@@ -2,8 +2,8 @@ import { motion } from 'framer-motion';
 import { useScrollAnimation, stagger, fadeUp } from '../hooks/useScrollAnimation';
 
 const C = {
-  text:   '#262626',
-  muted:  '#6b7280',
+  text:   '#2B2E33',
+  muted:  '#5D636F',
   border: '#e5e7eb',
   bg:     '#f9fafb',
 };
@@ -19,12 +19,19 @@ export default function StatsStrip() {
   const { ref, isInView } = useScrollAnimation();
 
   return (
-    <section style={{ background: '#ffffff', padding: '80px 32px 0' }}>
+    <section className="stats-section" style={{ background: '#ffffff', padding: '80px 32px 0' }}>
+      <style>{`
+        @media (max-width: 767px) {
+          .stats-section { padding: 40px 16px 0 !important; }
+          .stats-grid { grid-template-columns: repeat(2,1fr) !important; }
+        }
+      `}</style>
       <motion.div
         ref={ref}
         variants={stagger(0.08)}
         initial="hidden"
         animate={isInView ? 'visible' : 'hidden'}
+        className="stats-grid"
         style={{
           maxWidth: 1100, margin: '0 auto',
           display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 1,

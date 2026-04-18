@@ -146,7 +146,7 @@ function BentoCard({ card }) {
                 transition={{ duration: 28, ease: 'linear', repeat: Infinity }}
               >
                 {[...row, ...row, ...row].map((item, idx) => (
-                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(6px)', border: '1px solid #e5e7eb', borderRadius: 999, padding: '5px 12px', fontSize: 11, color: '#6b7280', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(6px)', border: '1px solid #e5e7eb', borderRadius: 999, padding: '5px 12px', fontSize: 11, color: '#5D636F', whiteSpace: 'nowrap', flexShrink: 0 }}>
                     <item.Icon size={13} weight="duotone" />
                     <span>{item.label}</span>
                   </div>
@@ -204,10 +204,10 @@ function BentoCard({ card }) {
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fffbeb', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 999, padding: '3px 12px', fontSize: 10, fontWeight: 700, color: '#92400e', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 0.8 }}>
           {card.tag}
         </div>
-        <h3 style={{ margin: '0 0 10px', fontSize: 17, fontWeight: 800, color: '#262626', lineHeight: 1.3, letterSpacing: -0.5 }}>
+        <h3 style={{ margin: '0 0 10px', fontSize: 17, fontWeight: 800, color: '#2B2E33', lineHeight: 1.3, letterSpacing: -0.5 }}>
           {card.title}
         </h3>
-        <p style={{ margin: 0, fontSize: 13, color: '#6b7280', lineHeight: 1.65 }}>
+        <p style={{ margin: 0, fontSize: 13, color: '#5D636F', lineHeight: 1.65 }}>
           {card.description}
         </p>
       </div>
@@ -221,7 +221,13 @@ export default function FeatureSections() {
   const { ref, isInView } = useScrollAnimation();
 
   return (
-    <section id="features-v2" style={{ background: '#ffffff', padding: '80px 32px 120px' }}>
+    <section id="features-v2" className="feature-section" style={{ background: '#ffffff', padding: '80px 32px 120px' }}>
+      <style>{`
+        @media (max-width: 767px) {
+          .feature-section { padding: 48px 16px 64px !important; }
+          .feature-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
 
         <motion.div
@@ -236,11 +242,11 @@ export default function FeatureSections() {
             How it works
           </motion.div>
           <motion.h2 variants={fadeUp}
-            style={{ margin: '0 0 16px', fontSize: 'clamp(32px,4vw,52px)', fontWeight: 900, color: '#262626', lineHeight: 1.08, letterSpacing: -1.8 }}>
+            style={{ margin: '0 0 16px', fontSize: 'clamp(32px,4vw,52px)', fontWeight: 900, color: '#2B2E33', lineHeight: 1.08, letterSpacing: -1.8 }}>
             Watch. Quiz. Certify.
           </motion.h2>
           <motion.p variants={fadeUp}
-            style={{ margin: '0 auto', fontSize: 17, color: '#6b7280', lineHeight: 1.7, maxWidth: 480 }}>
+            style={{ margin: '0 auto', fontSize: 17, color: '#5D636F', lineHeight: 1.7, maxWidth: 480 }}>
             Three simple steps to grow as a SPED educator — all completely free.
           </motion.p>
         </motion.div>
@@ -249,6 +255,7 @@ export default function FeatureSections() {
           variants={stagger(0.14)}
           initial="hidden"
           animate={isInView ? 'visible' : 'hidden'}
+          className="feature-grid"
           style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 24 }}
         >
           {CARDS.map((card, i) => (

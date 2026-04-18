@@ -70,10 +70,10 @@ export default function LearningDemo() {
           <span style={{ display: 'inline-block', background: '#fffbeb', color: '#92400e', fontWeight: 700, fontSize: 12, letterSpacing: 1, padding: '5px 16px', borderRadius: 999, marginBottom: 20, textTransform: 'uppercase', border: '1px solid rgba(245,158,11,0.25)' }}>
             Interactive Learning
           </span>
-          <h2 style={{ fontSize: 'clamp(32px,4vw,52px)', fontWeight: 900, color: '#262626', letterSpacing: '-1.5px', margin: '0 0 16px', lineHeight: 1.1 }}>
+          <h2 style={{ fontSize: 'clamp(32px,4vw,52px)', fontWeight: 900, color: '#2B2E33', letterSpacing: '-1.5px', margin: '0 0 16px', lineHeight: 1.1 }}>
             Learn, Quiz, Certify.
           </h2>
-          <p style={{ fontSize: 17, color: '#6b7280', margin: '0 auto', maxWidth: 500 }}>
+          <p style={{ fontSize: 17, color: '#5D636F', margin: '0 auto', maxWidth: 500 }}>
             Watch sessions, pass the quiz, download your certificate — all in one place.
           </p>
         </div>
@@ -89,9 +89,9 @@ export default function LearningDemo() {
             { value: `${Math.min(doneCount + 1, 7)} day`, label: 'streak', sub: 'keep it up!' },
           ].map(({ value, label, sub }) => (
             <div key={label} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, padding: '14px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
-              <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: '#262626', lineHeight: 1.1, letterSpacing: '-0.5px' }}>{value}</p>
-              <p style={{ margin: '2px 0 0', fontSize: 11, fontWeight: 600, color: '#374151' }}>{label}</p>
-              <p style={{ margin: '1px 0 0', fontSize: 10, color: '#9ca3af' }}>{sub}</p>
+              <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: '#2B2E33', lineHeight: 1.1, letterSpacing: '-0.5px' }}>{value}</p>
+              <p style={{ margin: '2px 0 0', fontSize: 11, fontWeight: 600, color: '#2B2E33' }}>{label}</p>
+              <p style={{ margin: '1px 0 0', fontSize: 10, color: '#707685' }}>{sub}</p>
             </div>
           ))}
         </div>
@@ -108,8 +108,8 @@ export default function LearningDemo() {
 
               {/* Card header text */}
               <div style={{ padding: '22px 26px 0' }}>
-                <p style={{ margin: '0 0 3px', fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>SPED Summit 2026</p>
-                <p style={{ margin: 0, fontSize: 16, fontWeight: 600, color: '#262626', lineHeight: 1.4 }}>
+                <p style={{ margin: '0 0 3px', fontSize: 11, color: '#707685', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>SPED Summit 2026</p>
+                <p style={{ margin: 0, fontSize: 16, fontWeight: 600, color: '#2B2E33', lineHeight: 1.4 }}>
                   Watch, quiz, and earn your certificate at your own pace.
                 </p>
               </div>
@@ -128,7 +128,7 @@ export default function LearningDemo() {
                     <div style={{ display: 'flex', gap: 5 }}>
                       {[0,1,2].map(i => <div key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: '#e5e7eb' }} />)}
                     </div>
-                    <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: 9, color: '#9ca3af', fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                    <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: 9, color: '#707685', fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase' }}>
                       Learning Platform
                     </div>
                   </div>
@@ -157,12 +157,12 @@ export default function LearningDemo() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                           <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 7, background: '#f3f4f6', border: '1px solid #e5e7eb' }}>
                             <div style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', width: 2, height: 12, borderRadius: 999, background: '#f59e0b' }} />
-                            <VideoCamera size={12} weight="fill" color="#262626" />
-                            <span style={{ fontSize: 10, fontWeight: 700, color: '#262626' }}>Sessions</span>
+                            <VideoCamera size={12} weight="fill" color="#2B2E33" />
+                            <span style={{ fontSize: 10, fontWeight: 700, color: '#2B2E33' }}>Sessions</span>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 7 }}>
-                            <Certificate size={12} weight="regular" color="#9ca3af" />
-                            <span style={{ fontSize: 10, fontWeight: 500, color: '#9ca3af', flex: 1 }}>Certificates</span>
+                            <Certificate size={12} weight="regular" color="#707685" />
+                            <span style={{ fontSize: 10, fontWeight: 500, color: '#707685', flex: 1 }}>Certificates</span>
                             {doneCount > 0 && (
                               <span style={{ fontSize: 8, fontWeight: 700, background: '#f59e0b', color: '#000', borderRadius: 999, padding: '1px 5px', lineHeight: '14px' }}>{doneCount}</span>
                             )}
@@ -181,9 +181,9 @@ export default function LearningDemo() {
                             >
                               {done
                                 ? <CheckCircle size={11} weight="fill" color="#16a34a" style={{ flexShrink: 0 }} />
-                                : <span style={{ width: 13, height: 13, borderRadius: '50%', border: `1.5px solid ${active ? '#f59e0b' : '#d1d5db'}`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 7, fontWeight: 700, color: active ? '#f59e0b' : '#9ca3af', flexShrink: 0 }}>{x.id}</span>
+                                : <span style={{ width: 13, height: 13, borderRadius: '50%', border: `1.5px solid ${active ? '#f59e0b' : '#d1d5db'}`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 7, fontWeight: 700, color: active ? '#f59e0b' : '#707685', flexShrink: 0 }}>{x.id}</span>
                               }
-                              <span style={{ fontSize: 9.5, fontWeight: active ? 700 : 400, color: active ? '#262626' : '#6b7280', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                              <span style={{ fontSize: 9.5, fontWeight: active ? 700 : 400, color: active ? '#2B2E33' : '#5D636F', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                                 {x.title}
                               </span>
                             </button>
@@ -198,8 +198,8 @@ export default function LearningDemo() {
                       {/* Sub-header */}
                       <div style={{ padding: '8px 12px 6px', borderBottom: '1px solid #f3f4f6', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                         <div style={{ minWidth: 0 }}>
-                          <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: '#262626', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>{s.title}</p>
-                          <p style={{ margin: 0, fontSize: 8.5, color: '#9ca3af' }}>{s.instructor} · {s.duration}</p>
+                          <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: '#2B2E33', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>{s.title}</p>
+                          <p style={{ margin: 0, fontSize: 8.5, color: '#707685' }}>{s.instructor} · {s.duration}</p>
                         </div>
                         {!isDone && !isQuiz && (
                           <button onClick={markComplete}
@@ -262,7 +262,7 @@ export default function LearningDemo() {
                               transition={{ duration: 0.18 }}
                               style={{ height: '100%', background: '#fafafa', borderRadius: 10, border: '1px solid #f3f4f6', padding: '12px 12px 10px', display: 'flex', flexDirection: 'column' }}
                             >
-                              <p style={{ margin: '0 0 9px', fontSize: 11, fontWeight: 700, color: '#262626', lineHeight: 1.5 }}>
+                              <p style={{ margin: '0 0 9px', fontSize: 11, fontWeight: 700, color: '#2B2E33', lineHeight: 1.5 }}>
                                 {s.quiz.q}
                               </p>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: 5, flex: 1 }}>
@@ -270,7 +270,7 @@ export default function LearningDemo() {
                                   const sel = pick === idx;
                                   return (
                                     <button key={idx} onClick={() => selectOpt(idx)} disabled={isSub}
-                                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 9px', borderRadius: 7, border: `1.5px solid ${sel ? '#f59e0b' : '#e5e7eb'}`, background: sel ? '#fef3c7' : '#fff', cursor: isSub ? 'default' : 'pointer', fontFamily: 'inherit', fontSize: 10, color: '#262626', textAlign: 'left', fontWeight: sel ? 600 : 400, transition: 'border-color 0.12s, background 0.12s' }}
+                                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 9px', borderRadius: 7, border: `1.5px solid ${sel ? '#f59e0b' : '#e5e7eb'}`, background: sel ? '#fef3c7' : '#fff', cursor: isSub ? 'default' : 'pointer', fontFamily: 'inherit', fontSize: 10, color: '#2B2E33', textAlign: 'left', fontWeight: sel ? 600 : 400, transition: 'border-color 0.12s, background 0.12s' }}
                                       onMouseEnter={e => { if (!isSub && !sel) e.currentTarget.style.borderColor = '#f59e0b'; }}
                                       onMouseLeave={e => { if (!isSub && !sel) e.currentTarget.style.borderColor = '#e5e7eb'; }}
                                     >
@@ -285,7 +285,7 @@ export default function LearningDemo() {
                               <div style={{ marginTop: 8, flexShrink: 0 }}>
                                 {!isSub ? (
                                   <button onClick={submitAnswer} disabled={pick === null}
-                                    style={{ width: '100%', height: 26, background: pick === null ? '#f3f4f6' : '#f59e0b', color: pick === null ? '#9ca3af' : '#000', border: 'none', borderRadius: 6, fontSize: 10, fontWeight: 700, cursor: pick === null ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'background 0.12s' }}
+                                    style={{ width: '100%', height: 26, background: pick === null ? '#f3f4f6' : '#f59e0b', color: pick === null ? '#707685' : '#000', border: 'none', borderRadius: 6, fontSize: 10, fontWeight: 700, cursor: pick === null ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'background 0.12s' }}
                                   >
                                     Submit Answer
                                   </button>
@@ -313,7 +313,7 @@ export default function LearningDemo() {
                     <div style={{ width: 210, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#fafafa' }}>
 
                       <div style={{ padding: '8px 10px 5px', borderBottom: '1px solid #f3f4f6', flexShrink: 0 }}>
-                        <p style={{ margin: 0, fontSize: 9, fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.8 }}>Certificate</p>
+                        <p style={{ margin: 0, fontSize: 9, fontWeight: 600, color: '#707685', textTransform: 'uppercase', letterSpacing: 0.8 }}>Certificate</p>
                       </div>
 
                       <div style={{ flex: 1, padding: '10px 10px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -321,7 +321,7 @@ export default function LearningDemo() {
                           /* Empty state */
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                             <SealCheck size={32} weight="thin" color="#d1d5db" />
-                            <p style={{ fontSize: 9.5, color: '#9ca3af', fontWeight: 500, margin: 0, textAlign: 'center', lineHeight: 1.5 }}>
+                            <p style={{ fontSize: 9.5, color: '#707685', fontWeight: 500, margin: 0, textAlign: 'center', lineHeight: 1.5 }}>
                               Complete a session to earn your certificate.
                             </p>
                           </div>
@@ -340,32 +340,32 @@ export default function LearningDemo() {
                                 </div>
                                 <div>
                                   <p style={{ margin: 0, fontSize: 7.5, fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: 0.8 }}>Certificate of Completion</p>
-                                  <p style={{ margin: 0, fontSize: 8.5, color: '#9ca3af' }}>SPED Summit 2026</p>
+                                  <p style={{ margin: 0, fontSize: 8.5, color: '#707685' }}>SPED Summit 2026</p>
                                 </div>
                               </div>
 
                               <div style={{ height: 1, background: '#f3f4f6', marginBottom: 10 }} />
 
-                              <p style={{ margin: '0 0 3px', fontSize: 8, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.7 }}>This certifies that</p>
-                              <p style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 800, color: '#262626', lineHeight: 1.2 }}>Sarah Johnson</p>
+                              <p style={{ margin: '0 0 3px', fontSize: 8, color: '#707685', textTransform: 'uppercase', letterSpacing: 0.7 }}>This certifies that</p>
+                              <p style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 800, color: '#2B2E33', lineHeight: 1.2 }}>Sarah Johnson</p>
 
-                              <p style={{ margin: '0 0 3px', fontSize: 8, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.7 }}>has completed</p>
-                              <p style={{ margin: '0 0 12px', fontSize: 10, fontWeight: 700, color: '#374151', lineHeight: 1.4 }}>{certSession.title}</p>
+                              <p style={{ margin: '0 0 3px', fontSize: 8, color: '#707685', textTransform: 'uppercase', letterSpacing: 0.7 }}>has completed</p>
+                              <p style={{ margin: '0 0 12px', fontSize: 10, fontWeight: 700, color: '#2B2E33', lineHeight: 1.4 }}>{certSession.title}</p>
 
                               <div style={{ display: 'flex', gap: 12, marginBottom: 'auto' }}>
                                 <div>
-                                  <p style={{ margin: '0 0 2px', fontSize: 7.5, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.7 }}>Date</p>
-                                  <p style={{ margin: 0, fontSize: 9, fontWeight: 600, color: '#374151' }}>Jan 2026</p>
+                                  <p style={{ margin: '0 0 2px', fontSize: 7.5, color: '#707685', textTransform: 'uppercase', letterSpacing: 0.7 }}>Date</p>
+                                  <p style={{ margin: 0, fontSize: 9, fontWeight: 600, color: '#2B2E33' }}>Jan 2026</p>
                                 </div>
                                 <div>
-                                  <p style={{ margin: '0 0 2px', fontSize: 7.5, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.7 }}>Completed</p>
-                                  <p style={{ margin: 0, fontSize: 9, fontWeight: 600, color: '#374151' }}>{doneCount} of 9</p>
+                                  <p style={{ margin: '0 0 2px', fontSize: 7.5, color: '#707685', textTransform: 'uppercase', letterSpacing: 0.7 }}>Completed</p>
+                                  <p style={{ margin: 0, fontSize: 9, fontWeight: 600, color: '#2B2E33' }}>{doneCount} of 9</p>
                                 </div>
                               </div>
 
                               {/* Actions */}
                               <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px solid #f3f4f6', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                <button style={{ width: '100%', height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 6, fontSize: 9.5, fontWeight: 600, color: '#374151', cursor: 'pointer', fontFamily: 'inherit' }}>
+                                <button style={{ width: '100%', height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 6, fontSize: 9.5, fontWeight: 600, color: '#2B2E33', cursor: 'pointer', fontFamily: 'inherit' }}>
                                   <DownloadSimple size={11} weight="bold" /> Download PDF
                                 </button>
                                 <button style={{ width: '100%', height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, background: '#fffbeb', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 6, fontSize: 9.5, fontWeight: 600, color: '#92400e', cursor: 'pointer', fontFamily: 'inherit' }}>
