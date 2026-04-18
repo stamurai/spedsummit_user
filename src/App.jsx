@@ -10518,7 +10518,7 @@ export default function App() {
         [data-theme="dark"] #spedLogoSvg { filter: brightness(0) invert(1); }
       `}</style>
     </div>
-    <Agentation />
+    {import.meta.env.DEV && <Agentation />}
   </>
   );
 }
