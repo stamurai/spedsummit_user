@@ -8617,9 +8617,9 @@ function V1PricingCardOnly({ onGetStarted, onClose }) {
             <div style={{ marginTop:"auto" }}>
               <button
                 onClick={onGetStarted}
-                style={{ width:"100%", padding:"15px", fontSize:15, fontWeight:800, background:"#2563EB", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, transition:"background 0.15s, transform 0.12s" }}
-                onMouseEnter={e=>{ e.currentTarget.style.background="#1D4ED8"; e.currentTarget.style.transform="translateY(-1px)"; }}
-                onMouseLeave={e=>{ e.currentTarget.style.background="#2563EB"; e.currentTarget.style.transform="none"; }}
+                style={{ width:"100%", padding:"15px", fontSize:15, fontWeight:800, background:"#f59e0b", color:"#000", border:"none", borderRadius:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, transition:"background 0.15s, transform 0.12s" }}
+                onMouseEnter={e=>{ e.currentTarget.style.background="#d97706"; e.currentTarget.style.transform="translateY(-1px)"; }}
+                onMouseLeave={e=>{ e.currentTarget.style.background="#f59e0b"; e.currentTarget.style.transform="none"; }}
               >
                 Start for free
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -8748,9 +8748,9 @@ function V1PricingSection({ onGetStarted }) {
             <div style={{ marginTop:"auto" }}>
               <button
                 onClick={onGetStarted}
-                style={{ width:"100%", padding:"15px", fontSize:15, fontWeight:800, background:"#2563EB", color:"#fff", border:"none", borderRadius:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, transition:"background 0.15s, transform 0.12s" }}
-                onMouseEnter={e=>{ e.currentTarget.style.background="#1D4ED8"; e.currentTarget.style.transform="translateY(-1px)"; }}
-                onMouseLeave={e=>{ e.currentTarget.style.background="#2563EB"; e.currentTarget.style.transform="none"; }}
+                style={{ width:"100%", padding:"15px", fontSize:15, fontWeight:800, background:"#f59e0b", color:"#000", border:"none", borderRadius:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, transition:"background 0.15s, transform 0.12s" }}
+                onMouseEnter={e=>{ e.currentTarget.style.background="#d97706"; e.currentTarget.style.transform="translateY(-1px)"; }}
+                onMouseLeave={e=>{ e.currentTarget.style.background="#f59e0b"; e.currentTarget.style.transform="none"; }}
               >
                 Start for free
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ marginLeft:"auto" }}><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
