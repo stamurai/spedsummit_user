@@ -8834,19 +8834,19 @@ function SpAccordionFeature({ T }) {
       id: 3,
       title: "Beautiful pre-built reports",
       description: "Data is automatically analyzed and beautiful reports are auto-generated to carry to your next IEP meeting.",
-      image: "/reports.png?v=2",
+      image: "/reports.png?v=3",
     },
     {
       id: 4,
       title: "Service Time Tracking",
       description: "Automatically track service time both at a session and goal levels. Service time tracking reports are automatically generated.",
-      image: "/service time.png?v=3",
+      image: "/service time.png?v=4",
     },
     {
       id: 5,
       title: "Collaboration",
       description: "Paraprofessionals and assistants can collect data for you. Safe and secure sharing among accounts.",
-      image: "/collaboration.png?v=2",
+      image: "/collaboration.png?v=3",
     },
     {
       id: 6,
