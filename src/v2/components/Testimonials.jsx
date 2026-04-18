@@ -158,7 +158,7 @@ export function TestimonialsResponsive() {
           </motion.div>
           <motion.h2
             variants={fadeUp}
-            style={{ margin: "0 0 16px", fontSize: "clamp(32px,4vw,52px)", fontWeight: 900, color: C.text, letterSpacing: -1.5, lineHeight: 1.1 }}
+            style={{ margin: "0 0 16px", fontSize: "clamp(32px,4vw,52px)", fontWeight: 900, color: C.text, letterSpacing: -1.8, lineHeight: 1.08 }}
           >
             What educators are saying
           </motion.h2>
