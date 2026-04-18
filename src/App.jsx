@@ -5031,10 +5031,10 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
 ───────────────────────────────────────────────────────────────────────────── */
 function AdminOverview({ onNavigate, onEditSession, toast }) {
   return (
-    <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
+    <div style={{ padding:24, background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       <div style={{ marginBottom:22 }}>
-        <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900 }}>Overview</h1>
-        <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>Your teaching performance at a glance.</p>
+        <h1 style={{ margin:"0 0 4px", fontSize:30, fontWeight:700, color:C.gray900, letterSpacing:-0.5, lineHeight:1.25 }}>Overview</h1>
+        <p style={{ margin:0, color:C.gray600, fontSize:16, lineHeight:1.5 }}>Your teaching performance at a glance.</p>
       </div>
 
       {/* Metrics */}
@@ -5050,7 +5050,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
               <div style={{ fontSize:30, fontWeight:900, color:C.gray900, lineHeight:1 }}>{m.val}</div>
               <span style={{ fontSize:12, fontWeight:700, color:C.gray500, background:C.gray100, padding:"2px 7px", borderRadius:6 }}>{m.delta}</span>
             </div>
-            <div style={{ fontSize:13, fontWeight:600, color:C.gray600 }}>{m.label}</div>
+            <div style={{ fontSize:14, fontWeight:600, color:C.gray600, lineHeight:1.5 }}>{m.label}</div>
           </div>
         ))}
       </div>
@@ -5102,7 +5102,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
                 <Icon name={tip.icon} size={14} color={tip.color}/>
               </div>
               <div>
-                <div style={{ fontSize:13, fontWeight:700, color:C.gray900, marginBottom:2 }}>{tip.title}</div>
+                <div style={{ fontSize:14, fontWeight:700, color:C.gray900, marginBottom:3, lineHeight:1.5 }}>{tip.title}</div>
                 <div style={{ fontSize:12, color:C.gray500, lineHeight:1.5 }}>{tip.body}</div>
               </div>
             </div>
@@ -5124,11 +5124,11 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast, adminSessions = A
   const archived = adminSessions.filter(s => s.status === "ARCHIVED");
 
   return (
-    <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
+    <div style={{ padding:24, background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:22 }}>
         <div>
-            <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:900, color:C.gray900 }}>My Sessions</h1>
-          <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>Manage, publish and track all your content.</p>
+            <h1 style={{ margin:"0 0 4px", fontSize:30, fontWeight:700, color:C.gray900, letterSpacing:-0.5, lineHeight:1.25 }}>My Sessions</h1>
+          <p style={{ margin:0, color:C.gray600, fontSize:16, lineHeight:1.5 }}>Manage, publish and track all your content.</p>
         </div>
         <Btn onClick={()=>onNavigate("admin-create")}><Icon name="plus" size={14} color="#fff"/>New Session</Btn>
       </div>
@@ -5143,7 +5143,7 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast, adminSessions = A
         ].map(s=>(
           <div key={s.label} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"18px 20px" }}>
             <div style={{ fontSize:30, fontWeight:900, color:s.color, lineHeight:1, marginBottom:6 }}>{s.val}</div>
-            <div style={{ fontSize:13, fontWeight:600, color:C.gray600 }}>{s.label}</div>
+            <div style={{ fontSize:14, fontWeight:600, color:C.gray600, lineHeight:1.5 }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -5459,7 +5459,7 @@ function AnalyticsPage({ onEditSession }) {
               <div style={{ fontSize:30, fontWeight:900, color:C.gray900, lineHeight:1 }}>{m.val}</div>
               <span style={{ fontSize:12, fontWeight:700, color:C.gray500, background:C.gray100, padding:"2px 7px", borderRadius:6 }}>{m.delta}</span>
             </div>
-            <div style={{ fontSize:13, fontWeight:600, color:C.gray600 }}>{m.label}</div>
+            <div style={{ fontSize:14, fontWeight:600, color:C.gray600, lineHeight:1.5 }}>{m.label}</div>
           </div>
         ))}
       </div>
