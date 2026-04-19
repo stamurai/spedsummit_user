@@ -1135,7 +1135,14 @@ function MobileSearchPage({ onOpenSession, onNavigate, onClose }) {
   );
 }
 
-function SearchBar({ onOpenSession, onNavigate }) {
+const ADMIN_SEARCH_PAGES = [
+  { id:"admin-overview",   label:"Overview",      icon:"house",        type:"page" },
+  { id:"admin-sessions",   label:"My Sessions",   icon:"play-circle",  type:"page" },
+  { id:"admin-analytics",  label:"Analytics",     icon:"chart-bar",    type:"page" },
+  { id:"admin-create",     label:"Create Session", icon:"plus-circle", type:"page" },
+];
+
+function SearchBar({ onOpenSession, onNavigate, isAdmin = false }) {
   const [query, setQuery]   = useState("");
   const [open,  setOpen]    = useState(false);
   const ref = useRef(null);
@@ -1148,20 +1155,22 @@ function SearchBar({ onOpenSession, onNavigate }) {
   }, [open]);
 
   const q = query.trim().toLowerCase();
+  const searchPool = isAdmin ? ADMIN_SESSIONS_DATA : SESSIONS;
+  const pagePool   = isAdmin ? ADMIN_SEARCH_PAGES  : SEARCH_PAGES;
 
-  const sessionResults = q.length < 1 ? [] : SESSIONS.filter(s =>
+  const sessionResults = q.length < 1 ? [] : searchPool.filter(s =>
     s.title.toLowerCase().includes(q) ||
     s.instructor.toLowerCase().includes(q) ||
     s.category.toLowerCase().includes(q) ||
-    s.description.toLowerCase().includes(q)
+    (s.description || "").toLowerCase().includes(q)
   ).slice(0, 5);
 
-  const pageResults = q.length < 1 ? [] : SEARCH_PAGES.filter(p =>
+  const pageResults = q.length < 1 ? [] : pagePool.filter(p =>
     p.label.toLowerCase().includes(q)
   );
 
   const instructorResults = q.length < 1 ? [] : [...new Map(
-    SESSIONS.filter(s => s.instructor.toLowerCase().includes(q)).map(s => [s.instructor, s])
+    searchPool.filter(s => s.instructor.toLowerCase().includes(q)).map(s => [s.instructor, s])
   ).values()].slice(0, 3);
 
   const hasResults = sessionResults.length > 0 || pageResults.length > 0 || instructorResults.length > 0;
@@ -1236,7 +1245,7 @@ function SearchBar({ onOpenSession, onNavigate }) {
             <div>
               <div style={{ padding:"8px 14px 4px", fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase" }}>Sessions</div>
               {sessionResults.map(s => (
-                <button key={s.id} onClick={() => pick(() => onOpenSession(s))}
+                <button key={s.id} onClick={() => pick(() => isAdmin ? onNavigate("admin-sessions") : onOpenSession(s))}
                   style={{ width:"100%", display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:"none", border:"none", cursor:"pointer", textAlign:"left" }}
                   onMouseEnter={e => e.currentTarget.style.background = C.gray50}
                   onMouseLeave={e => e.currentTarget.style.background = "none"}>
@@ -1255,7 +1264,7 @@ function SearchBar({ onOpenSession, onNavigate }) {
           {q.length === 0 && (
             <div style={{ padding:"12px 14px 8px" }}>
               <div style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:8 }}>Quick Links</div>
-              {SEARCH_PAGES.map(p => (
+              {pagePool.map(p => (
                 <button key={p.id} onClick={() => pick(() => onNavigate(p.id))}
                   style={{ width:"100%", display:"flex", alignItems:"center", gap:10, padding:"9px 4px", background:"none", border:"none", cursor:"pointer", textAlign:"left" }}
                   onMouseEnter={e => e.currentTarget.style.background = C.gray50}
@@ -1444,16 +1453,21 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
         )}
       </div>
 
-      {/* Search — centered, hidden on mobile */}
-      <div className="topbar-search" style={{ flex:1, display:"flex", justifyContent:"center", padding:"0 16px" }}>
-        <SearchBar onOpenSession={onOpenSession} onNavigate={onNavigate}/>
-      </div>
+      {/* Search — centered, hidden on mobile, hidden for admin */}
+      {!isAdmin && (
+        <div className="topbar-search" style={{ flex:1, display:"flex", justifyContent:"center", padding:"0 16px" }}>
+          <SearchBar onOpenSession={onOpenSession} onNavigate={onNavigate}/>
+        </div>
+      )}
+      {isAdmin && <div style={{ flex:1 }}/>}
 
-      {/* Mobile search icon */}
-      <button className="topbar-search-icon" onClick={() => setShowMobileSearch(true)}
-        style={{ display:"none", width:36, height:36, borderRadius:"50%", border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", alignItems:"center", justifyContent:"center", flexShrink:0, marginLeft:"auto", marginRight:8 }}>
-        <Icon name="magnifying-glass" size={17} color={C.gray700}/>
-      </button>
+      {/* Mobile search icon — user only */}
+      {!isAdmin && (
+        <button className="topbar-search-icon" onClick={() => setShowMobileSearch(true)}
+          style={{ display:"none", width:36, height:36, borderRadius:"50%", border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", alignItems:"center", justifyContent:"center", flexShrink:0, marginLeft:"auto", marginRight:8 }}>
+          <Icon name="magnifying-glass" size={17} color={C.gray700}/>
+        </button>
+      )}
 
       {showMobileSearch && <MobileSearchPage onOpenSession={onOpenSession} onNavigate={onNavigate} onClose={() => setShowMobileSearch(false)}/>}
 
@@ -3776,7 +3790,6 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               ) : (
                 <>
                   <SessionThumb id={session.id} height="100%" overlay={!playing}/>
-                  {/* Center play/pause */}
                   <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                     <button onClick={() => setPlaying(p => !p)}
                       style={{ width:58, height:58, borderRadius:"50%", background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", border:"2px solid rgba(255,255,255,0.45)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"transform .2s" }}
@@ -3785,15 +3798,12 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                       <Icon name={playing ? "pause" : "play"} size={22} color="#fff"/>
                     </button>
                   </div>
-                  {/* Bottom controls bar */}
                   <div style={{ position:"absolute", bottom:0, left:0, right:0, background:"linear-gradient(transparent, rgba(0,0,0,0.75))", padding:"24px 14px 10px", display:"flex", flexDirection:"column", gap:6 }}>
-                    {/* Progress bar */}
                     <div style={{ position:"relative", height:4, background:"rgba(255,255,255,0.3)", borderRadius:2, cursor:"pointer" }}
                       onClick={e => { const r = e.currentTarget.getBoundingClientRect(); const pct = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)); setProgress(pct * 100); onUpdateProgress?.(session.id, pct * 100); }}>
                       <div style={{ height:"100%", width:`${progress || 0}%`, background:"#6490E8", borderRadius:2, transition:"width 0.1s" }}/>
                       <div style={{ position:"absolute", top:"50%", left:`${progress || 0}%`, transform:"translate(-50%,-50%)", width:12, height:12, borderRadius:"50%", background:"#fff", boxShadow:"0 1px 4px rgba(0,0,0,0.4)" }}/>
                     </div>
-                    {/* Controls row */}
                     <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                       <button onClick={() => setPlaying(p => !p)} style={{ background:"none", border:"none", cursor:"pointer", padding:0, display:"flex", flexShrink:0 }}>
                         <Icon name={playing ? "pause" : "play"} size={18} color="#fff"/>
@@ -3814,7 +3824,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           </div>
         </div>
 
-        {/* ── Sidebar: Course Content (alongside video only) ── */}
+        {/* ── Sidebar: Course Content ── */}
         {!narrow && (
           <div style={{
             width: 272,
@@ -4646,10 +4656,12 @@ function PastSessionsTab({ onOpenSeason }) {
   });
 
   return (
-    <div style={{ padding: isMobile ? "16px 16px" : "24px 24px", background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+    <div className="pst-wrap" style={{ background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       {/* Header row */}
       <style>{`
+        .pst-wrap { padding: 24px; }
         @media(max-width:600px){
+          .pst-wrap { padding: 16px 12px; }
           .ps-header-row { flex-direction:column !important; align-items:flex-start !important; }
           .ps-filters { width:100%; }
           .ps-filters > div { flex:1; }
@@ -5030,20 +5042,26 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
    ADMIN OVERVIEW
 ───────────────────────────────────────────────────────────────────────────── */
 function AdminOverview({ onNavigate, onEditSession, toast }) {
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
   return (
-    <div style={{ padding: isMobile ? "16px" : "24px", background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+    <div className="ao-wrap" style={{ background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       <style>{`
-        .ao-metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
-        .ao-bottom  { display:grid; grid-template-columns:3fr 2fr; gap:14px; margin-bottom:0; }
+        .ao-wrap      { padding:24px; }
+        .ao-metrics   { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+        .ao-bottom    { display:grid; grid-template-columns:3fr 2fr; gap:14px; margin-bottom:0; }
+        .ao-h1        { font-size:22px; }
+        .ao-sess-row  { display:flex; align-items:center; gap:10px; padding:14px 0; }
+        .ao-tip-row   { display:flex; align-items:flex-start; gap:12px; padding:14px 0; }
         @media(max-width:640px){
-          .ao-metrics { grid-template-columns:repeat(2,1fr) !important; gap:10px !important; }
-          .ao-bottom  { grid-template-columns:1fr !important; }
+          .ao-wrap    { padding:14px 12px; }
+          .ao-metrics { grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:16px; }
+          .ao-bottom  { grid-template-columns:1fr; }
+          .ao-h1      { font-size:17px !important; }
+          .ao-sess-row { padding:10px 0; gap:8px; }
+          .ao-tip-row  { padding:10px 0; gap:10px; }
         }
       `}</style>
-      <div style={{ marginBottom:22 }}>
-        <h1 style={{ margin:"0 0 4px", fontSize: isMobile ? 18 : 22, fontWeight:700, color:C.gray900, letterSpacing:-0.3, lineHeight:1.25 }}>Overview</h1>
-        <p style={{ margin:0, color:C.gray600, fontSize: isMobile ? 14 : 16, lineHeight:1.5 }}>Your teaching performance at a glance.</p>
+      <div style={{ marginBottom:18 }}>
+        <h1 className="ao-h1" style={{ margin:0, fontWeight:700, color:C.gray900, letterSpacing:-0.3, lineHeight:1.25 }}>Overview</h1>
       </div>
 
       {/* Metrics */}
@@ -5054,12 +5072,10 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
           {label:"Total Site Visits",  val:"83",     delta:"+23 today"  },
           {label:"Total Revenue",      val:"$4,210", delta:"+8% vs prev"},
         ].map(m=>(
-          <div key={m.label} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding: isMobile ? "14px 14px" : "18px 20px" }}>
-            <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4 }}>
-              <div style={{ fontSize: isMobile ? 22 : 30, fontWeight:900, color:C.gray900, lineHeight:1 }}>{m.val}</div>
-              <span style={{ fontSize:11, fontWeight:700, color:C.gray500, background:C.gray100, padding:"2px 6px", borderRadius:6 }}>{m.delta}</span>
-            </div>
-            <div style={{ fontSize: isMobile ? 12 : 14, fontWeight:600, color:C.gray600, lineHeight:1.5 }}>{m.label}</div>
+          <div key={m.label} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"16px" }}>
+            <span style={{ display:"inline-block", fontSize:11, fontWeight:700, color:C.gray500, background:C.gray100, padding:"2px 6px", borderRadius:6, marginBottom:6 }}>{m.delta}</span>
+            <div style={{ fontSize:26, fontWeight:900, color:C.gray900, lineHeight:1, marginBottom:4 }}>{m.val}</div>
+            <div style={{ fontSize:13, fontWeight:600, color:C.gray600, lineHeight:1.5 }}>{m.label}</div>
           </div>
         ))}
       </div>
@@ -5067,29 +5083,28 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
       {/* Recent activity + growth */}
       <div className="ao-bottom">
         {/* Recent sessions snapshot */}
-        <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"20px 20px 8px" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
-            <h2 style={{ margin:0, fontSize:16, fontWeight:700, color:C.gray900, lineHeight:1.5 }}>Recent Sessions</h2>
-            <button onClick={()=>onNavigate("admin-sessions")} style={{ background:"none", border:"none", color:C.primary, fontSize:12, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:4 }}>
-              View all <Icon name="caret-right" size={13} color={C.primary}/>
+        <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"16px 16px 6px" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+            <h2 style={{ margin:0, fontSize:15, fontWeight:700, color:C.gray900 }}>Recent Sessions</h2>
+            <button onClick={()=>onNavigate("admin-sessions")} style={{ background:"none", border:"none", color:C.primary, fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:4, fontFamily:"inherit" }}>
+              View all <Icon name="caret-right" size={14} color={C.primary}/>
             </button>
           </div>
           {ADMIN_SESSIONS_DATA.map((s,i,arr)=>{
             const sc = ADMIN_STATUS_COLORS[s.status] || ADMIN_STATUS_COLORS.DRAFT;
             return (
-              <div key={s.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 0", borderBottom:i<arr.length-1?`1px solid ${C.gray100}`:"none" }}>
+              <div key={s.id} className="ao-sess-row" style={{ borderBottom:i<arr.length-1?`1px solid ${C.gray100}`:"none" }}>
                 <AdminThumb idx={i}/>
                 <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontWeight:600, fontSize:14, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
+                  <div style={{ fontWeight:600, fontSize:14, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", whiteSpace:"normal" }}>{s.title}</div>
                   <div style={{ display:"flex", alignItems:"center", gap:6, marginTop:3 }}>
-                    <Badge label={s.status} color={sc.c} bg={sc.bg} size={12}/>
-                    <span style={{ fontSize:12, color:C.gray600 }}>{s.date}</span>
+                    <Badge label={s.status} color={sc.c} bg={sc.bg} size={11}/>
+                    <span style={{ fontSize:12, color:C.gray500 }}>{s.date}</span>
                   </div>
                 </div>
-                <button onClick={() => onEditSession?.(s)}
-                  title="Edit session"
-                  style={{ width:28, height:28, borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                  <Icon name="pencil" size={13} color={C.gray500}/>
+                <button onClick={() => onEditSession?.(s)} title="Edit session"
+                  style={{ width:26, height:26, borderRadius:7, border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <Icon name="pencil" size={12} color={C.gray500}/>
                 </button>
               </div>
             );
@@ -5097,8 +5112,8 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
         </div>
 
         {/* Engagement Guide */}
-        <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:20 }}>
-          <h2 style={{ margin:"0 0 16px", fontSize:16, fontWeight:700, color:C.gray900, lineHeight:1.5 }}>Engagement Guide</h2>
+        <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:16 }}>
+          <h2 style={{ margin:"0 0 12px", fontSize:15, fontWeight:700, color:C.gray900 }}>Engagement Guide</h2>
           {[
             { icon:"clock",            color:"#f59e0b", title:"Optimal Scheduling",       body:"Sessions at 10 AM–2 PM EST see 40% higher live attendance." },
             { icon:"bell",             color:"#3b82f6", title:"Pre-Session Reminders",    body:"Learners who get both 24h and 1h reminders show 2× higher show-up rates." },
@@ -5106,12 +5121,12 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
             { icon:"trophy",           color:"#8b5cf6", title:"Certificates & Rewards",   body:"Offering a certificate increases completion by 35%." },
             { icon:"megaphone",        color:"#ef4444", title:"Promote Before Going Live", body:"A teaser post 3 days early makes learners 50% more likely to register." },
           ].map((tip, i, arr) => (
-            <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:12, padding:"14px 0", borderBottom: i < arr.length-1 ? `1px solid ${C.gray100}` : "none" }}>
-              <div style={{ width:30, height:30, borderRadius:8, background:`${tip.color}18`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:1 }}>
-                <Icon name={tip.icon} size={14} color={tip.color}/>
+            <div key={i} className="ao-tip-row" style={{ borderBottom: i < arr.length-1 ? `1px solid ${C.gray100}` : "none" }}>
+              <div style={{ width:28, height:28, borderRadius:8, background:`${tip.color}18`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:1 }}>
+                <Icon name={tip.icon} size={13} color={tip.color}/>
               </div>
               <div>
-                <div style={{ fontSize:14, fontWeight:700, color:C.gray900, marginBottom:3, lineHeight:1.5 }}>{tip.title}</div>
+                <div style={{ fontSize:13, fontWeight:700, color:C.gray900, marginBottom:2, lineHeight:1.4 }}>{tip.title}</div>
                 <div style={{ fontSize:12, color:C.gray500, lineHeight:1.5 }}>{tip.body}</div>
               </div>
             </div>
@@ -5128,22 +5143,29 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
 function AdminSessionsPage({ onNavigate, onEditSession, toast, adminSessions = ADMIN_SESSIONS_DATA, setAdminSessions }) {
   const [filter, setFilter] = useState("ALL");
   const statuses = ["ALL", "LIVE", "DRAFT", "ARCHIVED"];
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
   const filtered = filter === "ALL" ? adminSessions :
                    adminSessions.filter(s => s.status === filter);
   const archived = adminSessions.filter(s => s.status === "ARCHIVED");
 
   return (
-    <div style={{ padding: isMobile ? "16px" : "24px", background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+    <div className="asp-wrap" style={{ background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       <style>{`
-        .as-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
-        @media(max-width:640px){ .as-stats { grid-template-columns:repeat(2,1fr) !important; } }
+        .asp-wrap  { padding:24px; }
+        .as-stats  { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
+        .asp-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; gap:10px; }
+        .asp-card-desktop { display:flex; }
+        .asp-card-mobile  { display:none; }
+        @media(max-width:640px){
+          .asp-wrap  { padding:16px 12px; }
+          .as-stats  { grid-template-columns:repeat(2,1fr); }
+          .asp-header { flex-direction:row; align-items:center; }
+          .asp-header h1 { font-size:17px !important; }
+          .asp-card-desktop { display:none !important; }
+          .asp-card-mobile  { display:flex !important; }
+        }
       `}</style>
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:22 }}>
-        <div>
-            <h1 style={{ margin:"0 0 4px", fontSize: isMobile ? 18 : 22, fontWeight:700, color:C.gray900, letterSpacing:-0.3, lineHeight:1.25 }}>My Sessions</h1>
-          <p style={{ margin:0, color:C.gray600, fontSize: isMobile ? 14 : 16, lineHeight:1.5 }}>Manage, publish and track all your content.</p>
-        </div>
+      <div className="asp-header">
+        <h1 style={{ margin:0, fontSize:22, fontWeight:700, color:C.gray900, letterSpacing:-0.3, lineHeight:1.25 }}>My Sessions</h1>
         <Btn onClick={()=>onNavigate("admin-create")}><Icon name="plus" size={14} color="#fff"/>New Session</Btn>
       </div>
 
@@ -5166,7 +5188,7 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast, adminSessions = A
       <div style={{ display:"flex", gap:6, marginBottom:16, flexWrap:"wrap" }}>
         {statuses.map(s=>(
           <button key={s} onClick={()=>setFilter(s)} aria-pressed={filter===s}
-            style={{ padding:"6px 14px", borderRadius:8, border:`1px solid ${filter===s?C.primary:C.gray200}`, background:filter===s?C.primary:C.white, color:filter===s?"#fff":C.gray600, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
+            style={{ padding:"7px 16px", borderRadius:10, border:`1.5px solid ${filter===s?C.primary:C.gray200}`, background:filter===s?C.primary:C.white, color:filter===s?"#fff":C.gray600, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}>
             {s === "ALL" ? "All" : s.charAt(0)+s.slice(1).toLowerCase()}
           </button>
         ))}
@@ -5176,7 +5198,7 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast, adminSessions = A
       {filter === "ARCHIVED" && archived.length > 0 && (
         <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 14px", background:C.gray100, borderRadius:10, border:`1px solid ${C.gray200}`, marginBottom:16 }}>
           <Icon name="info" size={14} color={C.gray500}/>
-          <span style={{ fontSize:12, color:C.gray600, lineHeight:1.5 }}>
+          <span style={{ fontSize:13, color:C.gray600, lineHeight:1.5 }}>
             Archived sessions are <strong>not visible to students</strong>. To restore a session, open it and update the <strong>Available To</strong> date to a future date.
           </span>
         </div>
@@ -5189,39 +5211,71 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast, adminSessions = A
         )}
         {filtered.map((s,i)=>{
           const sc = ADMIN_STATUS_COLORS[s.status] || ADMIN_STATUS_COLORS.DRAFT;
+          const dateRange = s.availableFrom && s.availableTo
+            ? `${new Date(s.availableFrom).toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${new Date(s.availableTo).toLocaleDateString("en-US",{month:"short",day:"numeric"})}`
+            : s.date;
           return (
-            <div key={s.id} style={{ display:"flex", alignItems:"center", gap:20, padding:"20px 24px", borderBottom:i<filtered.length-1?`1px solid ${C.gray200}`:"none", opacity: s.status==="ARCHIVED" ? 0.85 : 1 }}
-              onMouseEnter={e=>e.currentTarget.style.background=C.gray200}
-              onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-              <AdminThumb idx={i}/>
-              <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-                  <Badge label={s.status} color={sc.c} bg={sc.bg} size={11}/>
-                  <span style={{ fontSize:12, color:C.gray500 }}>{s.category}</span>
+            <div key={s.id} style={{ borderBottom:i<filtered.length-1?`1px solid ${C.gray200}`:"none", opacity: s.status==="ARCHIVED" ? 0.85 : 1 }}>
+
+              {/* ── Desktop card ── */}
+              <div className="asp-card-desktop" style={{ alignItems:"center", gap:20, padding:"20px 24px" }}
+                onMouseEnter={e=>e.currentTarget.style.background=C.gray50}
+                onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                <AdminThumb idx={i}/>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5 }}>
+                    <Badge label={s.status} color={sc.c} bg={sc.bg} size={11}/>
+                    <span style={{ fontSize:13, fontWeight:500, color:C.gray500 }}>{s.category}</span>
+                  </div>
+                  <div style={{ fontWeight:700, fontSize:15, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", marginBottom:5 }}>{s.title}</div>
+                  <div style={{ fontSize:13, color:C.gray500, display:"flex", gap:14, alignItems:"center", flexWrap:"wrap" }}>
+                    {s.enrolled && <span style={{ display:"flex",alignItems:"center",gap:4 }}><Icon name="users" size={13} color={C.gray400}/>{s.enrolled.toLocaleString()} Enrolled</span>}
+                    {s.rating   && <span style={{ display:"flex",alignItems:"center",gap:4 }}><Icon name="star"  size={13} color={C.warning}/>{s.rating} Stars</span>}
+                    <span style={{ display:"flex",alignItems:"center",gap:4 }}><Icon name="calendar" size={13} color={C.gray400}/>{s.date}</span>
+                    {s.availableFrom && s.availableTo && s.status !== "ARCHIVED" && (
+                      <span style={{ display:"flex",alignItems:"center",gap:4 }}>
+                        <Icon name="clock" size={13} color={C.gray400}/>
+                        {new Date(s.availableFrom).toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})} – {new Date(s.availableTo).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div style={{ fontWeight:700, fontSize:14, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", marginBottom:6 }}>{s.title}</div>
-                <div style={{ fontSize:12, color:C.gray500, display:"flex", gap:14, alignItems:"center" }}>
-                  {s.enrolled && <span style={{ display:"flex",alignItems:"center",gap:4 }}><Icon name="users" size={12} color={C.gray500}/>{s.enrolled.toLocaleString()} Enrolled</span>}
-                  {s.rating   && <span style={{ display:"flex",alignItems:"center",gap:4 }}><Icon name="star"  size={12} color={C.warning}/>{s.rating} Stars</span>}
-                  <span style={{ display:"flex",alignItems:"center",gap:4 }}><Icon name="calendar" size={12} color={C.gray500}/>{s.date}</span>
-                  {s.availableFrom && s.availableTo && s.status !== "ARCHIVED" && (
-                    <span style={{ display:"flex",alignItems:"center",gap:4 }}>
-                      <Icon name="clock" size={12} color={C.gray500}/>
-                      {new Date(s.availableFrom).toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})} – {new Date(s.availableTo).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}
-                    </span>
-                  )}
+                <div style={{ display:"flex", gap:6, flexShrink:0 }}>
+                  <button onClick={()=>onEditSession(s)} title="Edit session"
+                    style={{ width:28,height:28,borderRadius:8,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center" }}>
+                    <Icon name="pencil" size={13} color={C.gray500}/>
+                  </button>
+                  <button onClick={()=>toast({type:"info",message:"More options coming soon."})} aria-label="More options"
+                    style={{ width:28,height:28,borderRadius:8,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center" }}>
+                    <Icon name="dots-three-vertical" size={14} color={C.gray500}/>
+                  </button>
                 </div>
               </div>
-              <div style={{ display:"flex", gap:6, flexShrink:0 }}>
-                <button onClick={()=>onEditSession(s)} title="Edit session"
-                  style={{ width:28,height:28,borderRadius:8,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
-                  <Icon name="pencil" size={13} color={C.gray500}/>
-                </button>
-                <button onClick={()=>toast({type:"info",message:"More options coming soon."})} aria-label="More options"
-                  style={{ width:28,height:28,borderRadius:8,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
-                  <Icon name="dots-three-vertical" size={14} color={C.gray500}/>
+
+              {/* ── Mobile card (Figma design) ── */}
+              <div className="asp-card-mobile" style={{ alignItems:"center", gap:12, padding:"12px 14px" }}>
+                {/* Thumbnail */}
+                <div style={{ width:80, height:80, borderRadius:10, overflow:"hidden", flexShrink:0, background:C.gray200 }}>
+                  <img src={`https://images.unsplash.com/${THUMB_PHOTOS[i % THUMB_PHOTOS.length]}?w=160&h=160&fit=crop&auto=format`} alt="" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}/>
+                </div>
+                {/* Content */}
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ marginBottom:5 }}>
+                    <Badge label={s.status} color={sc.c} bg={sc.bg} size={11}/>
+                  </div>
+                  <div style={{ fontWeight:700, fontSize:14, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", whiteSpace:"normal", marginBottom:8 }}>{s.title}</div>
+                  <div style={{ display:"flex", alignItems:"center", gap:12, fontSize:12, color:C.gray500 }}>
+                    {s.enrolled && <span style={{ display:"flex",alignItems:"center",gap:4 }}><Icon name="users" size={12} color={C.gray400}/>{(s.enrolled/1000).toFixed(1)}K</span>}
+                    <span style={{ display:"flex",alignItems:"center",gap:4,whiteSpace:"nowrap" }}><Icon name="calendar" size={12} color={C.gray400}/>{dateRange}</span>
+                  </div>
+                </div>
+                {/* Three-dot menu */}
+                <button onClick={()=>onEditSession(s)} aria-label="Edit session"
+                  style={{ width:26,height:26,borderRadius:7,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
+                  <Icon name="pencil" size={12} color={C.gray500}/>
                 </button>
               </div>
+
             </div>
           );
         })}
@@ -5368,7 +5422,6 @@ function MiniBarChart48({ data }) {
 function AnalyticsPage({ onEditSession }) {
   const [range,     setRange]     = useState("28d");
   const [showRange, setShowRange] = useState(false);
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
 
   const RANGES = [
     { key:"7d",  label:"Last 7 days",  dates:"Mar 17 – Mar 23, 2026" },
@@ -5423,45 +5476,35 @@ function AnalyticsPage({ onEditSession }) {
   ];
 
   return (
-    <div style={{ padding: isMobile ? "16px" : "24px", background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+    <div className="aa-wrap" style={{ background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       <style>{`
+        .aa-wrap    { padding:24px; }
         .aa-metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
         .aa-bottom  { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+        .aa-header  { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; gap:10px; }
         @media(max-width:640px){
-          .aa-metrics { grid-template-columns:repeat(2,1fr) !important; gap:10px !important; }
-          .aa-bottom  { grid-template-columns:1fr !important; }
-          .aa-header  { flex-direction:column !important; gap:12px !important; align-items:flex-start !important; }
+          .aa-wrap    { padding:16px 12px; }
+          .aa-metrics { grid-template-columns:repeat(2,1fr); gap:10px; }
+          .aa-bottom  { grid-template-columns:1fr; }
+          .aa-header  { flex-direction:row; align-items:center; }
+          .aa-header h1 { font-size:17px !important; }
         }
       `}</style>
 
       {/* Header */}
-      <div className="aa-header" style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:22 }}>
-        <div>
-            <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:700, color:C.gray900, letterSpacing:-0.3, lineHeight:1.25 }}>Analytics</h1>
-          <p style={{ margin:0, color:C.gray500, fontSize:14, lineHeight:1.5 }}>Track engagement, performance and learner outcomes.</p>
-        </div>
-        {/* Date range picker */}
+      <div className="aa-header">
+        <h1 style={{ margin:0, fontSize:22, fontWeight:700, color:C.gray900, letterSpacing:-0.3, lineHeight:1.25 }}>Analytics</h1>
         <div style={{ position:"relative" }}>
           <button onClick={() => setShowRange(v => !v)}
-            style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:2,
-              background:C.white, border:`1px solid ${C.gray200}`, borderRadius:10,
-              padding:"10px 14px", cursor:"pointer" }}>
-            <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-              <span style={{ fontSize:12, color:C.gray500 }}>{activeRange.dates}</span>
-              <Icon name="caret-right" size={12} color={C.gray500} style={{ transform:"rotate(90deg)" }}/>
-            </div>
-            <span style={{ fontSize:14, fontWeight:700, color:C.gray900 }}>{activeRange.label}</span>
+            style={{ display:"flex", alignItems:"center", gap:6, background:C.white, border:`1px solid ${C.gray200}`, borderRadius:10, padding:"8px 12px", cursor:"pointer", fontFamily:"inherit" }}>
+            <span style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{activeRange.label}</span>
+            <Icon name="caret-down" size={13} color={C.gray500}/>
           </button>
           {showRange && (
-            <div style={{ position:"absolute", right:0, top:"calc(100% + 4px)", background:C.white,
-              border:`1px solid ${C.gray200}`, borderRadius:10,
-              boxShadow:"0 8px 24px rgba(0,0,0,0.10)", zIndex:60, minWidth:160, overflow:"hidden" }}>
+            <div style={{ position:"absolute", right:0, top:"calc(100% + 4px)", background:C.white, border:`1px solid ${C.gray200}`, borderRadius:10, boxShadow:"0 8px 24px rgba(0,0,0,0.10)", zIndex:60, minWidth:150, overflow:"hidden" }}>
               {RANGES.map(r => (
                 <button key={r.key} onClick={() => { setRange(r.key); setShowRange(false); }}
-                  style={{ display:"block", width:"100%", padding:"10px 16px",
-                    background:range===r.key ? C.gray50 : "none", border:"none", cursor:"pointer",
-                    fontSize:14, color:range===r.key ? C.gray900 : C.gray600,
-                    fontWeight:range===r.key ? 700 : 400, textAlign:"left" }}>
+                  style={{ display:"block", width:"100%", padding:"10px 16px", background:range===r.key ? C.gray50 : "none", border:"none", cursor:"pointer", fontSize:14, color:range===r.key ? C.gray900 : C.gray600, fontWeight:range===r.key ? 700 : 400, textAlign:"left", fontFamily:"inherit" }}>
                   {r.label}
                 </button>
               ))}
@@ -5473,29 +5516,96 @@ function AnalyticsPage({ onEditSession }) {
       {/* Metric cards */}
       <div className="aa-metrics">
         {[
-          { label:"Total Views",      val:stat.views.toLocaleString(),    delta:stat.viewsDelta+" vs prev" },
-          { label:"Watch Time (hrs)", val:stat.watch.toLocaleString(),    delta:stat.watchDelta+" vs prev" },
-          { label:"Completion Rate",  val:`${stat.completion}%`,          delta:stat.compDelta+" vs prev"  },
-          { label:"Enrolled",         val:stat.enrolled.toLocaleString(), delta:"Active learners"          },
+          { label:"Total Views",      val:stat.views.toLocaleString()    },
+          { label:"Watch Time (hrs)", val:stat.watch.toLocaleString()    },
+          { label:"Completion Rate",  val:`${stat.completion}%`          },
+          { label:"Enrolled",         val:stat.enrolled.toLocaleString() },
         ].map(m => (
-          <div key={m.label} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding: isMobile ? "14px" : "18px 20px" }}>
-            <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4 }}>
-              <div style={{ fontSize: isMobile ? 22 : 30, fontWeight:900, color:C.gray900, lineHeight:1 }}>{m.val}</div>
-              <span style={{ fontSize:11, fontWeight:700, color:C.gray500, background:C.gray100, padding:"2px 6px", borderRadius:6 }}>{m.delta}</span>
-            </div>
-            <div style={{ fontSize: isMobile ? 12 : 14, fontWeight:600, color:C.gray600, lineHeight:1.5 }}>{m.label}</div>
+          <div key={m.label} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"16px" }}>
+            <div style={{ fontSize:26, fontWeight:900, color:C.gray900, lineHeight:1, marginBottom:4 }}>{m.val}</div>
+            <div style={{ fontSize:13, fontWeight:600, color:C.gray600, lineHeight:1.5 }}>{m.label}</div>
           </div>
         ))}
       </div>
 
-      {/* Views over time — linear gradient chart */}
-      <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"20px 24px", marginBottom:14 }}>
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
-          <h2 style={{ margin:0, fontSize:16, fontWeight:700, color:C.gray900, lineHeight:1.5 }}>Views over time</h2>
-          <span style={{ fontSize:12, color:C.gray400 }}>{activeRange.dates}</span>
-        </div>
-        <LineAreaChart data={trend} color={C.primary}/>
-      </div>
+      {/* Activity Chart Card */}
+      <style>{`
+        @keyframes aa-bar-grow { from { transform:scaleY(0); opacity:0; } to { transform:scaleY(1); opacity:1; } }
+        .aa-bar { transform-origin:bottom; animation:aa-bar-grow 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
+        .aa-bar:nth-child(1){ animation-delay:0.00s; }
+        .aa-bar:nth-child(2){ animation-delay:0.07s; }
+        .aa-bar:nth-child(3){ animation-delay:0.14s; }
+        .aa-bar:nth-child(4){ animation-delay:0.21s; }
+        .aa-bar:nth-child(5){ animation-delay:0.28s; }
+        .aa-bar:nth-child(6){ animation-delay:0.35s; }
+        .aa-bar:nth-child(7){ animation-delay:0.42s; }
+        .aa-bar-wrap:hover .aa-bar-tooltip { opacity:1; transform:translateY(0); }
+        .aa-bar-tooltip { opacity:0; transform:translateY(4px); transition:all .15s; pointer-events:none; }
+        .aa-chart-card { display:flex; flex-direction:row; align-items:stretch; gap:0; }
+        .aa-chart-stat { width:140px; flex-shrink:0; border-right:1px solid; padding-right:20px; margin-right:20px; display:flex; flex-direction:column; justify-content:center; }
+        .aa-chart-bars { flex:1; min-width:0; }
+        @media(max-width:640px){
+          .aa-chart-card  { flex-direction:column; gap:16px; }
+          .aa-chart-stat  { width:100%; border-right:none; padding-right:0; margin-right:0; border-bottom:1px solid; padding-bottom:14px; margin-bottom:0; flex-direction:row; align-items:center; justify-content:space-between; }
+          .aa-chart-bars  { width:100%; }
+        }
+      `}</style>
+      {(() => {
+        const barData = range === "7d"
+          ? [{v:245,l:"M"},{v:312,l:"T"},{v:198,l:"W"},{v:400,l:"T"},{v:350,l:"F"},{v:190,l:"S"},{v:280,l:"S"}]
+          : range === "28d"
+          ? [{v:82,l:"W1"},{v:140,l:"W2"},{v:195,l:"W3"},{v:280,l:"W4"}]
+          : [{v:180,l:"Dec"},{v:260,l:"Jan"},{v:350,l:"Feb"},{v:420,l:"Mar"}];
+        const maxV = Math.max(...barData.map(d => d.v));
+        return (
+          <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"20px 20px 16px", marginBottom:14, boxShadow:"0 1px 4px rgba(0,0,0,0.04)" }}>
+            {/* Card header */}
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18 }}>
+              <div>
+                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.4, textTransform:"uppercase", marginBottom:2 }}>Views over time</div>
+                <div style={{ fontSize:11, color:C.gray400 }}>{activeRange.dates}</div>
+              </div>
+            </div>
+
+            <div className="aa-chart-card">
+              {/* Stat side */}
+              <div className="aa-chart-stat" style={{ borderColor:C.gray100 }}>
+                <div>
+                  <div style={{ fontSize:32, fontWeight:900, color:C.gray900, lineHeight:1, letterSpacing:-1 }}>
+                    {stat.views.toLocaleString()}
+                  </div>
+                  <div style={{ fontSize:12, color:C.gray500, marginTop:3, fontWeight:500 }}>total views</div>
+                </div>
+                <div style={{ display:"flex", alignItems:"center", gap:5, marginTop:10 }}>
+                </div>
+              </div>
+
+              {/* Bar chart side */}
+              <div className="aa-chart-bars">
+                <div key={range} style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", gap:6, height:110 }}>
+                  {barData.map((d, i) => {
+                    const pct = maxV > 0 ? Math.max((d.v / maxV) * 100, 8) : 8;
+                    const isMax = d.v === maxV;
+                    return (
+                      <div key={i} className="aa-bar-wrap" style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"flex-end", gap:5, height:"100%", position:"relative" }}>
+                        <div className="aa-bar-tooltip" style={{ position:"absolute", top:-26, background:C.gray900, color:"#fff", fontSize:10, fontWeight:700, borderRadius:5, padding:"3px 6px", whiteSpace:"nowrap" }}>
+                          {d.v.toLocaleString()}
+                        </div>
+                        <div className="aa-bar" style={{
+                          width:"100%", borderRadius:"5px 5px 3px 3px",
+                          background: isMax ? C.primary : "#b8ccf6",
+                          height:`${pct}%`,
+                        }}/>
+                        <span style={{ fontSize:11, color:C.gray500, fontWeight:600 }}>{d.l}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Bottom row: top sessions + smart insights */}
       <div className="aa-bottom">
@@ -5506,9 +5616,9 @@ function AnalyticsPage({ onEditSession }) {
           {/* Header */}
           <div style={{ display:"grid", gridTemplateColumns:"16px 56px 1fr 72px 44px", gap:"0 10px",
             padding:"4px 0 8px", borderBottom:`1px solid ${C.gray100}`, marginBottom:2 }}>
-            <span style={{ gridColumn:"1 / 4", fontSize:12, color:C.gray400, fontWeight:700, letterSpacing:.3 }}>Content</span>
-            <span style={{ fontSize:12, color:C.gray400, fontWeight:700, letterSpacing:.3 }}>Duration</span>
-            <span style={{ fontSize:12, color:C.gray400, fontWeight:700, letterSpacing:.3 }}>Views</span>
+            <span style={{ gridColumn:"1 / 4", fontSize:11, color:C.gray400, fontWeight:700, letterSpacing:.8, textTransform:"uppercase" }}>Content</span>
+            <span style={{ fontSize:11, color:C.gray400, fontWeight:700, letterSpacing:.8, textTransform:"uppercase" }}>Duration</span>
+            <span style={{ fontSize:11, color:C.gray400, fontWeight:700, letterSpacing:.8, textTransform:"uppercase" }}>Views</span>
           </div>
           {TOP_SESSIONS.map((s,i) => {
             const grads = ["linear-gradient(135deg,#1e3a5f,#3699ff)","linear-gradient(135deg,#4c1d95,#a855f7)","linear-gradient(135deg,#166534,#50cd89)","linear-gradient(135deg,#7c2d12,#f97316)"];
@@ -5527,10 +5637,10 @@ function AnalyticsPage({ onEditSession }) {
                 </div>
                 {/* Title — constrained width */}
                 <div style={{ minWidth:0 }}>
-                  <div style={{ fontSize:12, fontWeight:600, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:160 }}>{s.title}</div>
-                  <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{s.avgPct} completed</div>
+                  <div style={{ fontSize:14, fontWeight:600, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:160 }}>{s.title}</div>
+                  <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{s.avgPct} completed</div>
                 </div>
-                <span style={{ fontSize:12, color:C.gray600 }}>{s.avgDuration}</span>
+                <span style={{ fontSize:14, color:C.gray600 }}>{s.avgDuration}</span>
                 <span style={{ fontSize:14, fontWeight:700, color:C.gray900 }}>{s.views}</span>
               </div>
             );
@@ -5763,13 +5873,9 @@ function CurriculumBuilder({ toast, initialSections, onSectionsChange }) {
 
       {/* Lesson / Quiz cards */}
       {nonMaterialLessons.map((l, li) => (
-        <div key={l.id} style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, marginBottom:16, padding:24 }}>
-
-          {/* Card header */}
-          <div style={{ marginBottom:20 }}>
-            <div style={{ fontWeight:800, fontSize:16, color:C.gray900 }}>{l.type==="quiz"?"Assessment":"Lesson"}</div>
-            <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{l.type==="quiz"?"Add questions for this assessment":"Add a title and video link"}</div>
-          </div>
+        <div key={l.id} style={{ marginBottom:16 }}>
+          <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>{l.type==="quiz"?"Assessment":"Lesson"}</div>
+          <div style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:24 }}>
 
           <Label>TITLE</Label>
           <input value={l.title} onChange={e=>patchLesson(l._secId,l.id,{title:e.target.value})}
@@ -5866,23 +5972,20 @@ function CurriculumBuilder({ toast, initialSections, onSectionsChange }) {
             </button>
           </div>
           </>}
+          </div>
         </div>
       ))}
       {/* ── Materials section ── */}
       {materialLessons.map((l, mi) => (
-        <div key={l.id} style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, marginBottom:16, padding:24 }}>
-
-          {/* Card header — FormSection style */}
-          <div style={{ display:"flex", gap:12, marginBottom:20, alignItems:"flex-start" }}>
-            <div style={{ flex:1 }}>
-              <div style={{ fontWeight:800, fontSize:16, color:C.gray900 }}>Material</div>
-              <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>Upload files for this lesson</div>
-            </div>
+        <div key={l.id} style={{ marginBottom:16 }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+            <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase" }}>Material</div>
             <button onClick={()=>deleteFlatLesson(l._secId,l.id)}
               style={{ width:28,height:28,borderRadius:7,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
               <Icon name="trash" size={13} color={C.error}/>
             </button>
           </div>
+          <div style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:24 }}>
 
           <Label>TITLE</Label>
           <input value={l.title} onChange={e=>patchLesson(l._secId,l.id,{title:e.target.value})}
@@ -5904,6 +6007,7 @@ function CurriculumBuilder({ toast, initialSections, onSectionsChange }) {
                   </>
               }
             </div>
+          </div>
         </div>
       ))}
 
@@ -5988,9 +6092,80 @@ function AdminCreateSession({ onBack, toast, onSave }) {
     availability: { title:"Availability",       subtitle:"Control when learners can access this session." },
   };
 
+  const [mobileDrilled, setMobileDrilled] = useState(false);
+  const TAB_ICON = { details:"info", curriculum:"play-circle", availability:"calendar" };
+
   return (
     <div style={{ background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
-      <div style={{ maxWidth:960, width:"100%", margin:"0 auto", display:"flex", alignItems:"stretch", flex:1, boxSizing:"border-box" }}>
+      <style>{`
+        .acs-desktop { max-width:960px; width:100%; margin:0 auto; display:flex; align-items:stretch; flex:1; box-sizing:border-box; }
+        .acs-mobile-hub    { display:none; }
+        .acs-mobile-detail { display:none; }
+        @media(max-width:640px){
+          .acs-desktop       { display:none !important; }
+          .acs-mobile-hub    { display:block; }
+          .acs-mobile-detail { display:block; }
+          .aes-card          { padding:16px !important; border-radius:12px !important; }
+          .aes-avail-grid    { grid-template-columns:1fr !important; }
+          .acs-actions       { flex-direction:column-reverse; gap:8px !important; }
+          .acs-actions > *   { width:100%; justify-content:center; }
+        }
+      `}</style>
+
+      {/* ── MOBILE: Hub ── */}
+      {!mobileDrilled && (
+        <div className="acs-mobile-hub" style={{ flex:1 }}>
+          <div style={{ padding:"16px 16px 12px" }}>
+            <button onClick={onBack} style={{ display:"inline-flex", alignItems:"center", gap:6, background:"none", border:"none", padding:"0 0 12px", cursor:"pointer", color:C.gray500, fontSize:13, fontWeight:600, fontFamily:"inherit" }}>
+              <Icon name="arrow-left" size={16} color={C.gray500}/>
+              Back
+            </button>
+            <div style={{ fontSize:22, fontWeight:900, color:C.gray900, letterSpacing:-0.5 }}>Create Session</div>
+            <div style={{ fontSize:13, color:C.gray500, marginTop:3 }}>Fill in the details, build your lessons, then publish.</div>
+          </div>
+          <div style={{ margin:"0 16px", border:`1px solid ${C.gray200}`, borderRadius:16, overflow:"hidden", background:C.white }}>
+            {TABS.map((t, i, arr) => (
+              <button key={t.key} onClick={() => { setTab(t.key); setMobileDrilled(true); }}
+                style={{ display:"flex", alignItems:"center", gap:16, width:"100%", padding:"14px 18px", background:"none", border:"none", borderBottom: i < arr.length-1 ? `1px solid ${C.gray200}` : "none", cursor:"pointer", textAlign:"left", fontFamily:"inherit" }}>
+                <Icon name={TAB_ICON[t.key]} size={22} color={C.gray700}/>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:15, fontWeight:500, color:C.gray900 }}>{t.label}</div>
+                  <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{TAB_META[t.key].subtitle}</div>
+                </div>
+                <Icon name="caret-right" size={16} color={C.gray400}/>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── MOBILE: Drilled-in ── */}
+      {mobileDrilled && (
+        <div className="acs-mobile-detail" style={{ flex:1 }}>
+          <div style={{ padding:"16px 16px 0" }}>
+            <button onClick={() => setMobileDrilled(false)}
+              style={{ display:"inline-flex", alignItems:"center", gap:6, background:"none", border:"none", padding:"0 0 12px", cursor:"pointer", color:C.gray500, fontSize:13, fontWeight:600, fontFamily:"inherit" }}>
+              <Icon name="arrow-left" size={16} color={C.gray500}/>
+              Back
+            </button>
+            <h2 style={{ margin:"0 0 4px", fontSize:18, fontWeight:900, color:C.gray900 }}>{TAB_META[tab].title}</h2>
+            <p style={{ margin:"0 0 16px", fontSize:13, color:C.gray500 }}>{TAB_META[tab].subtitle}</p>
+          </div>
+          <div style={{ padding:"0 16px 24px" }}>
+            {renderTabContent()}
+            <div className="acs-actions" style={{ display:"flex", justifyContent:"flex-end", gap:8, paddingTop:24, borderTop:`1px solid ${C.gray200}`, marginTop:24 }}>
+              <Btn variant="outline" onClick={() => setMobileDrilled(false)}>Close</Btn>
+              {tab === "availability"
+                ? <Btn onClick={()=>save(true)}>Publish</Btn>
+                : <Btn onClick={() => { setTab(tab==="details"?"curriculum":"availability"); }}>Continue</Btn>
+              }
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DESKTOP layout ── */}
+      <div className="acs-desktop">
 
         {/* ── Sidebar ── */}
         <div style={{ width:240, flexShrink:0, padding:"32px 24px", boxSizing:"border-box" }}>
@@ -6002,7 +6177,7 @@ function AdminCreateSession({ onBack, toast, onSave }) {
               return (
                 <button key={t.key} onClick={()=>setTab(t.key)}
                   style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", borderRadius:10, border:"none", background: active ? C.primaryLight : "transparent", color: active ? C.primary : C.gray600, fontSize:14, fontWeight: active ? 700 : 500, cursor:"pointer", textAlign:"left", fontFamily:"inherit", transition:"background .15s" }}>
-                  <Icon name={t.key==="details"?"info":t.key==="curriculum"?"play-circle":"calendar"} size={15} color={active ? C.primary : C.gray500}/>
+                  <Icon name={TAB_ICON[t.key]} size={15} color={active ? C.primary : C.gray500}/>
                   {t.label}
                 </button>
               );
@@ -6021,22 +6196,51 @@ function AdminCreateSession({ onBack, toast, onSave }) {
           </div>
 
           <div style={{ flex:1 }}>
+            {renderTabContent()}
+          </div>
+
+          {/* Actions */}
+          <div style={{ display:"flex", justifyContent:"flex-end", gap:8, paddingTop:24, borderTop:`1px solid ${C.gray200}`, marginTop:24 }}>
+            <Btn variant="outline" onClick={onBack}>Close</Btn>
+            {tab === "availability"
+              ? <Btn onClick={()=>save(true)}>Publish</Btn>
+              : <Btn onClick={()=>setTab(tab==="details"?"curriculum":"availability")}>Continue</Btn>
+            }
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+
+  function renderTabContent() { return (<>
             {/* ── SESSION DETAILS tab ── */}
             {tab === "details" && <>
-              {/* General */}
-              {[
-                { label:"Course title", required:true, node:<input value={form.title} onChange={e=>upd("title",e.target.value)} placeholder="e.g. Advanced Figma Auto-Layout Masterclass" style={inputSt}/> },
-                { label:"Description", node:<textarea value={form.desc} onChange={e=>upd("desc",e.target.value)} placeholder="Describe what learners will gain from this session…" rows={3} style={{...inputSt,resize:"vertical"}}/> },
-                { label:"Instructor name", required:true, node:<input value={form.instructorName} onChange={e=>upd("instructorName",e.target.value)} placeholder="e.g. Jane Doe" style={inputSt}/> },
-                { label:"Professional bio", node:<textarea value={form.bio} onChange={e=>upd("bio",e.target.value)} placeholder="Short bio about your career and achievements…" rows={2} style={{...inputSt,resize:"vertical"}}/> },
-                { label:"LinkedIn", node:<input placeholder="LinkedIn username" style={inputSt}/> },
-                { label:"X (Twitter)", node:<input placeholder="X handle" style={inputSt}/> },
-              ].map((row,i) => (
-                <div key={i} style={{ display:"grid", gridTemplateColumns:"180px 1fr", gap:16, alignItems:"start", padding:"16px 0", borderBottom:`1px solid ${C.gray200}` }}>
-                  <div style={{ fontSize:14, fontWeight:600, color:C.gray700, paddingTop:10 }}>{row.label}{row.required && <span style={{ color:C.error }}> *</span>}</div>
-                  <div>{row.node}</div>
+              {/* Session Info card */}
+              <div style={{ marginBottom:16 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>Session Info</div>
+                <div className="aes-card" style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:24 }}>
+                  <Label>COURSE TITLE<span style={{ color:C.error }}> *</span></Label>
+                  <input value={form.title} onChange={e=>upd("title",e.target.value)} placeholder="e.g. Advanced Figma Auto-Layout Masterclass" style={{...inputSt, marginBottom:16}}/>
+                  <Label>DESCRIPTION</Label>
+                  <textarea value={form.desc} onChange={e=>upd("desc",e.target.value)} placeholder="Describe what learners will gain from this session…" rows={3} style={{...inputSt,resize:"vertical"}}/>
                 </div>
-              ))}
+              </div>
+
+              {/* Instructor card */}
+              <div style={{ marginBottom:16 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>Instructor</div>
+                <div className="aes-card" style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:24 }}>
+                <Label>INSTRUCTOR NAME<span style={{ color:C.error }}> *</span></Label>
+                <input value={form.instructorName} onChange={e=>upd("instructorName",e.target.value)} placeholder="e.g. Jane Doe" style={{...inputSt, marginBottom:16}}/>
+                <Label>PROFESSIONAL BIO</Label>
+                <textarea value={form.bio} onChange={e=>upd("bio",e.target.value)} placeholder="Short bio about your career and achievements…" rows={2} style={{...inputSt,resize:"vertical", marginBottom:16}}/>
+                <Label>LINKEDIN</Label>
+                <input placeholder="LinkedIn username" style={{...inputSt, marginBottom:16}}/>
+                <Label>X (TWITTER)</Label>
+                <input placeholder="X handle" style={inputSt}/>
+                </div>
+              </div>
 
               {/* Engagement */}
               <div style={{ marginTop:24 }}>
@@ -6083,41 +6287,32 @@ function AdminCreateSession({ onBack, toast, onSave }) {
 
             {/* ── AVAILABILITY tab ── */}
             {tab === "availability" && <>
-              {[
-                { label:"Available from", node:<input type="datetime-local" value={form.availableFrom} onChange={e=>upd("availableFrom",e.target.value)} style={inputSt}/> },
-                { label:"Available to",   node:<input type="datetime-local" value={form.availableTo}   onChange={e=>upd("availableTo",  e.target.value)} style={inputSt}/> },
-              ].map((row,i) => (
-                <div key={i} style={{ display:"grid", gridTemplateColumns:"180px 1fr", gap:16, alignItems:"center", padding:"16px 0", borderBottom:`1px solid ${C.gray200}` }}>
-                  <div style={{ fontSize:14, fontWeight:600, color:C.gray700 }}>{row.label}</div>
-                  <div>{row.node}</div>
+              <div style={{ marginBottom:16 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>Availability</div>
+                <div className="aes-card" style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:24 }}>
+                  <div className="aes-avail-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
+                    <div>
+                      <Label>AVAILABLE FROM</Label>
+                      <input type="datetime-local" value={form.availableFrom} onChange={e=>upd("availableFrom",e.target.value)} style={{...inputSt, width:"100%", boxSizing:"border-box"}}/>
+                    </div>
+                    <div>
+                      <Label>AVAILABLE TO</Label>
+                      <input type="datetime-local" value={form.availableTo} onChange={e=>upd("availableTo",e.target.value)} style={{...inputSt, width:"100%", boxSizing:"border-box"}}/>
+                    </div>
+                  </div>
+                  <div style={{ display:"flex", alignItems:"flex-start", gap:8, padding:"12px 14px", background:C.primaryLight, borderRadius:8, border:`1px solid ${C.primaryBorder}` }}>
+                    <Icon name="info" size={14} color={C.primary} style={{ marginTop:1, flexShrink:0 }}/>
+                    <span style={{ fontSize:12, color:C.primary, lineHeight:1.5 }}>When the <strong>Available To</strong> date passes, this session auto-archives and is hidden from students. Leave blank for no expiry.</span>
+                  </div>
                 </div>
-              ))}
-              <div style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 14px", background:C.primaryLight, borderRadius:8, border:`1px solid ${C.primaryBorder}`, marginTop:16 }}>
-                <Icon name="info" size={14} color={C.primary}/>
-                <span style={{ fontSize:12, color:C.primary, lineHeight:1.5 }}>When the <strong>Available To</strong> date passes, this session auto-archives and is hidden from students. Leave blank for no expiry.</span>
               </div>
             </>}
 
-          </div>
-
-          {/* ── LESSONS tab (outside flex:1 div to avoid height constraints) ── */}
+          {/* ── LESSONS tab ── */}
           {tab === "curriculum" && (
             <CurriculumBuilder toast={toast} initialSections={initialSections} onSectionsChange={handleSectionsChange}/>
           )}
-
-          {/* Actions */}
-          <div style={{ display:"flex", justifyContent:"flex-end", gap:8, paddingTop:24, borderTop:`1px solid ${C.gray200}`, marginTop:24 }}>
-            <Btn variant="outline" onClick={onBack}>Close</Btn>
-            {tab === "availability"
-              ? <Btn onClick={()=>save(true)}>Publish</Btn>
-              : <Btn onClick={()=>setTab(tab==="details"?"curriculum":"availability")}>Continue</Btn>
-            }
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
+  </>); }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -6125,6 +6320,7 @@ function AdminCreateSession({ onBack, toast, onSave }) {
 ───────────────────────────────────────────────────────────────────────────── */
 function AdminEditSession({ session, onBack, toast, onSave }) {
   const [tab,  setTab]  = useState("details");
+  const [mobileDrilled, setMobileDrilled] = useState(false);
   const [form, setForm] = useState({
     title:          session.title          || "",
     category:       session.category       || "UI Design",
@@ -6245,9 +6441,79 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
     availability: { title:"Availability",       subtitle:"Control when learners can access this session." },
   };
 
+  const TAB_ICON = { details:"info", curriculum:"play-circle", availability:"calendar" };
+
   return (
     <div style={{ background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
-      <div style={{ maxWidth:960, width:"100%", margin:"0 auto", display:"flex", alignItems:"stretch", flex:1, boxSizing:"border-box" }}>
+      <style>{`
+        .aes-desktop { max-width:960px; width:100%; margin:0 auto; display:flex; align-items:stretch; flex:1; box-sizing:border-box; }
+        .aes-mobile-hub    { display:none; }
+        .aes-mobile-detail { display:none; }
+        @media(max-width:640px){
+          .aes-desktop       { display:none !important; }
+          .aes-mobile-hub    { display:block; }
+          .aes-mobile-detail { display:block; }
+          .aes-card          { padding:16px !important; border-radius:12px !important; }
+          .aes-avail-grid    { grid-template-columns:1fr !important; }
+          .aes-actions       { flex-direction:column-reverse; gap:8px !important; }
+          .aes-actions > *   { width:100%; justify-content:center; }
+        }
+      `}</style>
+
+      {/* ── MOBILE: Hub (tab list) ── */}
+      {!mobileDrilled && (
+        <div className="aes-mobile-hub" style={{ flex:1 }}>
+          <div style={{ padding:"16px 16px 12px" }}>
+            <button onClick={onBack} style={{ display:"inline-flex", alignItems:"center", gap:6, background:"none", border:"none", padding:"0 0 12px", cursor:"pointer", color:C.gray500, fontSize:13, fontWeight:600, fontFamily:"inherit" }}>
+              <Icon name="arrow-left" size={16} color={C.gray500}/>
+              Back
+            </button>
+            <div style={{ fontSize:22, fontWeight:900, color:C.gray900, letterSpacing:-0.5 }}>Edit Session</div>
+            <div style={{ fontSize:13, color:C.gray500, marginTop:3, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{session.title}</div>
+          </div>
+          <div style={{ margin:"0 16px", border:`1px solid ${C.gray200}`, borderRadius:16, overflow:"hidden", background:C.white }}>
+            {TABS.map((t, i, arr) => (
+              <button key={t.key} onClick={() => { setTab(t.key); setMobileDrilled(true); }}
+                style={{ display:"flex", alignItems:"center", gap:16, width:"100%", padding:"14px 18px", background:"none", border:"none", borderBottom: i < arr.length-1 ? `1px solid ${C.gray200}` : "none", cursor:"pointer", textAlign:"left", fontFamily:"inherit" }}>
+                <Icon name={TAB_ICON[t.key]} size={22} color={C.gray700}/>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:15, fontWeight:500, color:C.gray900 }}>{t.label}</div>
+                  <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{TAB_META[t.key].subtitle}</div>
+                </div>
+                <Icon name="caret-right" size={16} color={C.gray400}/>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── MOBILE: Drilled-in tab content ── */}
+      {mobileDrilled && (
+        <div className="aes-mobile-detail" style={{ flex:1 }}>
+          <div style={{ padding:"16px 16px 0" }}>
+            <button onClick={() => setMobileDrilled(false)}
+              style={{ display:"inline-flex", alignItems:"center", gap:6, background:"none", border:"none", padding:"0 0 12px", cursor:"pointer", color:C.gray500, fontSize:13, fontWeight:600, fontFamily:"inherit" }}>
+              <Icon name="arrow-left" size={16} color={C.gray500}/>
+              Back
+            </button>
+            <h2 style={{ margin:"0 0 4px", fontSize:18, fontWeight:900, color:C.gray900 }}>{TAB_META[tab].title}</h2>
+            <p style={{ margin:"0 0 16px", fontSize:13, color:C.gray500 }}>{TAB_META[tab].subtitle}</p>
+          </div>
+          <div style={{ padding:"0 16px 24px" }}>
+            {renderTabContent()}
+            <div className="aes-actions" style={{ display:"flex", justifyContent:"flex-end", gap:8, paddingTop:24, borderTop:`1px solid ${C.gray200}`, marginTop:24 }}>
+              <Btn variant="outline" onClick={() => setMobileDrilled(false)}>Close</Btn>
+              {tab === "availability"
+                ? <Btn onClick={save}>Save Changes</Btn>
+                : <Btn onClick={() => { setTab(tab==="details"?"curriculum":"availability"); }}>Continue</Btn>
+              }
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DESKTOP layout ── */}
+      <div className="aes-desktop">
 
         {/* ── Sidebar ── */}
         <div style={{ width:240, flexShrink:0, padding:"32px 24px", boxSizing:"border-box" }}>
@@ -6260,7 +6526,7 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
               return (
                 <button key={t.key} onClick={()=>setTab(t.key)}
                   style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", borderRadius:10, border:"none", background: active ? C.primaryLight : "transparent", color: active ? C.primary : C.gray600, fontSize:14, fontWeight: active ? 700 : 500, cursor:"pointer", textAlign:"left", fontFamily:"inherit", transition:"background .15s" }}>
-                  <Icon name={t.key==="details"?"info":t.key==="curriculum"?"play-circle":"calendar"} size={15} color={active ? C.primary : C.gray500}/>
+                  <Icon name={TAB_ICON[t.key]} size={15} color={active ? C.primary : C.gray500}/>
                   {t.label}
                 </button>
               );
@@ -6279,21 +6545,51 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
           </div>
 
           <div style={{ flex:1 }}>
+            {renderTabContent()}
+          </div>
+
+          {/* Actions */}
+          <div style={{ display:"flex", justifyContent:"flex-end", gap:8, paddingTop:24, borderTop:`1px solid ${C.gray200}`, marginTop:24 }}>
+            <Btn variant="outline" onClick={onBack}>Close</Btn>
+            {tab === "availability"
+              ? <Btn onClick={save}>Save Changes</Btn>
+              : <Btn onClick={()=>setTab(tab==="details"?"curriculum":"availability")}>Continue</Btn>
+            }
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+
+  function renderTabContent() { return (<>
             {/* ── DETAILS tab ── */}
             {tab === "details" && <>
-              {[
-                { label:"Session title",   required:true, node:<input value={form.title} onChange={e=>upd("title",e.target.value)} placeholder="e.g. Advanced Figma Auto-Layout Masterclass" style={inputSt}/> },
-                { label:"Description",     node:<textarea value={form.desc} onChange={e=>upd("desc",e.target.value)} placeholder="Describe what students will learn…" rows={3} style={{...inputSt,resize:"vertical"}}/> },
-                { label:"Instructor name", required:true, node:<input value={form.instructorName} onChange={e=>upd("instructorName",e.target.value)} placeholder="e.g. Jane Doe" style={inputSt}/> },
-                { label:"Professional bio",node:<textarea value={form.bio} onChange={e=>upd("bio",e.target.value)} placeholder="Short bio about your career and achievements…" rows={2} style={{...inputSt,resize:"vertical"}}/> },
-                { label:"LinkedIn",        node:<input placeholder="LinkedIn username" style={inputSt}/> },
-                { label:"X (Twitter)",     node:<input placeholder="X handle" style={inputSt}/> },
-              ].map((row,i) => (
-                <div key={i} style={{ display:"grid", gridTemplateColumns:"180px 1fr", gap:16, alignItems:"start", padding:"16px 0", borderBottom:`1px solid ${C.gray200}` }}>
-                  <div style={{ fontSize:14, fontWeight:600, color:C.gray700, paddingTop:10 }}>{row.label}{row.required && <span style={{ color:C.error }}> *</span>}</div>
-                  <div>{row.node}</div>
+              {/* Session Info card */}
+              <div style={{ marginBottom:16 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>Session Info</div>
+                <div className="aes-card" style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:24 }}>
+                  <Label>SESSION TITLE<span style={{ color:C.error }}> *</span></Label>
+                  <input value={form.title} onChange={e=>upd("title",e.target.value)} placeholder="e.g. Advanced Figma Auto-Layout Masterclass" style={{...inputSt, marginBottom:16}}/>
+                  <Label>DESCRIPTION</Label>
+                  <textarea value={form.desc} onChange={e=>upd("desc",e.target.value)} placeholder="Describe what students will learn…" rows={3} style={{...inputSt,resize:"vertical"}}/>
                 </div>
-              ))}
+              </div>
+
+              {/* Instructor card */}
+              <div style={{ marginBottom:16 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>Instructor</div>
+                <div className="aes-card" style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:24 }}>
+                  <Label>INSTRUCTOR NAME<span style={{ color:C.error }}> *</span></Label>
+                  <input value={form.instructorName} onChange={e=>upd("instructorName",e.target.value)} placeholder="e.g. Jane Doe" style={{...inputSt, marginBottom:16}}/>
+                  <Label>PROFESSIONAL BIO</Label>
+                  <textarea value={form.bio} onChange={e=>upd("bio",e.target.value)} placeholder="Short bio about your career and achievements…" rows={2} style={{...inputSt,resize:"vertical", marginBottom:16}}/>
+                  <Label>LINKEDIN</Label>
+                  <input placeholder="LinkedIn username" style={{...inputSt, marginBottom:16}}/>
+                  <Label>X (TWITTER)</Label>
+                  <input placeholder="X handle" style={inputSt}/>
+                </div>
+              </div>
 
               {/* Engagement */}
               <div style={{ marginTop:24 }}>
@@ -6341,41 +6637,32 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
 
             {/* ── AVAILABILITY tab ── */}
             {tab === "availability" && <>
-              {[
-                { label:"Available from", node:<input type="datetime-local" value={form.availableFrom} onChange={e=>upd("availableFrom",e.target.value)} style={inputSt}/> },
-                { label:"Available to",   node:<input type="datetime-local" value={form.availableTo}   onChange={e=>upd("availableTo",  e.target.value)} style={inputSt}/> },
-              ].map((row,i) => (
-                <div key={i} style={{ display:"grid", gridTemplateColumns:"180px 1fr", gap:16, alignItems:"center", padding:"16px 0", borderBottom:`1px solid ${C.gray200}` }}>
-                  <div style={{ fontSize:14, fontWeight:600, color:C.gray700 }}>{row.label}</div>
-                  <div>{row.node}</div>
+              <div style={{ marginBottom:16 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>Availability</div>
+                <div className="aes-card" style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:24 }}>
+                  <div className="aes-avail-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
+                    <div>
+                      <Label>AVAILABLE FROM</Label>
+                      <input type="datetime-local" value={form.availableFrom} onChange={e=>upd("availableFrom",e.target.value)} style={{...inputSt, width:"100%", boxSizing:"border-box"}}/>
+                    </div>
+                    <div>
+                      <Label>AVAILABLE TO</Label>
+                      <input type="datetime-local" value={form.availableTo} onChange={e=>upd("availableTo",e.target.value)} style={{...inputSt, width:"100%", boxSizing:"border-box"}}/>
+                    </div>
+                  </div>
+                  <div style={{ display:"flex", alignItems:"flex-start", gap:8, padding:"12px 14px", background:C.primaryLight, borderRadius:8, border:`1px solid ${C.primaryBorder}` }}>
+                    <Icon name="info" size={14} color={C.primary} style={{ marginTop:1, flexShrink:0 }}/>
+                    <span style={{ fontSize:12, color:C.primary, lineHeight:1.5 }}>When the <strong>Available To</strong> date passes, this session auto-archives and is hidden from students. Leave blank for no expiry.</span>
+                  </div>
                 </div>
-              ))}
-              <div style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 14px", background:C.primaryLight, borderRadius:8, border:`1px solid ${C.primaryBorder}`, marginTop:16 }}>
-                <Icon name="info" size={14} color={C.primary}/>
-                <span style={{ fontSize:12, color:C.primary, lineHeight:1.5 }}>When the <strong>Available To</strong> date passes, this session auto-archives and is hidden from students. Leave blank for no expiry.</span>
               </div>
             </>}
-
-          </div>
 
           {/* ── LESSONS tab ── */}
           {tab === "curriculum" && (
             <CurriculumBuilder toast={toast} initialSections={initialSections} onSectionsChange={handleSectionsChange}/>
           )}
-
-          {/* Actions */}
-          <div style={{ display:"flex", justifyContent:"flex-end", gap:8, paddingTop:24, borderTop:`1px solid ${C.gray200}`, marginTop:24 }}>
-            <Btn variant="outline" onClick={onBack}>Close</Btn>
-            {tab === "availability"
-              ? <Btn onClick={save}>Save Changes</Btn>
-              : <Btn onClick={()=>setTab(tab==="details"?"curriculum":"availability")}>Continue</Btn>
-            }
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
+  </>); }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -10907,9 +11194,11 @@ export default function App() {
             .ps-session-card { display:flex; flex-direction:row; align-items:stretch; height:235px; }
             .ps-session-thumb { flex-shrink:0; width:200px; position:relative; }
             .ps-session-thumb img { width:100%; height:100%; object-fit:cover; object-position:top center; display:block; }
+            .ps-session-body { padding:20px; }
             @media(max-width:600px){
-              .ps-session-card { flex-direction:column; height:380px; }
-              .ps-session-thumb { width:100%; height:180px; flex-shrink:0; }
+              .ps-session-card { flex-direction:column; height:auto; }
+              .ps-session-thumb { width:100%; height:160px; flex-shrink:0; }
+              .ps-session-body { padding:14px 12px; }
             }
           `}</style>
           {/* Back button — mobile only */}
@@ -10941,7 +11230,7 @@ export default function App() {
                       <div style={{ fontSize:13, color:"rgba(255,255,255,0.72)", marginTop:3, lineHeight:1.3 }}>{instrRole}</div>
                     </div>
                   </div>
-                  <div style={{ flex:1, minWidth:0, padding:20, display:"flex", flexDirection:"column" }}>
+                  <div className="ps-session-body" style={{ flex:1, minWidth:0, display:"flex", flexDirection:"column" }}>
                     <div style={{ marginBottom:8 }}>
                       <span style={{ display:"inline-block", fontSize:11, fontWeight:600, padding:"2px 7px", borderRadius:4, background:catBadge.bg, color:catBadge.color, letterSpacing:.2, textTransform:"uppercase" }}>
                         {catBadge.label}
