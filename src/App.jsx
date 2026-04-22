@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useReducer } from "react";
+import { supabase } from "./supabase";
 import { Agentation } from "agentation";
 import { createPortal } from "react-dom";
 import * as PhosphorIcons from "@phosphor-icons/react";
@@ -5534,22 +5535,20 @@ function AnalyticsPage({ onEditSession }) {
       <style>{`
         @keyframes aa-bar-grow { from { transform:scaleY(0); opacity:0; } to { transform:scaleY(1); opacity:1; } }
         .aa-bar { transform-origin:bottom; animation:aa-bar-grow 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
-        .aa-bar:nth-child(1){ animation-delay:0.00s; }
-        .aa-bar:nth-child(2){ animation-delay:0.07s; }
-        .aa-bar:nth-child(3){ animation-delay:0.14s; }
-        .aa-bar:nth-child(4){ animation-delay:0.21s; }
-        .aa-bar:nth-child(5){ animation-delay:0.28s; }
-        .aa-bar:nth-child(6){ animation-delay:0.35s; }
+        .aa-bar:nth-child(1){ animation-delay:0.00s; } .aa-bar:nth-child(2){ animation-delay:0.07s; }
+        .aa-bar:nth-child(3){ animation-delay:0.14s; } .aa-bar:nth-child(4){ animation-delay:0.21s; }
+        .aa-bar:nth-child(5){ animation-delay:0.28s; } .aa-bar:nth-child(6){ animation-delay:0.35s; }
         .aa-bar:nth-child(7){ animation-delay:0.42s; }
         .aa-bar-wrap:hover .aa-bar-tooltip { opacity:1; transform:translateY(0); }
         .aa-bar-tooltip { opacity:0; transform:translateY(4px); transition:all .15s; pointer-events:none; }
-        .aa-chart-card { display:flex; flex-direction:row; align-items:stretch; gap:0; }
-        .aa-chart-stat { width:140px; flex-shrink:0; border-right:1px solid; padding-right:20px; margin-right:20px; display:flex; flex-direction:column; justify-content:center; }
-        .aa-chart-bars { flex:1; min-width:0; }
+        .aa-chart-desktop { display:flex; flex-direction:row; align-items:stretch; gap:0; }
+        .aa-chart-mobile  { display:none; }
+        .aa-chart-stat { width:160px; flex-shrink:0; border-right:1px solid; padding-right:24px; margin-right:24px; display:flex; flex-direction:column; justify-content:center; }
+        .aa-chart-line { flex:1; min-width:0; }
         @media(max-width:640px){
-          .aa-chart-card  { flex-direction:column; gap:16px; }
-          .aa-chart-stat  { width:100%; border-right:none; padding-right:0; margin-right:0; border-bottom:1px solid; padding-bottom:14px; margin-bottom:0; flex-direction:row; align-items:center; justify-content:space-between; }
-          .aa-chart-bars  { width:100%; }
+          .aa-chart-desktop { display:none !important; }
+          .aa-chart-mobile  { display:flex !important; flex-direction:column; gap:16px; }
+          .aa-chart-stat-m  { width:100%; border-bottom:1px solid; padding-bottom:14px; margin-bottom:0; flex-direction:row; align-items:center; justify-content:space-between; display:flex; }
         }
       `}</style>
       {(() => {
@@ -5558,51 +5557,115 @@ function AnalyticsPage({ onEditSession }) {
           : range === "28d"
           ? [{v:82,l:"W1"},{v:140,l:"W2"},{v:195,l:"W3"},{v:280,l:"W4"}]
           : [{v:180,l:"Dec"},{v:260,l:"Jan"},{v:350,l:"Feb"},{v:420,l:"Mar"}];
+        const lineData = TREND[range];
         const maxV = Math.max(...barData.map(d => d.v));
+        const maxL = Math.max(...lineData.map(d => d.v));
+        const minL = Math.min(...lineData.map(d => d.v));
+
+        /* SVG line/area chart helpers */
+        const W = 600, H = 130, PAD = { t:16, r:8, b:28, l:36 };
+        const cw = W - PAD.l - PAD.r;
+        const ch = H - PAD.t - PAD.b;
+        const xOf = i => PAD.l + (i / (lineData.length - 1)) * cw;
+        const yOf = v => PAD.t + ch - ((v - minL) / (maxL - minL || 1)) * ch;
+        /* smooth cubic bezier path */
+        const pts = lineData.map((d,i) => [xOf(i), yOf(d.v)]);
+        const d = pts.reduce((acc,[x,y],i) => {
+          if (i === 0) return `M${x},${y}`;
+          const [px,py] = pts[i-1];
+          const cpx = (px+x)/2;
+          return `${acc} C${cpx},${py} ${cpx},${y} ${x},${y}`;
+        }, "");
+        const area = `${d} L${pts[pts.length-1][0]},${PAD.t+ch} L${PAD.l},${PAD.t+ch} Z`;
+
+        /* Y-axis grid lines */
+        const yTicks = [0, 0.25, 0.5, 0.75, 1].map(r => ({
+          v: Math.round(minL + r*(maxL-minL)),
+          y: PAD.t + ch - r*ch,
+        }));
+
+        /* X-axis labels: show first, middle, last */
+        const xLabels = lineData.length <= 7
+          ? lineData.map((d,i) => ({ l:d.label, x:xOf(i) }))
+          : [0, Math.floor((lineData.length-1)/2), lineData.length-1].map(i => ({ l:lineData[i].label, x:xOf(i) }));
+
         return (
           <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"20px 20px 16px", marginBottom:14, boxShadow:"0 1px 4px rgba(0,0,0,0.04)" }}>
-            {/* Card header */}
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
               <div>
                 <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.4, textTransform:"uppercase", marginBottom:2 }}>Views over time</div>
                 <div style={{ fontSize:11, color:C.gray400 }}>{activeRange.dates}</div>
               </div>
             </div>
 
-            <div className="aa-chart-card">
-              {/* Stat side */}
+            {/* ── DESKTOP: line/area chart ── */}
+            <div className="aa-chart-desktop">
               <div className="aa-chart-stat" style={{ borderColor:C.gray100 }}>
-                <div>
-                  <div style={{ fontSize:32, fontWeight:900, color:C.gray900, lineHeight:1, letterSpacing:-1 }}>
-                    {stat.views.toLocaleString()}
-                  </div>
-                  <div style={{ fontSize:12, color:C.gray500, marginTop:3, fontWeight:500 }}>total views</div>
-                </div>
-                <div style={{ display:"flex", alignItems:"center", gap:5, marginTop:10 }}>
+                <div style={{ fontSize:36, fontWeight:900, color:C.gray900, lineHeight:1, letterSpacing:-1 }}>{stat.views.toLocaleString()}</div>
+                <div style={{ fontSize:12, color:C.gray500, marginTop:4, fontWeight:500 }}>total views</div>
+                <div style={{ display:"inline-flex", alignItems:"center", gap:4, marginTop:10, background:"rgba(16,185,129,0.10)", borderRadius:6, padding:"3px 8px" }}>
+                  <Icon name="trend-up" size={11} color="#10b981"/>
+                  <span style={{ fontSize:12, fontWeight:700, color:"#10b981" }}>{stat.viewsDelta}</span>
                 </div>
               </div>
+              <div className="aa-chart-line">
+                <svg viewBox={`0 0 ${W} ${H}`} style={{ width:"100%", height:H, display:"block", overflow:"visible" }}>
+                  <defs>
+                    <linearGradient id="aa-grad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={C.primary} stopOpacity="0.18"/>
+                      <stop offset="100%" stopColor={C.primary} stopOpacity="0"/>
+                    </linearGradient>
+                  </defs>
+                  {/* Grid lines */}
+                  {yTicks.map((t,i) => (
+                    <g key={i}>
+                      <line x1={PAD.l} y1={t.y} x2={W-PAD.r} y2={t.y} stroke={C.gray100} strokeWidth="1"/>
+                      <text x={PAD.l-6} y={t.y+4} textAnchor="end" fontSize="10" fill={C.gray400} fontFamily="Inter,sans-serif">{t.v >= 1000 ? `${(t.v/1000).toFixed(t.v%1000===0?0:1)}k` : t.v}</text>
+                    </g>
+                  ))}
+                  {/* Area fill */}
+                  <path d={area} fill="url(#aa-grad)"/>
+                  {/* Line */}
+                  <path d={d} fill="none" stroke={C.primary} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  {/* Data points */}
+                  {pts.map(([x,y],i) => (
+                    <g key={i}>
+                      <circle cx={x} cy={y} r="4" fill={C.white} stroke={C.primary} strokeWidth="2.5"/>
+                      <title>{lineData[i].label}: {lineData[i].v}</title>
+                    </g>
+                  ))}
+                  {/* X labels */}
+                  {xLabels.map((l,i) => (
+                    <text key={i} x={l.x} y={H-4} textAnchor="middle" fontSize="10" fill={C.gray400} fontFamily="Inter,sans-serif">{l.l}</text>
+                  ))}
+                </svg>
+              </div>
+            </div>
 
-              {/* Bar chart side */}
-              <div className="aa-chart-bars">
-                <div key={range} style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", gap:6, height:110 }}>
-                  {barData.map((d, i) => {
-                    const pct = maxV > 0 ? Math.max((d.v / maxV) * 100, 8) : 8;
-                    const isMax = d.v === maxV;
-                    return (
-                      <div key={i} className="aa-bar-wrap" style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"flex-end", gap:5, height:"100%", position:"relative" }}>
-                        <div className="aa-bar-tooltip" style={{ position:"absolute", top:-26, background:C.gray900, color:"#fff", fontSize:10, fontWeight:700, borderRadius:5, padding:"3px 6px", whiteSpace:"nowrap" }}>
-                          {d.v.toLocaleString()}
-                        </div>
-                        <div className="aa-bar" style={{
-                          width:"100%", borderRadius:"5px 5px 3px 3px",
-                          background: isMax ? C.primary : "#b8ccf6",
-                          height:`${pct}%`,
-                        }}/>
-                        <span style={{ fontSize:11, color:C.gray500, fontWeight:600 }}>{d.l}</span>
-                      </div>
-                    );
-                  })}
+            {/* ── MOBILE: bar chart ── */}
+            <div className="aa-chart-mobile">
+              <div className="aa-chart-stat-m" style={{ borderColor:C.gray100 }}>
+                <div>
+                  <div style={{ fontSize:30, fontWeight:900, color:C.gray900, lineHeight:1, letterSpacing:-1 }}>{stat.views.toLocaleString()}</div>
+                  <div style={{ fontSize:12, color:C.gray500, marginTop:3, fontWeight:500 }}>total views</div>
                 </div>
+                <div style={{ display:"inline-flex", alignItems:"center", gap:4, background:"rgba(16,185,129,0.10)", borderRadius:6, padding:"4px 10px" }}>
+                  <Icon name="trend-up" size={11} color="#10b981"/>
+                  <span style={{ fontSize:12, fontWeight:700, color:"#10b981" }}>{stat.viewsDelta}</span>
+                </div>
+              </div>
+              <div key={range} style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", gap:6, height:100 }}>
+                {barData.map((d, i) => {
+                  const pct = maxV > 0 ? Math.max((d.v / maxV) * 100, 8) : 8;
+                  const isMax = d.v === maxV;
+                  return (
+                    <div key={i} className="aa-bar-wrap" style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"flex-end", gap:5, height:"100%", position:"relative" }}>
+                      <div className="aa-bar-tooltip" style={{ position:"absolute", top:-22, background:C.gray900, color:"#fff", fontSize:10, fontWeight:700, borderRadius:5, padding:"3px 6px", whiteSpace:"nowrap" }}>{d.v}</div>
+                      <div className="aa-bar" style={{ width:"100%", borderRadius:"5px 5px 3px 3px", background: isMax ? C.primary : "#b8ccf6", height:`${pct}%` }}/>
+                      <span style={{ fontSize:11, color:C.gray500, fontWeight:600 }}>{d.l}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -11010,6 +11073,32 @@ export default function App() {
 
   useEffect(() => { try { localStorage.setItem("sessions", JSON.stringify(sessions)); } catch {} }, [sessions]);
   useEffect(() => { try { localStorage.setItem("adminSessions", JSON.stringify(adminSessions)); } catch {} }, [adminSessions]);
+
+  // Fetch admin-published sessions from Supabase and merge into sessions list
+  useEffect(() => {
+    supabase.from("sessions").select("*").eq("status", "not-started").then(({ data, error }) => {
+      if (error || !data || data.length === 0) return;
+      setSessions(prev => {
+        const existingIds = new Set(prev.map(s => s.id));
+        const newOnes = data
+          .filter(s => !existingIds.has(s.id))
+          .map(s => ({
+            id: s.id, title: s.title, category: s.category,
+            instructor: s.instructor, instructorBio: s.instructor_bio || "",
+            duration: s.duration || "60 mins", resources: s.resources || 0,
+            progress: 0, status: "not-started", description: s.description || "",
+            vimeoUrl: s.vimeo_url || "", lessons: s.lessons || [],
+          }));
+        return newOnes.length > 0 ? [...prev, ...newOnes] : prev;
+      });
+      // Add to Spring 2026 bucket if no date set
+      setSpring2026Ids(prev => {
+        const existing = new Set(prev);
+        const toAdd = data.filter(s => !s.available_from && !existing.has(s.id)).map(s => s.id);
+        return toAdd.length > 0 ? [...prev, ...toAdd] : prev;
+      });
+    });
+  }, []);
 
   function addAdminSession(form, publish, sections) {
     const newId = Date.now();

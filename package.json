@@ -13,6 +13,7 @@
     "@phosphor-icons/react": "^2.1.10",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
+    "@supabase/supabase-js": "^2.104.0",
     "agentation": "^3.0.2",
     "framer-motion": "^12.38.0",
     "html2canvas": "^1.4.1",
