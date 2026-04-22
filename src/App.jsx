@@ -11123,39 +11123,37 @@ export default function App() {
   useEffect(() => { try { localStorage.setItem("sessions", JSON.stringify(sessions)); } catch {} }, [sessions]);
   useEffect(() => { try { localStorage.setItem("adminSessions", JSON.stringify(adminSessions)); } catch {} }, [adminSessions]);
 
-  // Fetch admin-published sessions from Supabase and merge into sessions list
+  // Fetch admin-published sessions from Supabase — always refresh to pick up date changes
   useEffect(() => {
     supabase.from("sessions").select("*").then(({ data, error }) => {
       if (error || !data || data.length === 0) return;
-      setSessions(prev => {
-        const existingIds = new Set(prev.map(s => s.id));
-        const newOnes = data
-          .filter(s => !existingIds.has(s.id))
-          .map(s => {
-            const state = getSessionState(s); // "live" | "upcoming" | "past"
-            return {
-              id: s.id, title: s.title, category: s.category,
-              instructor: s.instructor || "", instructorBio: s.instructor_bio || "",
-              duration: s.duration || "60 mins", resources: s.resources || 0,
-              progress: 0, status: "not-started",
-              description: s.description || "",
-              vimeoUrl: s.vimeo_url || "",
-              lessons: s.lessons || [],
-              availableFrom: s.available_from || null,
-              availableTo: s.available_to || null,
-              // locked = past (requires subscription) | upcoming | live (watchable)
-              sessionState: state,
-              locked: state === "past",
-            };
-          });
-        return newOnes.length > 0 ? [...prev, ...newOnes] : prev;
+
+      const toSession = s => ({
+        id: s.id, title: s.title, category: s.category,
+        instructor: s.instructor || "", instructorBio: s.instructor_bio || "",
+        duration: s.duration || "60 mins", resources: s.resources || 0,
+        progress: 0, status: "not-started",
+        description: s.description || "",
+        vimeoUrl: s.vimeo_url || "",
+        lessons: s.lessons || [],
+        availableFrom: s.available_from || null,
+        availableTo: s.available_to || null,
       });
-      // Add to Spring 2026 bucket if no date set (live with no range)
+
+      setSessions(prev => {
+        const supabaseIds = new Set(data.map(s => s.id));
+        // Update any existing sessions that came from Supabase (refresh dates/content)
+        const updated = prev.map(s => supabaseIds.has(s.id) ? { ...toSession(data.find(d => d.id === s.id)), progress: s.progress, status: s.status } : s);
+        // Add brand-new ones not yet in the list
+        const existingIds = new Set(updated.map(s => s.id));
+        const newOnes = data.filter(s => !existingIds.has(s.id)).map(toSession);
+        return newOnes.length > 0 ? [...updated, ...newOnes] : updated;
+      });
+
+      // Add to Spring 2026 bucket if no date set
       setSpring2026Ids(prev => {
         const existing = new Set(prev);
-        const toAdd = data
-          .filter(s => !s.available_from && !existing.has(s.id))
-          .map(s => s.id);
+        const toAdd = data.filter(s => !s.available_from && !existing.has(s.id)).map(s => s.id);
         return toAdd.length > 0 ? [...prev, ...toAdd] : prev;
       });
     });
@@ -11379,12 +11377,30 @@ export default function App() {
                       {s.description}
                     </div>
                     <div style={{ display:"flex", alignItems:"center", gap:12, marginTop:"auto", paddingTop:12 }}>
-                      <button onClick={e=>{ e.stopPropagation(); setShowPricingOverlay(true); }}
-                        style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"7px 14px", background:C.primary, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit", transition:"background 0.15s" }}
-                        onMouseEnter={e=>e.currentTarget.style.background=C.primaryDark}
-                        onMouseLeave={e=>e.currentTarget.style.background=C.primary}>
-                        Subscribe
-                      </button>
+                      {(() => {
+                        const state = getSessionState(s);
+                        if (state === "live") return (
+                          <button onClick={e=>{ e.stopPropagation(); openSession(s, "past-season"); }}
+                            style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"7px 14px", background:C.primary, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit", transition:"background 0.15s" }}
+                            onMouseEnter={e=>e.currentTarget.style.background=C.primaryDark}
+                            onMouseLeave={e=>e.currentTarget.style.background=C.primary}>
+                            <Icon name="play" size={13} color="#fff"/> Watch Now
+                          </button>
+                        );
+                        if (state === "upcoming") return (
+                          <span style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"7px 14px", background:C.gray100, color:C.gray500, borderRadius:7, fontSize:13, fontWeight:700, fontFamily:"inherit" }}>
+                            <Icon name="clock" size={13} color={C.gray500}/> Coming Soon
+                          </span>
+                        );
+                        return (
+                          <button onClick={e=>{ e.stopPropagation(); setShowPricingOverlay(true); }}
+                            style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"7px 14px", background:C.primary, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit", transition:"background 0.15s" }}
+                            onMouseEnter={e=>e.currentTarget.style.background=C.primaryDark}
+                            onMouseLeave={e=>e.currentTarget.style.background=C.primary}>
+                            Subscribe
+                          </button>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
