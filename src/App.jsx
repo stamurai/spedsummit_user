@@ -1300,54 +1300,56 @@ function ReferFriendsModal({ onClose, userName }) {
     setTimeout(() => setSent(false), 2500);
   }
 
+  const isMobile = window.innerWidth <= 480;
+
   return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", zIndex:900, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", zIndex:900, display:"flex", alignItems:isMobile?"flex-end":"center", justifyContent:"center", padding: isMobile ? 0 : 16 }}
       onClick={onClose}>
-      <div style={{ background: dark ? "#1e2647" : "#fff", borderRadius:20, width:"100%", maxWidth:460, boxShadow:"0 24px 60px rgba(0,0,0,0.3)", overflow:"hidden", position:"relative" }}
+      <div style={{ background: dark ? "#1e2647" : "#fff", borderRadius: isMobile ? "20px 20px 0 0" : 20, width:"100%", maxWidth: isMobile ? "100%" : 460, boxShadow:"0 24px 60px rgba(0,0,0,0.3)", overflow:"hidden", position:"relative" }}
         onClick={e => e.stopPropagation()}>
 
         {/* Close */}
-        <button onClick={onClose} style={{ position:"absolute", top:14, right:14, width:28, height:28, borderRadius:8, border:`1px solid ${dark?"rgba(255,255,255,0.12)":C.gray200}`, background:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <button onClick={onClose} style={{ position:"absolute", top:14, right:14, width:32, height:32, borderRadius:8, border:`1px solid ${dark?"rgba(255,255,255,0.12)":C.gray200}`, background:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
           <Icon name="x" size={14} color={dark ? "rgba(255,255,255,0.5)" : C.gray500}/>
         </button>
 
         {/* Header */}
-        <div style={{ padding:"32px 28px 20px", textAlign:"center", borderBottom:`1px solid ${dark?"rgba(255,255,255,0.08)":C.gray100}` }}>
-          <div style={{ width:56, height:56, borderRadius:16, background:"rgba(54,153,255,0.12)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
-            <Icon name="gift" size={28} color={C.primary}/>
+        <div style={{ padding: isMobile ? "24px 20px 16px" : "32px 28px 20px", textAlign:"center", borderBottom:`1px solid ${dark?"rgba(255,255,255,0.08)":C.gray100}` }}>
+          <div style={{ width:48, height:48, borderRadius:14, background:"rgba(54,153,255,0.12)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 12px" }}>
+            <Icon name="gift" size={24} color={C.primary}/>
           </div>
-          <div style={{ fontSize:20, fontWeight:800, color: dark ? "#fff" : C.gray900, marginBottom:8 }}>Refer Friends, Get Pro Free</div>
-          <div style={{ fontSize:13, color: dark ? "rgba(255,255,255,0.55)" : C.gray500, lineHeight:1.6, maxWidth:320, margin:"0 auto" }}>
+          <div style={{ fontSize: isMobile ? 18 : 20, fontWeight:800, color: dark ? "#fff" : C.gray900, marginBottom:6 }}>Refer Friends, Get Pro Free</div>
+          <div style={{ fontSize:13, color: dark ? "rgba(255,255,255,0.55)" : C.gray500, lineHeight:1.55, maxWidth:300, margin:"0 auto" }}>
             Invite a friend to SPED Summit. When they join, <strong style={{ color:C.primary }}>you both get 6 months of Pro</strong> — or refer 3+ friends for a full year free.
           </div>
         </div>
 
         {/* Body */}
-        <div style={{ padding:"24px 28px" }}>
+        <div style={{ padding: isMobile ? "20px 16px 28px" : "24px 28px" }}>
 
           {/* Copy link */}
-          <div style={{ fontSize:12, fontWeight:700, color: dark ? "rgba(255,255,255,0.5)" : C.gray500, marginBottom:8, letterSpacing:.5 }}>YOUR INVITATION LINK</div>
-          <div style={{ display:"flex", gap:8, marginBottom:20 }}>
-            <div style={{ flex:1, padding:"10px 14px", background: dark ? "rgba(255,255,255,0.06)" : C.gray50, border:`1px solid ${dark?"rgba(255,255,255,0.1)":C.gray200}`, borderRadius:10, fontSize:12, color: dark ? "rgba(255,255,255,0.45)" : C.gray500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+          <div style={{ fontSize:11, fontWeight:700, color: dark ? "rgba(255,255,255,0.5)" : C.gray500, marginBottom:8, letterSpacing:.5 }}>YOUR INVITATION LINK</div>
+          <div style={{ display:"flex", gap:8, marginBottom:18 }}>
+            <div style={{ flex:1, padding:"11px 12px", background: dark ? "rgba(255,255,255,0.06)" : C.gray50, border:`1px solid ${dark?"rgba(255,255,255,0.1)":C.gray200}`, borderRadius:10, fontSize:12, color: dark ? "rgba(255,255,255,0.45)" : C.gray500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
               {refLink}
             </div>
             <button onClick={copyLink}
-              style={{ padding:"10px 18px", background: copied ? C.success : C.primary, color:"#fff", border:"none", borderRadius:10, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, transition:"background .2s" }}>
+              style={{ padding:"11px 16px", background: copied ? C.success : C.primary, color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, transition:"background .2s", minHeight:44 }}>
               <Icon name="copy" size={13} color="#fff"/>
               {copied ? "Copied!" : "Copy"}
             </button>
           </div>
 
           {/* Email invite */}
-          <div style={{ fontSize:12, fontWeight:700, color: dark ? "rgba(255,255,255,0.5)" : C.gray500, marginBottom:8, letterSpacing:.5 }}>EMAIL YOUR INVITATION</div>
-          <div style={{ display:"flex", gap:8, marginBottom:24 }}>
+          <div style={{ fontSize:11, fontWeight:700, color: dark ? "rgba(255,255,255,0.5)" : C.gray500, marginBottom:8, letterSpacing:.5 }}>EMAIL YOUR INVITATION</div>
+          <div style={{ display:"flex", gap:8, marginBottom:20 }}>
             <input
               type="email" placeholder="friend@email.com" value={email}
               onChange={e => setEmail(e.target.value)}
               onKeyDown={e => e.key === "Enter" && sendInvite()}
-              style={{ flex:1, padding:"10px 14px", background: dark ? "rgba(255,255,255,0.06)" : C.gray50, border:`1px solid ${dark?"rgba(255,255,255,0.1)":C.gray200}`, borderRadius:10, fontSize:13, color: dark ? "#fff" : C.gray900, outline:"none" }}/>
+              style={{ flex:1, padding:"11px 12px", background: dark ? "rgba(255,255,255,0.06)" : C.gray50, border:`1px solid ${dark?"rgba(255,255,255,0.1)":C.gray200}`, borderRadius:10, fontSize:14, color: dark ? "#fff" : C.gray900, outline:"none", minHeight:44 }}/>
             <button onClick={sendInvite}
-              style={{ padding:"10px 18px", background: sent ? C.success : C.primary, color:"#fff", border:"none", borderRadius:10, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, transition:"background .2s" }}>
+              style={{ padding:"11px 16px", background: sent ? C.success : C.primary, color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, transition:"background .2s", minHeight:44 }}>
               <Icon name={sent ? "check" : "paper-plane-tilt"} size={13} color="#fff"/>
               {sent ? "Sent!" : "Send"}
             </button>
@@ -5073,7 +5075,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
           {label:"Total Revenue",      val:"$4,210", delta:"+8% vs prev"},
         ].map(m=>(
           <div key={m.label} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"16px" }}>
-            <span style={{ display:"inline-block", fontSize:11, fontWeight:700, color:C.gray500, background:C.gray100, padding:"2px 6px", borderRadius:6, marginBottom:6 }}>{m.delta}</span>
+            <span style={{ display:"inline-block", fontSize:11, fontWeight:700, color:C.gray500, background:C.gray200, padding:"2px 6px", borderRadius:6, marginBottom:6 }}>{m.delta}</span>
             <div style={{ fontSize:26, fontWeight:900, color:C.gray900, lineHeight:1, marginBottom:4 }}>{m.val}</div>
             <div style={{ fontSize:13, fontWeight:600, color:C.gray600, lineHeight:1.5 }}>{m.label}</div>
           </div>
@@ -8026,7 +8028,7 @@ function LegalModal({ type, onClose }) {
 
 function AuthModal({ onClose, onLogin }) {
   // step: "role-select" | "user-auth" | "admin-auth"
-  const [step,       setStep]      = useState("role-select");
+  const [step,       setStep]      = useState("user-auth");
   const [mode,       setMode]      = useState("signup");
   const [email,      setEmail]     = useState("");
   const [password,   setPassword]  = useState("");
@@ -8077,13 +8079,6 @@ function AuthModal({ onClose, onLogin }) {
                 <div style={{ fontSize:12, color:"#94a3b8", marginTop:2 }}>Create a new learner account</div>
               </button>
 
-              <button onClick={() => { setStep("admin-auth"); setMode("login"); }}
-                style={{ width:"100%", padding:"14px 18px", borderRadius:10, border:"1px solid #e2e8f0", background:"#fff", cursor:"pointer", textAlign:"left", fontFamily:"inherit", transition:"all .15s" }}
-                onMouseEnter={e=>{ e.currentTarget.style.borderColor="#2563eb"; e.currentTarget.style.background="#f8faff"; }}
-                onMouseLeave={e=>{ e.currentTarget.style.borderColor="#e2e8f0"; e.currentTarget.style.background="#fff"; }}>
-                <div style={{ fontSize:14, fontWeight:700, color:"#0f172a" }}>Continue as Admin</div>
-                <div style={{ fontSize:12, color:"#94a3b8", marginTop:2 }}>Sign in to manage the platform</div>
-              </button>
             </div>
 
             <p style={{ textAlign:"center", fontSize:12, color:"#94a3b8", margin:"24px 0 0", lineHeight:1.6 }}>
@@ -8100,11 +8095,12 @@ function AuthModal({ onClose, onLogin }) {
           <>
 
             <div style={{ padding: isAdmin ? "28px 32px 28px" : "24px 32px 28px" }}>
-              {/* Back */}
-              <button onClick={() => setStep("role-select")}
-                style={{ background:"none", border:"none", cursor:"pointer", color:"#64748b", fontSize:13, fontWeight:500, padding:"0 0 20px", display:"flex", alignItems:"center", gap:4, fontFamily:"inherit" }}>
-                <Icon name="caret-left" size={12} color="#64748b"/> Back
-              </button>
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
+                <img src="/Container.png" alt="SPED Summit" style={{ height:20, display:"block" }}/>
+                <button onClick={onClose} style={{ width:28, height:28, borderRadius:7, border:"1px solid #e2e8f0", background:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <Icon name="x" size={13} color="#64748b"/>
+                </button>
+              </div>
 
               <h2 style={{ margin:"0 0 6px", fontSize:18, fontWeight:800, color:"#0f172a" }}>{isAdmin ? "Admin Sign In" : "Continue with email"}</h2>
               {!isAdmin && <p style={{ margin:"0 0 20px", fontSize:13, color:"#94a3b8" }}>New users will be registered automatically.</p>}
@@ -10980,8 +10976,8 @@ function LandingPageV2({ onGetStarted }) {
 ───────────────────────────────────────────────────────────────────────────── */
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => sessionStorage.getItem("loggedIn") === "1");
-  const [page, setPage] = useState(() => sessionStorage.getItem("page") || "dashboard");
-  const [isAdmin, setIsAdmin] = useState(() => sessionStorage.getItem("isAdmin") === "1");
+  const [page, setPage] = useState(() => { const p = sessionStorage.getItem("page"); return (p && !p.startsWith("admin")) ? p : "dashboard"; });
+  const [isAdmin] = useState(false);
   const [isDark, setIsDark] = useState(() => { const h = new Date().getHours(); return h >= 19 || h < 6; });
   const [landingV, setLandingV] = useState(1);
   const [activeSession,   setActiveSession]   = useState(null);
@@ -11144,15 +11140,7 @@ export default function App() {
     setPage("session-detail");
   }
 
-  function toggleAdmin() {
-    const next = !isAdmin;
-    setIsAdmin(next);
-    sessionStorage.setItem("isAdmin", next ? "1" : "0");
-    const p = next ? "admin-overview" : "dashboard";
-    setPage(p);
-    sessionStorage.setItem("page", p);
-    setActiveSession(null);
-  }
+  function toggleAdmin() { /* user-only app — no toggle */ }
 
   const quizProps = {
     quizStates,
@@ -11272,12 +11260,10 @@ export default function App() {
 
   if (page === "landing" || !isLoggedIn) {
     const handleGetStarted = (sessionId, role = "user") => {
-      const admin = role === "admin";
       setIsLoggedIn(true);
       sessionStorage.setItem("loggedIn", "1");
-      setIsAdmin(admin);
-      sessionStorage.setItem("isAdmin", admin ? "1" : "0");
-      if (sessionId && !admin) enroll(sessionId);
+      sessionStorage.setItem("isAdmin", "0");
+      if (sessionId) enroll(sessionId);
       // Stay on landing — profile icon will appear in nav
     };
     const handleGoToDashboard = () => {
@@ -11369,7 +11355,7 @@ export default function App() {
           />}
         </div>
 
-        <div ref={scrollContainerRef} className={`app-scroll-area${(page==="profile"||page==="session-detail"||page==="past-season"||activeSession||sessionsDeepLink)?" no-bottom-nav":""}`} style={{ flex:1, overflowY:"auto", overflowX:"clip" }}>{renderPage()}{page !== "profile" && <Footer onNavigate={nav}/>}</div>
+        <div ref={scrollContainerRef} className={`app-scroll-area${(page==="profile"||page==="session-detail"||page==="past-season"||activeSession||sessionsDeepLink)?" no-bottom-nav":""}`} style={{ flex:1, overflowY:"auto", overflowX:"clip" }}>{renderPage()}{!isAdmin && page !== "profile" && <Footer onNavigate={nav}/>}</div>
       </div>
 
       {/* Mobile bottom nav — hidden when drilling into sub-pages */}
