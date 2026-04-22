@@ -11076,7 +11076,7 @@ export default function App() {
 
   // Fetch admin-published sessions from Supabase and merge into sessions list
   useEffect(() => {
-    supabase.from("sessions").select("*").eq("status", "not-started").then(({ data, error }) => {
+    supabase.from("sessions").select("*").then(({ data, error }) => {
       if (error || !data || data.length === 0) return;
       setSessions(prev => {
         const existingIds = new Set(prev.map(s => s.id));
