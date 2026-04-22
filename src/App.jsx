@@ -252,13 +252,26 @@ const THUMB_PHOTOS = [
   "photo-1544027993-37dbfe43562a", // communication/AAC
 ];
 
+function extractVimeoId(url) {
+  if (!url) return null;
+  if (/^\d+$/.test(url.trim())) return url.trim();
+  const match = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  return match ? match[1] : null;
+}
+function extractVimeoHash(url) {
+  if (!url) return null;
+  // unlisted videos: vimeo.com/VIDEO_ID/HASH
+  const match = url.match(/vimeo\.com\/\d+\/([a-f0-9]+)/);
+  return match ? match[1] : null;
+}
+
 function useVimeoDuration(vimeoUrl) {
   const [dur, setDur] = useState(null);
   useEffect(() => {
     if (!vimeoUrl) return;
-    const match = vimeoUrl.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-    if (!match) return;
-    fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${match[1]}`)
+    const id = extractVimeoId(vimeoUrl);
+    if (!id) return;
+    fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${id}`)
       .then(r => r.json())
       .then(d => {
         if (!d.duration) return;
@@ -283,8 +296,8 @@ function LessonDuration({ vimeoUrl, fallback }) {
 function SessionThumb({ id = 1, height = 160, overlay = false, noPlayHover = false, vimeoUrl }) {
   const photo = THUMB_PHOTOS[(id - 1) % THUMB_PHOTOS.length];
   const fallbackSrc = `https://images.unsplash.com/${photo}?w=640&h=360&fit=crop&auto=format`;
-  const match = vimeoUrl?.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-  const vimeoThumbSrc = match ? `https://vumbnail.com/${match[1]}.jpg` : null;
+  const vimeoId = extractVimeoId(vimeoUrl);
+  const vimeoThumbSrc = vimeoId ? `https://vumbnail.com/${vimeoId}.jpg` : null;
   const [src, setSrc] = useState(vimeoThumbSrc || fallbackSrc);
   useEffect(() => { setSrc(vimeoThumbSrc || fallbackSrc); }, [vimeoUrl]);
   const [hov, setHov] = useState(false);
@@ -3610,8 +3623,7 @@ const SESSION_RESOURCES = {
    SESSION DETAIL (VIDEO EXPERIENCE)
 ───────────────────────────────────────────────────────────────────────────── */
 function VimeoPlayer({ url, onPlay, onPause, onProgress }) {
-  const match = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-  const videoId = match ? match[1] : null;
+  const videoId = extractVimeoId(url);
   const iframeRef = useRef(null);
   const storageKey = videoId ? `vimeo_pos_${videoId}` : null;
   const savedTime = storageKey ? (parseFloat(localStorage.getItem(storageKey)) || 0) : 0;
@@ -3661,7 +3673,8 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress }) {
     );
   }
 
-  const embedUrl = `https://player.vimeo.com/video/${videoId}?autoplay=0&title=0&byline=0&portrait=0&dnt=1&api=1`;
+  const vimeoHash = extractVimeoHash(url);
+  const embedUrl = `https://player.vimeo.com/video/${videoId}${vimeoHash ? `?h=${vimeoHash}&` : "?"}autoplay=0&title=0&byline=0&portrait=0&dnt=1&api=1`;
 
   return (
     <div style={{ position:"absolute", inset:0 }}>
