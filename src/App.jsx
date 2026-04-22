@@ -553,10 +553,21 @@ const SESSION_AVAILABILITY = {
 };
 
 // 'live' | 'upcoming' | 'past' | 'unavailable'
-function getSessionState(sessionId) {
-  const avail = SESSION_AVAILABILITY[sessionId];
-  if (!avail || !avail.availableFrom) return "unavailable";
+// Accepts either a sessionId (looks up SESSION_AVAILABILITY) or a session object with availableFrom/availableTo
+function getSessionState(sessionIdOrObj) {
   const now = new Date();
+  // If passed a session object with its own date fields (Supabase sessions)
+  if (sessionIdOrObj && typeof sessionIdOrObj === "object") {
+    const from = sessionIdOrObj.availableFrom || sessionIdOrObj.available_from;
+    const to   = sessionIdOrObj.availableTo   || sessionIdOrObj.available_to;
+    if (!from) return "live"; // no date set → always available
+    if (to && now > new Date(to)) return "past";
+    if (now < new Date(from)) return "upcoming";
+    return "live";
+  }
+  // Legacy: look up by id
+  const avail = SESSION_AVAILABILITY[sessionIdOrObj];
+  if (!avail || !avail.availableFrom) return "unavailable";
   if (avail.availableTo && now > new Date(avail.availableTo)) return "past";
   if (now < new Date(avail.availableFrom)) return "upcoming";
   return "live";
@@ -564,6 +575,11 @@ function getSessionState(sessionId) {
 
 function isSessionAvailable(sessionId) { return getSessionState(sessionId) === "live"; }
 function isSessionArchived(sessionId)  { return getSessionState(sessionId) === "past"; }
+
+// For Supabase sessions (pass full session object)
+function getSessionStateFromObj(s) { return getSessionState(s); }
+function isSupabaseSessionLive(s)  { return getSessionStateFromObj(s) === "live"; }
+function isSupabaseSessionPast(s)  { return getSessionStateFromObj(s) === "past"; }
 
 const SCHEDULE = [
   { id:1, date:"26th Mar", time:"09:00 AM", type:"OPENING", title:"Mental Health & Teacher Wellness in Special Education", description:"Sarah Habib—Occupational Therapist and founder of The Calm Caterpillar—shares practical, mindfulness-based strategies to support emotional regulation and wellness for both students and educators.", status:"past", cta:"Watch Again", instructor:"Tara Roehl" },
@@ -1830,8 +1846,16 @@ function AvatarStack({ sessionId }) {
   );
 }
 
-function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCertificateClick }) {
-  const cta = getCTA(session);
+function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCertificateClick, onSubscribeClick }) {
+  // For Supabase sessions use their own dates; fallback to static lookup
+  const sessionState = (session.availableFrom || session.available_from)
+    ? getSessionState(session)
+    : getSessionState(session.id);
+  const isLocked   = sessionState === "past";
+  const isUpcoming = sessionState === "upcoming";
+
+  const effectiveSession = isLocked ? { ...session, status: "locked" } : session;
+  const cta = getCTA(effectiveSession);
   const catColors = { MANAGEMENT:{c:"#2563eb",bg:"rgba(37,99,235,0.12)"}, LEADERSHIP:{c:"#7c3aed",bg:"rgba(124,58,237,0.12)"}, COMMUNICATION:{c:"#0ea5e9",bg:"rgba(14,165,233,0.12)"}, TEAMWORK:{c:"#f97316",bg:"rgba(249,115,22,0.12)"}, TECHNOLOGY:{c:"#6490E8",bg:"rgba(100,144,232,0.12)"}, ACCESSIBILITY:{c:"#ec4899",bg:"rgba(236,72,153,0.12)"} };
   const cc = catColors[session.category] || { c:C.primary, bg:"rgba(54,153,255,0.12)" };
 
@@ -1878,9 +1902,9 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
   const cardClickable = !cta.disabled;
 
   function handleCardClick() {
-    if (cardClickable || showAssessmentCTA) {
-      onClick(session);
-    }
+    if (isLocked) { onSubscribeClick?.(); return; }
+    if (isUpcoming) return;
+    if (cardClickable || showAssessmentCTA) onClick(session);
   }
 
   return (
@@ -1906,11 +1930,25 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
           {session.instructorTitle && <div style={{ fontSize:12, color:"rgba(255,255,255,0.7)", marginTop:2 }}>{session.instructorTitle}</div>}
         </div>
         {/* Play overlay on hover */}
-        {session.status !== "locked" && cardHov && (
+        {!isLocked && !isUpcoming && cardHov && (
           <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.15)", pointerEvents:"none" }}>
             <div style={{ width:44, height:44, borderRadius:"50%", background:"rgba(255,255,255,0.22)", backdropFilter:"blur(4px)", border:"2px solid rgba(255,255,255,0.5)", display:"flex", alignItems:"center", justifyContent:"center" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
             </div>
+          </div>
+        )}
+        {/* Locked overlay (past — requires subscription) */}
+        {isLocked && (
+          <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.45)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:6 }}>
+            <Icon name="lock" size={28} color="rgba(255,255,255,0.9)"/>
+            <span style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.8)", letterSpacing:.5 }}>PAST SESSION</span>
+          </div>
+        )}
+        {/* Upcoming overlay */}
+        {isUpcoming && (
+          <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.35)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:6 }}>
+            <Icon name="clock" size={28} color="rgba(255,255,255,0.9)"/>
+            <span style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.8)", letterSpacing:.5 }}>UPCOMING</span>
           </div>
         )}
         {/* Badges */}
@@ -1920,14 +1958,9 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
             <span style={{ fontSize:11, fontWeight:700, color:"#fff" }}>CERTIFIED</span>
           </div>
         )}
-        {session.status==="completed" && qs !== "passed" && (
+        {session.status==="completed" && qs !== "passed" && !isLocked && !isUpcoming && (
           <div style={{ position:"absolute", top:12, right:12, width:24, height:24, borderRadius:"50%", background:C.success, display:"flex", alignItems:"center", justifyContent:"center" }}>
             <Icon name="check" size={14} color="#fff"/>
-          </div>
-        )}
-        {session.status==="locked" && (
-          <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <Icon name="lock" size={32} color="rgba(255,255,255,0.9)"/>
           </div>
         )}
       </div>
@@ -1980,7 +2013,23 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
           )}
 
           {/* CTA button */}
-          {assessBtn ? (
+          {isLocked ? (
+            <button onClick={e=>{ e.stopPropagation(); onSubscribeClick?.(); }}
+              style={{ padding:"10px 20px", borderRadius:10, border:"none", background:"#6490E8",
+                       color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer",
+                       display:"inline-flex", alignItems:"center", gap:6, transition:"opacity .15s" }}
+              onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
+              onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+              <Icon name="lock" size={14} color="#fff"/> Subscribe to Watch
+            </button>
+          ) : isUpcoming ? (
+            <button disabled
+              style={{ padding:"10px 20px", borderRadius:10, border:`1px solid ${C.gray200}`,
+                       background:C.gray100, color:C.gray400, fontSize:14, fontWeight:700,
+                       cursor:"not-allowed", display:"inline-flex", alignItems:"center", gap:6 }}>
+              <Icon name="clock" size={14} color={C.gray400}/> Coming Soon
+            </button>
+          ) : assessBtn ? (
             <button onClick={assessBtn.action}
               style={{ padding:"10px 20px", borderRadius:10, border:assessBtn.border,
                        background:assessBtn.bg, color:assessBtn.color,
@@ -11082,19 +11131,31 @@ export default function App() {
         const existingIds = new Set(prev.map(s => s.id));
         const newOnes = data
           .filter(s => !existingIds.has(s.id))
-          .map(s => ({
-            id: s.id, title: s.title, category: s.category,
-            instructor: s.instructor, instructorBio: s.instructor_bio || "",
-            duration: s.duration || "60 mins", resources: s.resources || 0,
-            progress: 0, status: "not-started", description: s.description || "",
-            vimeoUrl: s.vimeo_url || "", lessons: s.lessons || [],
-          }));
+          .map(s => {
+            const state = getSessionState(s); // "live" | "upcoming" | "past"
+            return {
+              id: s.id, title: s.title, category: s.category,
+              instructor: s.instructor || "", instructorBio: s.instructor_bio || "",
+              duration: s.duration || "60 mins", resources: s.resources || 0,
+              progress: 0, status: "not-started",
+              description: s.description || "",
+              vimeoUrl: s.vimeo_url || "",
+              lessons: s.lessons || [],
+              availableFrom: s.available_from || null,
+              availableTo: s.available_to || null,
+              // locked = past (requires subscription) | upcoming | live (watchable)
+              sessionState: state,
+              locked: state === "past",
+            };
+          });
         return newOnes.length > 0 ? [...prev, ...newOnes] : prev;
       });
-      // Add to Spring 2026 bucket if no date set
+      // Add to Spring 2026 bucket if no date set (live with no range)
       setSpring2026Ids(prev => {
         const existing = new Set(prev);
-        const toAdd = data.filter(s => !s.available_from && !existing.has(s.id)).map(s => s.id);
+        const toAdd = data
+          .filter(s => !s.available_from && !existing.has(s.id))
+          .map(s => s.id);
         return toAdd.length > 0 ? [...prev, ...toAdd] : prev;
       });
     });
