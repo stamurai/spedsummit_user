@@ -4376,14 +4376,20 @@ function ProfileField({ label, children }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    PROFILE PAGE
 ───────────────────────────────────────────────────────────────────────────── */
-function ProfilePage({ toast, userName = "Alex Johnson", onNameChange, onBack }) {
+function ProfilePage({ toast, userName = "Alex Johnson", userEmail = "", userAvatar = null, onNameChange, onBack }) {
   const [activeSection, setActiveSection] = useState("personal");
-  const [form, setForm] = useState({ name:userName, title:"Special Education Teacher", email:"alex.johnson@school.edu", phone:"+1 (555) 123-4567", language:"English (US)" });
+  const [form, setForm] = useState({ name:userName, title:"", email:userEmail, phone:"", language:"English (US)" });
   const [notifEmail,   setNotifEmail]   = useState(true);
   const [notifMentor,  setNotifMentor]  = useState(true);
   const [publicProfile,setPublicProfile]= useState(false);
   const [twoFA,        setTwoFA]        = useState(true);
-  const [photoUrl,     setPhotoUrl]     = useState(null);
+  const [photoUrl,     setPhotoUrl]     = useState(userAvatar);
+
+  // Sync if auth data loads after mount
+  useEffect(() => {
+    setForm(f => ({ ...f, name: userName, email: userEmail }));
+    if (userAvatar) setPhotoUrl(userAvatar);
+  }, [userName, userEmail, userAvatar]);
 
   const photoInputRef = useRef(null);
 
@@ -11096,8 +11102,11 @@ export default function App() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session) {
-        const name = session.user.user_metadata?.full_name || session.user.email || "User";
+        const meta = session.user.user_metadata || {};
+        const name = meta.full_name || meta.name || session.user.email || "User";
         setUserName(name.split(" ")[0] || name);
+        setUserEmail(session.user.email || "");
+        setUserAvatar(meta.avatar_url || meta.picture || null);
         setIsLoggedIn(true);
         sessionStorage.setItem("loggedIn", "1");
         const p = sessionStorage.getItem("page");
@@ -11122,6 +11131,8 @@ export default function App() {
   /* ── Enrolled sessions (pre-seeded with sessions that have progress) ── */
   const [enrolledIds, setEnrolledIds] = useState(new Set([1, 2, 3]));
   const [userName, setUserName] = useState("Alex Johnson");
+  const [userEmail, setUserEmail] = useState("");
+  const [userAvatar, setUserAvatar] = useState(null);
   const [scheduleRegistrations, setScheduleRegistrations] = useState({});
   const [sessionsDeepLink, setSessionsDeepLink] = useState(null);
   const [pastSeasonPageId, setPastSeasonPageId] = useState(null);
@@ -11440,7 +11451,7 @@ export default function App() {
     if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick} userName={userName}/>;
     if (page==="past-sessions")  return <PastSessionsTab onOpenSeason={(id) => { setPastSeasonPageId(id); setPastSeasonOrigin("past-sessions"); nav("past-season"); }} />;
     if (page==="notifications")  return <NotificationsPage />;
-    if (page==="profile")   return <ProfilePage toast={toast} userName={userName} onNameChange={setUserName} onBack={() => nav("dashboard")}/>;
+    if (page==="profile")   return <ProfilePage toast={toast} userName={userName} userEmail={userEmail} userAvatar={userAvatar} onNameChange={setUserName} onBack={() => nav("dashboard")}/>;
     return null;
   }
 
