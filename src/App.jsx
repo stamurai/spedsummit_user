@@ -657,11 +657,7 @@ const ADMIN_SESSIONS_DATA = [
   { id:5, title:"Introduction to Accessibility in SPED", category:"SPED", status:"ARCHIVED", date:"Archived Mar 2026", enrolled:320, availableFrom:"2025-01-01T09:00", availableTo:"2026-03-01T23:59" },
 ];
 
-const COMMUNITY_POSTS_DATA = [
-  { id:1, author:"Tara Roehl", role:"MENTOR", time:"2h ago", title:"The shifting landscape of Design Systems in 2024: Moving beyond tokens.", body:"I've been noticing a trend where teams focus too much on the plumbing and not enough on the patterns of use. How are you all balancing maintenance with creative evolution?", tags:["#Design-Systems","#UI-Design"], likes:124, replies:42, type:"post" },
-  { id:2, author:"Sydney Bassard", role:"MENTOR", time:"5h ago", title:"Best practices for documenting handoff for remote developers?", body:"We're finding that just sending Figma links isn't enough. Any checklists you use?", tags:[], likes:89, replies:18, type:"question" },
-  { id:3, author:"Alex Rivera", role:"USER", time:"1d ago", title:"Just finished the AI & SPED session — mind blown.", body:"The practical applications for AAC integration alone were worth the entire summit. Who else is implementing these strategies right now?", tags:["#AI-in-SPED","#AAC"], likes:67, replies:23, type:"post" },
-];
+const COMMUNITY_POSTS_DATA = [];
 
 /* ─────────────────────────────────────────────────────────────────────────────
    UTILITIES
@@ -3804,11 +3800,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
     new Set(session.lessons.map((l, i) => (l.status !== "locked" || l.type === "material") ? i : null).filter(x => x !== null))
   );
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([
-    { user:"Alex Rivera", color:"#3b82f6", text:"Any recommendations for async documentation tools?", time:"2m ago" },
-    { user:"Sam Chen", color:"#10b981", text:"The 'invisible ceiling' quote really hit home for me.", time:"5m ago" },
-    { user:"Maria Garcia", color:"#f97316", text:"This module is fantastic so far!", time:"12m ago" },
-  ]);
+  const [messages, setMessages] = useState([]);
   const [followed, setFollowed] = useState(false);
   const [downloaded, setDownloaded] = useState({});
   const [bottomTab, setBottomTab] = useState("overview");
@@ -4108,25 +4100,24 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           <div className="sd-tab-content" style={{ padding:"22px 24px" }}>
             <h2 style={{ margin:"0 0 14px", fontSize:20, fontWeight:700, color:C.gray900, lineHeight:1.4, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>{session.title}</h2>
             <div className="sd-overview-stats" style={{ display:"flex", gap:28, marginBottom:18 }}>
-              <div>
-                <div style={{ fontSize:22, fontWeight:800, color:"#b45309" }}>4.8 <span style={{ fontSize:16 }}>★</span></div>
-                <div style={{ fontSize:12, color:C.gray400 }}>3,148 ratings</div>
-              </div>
-              <div>
-                <div style={{ fontSize:22, fontWeight:800, color:C.gray900 }}>1,240</div>
-                <div style={{ fontSize:12, color:C.gray400 }}>Students</div>
-              </div>
-              <div>
-                <div style={{ fontSize:22, fontWeight:800, color:C.gray900 }}>{session.duration}</div>
-                <div style={{ fontSize:12, color:C.gray400 }}>Total</div>
-              </div>
+              {session.duration && (
+                <div>
+                  <div style={{ fontSize:22, fontWeight:800, color:C.gray900 }}>{session.duration}</div>
+                  <div style={{ fontSize:12, color:C.gray400 }}>Duration</div>
+                </div>
+              )}
+              {session.category && (
+                <div>
+                  <div style={{ fontSize:22, fontWeight:800, color:C.gray900 }}>{session.category}</div>
+                  <div style={{ fontSize:12, color:C.gray400 }}>Category</div>
+                </div>
+              )}
             </div>
-            <p style={{ margin:"0 0 16px", fontSize:14, color:C.gray600, lineHeight:1.75 }}>{session.description}</p>
-            <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-              {["Special Education","IEP Strategies","Inclusive Classrooms","MTSS","Behavior Support"].map(tag => (
-                <span key={tag} style={{ padding:"4px 12px", background:C.gray100, borderRadius:8, fontSize:12, color:C.gray600, fontWeight:500 }}>{tag}</span>
-              ))}
-            </div>
+            {session.description ? (
+              <p style={{ margin:"0 0 16px", fontSize:14, color:C.gray600, lineHeight:1.75 }}>{session.description}</p>
+            ) : (
+              <p style={{ margin:"0 0 16px", fontSize:14, color:C.gray400, lineHeight:1.75, fontStyle:"italic" }}>No description provided for this session.</p>
+            )}
           </div>
         )}
 
@@ -4153,17 +4144,17 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                 </div>
               </div>
             </div>
-            <div className="sd-instructor-stats" style={{ display:"flex", gap:0, padding:"14px 0", borderTop:`1px solid ${C.gray100}`, borderBottom:`1px solid ${C.gray100}`, marginBottom:18 }}>
-              {[{ val:"4.8 ★", label:"Rating" },{ val:"4,200+", label:"Students" },{ val:"12", label:"Sessions" },{ val:"Gold", label:"Faculty Tier" }].map((s,i) => (
-                <div key={s.label} style={{ flex:1, textAlign:"center", borderLeft: i > 0 ? `1px solid ${C.gray100}` : "none", padding:"4px 0" }}>
-                  <div style={{ fontWeight:800, fontSize:16, color:C.gray900 }}>{s.val}</div>
-                  <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{s.label}</div>
-                </div>
-              ))}
-            </div>
-            <p style={{ margin:0, fontSize:14, color:C.gray600, lineHeight:1.8 }}>
-              {session.instructor} is a nationally recognized special education expert with over 15 years of classroom and leadership experience. Specializing in IEP development, inclusive instructional design, and MTSS frameworks, they have trained thousands of educators across the country. Their evidence-based approach blends practical strategies with the latest research to empower teachers and improve outcomes for students with disabilities.
-            </p>
+            {session.instructorBio ? (
+              <p style={{ margin:0, fontSize:14, color:C.gray600, lineHeight:1.8 }}>{session.instructorBio}</p>
+            ) : (
+              <Empty style={{ border:"none", padding:"8px 0" }}>
+                <EmptyMedia variant="icon" color="#6490E8"><Icon name="user" size={20} color="#6490E8"/></EmptyMedia>
+                <EmptyHeader>
+                  <EmptyTitle>No bio available</EmptyTitle>
+                  <EmptyDescription>The instructor hasn't added a bio for this session yet.</EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            )}
           </div>
         )}
 
