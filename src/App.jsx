@@ -3936,7 +3936,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           <div ref={videoRef} style={{ position:"relative", background:"#0f172a", paddingBottom:"56.25%", height:0 }}>
             <div style={{ position:"absolute", inset:0 }}>
               {(session.vimeoUrl || lesson?.vimeoUrl) ? (
-                <VimeoPlayer url={session.vimeoUrl || lesson?.vimeoUrl} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onProgress={pct => { setProgress(pct); onUpdateProgress?.(session.id, pct); if (pct >= 80) { setUnlockedIndices(prev => { const next = new Set(prev); next.add(activeLesson + 1); return next; }); } }}/>
+                <VimeoPlayer url={session.vimeoUrl || lesson?.vimeoUrl} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onProgress={pct => { setProgress(pct); onUpdateProgress?.(session.id, pct, activeLesson); if (pct >= 80) { setUnlockedIndices(prev => { const next = new Set(prev); next.add(activeLesson + 1); return next; }); } }}/>
               ) : (
                 <>
                   <SessionThumb id={session.id} height="100%" overlay={!playing}/>
@@ -3950,7 +3950,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                   </div>
                   <div style={{ position:"absolute", bottom:0, left:0, right:0, background:"linear-gradient(transparent, rgba(0,0,0,0.75))", padding:"24px 14px 10px", display:"flex", flexDirection:"column", gap:6 }}>
                     <div style={{ position:"relative", height:4, background:"rgba(255,255,255,0.3)", borderRadius:2, cursor:"pointer" }}
-                      onClick={e => { const r = e.currentTarget.getBoundingClientRect(); const pct = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)); setProgress(pct * 100); onUpdateProgress?.(session.id, pct * 100); }}>
+                      onClick={e => { const r = e.currentTarget.getBoundingClientRect(); const pct = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)); setProgress(pct * 100); onUpdateProgress?.(session.id, pct * 100, activeLesson); }}>
                       <div style={{ height:"100%", width:`${progress || 0}%`, background:"#6490E8", borderRadius:2, transition:"width 0.1s" }}/>
                       <div style={{ position:"absolute", top:"50%", left:`${progress || 0}%`, transform:"translate(-50%,-50%)", width:12, height:12, borderRadius:"50%", background:"#fff", boxShadow:"0 1px 4px rgba(0,0,0,0.4)" }}/>
                     </div>
@@ -11400,8 +11400,21 @@ export default function App() {
     if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0;
   }
 
-  function updateProgress(sessionId, pct) {
-    setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, progress: pct, status: pct >= 100 ? "completed" : "in-progress" } : s));
+  function updateProgress(sessionId, pct, activeLessonIdx) {
+    setSessions(prev => prev.map(s => {
+      if (s.id !== sessionId) return s;
+      const updated = { ...s, progress: pct, status: pct >= 100 ? "completed" : "in-progress" };
+      // Persist lesson unlock: mark current lesson completed, unlock next one
+      if (pct >= 80 && activeLessonIdx != null && s.lessons?.length > 0) {
+        const lessons = s.lessons.map((l, i) => {
+          if (i === activeLessonIdx) return { ...l, status: "completed" };
+          if (i === activeLessonIdx + 1 && l.status === "locked") return { ...l, status: "active" };
+          return l;
+        });
+        updated.lessons = lessons;
+      }
+      return updated;
+    }));
   }
 
   function updateSession(id, form, sections) {
