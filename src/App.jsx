@@ -2102,7 +2102,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
     }
   }, [externalFilter?.season, externalFilter?.year]);
 
-  const enrolledSessions = SESSIONS.filter(s => enrolledIds.has(s.id));
+  const enrolledSessions = sessions.filter(s => enrolledIds.has(s.id));
   const upcomingSchedule = SCHEDULE.filter(i => i.status === "upcoming");
   const completed     = enrolledSessions.filter(s => s.status === "completed").length;
   const certsEarned   = enrolledSessions.filter(s => s.status === "completed").length;
@@ -2110,9 +2110,9 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
   const pct = totalEnrolled > 0 ? Math.round((completed / totalEnrolled) * 100) : 0;
   const hasStarted = enrolledSessions.some(s => s.progress > 0 || s.status === "completed" || s.status === "in-progress");
   const continueSession = enrolledSessions.find(s => s.progress > 0 && s.status !== "completed");
-  const featuredSession = SESSIONS.find(s => s.status === "not-started") || SESSIONS[0];
+  const featuredSession = sessions.find(s => getSessionState(s) === "live") || sessions[0] || null;
 
-  const LEARNING_PATH = SESSIONS.slice(0, 4).map(s => {
+  const LEARNING_PATH = sessions.slice(0, 4).map(s => {
     const enrolled = enrolledIds.has(s.id);
     if (!enrolled) return { ...s, pathStatus: "locked" };
     if (s.status === "completed") return { ...s, pathStatus: "completed" };
@@ -2541,6 +2541,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
           </div>
 
           {/* ② FEATURED SESSION */}
+          {featuredSession && (
           <div className="db-section db-section-1">
             <div style={{ fontSize:11, fontWeight:700, color:C.primary, letterSpacing:1, textTransform:"uppercase", marginBottom:10 }}>Start Here</div>
             <div className="db-card db-card-hover" style={{ overflow:"hidden", display:"flex", cursor:"pointer" }}
@@ -2555,7 +2556,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                 </div>
                 <div style={{ fontSize:17, fontWeight:800, color:C.gray900, lineHeight:1.35 }}>{featuredSession.title}</div>
                 <div style={{ display:"flex", alignItems:"center", gap:8, fontSize:13, color:C.gray500 }}>
-                  <Avatar name={featuredSession.instructor} src={INSTRUCTOR_AVATARS[featuredSession.instructor]} size={22}/>
+                  <Avatar name={featuredSession.instructor || "Instructor"} src={INSTRUCTOR_AVATARS[featuredSession.instructor]} size={22}/>
                   <span>{featuredSession.instructor}</span>
                   <span style={{ color:C.gray300 }}>·</span>
                   <Icon name="clock" size={13} color={C.gray400}/>
@@ -2569,6 +2570,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
               </div>
             </div>
           </div>
+          )}
 
           {/* ③ LEARNING PATH */}
           <LearningPathSection showProgress={false}/>
@@ -3014,8 +3016,11 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
               View all <Icon name="caret-right" size={13} color={C.primary}/>
             </button>
           </div>
+          {sessions.length === 0 && (
+            <div style={{ textAlign:"center", padding:"40px 0", color:C.gray400, fontSize:14 }}>No sessions available yet. Check back soon.</div>
+          )}
           <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:24 }}>
-            {SESSIONS.slice(0,3).map(s => {
+            {sessions.slice(0,3).map(s => {
               const enrolled = enrolledIds.has(s.id);
               const stMap = {
                 "completed":   { label:"Completed",   bg:"rgba(16,185,129,0.12)", color:"#059669" },
@@ -11129,7 +11134,7 @@ export default function App() {
   const { toasts, toast, remove } = useToast();
 
   /* ── Enrolled sessions (pre-seeded with sessions that have progress) ── */
-  const [enrolledIds, setEnrolledIds] = useState(new Set([1, 2, 3]));
+  const [enrolledIds, setEnrolledIds] = useState(new Set());
   const [userName, setUserName] = useState("Alex Johnson");
   const [userEmail, setUserEmail] = useState("");
   const [userAvatar, setUserAvatar] = useState(null);
@@ -11143,7 +11148,7 @@ export default function App() {
     try { const s = localStorage.getItem("adminSessions"); return s ? JSON.parse(s) : ADMIN_SESSIONS_DATA; } catch { return ADMIN_SESSIONS_DATA; }
   });
   const [sessions, setSessions] = useState(() => {
-    try { const s = localStorage.getItem("sessions"); return s ? JSON.parse(s) : SESSIONS; } catch { return SESSIONS; }
+    try { const s = localStorage.getItem("sessions"); return s ? JSON.parse(s) : []; } catch { return []; }
   });
   const [spring2026Ids, setSpring2026Ids] = useState(() => {
     try { return JSON.parse(localStorage.getItem("spring2026Ids") || "[]"); } catch { return []; }
@@ -11251,7 +11256,7 @@ export default function App() {
   }
 
   /* ── Quiz state: { [sessionId]: { status, score, currentQ, answers } } ── */
-  const [quizStates,        setQuizStates]        = useState({ 1: { status:"passed", score:92 } });
+  const [quizStates,        setQuizStates]        = useState({});
   const [assessmentSession, setAssessmentSession] = useState(null);
   const [certSession,       setCertSession]       = useState(null);
   const [reviewSession,     setReviewSession]     = useState(null);
