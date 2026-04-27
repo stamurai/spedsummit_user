@@ -1047,7 +1047,7 @@ function saveRecentSearch(q) {
   try { localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify([q.trim(), ...prev])); } catch {}
 }
 
-function MobileSearchPage({ onOpenSession, onNavigate, onClose }) {
+function MobileSearchPage({ onOpenSession, onNavigate, onClose, sessions = [] }) {
   const [query, setQuery] = useState("");
   const [recents, setRecents] = useState(getRecentSearches);
   const inputRef = useRef(null);
@@ -1059,15 +1059,15 @@ function MobileSearchPage({ onOpenSession, onNavigate, onClose }) {
   }, []);
 
   const q = query.trim().toLowerCase();
-  const sessionResults = q.length < 1 ? [] : SESSIONS.filter(s =>
+  const sessionResults = q.length < 1 ? [] : sessions.filter(s =>
     s.title.toLowerCase().includes(q) ||
-    s.instructor.toLowerCase().includes(q) ||
-    s.category.toLowerCase().includes(q) ||
-    s.description.toLowerCase().includes(q)
+    (s.instructor||"").toLowerCase().includes(q) ||
+    (s.category||"").toLowerCase().includes(q) ||
+    (s.description||"").toLowerCase().includes(q)
   ).slice(0, 6);
   const pageResults = q.length < 1 ? [] : SEARCH_PAGES.filter(p => p.label.toLowerCase().includes(q));
   const instructorResults = q.length < 1 ? [] : [...new Map(
-    SESSIONS.filter(s => s.instructor.toLowerCase().includes(q)).map(s => [s.instructor, s])
+    sessions.filter(s => (s.instructor||"").toLowerCase().includes(q)).map(s => [s.instructor, s])
   ).values()].slice(0, 3);
   const hasResults = sessionResults.length > 0 || pageResults.length > 0 || instructorResults.length > 0;
 
@@ -1220,7 +1220,7 @@ const ADMIN_SEARCH_PAGES = [
   { id:"admin-create",     label:"Create Session", icon:"plus-circle", type:"page" },
 ];
 
-function SearchBar({ onOpenSession, onNavigate, isAdmin = false }) {
+function SearchBar({ onOpenSession, onNavigate, isAdmin = false, sessions = [] }) {
   const [query, setQuery]   = useState("");
   const [open,  setOpen]    = useState(false);
   const ref = useRef(null);
@@ -1233,14 +1233,14 @@ function SearchBar({ onOpenSession, onNavigate, isAdmin = false }) {
   }, [open]);
 
   const q = query.trim().toLowerCase();
-  const searchPool = isAdmin ? ADMIN_SESSIONS_DATA : SESSIONS;
+  const searchPool = isAdmin ? ADMIN_SESSIONS_DATA : sessions;
   const pagePool   = isAdmin ? ADMIN_SEARCH_PAGES  : SEARCH_PAGES;
 
   const sessionResults = q.length < 1 ? [] : searchPool.filter(s =>
     s.title.toLowerCase().includes(q) ||
-    s.instructor.toLowerCase().includes(q) ||
-    s.category.toLowerCase().includes(q) ||
-    (s.description || "").toLowerCase().includes(q)
+    (s.instructor||"").toLowerCase().includes(q) ||
+    (s.category||"").toLowerCase().includes(q) ||
+    (s.description||"").toLowerCase().includes(q)
   ).slice(0, 5);
 
   const pageResults = q.length < 1 ? [] : pagePool.filter(p =>
@@ -1248,7 +1248,7 @@ function SearchBar({ onOpenSession, onNavigate, isAdmin = false }) {
   );
 
   const instructorResults = q.length < 1 ? [] : [...new Map(
-    searchPool.filter(s => s.instructor.toLowerCase().includes(q)).map(s => [s.instructor, s])
+    searchPool.filter(s => (s.instructor||"").toLowerCase().includes(q)).map(s => [s.instructor, s])
   ).values()].slice(0, 3);
 
   const hasResults = sessionResults.length > 0 || pageResults.length > 0 || instructorResults.length > 0;
@@ -1538,7 +1538,7 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
       {/* Search — centered, hidden on mobile, hidden for admin */}
       {!isAdmin && (
         <div className="topbar-search" style={{ flex:1, display:"flex", justifyContent:"center", padding:"0 16px" }}>
-          <SearchBar onOpenSession={onOpenSession} onNavigate={onNavigate}/>
+          <SearchBar onOpenSession={onOpenSession} onNavigate={onNavigate} sessions={sessions}/>
         </div>
       )}
       {isAdmin && <div style={{ flex:1 }}/>}
@@ -1551,7 +1551,7 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
         </button>
       )}
 
-      {showMobileSearch && <MobileSearchPage onOpenSession={onOpenSession} onNavigate={onNavigate} onClose={() => setShowMobileSearch(false)}/>}
+      {showMobileSearch && <MobileSearchPage onOpenSession={onOpenSession} onNavigate={onNavigate} onClose={() => setShowMobileSearch(false)} sessions={sessions}/>}
 
       {/* Right actions */}
       <div style={{ flexShrink:0, display:"flex", alignItems:"center", gap:12 }}>
