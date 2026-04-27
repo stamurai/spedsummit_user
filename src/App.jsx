@@ -2705,15 +2705,15 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
   ];
 
   return (
-    <div style={{ minHeight:"100%", background:C.gray50 }}>
+    <div style={{ minHeight:"100%", background:C.gray50, width:"100%" }}>
       <style>{CSS + `
         .db-course-row { transition:box-shadow 150ms ease; }
         .db-course-row:hover { box-shadow:0 2px 12px rgba(0,0,0,0.08); }
         .db-cal-day:hover { background:var(--c-gray100) !important; }
 
         /* ── Dashboard layout ── */
-        .db-main-wrap { display:flex; align-items:flex-start; gap:20px; padding:28px 24px; max-width:1200px; margin:0 auto; box-sizing:border-box; width:100%; }
-        .db-right-panel { width:200px; flex-shrink:0; }
+        .db-main-wrap { display:flex; align-items:flex-start; gap:24px; padding:28px 32px; max-width:1400px; margin:0 auto; box-sizing:border-box; width:100%; }
+        .db-right-panel { width:240px; flex-shrink:0; }
 
         /* ── Session cards ── */
         .db-session-card-row { display:flex; align-items:stretch; overflow:hidden; cursor:pointer; min-height:235px; }
