@@ -957,8 +957,12 @@ function SpedLogo({ height = 34 }) {
    SEARCH BAR
 ───────────────────────────────────────────────────────────────────────────── */
 const SEARCH_PAGES = [
-  { id:"certifications",   label:"My Certificates", icon:"certificate", type:"page" },
-  { id:"profile",          label:"My Profile",   icon:"user-circle", type:"page" },
+  { id:"dashboard",      label:"My Learnings",    icon:"house",        type:"page" },
+  { id:"sessions",       label:"Browse Sessions", icon:"video",        type:"page" },
+  { id:"past-sessions",  label:"Past Sessions",   icon:"clock",        type:"page" },
+  { id:"certifications", label:"My Certificates", icon:"certificate",  type:"page" },
+  { id:"schedule",       label:"Schedule",        icon:"calendar",     type:"page" },
+  { id:"profile",        label:"My Profile",      icon:"user-circle",  type:"page" },
 ];
 
 /* ─────────────────────────────────────────────────────────────────────────────
