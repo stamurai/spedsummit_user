@@ -1398,7 +1398,7 @@ function ReferFriendsModal({ onClose, userName }) {
   );
 }
 
-function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, onOpenSession, onNavigate, userName = "Alex Johnson", onBrowseSelect }) {
+function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, onOpenSession, onNavigate, userName = "Alex Johnson", userAvatar, onBrowseSelect }) {
   const [showNotif, setShowNotif] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showReferModal, setShowReferModal] = useState(false);
@@ -1532,7 +1532,7 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
           <button
             onClick={() => setShowProfileMenu(v => !v)}
             style={{ border: "none", background: "transparent", padding: 0, cursor: "pointer", borderRadius: "50%" }}>
-            <Avatar name={userName} size={34}/>
+            <Avatar name={userName} src={userAvatar} size={34}/>
           </button>
           {showProfileMenu && (
             <DropdownMenu anchorRef={avatarBtnRef}
@@ -11497,6 +11497,7 @@ export default function App() {
         onOpenSession={openSession}
         onNavigate={nav}
         userName={userName}
+        userAvatar={userAvatar}
         onBrowseSelect={(season, year) => {
           if (season === "all") {
             // Year filter — find first season matching that year
@@ -11596,6 +11597,7 @@ export default function App() {
                 onOpenSession={openSession}
                 onNavigate={nav}
                 userName={userName}
+                userAvatar={userAvatar}
               />
               <div style={{ flex:1, overflowY:"auto" }}>
                 <V1PricingCardOnly onGetStarted={() => setShowPricingOverlay(false)} onClose={() => setShowPricingOverlay(false)} />
