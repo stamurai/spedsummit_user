@@ -142,8 +142,51 @@ const Icon = ({ name, size = 20, color = "currentColor", style: s = {} }) => {
    DESIGN TOKENS
 ───────────────────────────────────────────────────────────────────────────── */
 
+/* ── Empty state primitives ─────────────────────────────────────────────── */
+function Empty({ children, style, fullPage }) {
+  if (fullPage) return (
+    <div style={{ display:"flex", alignItems:"center", justifyContent:"center",
+      flex:1, minHeight:"100%", padding:"24px", ...style }}>
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+        gap:24, borderRadius:0, border:"none", borderImage:"none", boxSizing:"content-box",
+        padding:"64px 32px", textAlign:"center", width:"100%", maxWidth:480 }}>
+        {children}
+      </div>
+    </div>
+  );
+  return (
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+      gap:24, borderRadius:12, border:"1.5px dashed var(--c-gray200,#e5e7eb)",
+      padding:"48px 24px", textAlign:"center", ...style }}>
+      {children}
+    </div>
+  );
+}
+function EmptyMedia({ children, variant = "default", color = "#6490E8" }) {
+  if (variant === "icon") return (
+    <div style={{ width:48, height:48, borderRadius:12, background:`${color}18`,
+      display:"flex", alignItems:"center", justifyContent:"center", marginBottom:4 }}>
+      {children}
+    </div>
+  );
+  return <div style={{ marginBottom:4 }}>{children}</div>;
+}
+function EmptyHeader({ children }) {
+  return <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:6, maxWidth:340 }}>{children}</div>;
+}
+function EmptyTitle({ children }) {
+  return <div style={{ fontSize:16, fontWeight:700, color:"var(--c-gray900,#111)", letterSpacing:-.2 }}>{children}</div>;
+}
+function EmptyDescription({ children }) {
+  return <div style={{ fontSize:13, color:"var(--c-gray500,#6b7280)", lineHeight:1.6 }}>{children}</div>;
+}
+function EmptyContent({ children }) {
+  return <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:12, width:"100%", maxWidth:320 }}>{children}</div>;
+}
+/* ── End empty state primitives ─────────────────────────────────────────── */
+
 // Global mutable user name — updated by ProfilePage on save
-export const userProfile = { name: "Alex Johnson" };
+export const userProfile = { name: "" };
 
 const C = {
   primary: "var(--c-primary)", primaryDark: "var(--c-primaryDark)", primaryLight: "var(--c-primaryLight)", primaryBorder: "var(--c-primaryBorder)",
@@ -350,7 +393,7 @@ async function loadSealAsPng(url, size = 220) {
   });
 }
 
-async function downloadCertificate({ recipientName = "Alex Johnson", sessionTitle, instructor, duration = "", score = null, quizTitle = null, description = "" }) {
+async function downloadCertificate({ recipientName = "", sessionTitle, instructor, duration = "", score = null, quizTitle = null, description = "" }) {
   const today  = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
   const certId = `SS-${Date.now().toString(36).toUpperCase()}`;
   const title  = quizTitle || sessionTitle;
@@ -802,8 +845,10 @@ function NotificationPopover({ onClose, anchorRef }) {
       {/* List */}
       <div>
         {notifs.length === 0 && (
-          <div style={{ padding:"32px 16px", textAlign:"center" }}>
-            <div style={{ fontSize:13, color:C.gray500 }}>You're all caught up!</div>
+          <div style={{ padding:"32px 16px", textAlign:"center", display:"flex", flexDirection:"column", alignItems:"center", gap:8 }}>
+            <Icon name="bell" size={24} color={C.gray300}/>
+            <div style={{ fontSize:13, fontWeight:600, color:C.gray700 }}>You're all caught up!</div>
+            <div style={{ fontSize:12, color:C.gray400 }}>No new notifications</div>
           </div>
         )}
         {notifs.map(n => (
@@ -847,7 +892,7 @@ function NotificationsPage() {
   function markAllRead() { setNotifs(ns => ns.map(n => ({ ...n, read:true }))); }
 
   return (
-    <div style={{ background:C.gray50, minHeight:"100%", padding:"24px 16px", width:"100%", boxSizing:"border-box", overflow:"hidden" }}>
+    <div style={{ background:C.gray50, minHeight:"100%", padding:"24px 16px", width:"100%", boxSizing:"border-box", overflow:"hidden", display:"flex", flexDirection:"column" }}>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
         <h1 style={{ margin:0, fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3 }}>Notifications</h1>
         {unreadCount > 0 && (
@@ -859,7 +904,13 @@ function NotificationsPage() {
       </div>
 
       {notifs.length === 0 ? (
-        <div style={{ textAlign:"center", padding:"48px 0", color:C.gray400, fontSize:14 }}>You're all caught up!</div>
+        <Empty fullPage>
+          <EmptyMedia variant="icon" color="#6490E8"><Icon name="bell" size={22} color="#6490E8"/></EmptyMedia>
+          <EmptyHeader>
+            <EmptyTitle>You're all caught up!</EmptyTitle>
+            <EmptyDescription>No new notifications right now. We'll let you know when something happens.</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : (
         <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, overflow:"hidden", width:"100%" }}>
           {notifs.map((n, i) => (
@@ -1398,7 +1449,7 @@ function ReferFriendsModal({ onClose, userName }) {
   );
 }
 
-function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, onOpenSession, onNavigate, userName = "Alex Johnson", userAvatar, onBrowseSelect }) {
+function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, onOpenSession, onNavigate, userName = "", userAvatar, onBrowseSelect, seasons = SEASONS, sessions = [] }) {
   const [showNotif, setShowNotif] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showReferModal, setShowReferModal] = useState(false);
@@ -1419,10 +1470,10 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
     return () => document.removeEventListener("mousedown", handleClick);
   }, [showBrowse]);
 
-  /* Derive seasons and years from SEASONS data */
-  const browseSeasons = SEASONS.map(s => ({ id: s.id, name: s.name, tagline: s.tagline, color: s.color }));
-  const browseYears   = [...new Set(SEASONS.map(s => s.name.split(" ")[1]))].sort((a,b) => b - a);
-  const browseSeasonNames = [...new Set(SEASONS.map(s => s.name.split(" ")[0]))];
+  /* Derive seasons and years from live sessions only */
+  const filledSeasons = seasons.filter(s => sessions.some(sess => s.sessionIds.includes(sess.id)));
+  const browseSeasons = filledSeasons.map(s => ({ id: s.id, name: s.name, tagline: s.tagline, color: s.color }));
+  const browseYears   = [...new Set(filledSeasons.map(s => s.name.split(" ")[1]))].sort((a,b) => b - a);
 
   return (
     <div style={{ height:60, background:C.white, borderBottom:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", paddingLeft:24, paddingRight:24, position:"sticky", top:0, zIndex:100, flexShrink:0 }}>
@@ -1450,7 +1501,9 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
             <div style={{ flex:1, padding:"12px 12px 10px" }}>
               <div style={{ fontSize:11, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:4, paddingLeft:4 }}>Sessions</div>
               <div style={{ display:"flex", flexDirection:"column" }}>
-                {browseSeasons.map(s => (
+                {browseSeasons.length === 0 ? (
+                  <div style={{ padding:"12px 8px", fontSize:13, color:C.gray400 }}>No sessions available yet.</div>
+                ) : browseSeasons.map(s => (
                   <button key={s.id}
                     onClick={() => { setShowBrowse(false); const [sn, sy] = s.name.split(" "); onBrowseSelect?.(sn, sy); }}
                     style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", background:"none", border:"none", cursor:"pointer", padding:"6px 8px", borderRadius:8, textAlign:"left", fontFamily:"inherit", transition:"background .12s" }}
@@ -1916,8 +1969,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 
   function handleCardClick() {
     if (isLocked) { onSubscribeClick?.(); return; }
-    if (isUpcoming) return;
-    if (cardClickable || showAssessmentCTA) onClick(session);
+    if (cardClickable || showAssessmentCTA || isUpcoming) onClick(session);
   }
 
   return (
@@ -1927,7 +1979,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
       onMouseLeave={()=>setCardHov(false)}
       style={{ background:"#fff", borderRadius:18, overflow:"hidden",
                boxShadow: cardHov ? "0 8px 28px rgba(0,0,0,0.13)" : "0 2px 10px rgba(0,0,0,0.07)",
-               cursor: cta.disabled ? "default" : "pointer",
+               cursor: (isLocked || cta.disabled) && !isUpcoming ? "default" : "pointer",
                border:"none", display:"flex", flexDirection:"column",
                transition:"box-shadow 0.2s" }}>
 
@@ -1942,8 +1994,8 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
           <div style={{ fontSize:15, fontWeight:800, color:"#fff", lineHeight:1.2 }}>{session.instructor}</div>
           {session.instructorTitle && <div style={{ fontSize:12, color:"rgba(255,255,255,0.7)", marginTop:2 }}>{session.instructorTitle}</div>}
         </div>
-        {/* Play overlay on hover */}
-        {!isLocked && !isUpcoming && cardHov && (
+        {/* Play overlay on hover — live and upcoming both get it */}
+        {!isLocked && cardHov && (
           <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.15)", pointerEvents:"none" }}>
             <div style={{ width:44, height:44, borderRadius:"50%", background:"rgba(255,255,255,0.22)", backdropFilter:"blur(4px)", border:"2px solid rgba(255,255,255,0.5)", display:"flex", alignItems:"center", justifyContent:"center" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
@@ -1957,11 +2009,11 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
             <span style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.8)", letterSpacing:.5 }}>PAST SESSION</span>
           </div>
         )}
-        {/* Upcoming overlay */}
+        {/* Upcoming badge — not a blocker, just informational */}
         {isUpcoming && (
-          <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.35)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:6 }}>
-            <Icon name="clock" size={28} color="rgba(255,255,255,0.9)"/>
-            <span style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.8)", letterSpacing:.5 }}>UPCOMING</span>
+          <div style={{ position:"absolute", top:12, left:12, display:"flex", alignItems:"center", gap:4, background:"rgba(100,144,232,0.88)", backdropFilter:"blur(4px)", padding:"4px 9px", borderRadius:99 }}>
+            <Icon name="clock" size={12} color="#fff"/>
+            <span style={{ fontSize:11, fontWeight:700, color:"#fff", letterSpacing:.5 }}>UPCOMING</span>
           </div>
         )}
         {/* Badges */}
@@ -2036,11 +2088,13 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
               <Icon name="lock" size={14} color="#fff"/> Subscribe to Watch
             </button>
           ) : isUpcoming ? (
-            <button disabled
-              style={{ padding:"10px 20px", borderRadius:10, border:`1px solid ${C.gray200}`,
-                       background:C.gray100, color:C.gray400, fontSize:14, fontWeight:700,
-                       cursor:"not-allowed", display:"inline-flex", alignItems:"center", gap:6 }}>
-              <Icon name="clock" size={14} color={C.gray400}/> Coming Soon
+            <button onClick={e=>{ e.stopPropagation(); onClick(session); }}
+              style={{ padding:"10px 20px", borderRadius:10, border:`1px solid ${C.primaryBorder}`,
+                       background:C.primaryLight, color:C.primary, fontSize:14, fontWeight:700,
+                       cursor:"pointer", display:"inline-flex", alignItems:"center", gap:6, transition:"opacity .15s" }}
+              onMouseEnter={e=>e.currentTarget.style.opacity=".8"}
+              onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+              <Icon name="clock" size={14} color={C.primary}/> Preview Session
             </button>
           ) : assessBtn ? (
             <button onClick={assessBtn.action}
@@ -3017,7 +3071,13 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
             </button>
           </div>
           {sessions.length === 0 && (
-            <div style={{ textAlign:"center", padding:"40px 0", color:C.gray400, fontSize:14 }}>No sessions available yet. Check back soon.</div>
+            <Empty style={{ margin:"8px 0" }}>
+              <EmptyMedia variant="icon" color="#6490E8"><Icon name="video" size={22} color="#6490E8"/></EmptyMedia>
+              <EmptyHeader>
+                <EmptyTitle>No sessions yet</EmptyTitle>
+                <EmptyDescription>New sessions will appear here once published. Check back soon.</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           )}
           <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:24 }}>
             {sessions.slice(0,3).map(s => {
@@ -3258,7 +3318,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
     const pastSessions     = seasonSessions.filter(s => getSessionState(s) === "past");
 
     return (
-      <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
+      <div style={{ padding:24, background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
         {/* Breadcrumb */}
         <div style={{ display:"flex", flexWrap:"wrap", alignItems:"center", gap:4, marginBottom:20, fontSize:14, fontWeight:500, color:C.gray500 }}>
           <button onClick={()=>changeSeason(null)} style={{ background:"none", border:"none", cursor:"pointer", padding:0, fontSize:14, fontWeight:500, color:C.gray500 }}
@@ -3295,7 +3355,13 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
         )}
 
         {liveSessions.length === 0 && upcomingSessions.length === 0 && pastSessions.length === 0 && (
-          <div style={{ textAlign:"center", padding:"48px 0", color:C.gray400, fontSize:14 }}>No sessions in this season yet.</div>
+          <Empty fullPage>
+            <EmptyMedia variant="icon" color="#6490E8"><Icon name="video" size={22} color="#6490E8"/></EmptyMedia>
+            <EmptyHeader>
+              <EmptyTitle>No sessions in this season yet</EmptyTitle>
+              <EmptyDescription>Sessions will appear here once they are published by the admin.</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         )}
       </div>
     );
@@ -3303,7 +3369,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
 
   /* ── Seasons Overview ── */
   return (
-    <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
+    <div style={{ padding:24, background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
       <div style={{ marginBottom:28 }}>
 <h1 style={{ margin:"0 0 4px", fontSize:24, fontWeight:900, color:C.gray900 }}>Summit Sessions</h1>
       </div>
@@ -3330,7 +3396,13 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
       {(() => {
         const filledSeasons = seasons.filter(s => sessions.some(sess => s.sessionIds.includes(sess.id)));
         if (filledSeasons.length === 0 && sessions.length === 0) return (
-          <div style={{ textAlign:"center", padding:"60px 0", color:C.gray400, fontSize:14 }}>No sessions published yet.</div>
+          <Empty fullPage>
+            <EmptyMedia variant="icon" color="#6490E8"><Icon name="video" size={22} color="#6490E8"/></EmptyMedia>
+            <EmptyHeader>
+              <EmptyTitle>No sessions published yet</EmptyTitle>
+              <EmptyDescription>Sessions will show up here once the admin publishes them.</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         );
         return (
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px, 1fr))", gap:20 }}>
@@ -3438,7 +3510,7 @@ function SchedulePage({ onOpenSession, toast, scheduleRegistrations = {}, setSch
   const pastCount = SCHEDULE.filter(i => i.status === "past").length;
 
   return (
-    <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
+    <div style={{ padding:24, background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
       {calendarItem && (
         <AddToCalendarModal
           item={calendarItem}
@@ -3485,10 +3557,13 @@ function SchedulePage({ onOpenSession, toast, scheduleRegistrations = {}, setSch
 
       {/* Timeline */}
       {dateGroups.length === 0 ? (
-        <div style={{ textAlign:"center", padding:"60px 0", color:C.gray400 }}>
-          <Icon name="calendar" size={36} color={C.gray300}/>
-          <div style={{ marginTop:12, fontSize:15, fontWeight:600 }}>No {activeTab} sessions</div>
-        </div>
+        <Empty fullPage>
+          <EmptyMedia variant="icon" color="#6490E8"><Icon name="calendar" size={22} color="#6490E8"/></EmptyMedia>
+          <EmptyHeader>
+            <EmptyTitle>No {activeTab} sessions</EmptyTitle>
+            <EmptyDescription>{activeTab === "upcoming" ? "No upcoming sessions scheduled. Check back soon." : "No past sessions to show."}</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : (
         <div style={{ display:"flex", flexDirection:"column" }}>
           {dateGroups.map(([dateLabel, items], gi) => {
@@ -4389,7 +4464,7 @@ function ProfileField({ label, children }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    PROFILE PAGE
 ───────────────────────────────────────────────────────────────────────────── */
-function ProfilePage({ toast, userName = "Alex Johnson", userEmail = "", userAvatar = null, onNameChange, onBack }) {
+function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, onNameChange, onBack }) {
   const [activeSection, setActiveSection] = useState("personal");
   const [form, setForm] = useState({ name:userName, title:"", email:userEmail, phone:"", language:"English (US)" });
   const [notifEmail,   setNotifEmail]   = useState(true);
@@ -4725,13 +4800,13 @@ function ProfilePage({ toast, userName = "Alex Johnson", userEmail = "", userAva
 /* ─────────────────────────────────────────────────────────────────────────────
    REWARDS
 ───────────────────────────────────────────────────────────────────────────── */
-function PastSessionsTab({ onOpenSeason, sessions = [] }) {
+function PastSessionsTab({ onOpenSeason, sessions = [], seasons = SEASONS }) {
   const [filterSeason, setFilterSeason] = useState("all");
   const [filterYear,   setFilterYear]   = useState("all");
   const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
 
   // Only show seasons that have at least one real session
-  const filledSeasons = SEASONS.filter(s => sessions.some(sess => s.sessionIds.includes(sess.id)));
+  const filledSeasons = seasons.filter(s => sessions.some(sess => s.sessionIds.includes(sess.id)));
   const seasonOptions = [...new Set(filledSeasons.map(s => s.name.split(" ")[0]))];
   const yearOptions   = [...new Set(filledSeasons.map(s => s.name.split(" ")[1]))].sort((a,b) => b - a);
 
@@ -4743,7 +4818,7 @@ function PastSessionsTab({ onOpenSeason, sessions = [] }) {
   });
 
   return (
-    <div className="pst-wrap" style={{ background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+    <div className="pst-wrap" style={{ background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", display:"flex", flexDirection:"column" }}>
       {/* Header row */}
       <style>{`
         .pst-wrap { padding: 24px; }
@@ -4778,7 +4853,13 @@ function PastSessionsTab({ onOpenSeason, sessions = [] }) {
       </div>
 
       {filtered.length === 0 ? (
-        <div style={{ textAlign:"center", padding:"40px 0", color:C.gray400, fontSize:14 }}>No seasons match the selected filters.</div>
+        <Empty fullPage>
+          <EmptyMedia variant="icon" color="#6490E8"><Icon name="funnel" size={22} color="#6490E8"/></EmptyMedia>
+          <EmptyHeader>
+            <EmptyTitle>No seasons match</EmptyTitle>
+            <EmptyDescription>Try adjusting your filters to find what you're looking for.</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : (
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16 }}>
           {filtered.map(season => {
@@ -4814,20 +4895,20 @@ function PastSessionsTab({ onOpenSeason, sessions = [] }) {
   );
 }
 
-function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertificateClick, userName = "Alex Johnson" }) {
+function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertificateClick, userName = "", sessions = [], seasons = SEASONS }) {
   const [activeSeason,  setActiveSeason]  = useState(null);
   const [activeSession, setActiveSession] = useState(null);
   const [shareCert, setShareCert] = useState(null); // { certUrl, sessionTitle }
   const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
 
-  const totalEarned = SEASONS.reduce((acc, season) => {
-    return acc + season.sessionIds.filter(id => quizStates[id]?.status === "passed").length;
+  const totalEarned = seasons.reduce((acc, season) => {
+    return acc + season.sessionIds.filter(id => quizStates[id]?.status === "passed" && sessions.some(s => s.id === id)).length;
   }, 0);
 
   /* ── Session Detail (lesson quizzes + final assessment) ── */
   if (activeSeason && activeSession) {
-    const season  = SEASONS.find(s => s.id === activeSeason);
-    const session = SESSIONS.find(s => s.id === activeSession);
+    const season  = seasons.find(s => s.id === activeSeason);
+    const session = sessions.find(s => s.id === activeSession);
     const lessonQuizzes = (session.lessons || []).filter(l => l.type === "quiz");
     const qs = quizStates[session.id];
     const finalPassed = qs?.status === "passed";
@@ -4972,8 +5053,8 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
 
   /* ── Season Detail ── */
   if (activeSeason) {
-    const season = SEASONS.find(s => s.id === activeSeason);
-    const sessions = SESSIONS.filter(s => season.sessionIds.includes(s.id));
+    const season = seasons.find(s => s.id === activeSeason);
+    const seasonSessions = sessions.filter(s => season.sessionIds.includes(s.id));
 
     return (
       <div style={{ padding:"16px 16px", background:C.gray50, minHeight:"100%" }}>
@@ -4992,7 +5073,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
         <h2 style={{ margin:"0 0 18px", fontSize:18, fontWeight:800, color:C.gray900 }}>{season.name}</h2>
 
         <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-          {sessions.map(s => {
+          {seasonSessions.map(s => {
             const qs = quizStates[s.id];
             const passed  = qs?.status === "passed";
             const inProg  = qs?.status === "in-progress" || qs?.status === "failed";
@@ -5029,7 +5110,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
 
   /* ── Flat list overview: season headers + session rows ── */
   return (
-    <div style={{ padding: isMobile ? "16px 16px" : "24px 24px", background:C.gray50, minHeight:"100%" }}>
+    <div style={{ padding: isMobile ? "16px 16px" : "24px 24px", background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
       <style>{`
         @media(max-width:600px){
           .cert-row { flex-wrap: wrap; gap: 10px !important; padding: 14px 14px !important; }
@@ -5040,10 +5121,19 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
         }
       `}</style>
 
+      {sessions.length === 0 && (
+        <Empty fullPage>
+          <EmptyMedia variant="icon" color="#f59e0b"><Icon name="certificate" size={22} color="#f59e0b"/></EmptyMedia>
+          <EmptyHeader>
+            <EmptyTitle>No certificates yet</EmptyTitle>
+            <EmptyDescription>Complete a session and pass the assessment to earn your first certificate.</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      )}
       <div style={{ display:"flex", flexDirection:"column", gap:32 }}>
-        {SEASONS.map(season => {
-          const sessions  = SESSIONS.filter(s => season.sessionIds.includes(s.id));
-          const withQuiz  = sessions.filter(s => !!SESSION_QUIZZES[s.id]);
+        {seasons.filter(season => sessions.some(s => season.sessionIds.includes(s.id))).map(season => {
+          const seasonSessions  = sessions.filter(s => season.sessionIds.includes(s.id));
+          const withQuiz  = seasonSessions.filter(s => !!SESSION_QUIZZES[s.id]);
           const earned    = withQuiz.filter(s => quizStates[s.id]?.status === "passed").length;
           const total     = withQuiz.length;
           const allEarned = total > 0 && earned === total;
@@ -5064,7 +5154,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
 
               {/* Session rows */}
               <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, overflow:"hidden" }}>
-                {sessions.map((s, i) => {
+                {seasonSessions.map((s, i) => {
                   const qs = quizStates[s.id];
                   const passed   = qs?.status === "passed";
                   const hasQuiz  = !!SESSION_QUIZZES[s.id];
@@ -5073,7 +5163,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
 
                   return (
                     <div key={s.id} className="cert-row"
-                      style={{ display:"flex", alignItems:"center", gap:14, padding:"16px 20px", borderBottom: i < sessions.length - 1 ? `1px solid ${C.gray100}` : "none" }}>
+                      style={{ display:"flex", alignItems:"center", gap:14, padding:"16px 20px", borderBottom: i < seasonSessions.length - 1 ? `1px solid ${C.gray100}` : "none" }}>
 
                       {/* Status icon */}
                       <div style={{ width:36, height:36, borderRadius:10, flexShrink:0, background:"rgba(37,99,235,0.07)", display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -5294,7 +5384,13 @@ function AdminSessionsPage({ onNavigate, onEditSession, toast, adminSessions = A
       {/* Sessions list */}
       <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, overflow:"hidden" }}>
         {filtered.length === 0 && (
-          <div style={{ padding:"48px 20px", color:C.gray500, fontSize:14 }}>No sessions match this filter.</div>
+          <Empty style={{ margin:"8px 0" }}>
+            <EmptyMedia variant="icon" color="#6490E8"><Icon name="funnel" size={22} color="#6490E8"/></EmptyMedia>
+            <EmptyHeader>
+              <EmptyTitle>No sessions match</EmptyTitle>
+              <EmptyDescription>Try a different filter to find available sessions.</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         )}
         {filtered.map((s,i)=>{
           const sc = ADMIN_STATUS_COLORS[s.status] || ADMIN_STATUS_COLORS.DRAFT;
@@ -7503,7 +7599,7 @@ function ShareCertificateModal({ certUrl, sessionTitle, onClose }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    CERTIFICATE MODAL
 ───────────────────────────────────────────────────────────────────────────── */
-function CertificateModal({ session, quizState, onClose }) {
+function CertificateModal({ session, quizState, onClose, userName = "" }) {
   const score = quizState?.score ?? 0;
   const today = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
   const certId = `SS-${session.id}${score}-2024`;
@@ -7571,7 +7667,7 @@ function CertificateModal({ session, quizState, onClose }) {
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
                 <div>
                   <div style={{ fontSize:28, fontWeight:900, color:"#181c32", letterSpacing:-.3, marginBottom:6 }}>
-                    Alex Johnson
+                    {userName}
                   </div>
                   <div style={{ fontSize:12, color:"#5e6278", lineHeight:2 }}>
                     <span style={{ color:"#7e8299" }}>Date&nbsp;&nbsp;</span><strong style={{ color:"#181c32" }}>{today}</strong>
@@ -11146,7 +11242,7 @@ export default function App() {
 
   /* ── Enrolled sessions (pre-seeded with sessions that have progress) ── */
   const [enrolledIds, setEnrolledIds] = useState(new Set());
-  const [userName, setUserName] = useState("Alex Johnson");
+  const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [userAvatar, setUserAvatar] = useState(null);
   const [scheduleRegistrations, setScheduleRegistrations] = useState({});
@@ -11175,7 +11271,6 @@ export default function App() {
   useEffect(() => {
     supabase.from("sessions").select("*").then(({ data, error }) => {
       if (error) { console.error("[Supabase] fetch error:", error.message, error.code, error.hint); return; }
-      if (!data || data.length === 0) { console.warn("[Supabase] fetch returned 0 sessions — check RLS policies"); return; }
 
       const toSession = s => ({
         id: s.id, title: s.title, category: s.category,
@@ -11189,21 +11284,22 @@ export default function App() {
         availableTo: s.available_to || null,
       });
 
+      const rows = data || [];
+
       setSessions(prev => {
-        const supabaseIds = new Set(data.map(s => s.id));
-        // Update any existing sessions that came from Supabase (refresh dates/content)
-        const updated = prev.map(s => supabaseIds.has(s.id) ? { ...toSession(data.find(d => d.id === s.id)), progress: s.progress, status: s.status } : s);
-        // Add brand-new ones not yet in the list
-        const existingIds = new Set(updated.map(s => s.id));
-        const newOnes = data.filter(s => !existingIds.has(s.id)).map(toSession);
-        return newOnes.length > 0 ? [...updated, ...newOnes] : updated;
+        // Replace with exactly what Supabase has, preserving user progress for sessions that still exist
+        return rows.map(s => {
+          const existing = prev.find(p => p.id === s.id);
+          return { ...toSession(s), progress: existing?.progress || 0, status: existing?.status || "not-started" };
+        });
       });
 
-      // Add to Spring 2026 bucket if no date set
+      // Sync Spring 2026 bucket: add new undated sessions, remove deleted ones
       setSpring2026Ids(prev => {
-        const existing = new Set(prev);
-        const toAdd = data.filter(s => !s.available_from && !existing.has(s.id)).map(s => s.id);
-        return toAdd.length > 0 ? [...prev, ...toAdd] : prev;
+        const supabaseIds = new Set(rows.map(s => s.id));
+        const surviving = prev.filter(id => supabaseIds.has(id));
+        const toAdd = rows.filter(s => !s.available_from && !surviving.includes(s.id)).map(s => s.id);
+        return [...surviving, ...toAdd];
       });
     });
   }, []);
@@ -11464,8 +11560,8 @@ export default function App() {
     if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
     if (page==="community") return <CommunityPage toast={toast}/>;
-    if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick} userName={userName}/>;
-    if (page==="past-sessions")  return <PastSessionsTab onOpenSeason={(id) => { setPastSeasonPageId(id); setPastSeasonOrigin("past-sessions"); nav("past-season"); }} sessions={sessions}/>;
+    if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick} userName={userName} sessions={sessions} seasons={seasons}/>;
+    if (page==="past-sessions")  return <PastSessionsTab onOpenSeason={(id) => { setPastSeasonPageId(id); setPastSeasonOrigin("past-sessions"); nav("past-season"); }} sessions={sessions} seasons={seasons}/>;
     if (page==="notifications")  return <NotificationsPage />;
     if (page==="profile")   return <ProfilePage toast={toast} userName={userName} userEmail={userEmail} userAvatar={userAvatar} onNameChange={setUserName} onBack={() => nav("dashboard")}/>;
     return null;
@@ -11514,6 +11610,8 @@ export default function App() {
         onNavigate={nav}
         userName={userName}
         userAvatar={userAvatar}
+        seasons={seasons}
+        sessions={sessions}
         onBrowseSelect={(season, year) => {
           if (season === "all") {
             // Year filter — find first season matching that year
@@ -11648,6 +11746,7 @@ export default function App() {
           session={certSession}
           quizState={quizStates[certSession.id] || {}}
           onClose={() => setCertSession(null)}
+          userName={userName}
         />
       )}
       <ToastContainer toasts={toasts} onRemove={remove}/>
