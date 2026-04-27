@@ -3249,8 +3249,8 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
     const season = seasons.find(s => s.id === activeSeason);
     const seasonSessions   = sessions.filter(s => season.sessionIds.includes(s.id));
     const liveSessions     = seasonSessions.filter(s => enrolledIds.has(s.id));
-    const upcomingSessions = seasonSessions.filter(s => getSessionState(s.id) === "upcoming");
-    const pastSessions     = seasonSessions.filter(s => getSessionState(s.id) === "past");
+    const upcomingSessions = seasonSessions.filter(s => getSessionState(s) === "upcoming");
+    const pastSessions     = seasonSessions.filter(s => getSessionState(s) === "past");
 
     return (
       <div style={{ padding:24, background:C.gray50, minHeight:"100%" }}>
@@ -3332,8 +3332,8 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
 function SeasonFolderCard({ season, sessions, onOpen }) {
   const [hovered, setHovered] = useState(false);
   const seasonSessions = sessions.filter(s => season.sessionIds.includes(s.id));
-  const liveCount = seasonSessions.filter(s => getSessionState(s.id) === "live").length;
-  const upcomingCount = seasonSessions.filter(s => getSessionState(s.id) === "upcoming").length;
+  const liveCount = seasonSessions.filter(s => getSessionState(s) === "live").length;
+  const upcomingCount = seasonSessions.filter(s => getSessionState(s) === "upcoming").length;
   const isPast = liveCount === 0 && upcomingCount === 0;
   const statusLabel = liveCount > 0 ? { label:"● Live Now", color:"#fff", bg:"#10b981" }
                     : upcomingCount > 0 ? { label:"Upcoming", color:"#2563eb", bg:"#dbeafe" }
@@ -9883,30 +9883,6 @@ function LandingPage({ onGetStarted }) {
         </div>
       </section>
 
-      {/* ── Stats strip ── */}
-      <section style={{ padding:"40px 24px", borderBottom:`1px solid ${T.border}` }}>
-        <style>{`
-          .lp-stats-strip { display:flex; justify-content:center; gap:64px; flex-wrap:wrap; }
-          @media(max-width:600px){
-            .lp-stats-strip { display:grid; grid-template-columns:1fr 1fr; gap:32px 16px; }
-            .lp-stats-strip .lp-stat-num { font-size:28px !important; }
-          }
-        `}</style>
-        <div className="lp-stats-strip" style={{ maxWidth:1024, margin:"0 auto" }}>
-          {[
-            { n:"4,200+", label:"educators enrolled" },
-            { n:"9",      label:"expert sessions" },
-            { n:"100%",   label:"free to attend" },
-            { n:"$10k+",  label:"in prizes" },
-          ].map((s,i)=>(
-            <div key={i} style={{ textAlign:"center" }}>
-              <div className="lp-stat-num" style={{ fontSize:36, fontWeight:800, color:T.text, letterSpacing:-1.5, lineHeight:1 }}>{s.n}</div>
-              <div style={{ fontSize:14, color:T.muted, marginTop:6 }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* ── Social Proof Bento (moved below FAQ) ── */}
       {false && (() => {
         const CHART_DATA = [
@@ -11139,7 +11115,8 @@ export default function App() {
   // Fetch admin-published sessions from Supabase — always refresh to pick up date changes
   useEffect(() => {
     supabase.from("sessions").select("*").then(({ data, error }) => {
-      if (error || !data || data.length === 0) return;
+      if (error) { console.error("[Supabase] fetch error:", error.message, error.code, error.hint); return; }
+      if (!data || data.length === 0) { console.warn("[Supabase] fetch returned 0 sessions — check RLS policies"); return; }
 
       const toSession = s => ({
         id: s.id, title: s.title, category: s.category,
