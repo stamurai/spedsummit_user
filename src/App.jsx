@@ -3326,10 +3326,18 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
         );
       })()}
 
-      {/* ── Season folder cards ── */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px, 1fr))", gap:20 }}>
-        {seasons.map(season => <SeasonFolderCard key={season.id} season={season} sessions={sessions} onOpen={()=>changeSeason(season.id)}/>)}
-      </div>
+      {/* ── Season folder cards — only show seasons with real sessions ── */}
+      {(() => {
+        const filledSeasons = seasons.filter(s => sessions.some(sess => s.sessionIds.includes(sess.id)));
+        if (filledSeasons.length === 0 && sessions.length === 0) return (
+          <div style={{ textAlign:"center", padding:"60px 0", color:C.gray400, fontSize:14 }}>No sessions published yet.</div>
+        );
+        return (
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px, 1fr))", gap:20 }}>
+            {filledSeasons.map(season => <SeasonFolderCard key={season.id} season={season} sessions={sessions} onOpen={()=>changeSeason(season.id)}/>)}
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -4717,14 +4725,17 @@ function ProfilePage({ toast, userName = "Alex Johnson", userEmail = "", userAva
 /* ─────────────────────────────────────────────────────────────────────────────
    REWARDS
 ───────────────────────────────────────────────────────────────────────────── */
-function PastSessionsTab({ onOpenSeason }) {
+function PastSessionsTab({ onOpenSeason, sessions = [] }) {
   const [filterSeason, setFilterSeason] = useState("all");
   const [filterYear,   setFilterYear]   = useState("all");
   const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
-  const seasonOptions = [...new Set(SEASONS.map(s => s.name.split(" ")[0]))];
-  const yearOptions   = [...new Set(SEASONS.map(s => s.name.split(" ")[1]))].sort((a,b) => b - a);
 
-  const filtered = SEASONS.filter(season => {
+  // Only show seasons that have at least one real session
+  const filledSeasons = SEASONS.filter(s => sessions.some(sess => s.sessionIds.includes(sess.id)));
+  const seasonOptions = [...new Set(filledSeasons.map(s => s.name.split(" ")[0]))];
+  const yearOptions   = [...new Set(filledSeasons.map(s => s.name.split(" ")[1]))].sort((a,b) => b - a);
+
+  const filtered = filledSeasons.filter(season => {
     const [sName, sYear] = season.name.split(" ");
     if (filterSeason !== "all" && sName !== filterSeason) return false;
     if (filterYear   !== "all" && sYear !== filterYear)   return false;
@@ -11454,7 +11465,7 @@ export default function App() {
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
     if (page==="community") return <CommunityPage toast={toast}/>;
     if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick} userName={userName}/>;
-    if (page==="past-sessions")  return <PastSessionsTab onOpenSeason={(id) => { setPastSeasonPageId(id); setPastSeasonOrigin("past-sessions"); nav("past-season"); }} />;
+    if (page==="past-sessions")  return <PastSessionsTab onOpenSeason={(id) => { setPastSeasonPageId(id); setPastSeasonOrigin("past-sessions"); nav("past-season"); }} sessions={sessions}/>;
     if (page==="notifications")  return <NotificationsPage />;
     if (page==="profile")   return <ProfilePage toast={toast} userName={userName} userEmail={userEmail} userAvatar={userAvatar} onNameChange={setUserName} onBack={() => nav("dashboard")}/>;
     return null;
