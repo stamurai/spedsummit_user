@@ -3792,7 +3792,7 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress }) {
   );
 }
 
-function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress }) {
+function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress, adminName = "", adminAvatar = null }) {
   const [playing, setPlaying] = useState(false);
   const [activeLesson, setActiveLesson] = useState(() => session.lessons.findIndex(l=>l.status==="active" && l.type!=="quiz")||0);
   const [progress, setProgress] = useState(session.progress || 0);
@@ -4138,7 +4138,12 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                   )}
                 </div>
               </div>
-            ) : null}
+            ) : (
+              <div style={{ display:"flex", gap:14, alignItems:"center" }}>
+                <Avatar name={adminName} src={adminAvatar} size={52}/>
+                <div style={{ fontSize:14, color:C.gray500 }}>No instructor has been added for this session.</div>
+              </div>
+            )}
           </div>
         )}
 
@@ -11429,7 +11434,7 @@ export default function App() {
   function renderPage() {
     if (page==="session-detail" && activeSession) {
       const liveSession = sessions.find(s => s.id === activeSession.id) || activeSession;
-      return <SessionDetail session={liveSession} onBack={()=>nav(isAdmin?"admin-sessions":sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress}/>;
+      return <SessionDetail session={liveSession} onBack={()=>nav(isAdmin?"admin-sessions":sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress} adminName={userName} adminAvatar={userAvatar}/>;
     }
     if (isAdmin) {
       if (page==="admin-overview") return <AdminOverview onNavigate={nav} onEditSession={openEdit} toast={toast}/>;
