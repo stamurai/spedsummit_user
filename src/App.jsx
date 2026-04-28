@@ -11187,6 +11187,40 @@ function LandingPageV2({ onGetStarted }) {
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => sessionStorage.getItem("loggedIn") === "1");
 
+  const fetchSessions = useCallback(() => {
+    supabase.from("sessions").select("*").then(({ data, error }) => {
+      if (error) { console.error("[Supabase] fetch error:", error.message, error.code, error.hint); return; }
+
+      const toSession = s => ({
+        id: s.id, title: s.title, category: s.category,
+        instructor: s.instructor || "", instructorBio: s.instructor_bio || "",
+        duration: s.duration || "60 mins", resources: s.resources || 0,
+        progress: 0, status: "not-started",
+        description: s.description || "",
+        vimeoUrl: s.vimeo_url || "",
+        lessons: s.lessons || [],
+        availableFrom: s.available_from || null,
+        availableTo: s.available_to || null,
+      });
+
+      const rows = data || [];
+
+      setSessions(prev => {
+        return rows.map(s => {
+          const existing = prev.find(p => p.id === s.id);
+          return { ...toSession(s), progress: existing?.progress || 0, status: existing?.status || "not-started" };
+        });
+      });
+
+      setSpring2026Ids(prev => {
+        const supabaseIds = new Set(rows.map(s => s.id));
+        const surviving = prev.filter(id => supabaseIds.has(id));
+        const toAdd = rows.filter(s => !s.available_from && !surviving.includes(s.id)).map(s => s.id);
+        return [...surviving, ...toAdd];
+      });
+    });
+  }, []);
+
   // Handle Google OAuth redirect — fires when user returns from Google sign-in
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -11203,10 +11237,11 @@ export default function App() {
           setPage("dashboard");
           sessionStorage.setItem("page", "dashboard");
         }
+        fetchSessions();
       }
     });
     return () => subscription.unsubscribe();
-  }, []);
+  }, [fetchSessions]);
   const [page, setPage] = useState(() => { const p = sessionStorage.getItem("page"); return (p && !p.startsWith("admin")) ? p : "dashboard"; });
   const [isAdmin] = useState(false);
   const [isDark, setIsDark] = useState(() => { const h = new Date().getHours(); return h >= 19 || h < 6; });
@@ -11245,40 +11280,6 @@ export default function App() {
   useEffect(() => { try { localStorage.setItem("adminSessions", JSON.stringify(adminSessions)); } catch {} }, [adminSessions]);
 
   // Fetch admin-published sessions from Supabase — refresh on mount, tab focus, and every 30s
-  const fetchSessions = useCallback(() => {
-    supabase.from("sessions").select("*").then(({ data, error }) => {
-      if (error) { console.error("[Supabase] fetch error:", error.message, error.code, error.hint); return; }
-
-      const toSession = s => ({
-        id: s.id, title: s.title, category: s.category,
-        instructor: s.instructor || "", instructorBio: s.instructor_bio || "",
-        duration: s.duration || "60 mins", resources: s.resources || 0,
-        progress: 0, status: "not-started",
-        description: s.description || "",
-        vimeoUrl: s.vimeo_url || "",
-        lessons: s.lessons || [],
-        availableFrom: s.available_from || null,
-        availableTo: s.available_to || null,
-      });
-
-      const rows = data || [];
-
-      setSessions(prev => {
-        return rows.map(s => {
-          const existing = prev.find(p => p.id === s.id);
-          return { ...toSession(s), progress: existing?.progress || 0, status: existing?.status || "not-started" };
-        });
-      });
-
-      setSpring2026Ids(prev => {
-        const supabaseIds = new Set(rows.map(s => s.id));
-        const surviving = prev.filter(id => supabaseIds.has(id));
-        const toAdd = rows.filter(s => !s.available_from && !surviving.includes(s.id)).map(s => s.id);
-        return [...surviving, ...toAdd];
-      });
-    });
-  }, []);
-
   useEffect(() => {
     fetchSessions();
     // Re-fetch when user returns to the tab (switching from admin site on same device)
@@ -11289,13 +11290,12 @@ export default function App() {
     return () => { document.removeEventListener("visibilitychange", onVisible); clearInterval(interval); };
   }, [fetchSessions]);
 
-  function addAdminSession(form, publish, sections) {
-    const newId = Date.now();
+  async function addAdminSession(form, publish, sections) {
+    const newId = Math.floor(100000000 + Math.random() * 900000000);
     const dateLabel = form.availableFrom
       ? new Date(form.availableFrom).toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" })
       : new Date().toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
 
-    // Add to admin sessions list
     const adminEntry = {
       id: newId,
       title: form.title,
@@ -11311,34 +11311,33 @@ export default function App() {
     };
     setAdminSessions(prev => [adminEntry, ...prev]);
 
-    // If published, also add to user-facing sessions list
     if (publish) {
-      const sessionEntry = {
-        id: newId,
-        title: form.title,
-        category: form.category || "SPED",
-        instructor: form.instructorName || "",
-        instructorBio: form.bio || "",
-        instructorQuote: "",
-        duration: "60 mins",
-        resources: 0,
-        progress: 0,
-        status: "not-started",
-        description: form.desc || "",
-        vimeoUrl: form.vimeoUrl || "",
-        lessons: sections && sections.length
-          ? sections.flatMap(sec => sec.lessons.map(l => ({
-              id: l.id, sectionTitle: sec.title, title: l.title,
-              duration: l.duration || "60:00", status: "available", type: l.type || "video",
-              vimeoUrl: l.vimeoUrl || form.vimeoUrl || "",
-            })))
-          : [{ id:1, sectionTitle:"Session", title:"Full Session", duration:"60:00", status:"available", type:"video", vimeoUrl: form.vimeoUrl || "" }],
+      const lessons = sections && sections.length
+        ? sections.flatMap(sec => sec.lessons.map(l => ({
+            id: l.id, sectionTitle: sec.title, title: l.title,
+            duration: l.duration || "60:00", status: "available", type: l.type || "video",
+            vimeoUrl: l.vimeoUrl || form.vimeoUrl || "",
+          })))
+        : [{ id:1, sectionTitle:"Session", title:"Full Session", duration:"60:00", status:"available", type:"video", vimeoUrl: form.vimeoUrl || "" }];
+
+      const supabaseEntry = {
+        id: newId, title: form.title, category: form.category || "SPED",
+        instructor: form.instructorName || "", instructor_bio: form.bio || "",
+        duration: "60 mins", resources: 0,
+        description: form.desc || "", vimeo_url: form.vimeoUrl || "",
+        available_from: form.availableFrom || null, available_to: form.availableTo || null,
+        lessons,
       };
-      setSessions(prev => [...prev, sessionEntry]);
-      // If no date set, add to Spring 2026 bucket
-      if (!form.availableFrom) {
-        setSpring2026Ids(prev => [...prev, newId]);
+
+      const { error } = await supabase.from("sessions").insert([supabaseEntry]);
+      if (error) {
+        toast({ type:"error", title:"Publish failed", message:"Could not save to server: " + error.message });
+        return;
       }
+
+      // Re-fetch from Supabase so all devices see the new session immediately
+      fetchSessions();
+      if (!form.availableFrom) setSpring2026Ids(prev => [...prev, newId]);
     }
   }
 
@@ -11405,7 +11404,7 @@ export default function App() {
     }));
   }
 
-  function updateSession(id, form, sections) {
+  async function updateSession(id, form, sections) {
     const updatedLessons = sections
       ? sections.flatMap(sec => sec.lessons.map(l => ({
           id: l.id, sectionTitle: sec.title, title: l.title,
@@ -11414,6 +11413,17 @@ export default function App() {
           questions: l.questions || [],
         })))
       : undefined;
+
+    const supabaseUpdate = {
+      title: form.title, category: form.category,
+      instructor: form.instructorName, instructor_bio: form.bio,
+      description: form.desc, vimeo_url: form.vimeoUrl,
+      available_from: form.availableFrom || null, available_to: form.availableTo || null,
+      ...(updatedLessons ? { lessons: updatedLessons } : {}),
+    };
+    const { error } = await supabase.from("sessions").update(supabaseUpdate).eq("id", id);
+    if (error) { toast({ type:"error", title:"Update failed", message: error.message }); return; }
+
     setSessions(prev => prev.map(s => s.id === id ? {
       ...s, title: form.title, category: form.category, instructor: form.instructorName,
       instructorBio: form.bio, description: form.desc, vimeoUrl: form.vimeoUrl,
