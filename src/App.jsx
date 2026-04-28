@@ -4124,37 +4124,17 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
         {/* Instructor */}
         {bottomTab === "instructor" && (
           <div className="sd-tab-content" style={{ padding:"22px 24px" }}>
-            <div className="sd-instructor-header" style={{ display:"flex", gap:16, alignItems:"flex-start", marginBottom:20 }}>
-              <Avatar name={session.instructor} src={INSTRUCTOR_AVATARS[session.instructor]} size={68}/>
-              <div>
-                <div style={{ fontWeight:800, fontSize:18, color:C.gray900, marginBottom:2 }}>{session.instructor}</div>
-                <div style={{ fontSize:14, color:C.gray500, marginBottom:10 }}>Special Education Instructor · SPED Summit Faculty</div>
-                <div className="sd-instructor-socials" style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-                  {[
-                    { label:"Twitter", svg:<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.732-8.855L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> },
-                    { label:"LinkedIn", svg:<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg> },
-                    { label:"Website", svg:<svg width="12" height="12" viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm87.63,96H175.8c-1.42-28.1-10.6-54.2-25.8-74.11A88.17,88.17,0,0,1,215.63,120ZM128,216c-19.27,0-37.07-28.68-39.73-72h79.46C165.07,187.32,147.27,216,128,216Zm-39.73-88C90.93,84.68,108.73,56,128,56s37.07,28.68,39.73,72ZM105.93,45.89C90.73,65.8,81.55,91.9,80.13,120H40.37A88.17,88.17,0,0,1,105.93,45.89ZM40.37,136H80.13c1.42,28.1,10.6,54.2,25.8,74.11A88.17,88.17,0,0,1,40.37,136Zm109.77,74.11c15.2-19.91,24.38-46,25.8-74.11h39.76A88.17,88.17,0,0,1,150.14,210.11Z"/></svg> },
-                  ].map(s => (
-                    <button key={s.label} onClick={() => toast({ type:"info", message:`Opening ${s.label}…` })}
-                      style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:12, fontWeight:600, color:C.gray700, background:C.white, cursor:"pointer" }}
-                      onMouseEnter={e=>e.currentTarget.style.background=C.gray100} onMouseLeave={e=>e.currentTarget.style.background=C.white}>
-                      <span style={{ color:C.gray600, display:"flex", alignItems:"center" }}>{s.svg}</span>{s.label}
-                    </button>
-                  ))}
+            {session.instructor ? (
+              <div className="sd-instructor-header" style={{ display:"flex", gap:16, alignItems:"flex-start" }}>
+                <Avatar name={session.instructor} src={INSTRUCTOR_AVATARS[session.instructor]} size={68}/>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontWeight:800, fontSize:18, color:C.gray900, marginBottom:session.instructorBio ? 8 : 0 }}>{session.instructor}</div>
+                  {session.instructorBio && (
+                    <p style={{ margin:0, fontSize:14, color:C.gray600, lineHeight:1.8 }}>{session.instructorBio}</p>
+                  )}
                 </div>
               </div>
-            </div>
-            {session.instructorBio ? (
-              <p style={{ margin:0, fontSize:14, color:C.gray600, lineHeight:1.8 }}>{session.instructorBio}</p>
-            ) : (
-              <Empty style={{ border:"none", padding:"8px 0" }}>
-                <EmptyMedia variant="icon" color="#6490E8"><Icon name="user" size={20} color="#6490E8"/></EmptyMedia>
-                <EmptyHeader>
-                  <EmptyTitle>No bio available</EmptyTitle>
-                  <EmptyDescription>The instructor hasn't added a bio for this session yet.</EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            )}
+            ) : null}
           </div>
         )}
 
