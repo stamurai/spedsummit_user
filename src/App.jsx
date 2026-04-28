@@ -11244,8 +11244,8 @@ export default function App() {
   useEffect(() => { try { localStorage.setItem("sessions", JSON.stringify(sessions)); } catch {} }, [sessions]);
   useEffect(() => { try { localStorage.setItem("adminSessions", JSON.stringify(adminSessions)); } catch {} }, [adminSessions]);
 
-  // Fetch admin-published sessions from Supabase — always refresh to pick up date changes
-  useEffect(() => {
+  // Fetch admin-published sessions from Supabase — refresh on mount, tab focus, and every 30s
+  const fetchSessions = useCallback(() => {
     supabase.from("sessions").select("*").then(({ data, error }) => {
       if (error) { console.error("[Supabase] fetch error:", error.message, error.code, error.hint); return; }
 
@@ -11264,14 +11264,12 @@ export default function App() {
       const rows = data || [];
 
       setSessions(prev => {
-        // Replace with exactly what Supabase has, preserving user progress for sessions that still exist
         return rows.map(s => {
           const existing = prev.find(p => p.id === s.id);
           return { ...toSession(s), progress: existing?.progress || 0, status: existing?.status || "not-started" };
         });
       });
 
-      // Sync Spring 2026 bucket: add new undated sessions, remove deleted ones
       setSpring2026Ids(prev => {
         const supabaseIds = new Set(rows.map(s => s.id));
         const surviving = prev.filter(id => supabaseIds.has(id));
@@ -11280,6 +11278,16 @@ export default function App() {
       });
     });
   }, []);
+
+  useEffect(() => {
+    fetchSessions();
+    // Re-fetch when user returns to the tab (switching from admin site on same device)
+    const onVisible = () => { if (document.visibilityState === "visible") fetchSessions(); };
+    document.addEventListener("visibilitychange", onVisible);
+    // Poll every 30s so other devices see new/deleted sessions without a hard reload
+    const interval = setInterval(fetchSessions, 30000);
+    return () => { document.removeEventListener("visibilitychange", onVisible); clearInterval(interval); };
+  }, [fetchSessions]);
 
   function addAdminSession(form, publish, sections) {
     const newId = Date.now();
