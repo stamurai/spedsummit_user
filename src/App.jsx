@@ -4019,15 +4019,14 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                             const isPreview = i === 0 || l.status === "available";
                             return (
                               <div key={String(l.id)} onClick={() => switchLesson(i)}
-                                style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"10px 16px", background: isActive ? C.primaryLight : "transparent", borderLeft: isActive ? `3px solid ${C.primary}` : "3px solid transparent", cursor: locked ? "default" : "pointer", transition:"background .1s" }}
+                                style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 16px", background: isActive ? C.primaryLight : "transparent", borderLeft: isActive ? `3px solid ${C.primary}` : "3px solid transparent", cursor: locked ? "default" : "pointer", transition:"background .1s" }}
                                 onMouseEnter={e => { if (!locked && !isActive) e.currentTarget.style.background = C.gray50; }}
                                 onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}>
-                                <div style={{ marginTop:1, flexShrink:0 }}>
+                                <div style={{ flexShrink:0 }}>
                                   {l.status === "completed" || quizDone
                                     ? <div style={{ width:18, height:18, borderRadius:"50%", background:C.success, display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="check" size={12} color="#fff"/></div>
-                                    : locked ? <Icon name="lock" size={14} color={C.gray300}/>
                                     : isActive ? <div style={{ width:18, height:18, borderRadius:"50%", background:C.primary, display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="play" size={12} color="#fff"/></div>
-                                    : <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${C.gray300}` }}/>}
+                                    : <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${locked ? C.gray200 : C.gray300}` }}/>}
                                 </div>
                                 <div style={{ flex:1, minWidth:0 }}>
                                   <div style={{ fontSize:12, fontWeight: isActive ? 700 : 400, color: locked ? C.gray400 : isQuiz ? "#7c3aed" : C.gray900, lineHeight:1.4 }}>{l.title}</div>
@@ -4036,6 +4035,11 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                                   </div>
                                   {isPreview && !locked && !isActive && <span style={{ display:"inline-block", fontSize:12, fontWeight:600, color:C.gray500, background:C.gray100, borderRadius:4, padding:"1px 6px", marginTop:3 }}>Preview</span>}
                                 </div>
+                                {locked && (
+                                  <div style={{ flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                                    <Icon name="lock" size={14} color={C.gray300}/>
+                                  </div>
+                                )}
                               </div>
                             );
                           })}
