@@ -10043,12 +10043,12 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                   <Icon name="play-circle" size={16} color="#fff" weight="fill"/>
                   Watch Now
                 </button>
-              ) : (
+              ) : instrSessionDate ? (
                 <div style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"10px 18px", background:T.bgHighlight, border:`1px solid ${T.border}`, borderRadius:8, fontSize:13, color:T.muted, fontWeight:600 }}>
                   <Icon name="clock" size={15} color={T.blue}/>
-                  {instrSessionDate ? `Available ${instrSessionDate}` : "Coming soon"}
+                  {`Available ${instrSessionDate}`}
                 </div>
-              )
+              ) : null
             ) : (
               <button onClick={()=>setShowAuth(true)}
                 style={{ padding:"0 24px", height:42, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
