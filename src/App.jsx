@@ -9978,6 +9978,9 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
   if (selectedInstructor) {
     const instr = selectedInstructor;
     const paras = instr.bio.split("\n\n");
+    const instrSession = SESSIONS.find(s => s.instructor === instr.name);
+    const instrSessionAvailable = instrSession ? isSessionAvailable(instrSession.id) : false;
+    const instrSessionDate = instrSession?.date || instrSession?.scheduledDate || null;
     return (
       <div style={{ fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", background:"#FEF5EC", color:T.text, minHeight:"100vh" }}>
         {/* Nav */}
@@ -10031,12 +10034,29 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               ))}
             </ul>
 
-            <button onClick={()=>setShowAuth(true)}
-              style={{ padding:"0 20px", height:40, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
-              onMouseEnter={e=>e.currentTarget.style.background="#005bb5"}
-              onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-              Register for this session
-            </button>
+            {isLoggedIn ? (
+              instrSessionAvailable ? (
+                <button onClick={()=>{ if(instrSession) { onWatchSession ? onWatchSession(instrSession) : onGetStarted(instrSession.id); } }}
+                  style={{ padding:"0 24px", height:42, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s", display:"flex", alignItems:"center", gap:8 }}
+                  onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
+                  onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
+                  <Icon name="play-circle" size={16} color="#fff" weight="fill"/>
+                  Watch Now
+                </button>
+              ) : (
+                <div style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"10px 18px", background:T.bgHighlight, border:`1px solid ${T.border}`, borderRadius:8, fontSize:13, color:T.muted, fontWeight:600 }}>
+                  <Icon name="clock" size={15} color={T.blue}/>
+                  {instrSessionDate ? `Available ${instrSessionDate}` : "Coming soon"}
+                </div>
+              )
+            ) : (
+              <button onClick={()=>setShowAuth(true)}
+                style={{ padding:"0 24px", height:42, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
+                onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
+                onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
+                Register for this session
+              </button>
+            )}
           </div>
         </div>
         {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={(role)=>onGetStarted(null,role)}/>}
