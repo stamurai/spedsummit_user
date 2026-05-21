@@ -2983,13 +2983,13 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
             </div>
 
             {/* Certificate encouragement */}
-            <div style={{ marginTop:12, background: certsEarned > 0 ? "linear-gradient(135deg,#fef9ec 0%,#fffdf7 100%)" : "linear-gradient(135deg,#f0f4ff 0%,#f8f9ff 100%)", border:`1px solid ${certsEarned > 0 ? "rgba(245,158,11,0.25)" : "rgba(99,144,232,0.25)"}`, borderRadius:14, padding:"16px 18px" }}>
+            <div style={{ marginTop:12, background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:"16px 18px" }}>
               <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10 }}>
                 <div style={{ width:36, height:36, borderRadius:10, background: certsEarned > 0 ? "rgba(245,158,11,0.12)" : "rgba(99,144,232,0.12)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                   <Icon name="certificate" size={18} color={certsEarned > 0 ? "#f59e0b" : C.blue}/>
                 </div>
                 <div>
-                  <div style={{ fontSize:13, fontWeight:700, color:C.gray900, lineHeight:1.3 }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:C.text, lineHeight:1.3 }}>
                     {certsEarned > 0 ? `${certsEarned} Certificate${certsEarned > 1 ? "s" : ""} Earned 🎉` : "Earn Your Certificate"}
                   </div>
                   <div style={{ fontSize:11, color:C.gray500, marginTop:1 }}>
