@@ -4212,7 +4212,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                   {communityPosts.length === 0 ? "0 Posts" : `${communityPosts.length} Post${communityPosts.length !== 1 ? "s" : ""}`}
                 </div>
                 {communityPosts.length === 0 ? (
-                  <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"40px 24px", textAlign:"center" }}>
+                  <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"40px 24px", textAlign:"center", display:"flex", flexDirection:"column", alignItems:"center" }}>
                     <Icon name="chat-circle-dots" size={40} color={C.gray300}/>
                     <div style={{ marginTop:12, fontSize:14, fontWeight:600, color:C.gray500 }}>No posts yet</div>
                     <div style={{ fontSize:13, color:C.gray400, marginTop:4 }}>Be the first to start a conversation!</div>
