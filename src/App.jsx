@@ -11433,7 +11433,7 @@ function LandingPageV2({ onGetStarted }) {
    APP
 ───────────────────────────────────────────────────────────────────────────── */
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => sessionStorage.getItem("loggedIn") === "1");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const fetchSessions = useCallback(() => {
     supabase.from("sessions").select("*").then(({ data, error }) => {
@@ -11485,7 +11485,7 @@ export default function App() {
     });
     return () => subscription.unsubscribe();
   }, [fetchSessions]);
-  const [page, setPage] = useState(() => { const p = sessionStorage.getItem("page"); return (p && !p.startsWith("admin")) ? p : "dashboard"; });
+  const [page, setPage] = useState("dashboard");
   const [isAdmin] = useState(false);
   const [isDark, setIsDark] = useState(() => { const h = new Date().getHours(); return h >= 19 || h < 6; });
   const [landingV, setLandingV] = useState(1);
