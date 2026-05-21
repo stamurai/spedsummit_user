@@ -4202,8 +4202,8 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                     placeholder="Share something with the community…"
                     style={{ flex:1, padding:"8px 12px", border:"none", borderRadius:8, fontSize:14, outline:"none", color:isDark?"#fff":C.gray700, background:"transparent" }}/>
                   <button onClick={() => { if (!communityNewPost.trim()) return; setCommunityPosts(ps=>[{id:Date.now(),author:"You",role:"USER",time:"just now",title:communityNewPost.slice(0,80),body:"",tags:[],likes:0,replies:0,type:"post",liked:false,saved:false},...ps]); setCommunityNewPost(""); toast({ type:"success", message:"Posted!" }); }}
-                    style={{ flexShrink:0, width:34, height:34, borderRadius:"50%", background:communityNewPost.trim() ? C.primary : C.gray200, border:"none", cursor:communityNewPost.trim() ? "pointer" : "default", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.15s" }}>
-                    <Icon name="paper-plane-tilt" size={16} color="#fff" weight="fill"/>
+                    style={{ flexShrink:0, padding:"8px 18px", borderRadius:8, background:communityNewPost.trim() ? C.primary : C.gray200, border:"none", cursor:communityNewPost.trim() ? "pointer" : "default", fontSize:13, fontWeight:700, color:"#fff", transition:"background 0.15s", whiteSpace:"nowrap" }}>
+                    Post
                   </button>
                 </div>
                 {/* Post count header */}
