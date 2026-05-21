@@ -3834,6 +3834,7 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress }) {
 }
 
 function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress, adminName = "", adminAvatar = null }) {
+  const isDark = document.querySelector("[data-theme='dark']") !== null;
   const [playing, setPlaying] = useState(false);
   const [activeLesson, setActiveLesson] = useState(() => session.lessons.findIndex(l=>l.status==="active" && l.type!=="quiz")||0);
   const [progress, setProgress] = useState(session.progress || 0);
@@ -4190,17 +4191,17 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
 
         {/* Community */}
         {bottomTab === "community" && (
-          <div className="sd-tab-content" style={{ padding:"20px 24px", background:C.gray50, minHeight:400 }}>
+          <div className="sd-tab-content" style={{ padding:"20px 24px", background:isDark?"transparent":C.gray50, minHeight:400 }}>
             <div style={{ display:"flex", gap:20, alignItems:"flex-start" }}>
               {/* Left: Posts feed */}
               <div style={{ flex:1, minWidth:0 }}>
                 {/* Post input */}
-                <div style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"12px 14px", marginBottom:16, display:"flex", gap:10, alignItems:"center" }}>
+                <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"12px 14px", marginBottom:16, display:"flex", gap:10, alignItems:"center" }}>
                   <Avatar name={userProfile.name} size={32}/>
                   <input ref={chatInputRef} value={communityNewPost} onChange={e=>setCommunityNewPost(e.target.value)}
                     onKeyDown={e=>{ if(e.key==="Enter" && communityNewPost.trim()) { setCommunityPosts(ps=>[{id:Date.now(),author:"You",role:"USER",time:"just now",title:communityNewPost.slice(0,80),body:"",tags:[],likes:0,replies:0,type:"post",liked:false,saved:false},...ps]); setCommunityNewPost(""); toast({ type:"success", message:"Posted!" }); }}}
                     placeholder="Share something with the community…"
-                    style={{ flex:1, padding:"8px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:14, outline:"none", color:C.gray700, background:C.white }}/>
+                    style={{ flex:1, padding:"8px 12px", border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, borderRadius:8, fontSize:14, outline:"none", color:isDark?"#fff":C.gray700, background:isDark?"rgba(255,255,255,0.06)":"transparent" }}/>
                   <button onClick={() => { if (!communityNewPost.trim()) return; setCommunityPosts(ps=>[{id:Date.now(),author:"You",role:"USER",time:"just now",title:communityNewPost.slice(0,80),body:"",tags:[],likes:0,replies:0,type:"post",liked:false,saved:false},...ps]); setCommunityNewPost(""); toast({ type:"success", message:"Posted!" }); }}
                     style={{ flexShrink:0, width:34, height:34, borderRadius:"50%", background:communityNewPost.trim() ? C.primary : C.gray200, border:"none", cursor:communityNewPost.trim() ? "pointer" : "default", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.15s" }}>
                     <Icon name="paper-plane-tilt" size={16} color="#fff" weight="fill"/>
@@ -4211,19 +4212,19 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                   {communityPosts.length === 0 ? "0 Posts" : `${communityPosts.length} Post${communityPosts.length !== 1 ? "s" : ""}`}
                 </div>
                 {communityPosts.length === 0 ? (
-                  <div style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"40px 24px", textAlign:"center" }}>
+                  <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"40px 24px", textAlign:"center" }}>
                     <Icon name="chat-circle-dots" size={40} color={C.gray300}/>
                     <div style={{ marginTop:12, fontSize:14, fontWeight:600, color:C.gray500 }}>No posts yet</div>
                     <div style={{ fontSize:13, color:C.gray400, marginTop:4 }}>Be the first to start a conversation!</div>
                   </div>
                 ) : communityPosts.map(post => (
-                  <div key={post.id} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"16px 18px", marginBottom:12 }}>
+                  <div key={post.id} style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"16px 18px", marginBottom:12 }}>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
                       <div style={{ display:"flex", gap:10, alignItems:"center" }}>
                         <Avatar name={post.author} size={36}/>
                         <div>
                           <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"wrap" }}>
-                            <span style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{post.author}</span>
+                            <span style={{ fontWeight:700, fontSize:14, color:isDark?"#fff":C.gray900 }}>{post.author}</span>
                             {post.role==="MENTOR" && <Badge label="MENTOR" color={C.success} bg={C.successLight} size={12}/>}
                             {post.type==="question" && <Badge label="QUESTION" color={C.primary} bg={C.primaryLight} size={12}/>}
                           </div>
@@ -4249,8 +4250,8 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                         )}
                       </div>
                     </div>
-                    <div style={{ fontSize:14, fontWeight:700, color:C.gray900, marginBottom:5, lineHeight:1.4 }}>{post.title}</div>
-                    {post.body && <p style={{ margin:"0 0 8px", fontSize:14, color:C.gray600, lineHeight:1.6, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{post.body}</p>}
+                    <div style={{ fontSize:14, fontWeight:700, color:isDark?"#fff":C.gray900, marginBottom:5, lineHeight:1.4 }}>{post.title}</div>
+                    {post.body && <p style={{ margin:"0 0 8px", fontSize:14, color:isDark?"rgba(255,255,255,0.65)":C.gray600, lineHeight:1.6, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{post.body}</p>}
                     {post.tags.length>0 && <div style={{ display:"flex", gap:6, marginBottom:8 }}>{post.tags.map(t=><span key={t} style={{ fontSize:12, background:C.gray100, color:C.gray600, padding:"2px 8px", borderRadius:99 }}>{t}</span>)}</div>}
                     <div style={{ display:"flex", gap:2, paddingTop:10, borderTop:`1px solid ${C.gray100}` }}>
                       <button onClick={()=>setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,liked:!p.liked,likes:p.liked?p.likes-1:p.likes+1}:p))}
@@ -4288,34 +4289,34 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               {/* Right: Session details panel */}
               <div style={{ width:260, flexShrink:0, display:"flex", flexDirection:"column", gap:12 }}>
                 {/* Stats */}
-                <div style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"16px 18px" }}>
+                <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"16px 18px" }}>
                   <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:14 }}>Session Stats</div>
                   <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
                     <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                      <div style={{ width:34, height:34, borderRadius:8, background:C.primaryLight, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                      <div style={{ width:34, height:34, borderRadius:8, background:isDark?"rgba(100,144,232,0.15)":C.primaryLight, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                         <Icon name="eye" size={16} color={C.primary}/>
                       </div>
                       <div>
-                        <div style={{ fontSize:16, fontWeight:800, color:C.gray900, lineHeight:1 }}>—</div>
+                        <div style={{ fontSize:16, fontWeight:800, color:isDark?"#fff":C.gray900, lineHeight:1 }}>—</div>
                         <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>Active viewers</div>
                       </div>
                     </div>
                     <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                      <div style={{ width:34, height:34, borderRadius:8, background:"#f0fdf4", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                      <div style={{ width:34, height:34, borderRadius:8, background:isDark?"rgba(34,197,94,0.12)":"#f0fdf4", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                         <Icon name="users" size={16} color={C.success}/>
                       </div>
                       <div>
-                        <div style={{ fontSize:16, fontWeight:800, color:C.gray900, lineHeight:1 }}>{session.registrations ?? "—"}</div>
+                        <div style={{ fontSize:16, fontWeight:800, color:isDark?"#fff":C.gray900, lineHeight:1 }}>{session.registrations ?? "—"}</div>
                         <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>Registrations</div>
                       </div>
                     </div>
                     {session.duration && (
                       <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                        <div style={{ width:34, height:34, borderRadius:8, background:"#fff7ed", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                        <div style={{ width:34, height:34, borderRadius:8, background:isDark?"rgba(249,115,22,0.12)":"#fff7ed", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                           <Icon name="clock" size={16} color="#f97316"/>
                         </div>
                         <div>
-                          <div style={{ fontSize:16, fontWeight:800, color:C.gray900, lineHeight:1 }}>{session.duration}</div>
+                          <div style={{ fontSize:16, fontWeight:800, color:isDark?"#fff":C.gray900, lineHeight:1 }}>{session.duration}</div>
                           <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>Duration</div>
                         </div>
                       </div>
@@ -4324,29 +4325,28 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                 </div>
 
                 {/* About this session */}
-                <div style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"16px 18px" }}>
+                <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"16px 18px" }}>
                   <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>About this Session</div>
                   {session.description ? (
-                    <p style={{ margin:0, fontSize:13, color:C.gray600, lineHeight:1.7 }}>{session.description}</p>
+                    <p style={{ margin:0, fontSize:13, color:isDark?"rgba(255,255,255,0.7)":C.gray600, lineHeight:1.7 }}>{session.description}</p>
                   ) : (
                     <p style={{ margin:0, fontSize:13, color:C.gray400, lineHeight:1.7, fontStyle:"italic" }}>No description provided.</p>
                   )}
                   {session.category && (
-                    <div style={{ marginTop:12, display:"inline-flex", alignItems:"center", gap:5, background:C.gray100, borderRadius:99, padding:"4px 10px" }}>
-                      <Icon name="tag" size={12} color={C.gray500}/>
-                      <span style={{ fontSize:12, color:C.gray600, fontWeight:600 }}>{session.category}</span>
+                    <div style={{ marginTop:12, display:"inline-flex", alignItems:"center", background:isDark?"rgba(255,255,255,0.08)":C.gray100, borderRadius:99, padding:"4px 10px" }}>
+                      <span style={{ fontSize:12, color:isDark?"rgba(255,255,255,0.6)":C.gray600, fontWeight:600 }}>{session.category}</span>
                     </div>
                   )}
                 </div>
 
                 {/* Instructor */}
                 {session.instructor && (
-                  <div style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"16px 18px" }}>
+                  <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"16px 18px" }}>
                     <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:12 }}>Instructor</div>
                     <div style={{ display:"flex", gap:10, alignItems:"center" }}>
                       <Avatar name={session.instructor} src={INSTRUCTOR_AVATARS[session.instructor]} size={40}/>
                       <div>
-                        <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{session.instructor}</div>
+                        <div style={{ fontWeight:700, fontSize:14, color:isDark?"#fff":C.gray900 }}>{session.instructor}</div>
                         <div style={{ fontSize:12, color:C.gray400 }}>Speaker</div>
                       </div>
                     </div>
