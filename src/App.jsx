@@ -4240,10 +4240,9 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                         {communityOpenMenu===post.id && (
                           <DropdownMenu
                             items={[
-                              { icon:"bookmark", label:post.saved?"Unsave":"Save", action:()=>{ setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,saved:!p.saved}:p)); toast({type:"success",message:post.saved?"Removed":"Saved!"}); setCommunityOpenMenu(null); } },
+                              ...(post.author===adminName||post.author==="You"?[{ icon:"pencil-simple", label:"Edit", action:()=>{ toast({type:"info",message:"Edit coming soon!"}); setCommunityOpenMenu(null); } }]:[]),
                               { icon:"share-network", label:"Share", action:()=>{ toast({type:"info",message:"Link copied!"}); setCommunityOpenMenu(null); } },
-                              { icon:"flag", label:"Report", action:()=>{ toast({type:"warning",message:"Report submitted."}); setCommunityOpenMenu(null); } },
-                              ...(post.author==="You"?[{ icon:"trash", label:"Delete", danger:true, action:()=>{ setCommunityPosts(ps=>ps.filter(p=>p.id!==post.id)); toast({type:"success",message:"Deleted."}); setCommunityOpenMenu(null); } }]:[]),
+                              ...(post.author===adminName||post.author==="You"?[{ icon:"trash", label:"Delete", danger:true, action:()=>{ setCommunityPosts(ps=>ps.filter(p=>p.id!==post.id)); toast({type:"success",message:"Deleted."}); setCommunityOpenMenu(null); } }]:[]),
                             ]}
                             onClose={()=>setCommunityOpenMenu(null)}
                           />
