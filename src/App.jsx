@@ -9532,37 +9532,37 @@ function SpAccordionFeature({ T }) {
       id: 1,
       title: "IEP Goal Tracking",
       description: "No more carrying binders full of data sheets. AbleSpace allows you to collect data on your goals with a single click.",
-      image: "/IEP Goal Tracking.jpg",
+      image: "/iep-goal-tracking.jpg",
     },
     {
       id: 2,
       title: "10+ Data Types",
       description: "Choose from 10+ data types to collect exactly the data you need for every goal.",
-      image: "/10+ Data Types.jpg",
+      image: "/10-data-types.jpg",
     },
     {
       id: 3,
       title: "Beautiful pre-built reports",
       description: "Data is automatically analyzed and beautiful reports are auto-generated to carry to your next IEP meeting.",
-      image: "/Pre-built reports.jpg",
+      image: "/pre-built-reports.jpg",
     },
     {
       id: 4,
       title: "Service Time Tracking",
       description: "Automatically track service time both at a session and goal levels. Service time tracking reports are automatically generated.",
-      image: "/Service Time Tracking.jpg",
+      image: "/service-time-tracking.jpg",
     },
     {
       id: 5,
       title: "Creating Rotating Schedule",
       description: "Easily create and manage rotating schedules for your team, ensuring smooth coordination and coverage.",
-      image: "/Creating Rotating schedule.jpg",
+      image: "/creating-rotating-schedule.jpg",
     },
     {
       id: 6,
       title: "Admin Dashboard",
       description: "Get a bird's-eye view of your team's progress, schedules, and data all in one place.",
-      image: "/Admin Dashboard.jpg",
+      image: "/admin-dashboard.jpg",
     },
   ];
   const [activeId, setActiveId] = useState(1);
