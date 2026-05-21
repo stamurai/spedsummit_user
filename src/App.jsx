@@ -4190,85 +4190,170 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
 
         {/* Community */}
         {bottomTab === "community" && (
-          <div className="sd-tab-content" style={{ padding:"20px 24px", background:C.white, minHeight:400 }}>
-            <div style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"12px 14px", marginBottom:14, display:"flex", gap:10, alignItems:"center" }}>
-              <Avatar name={userProfile.name} size={32}/>
-              <input ref={chatInputRef} value={communityNewPost} onChange={e=>setCommunityNewPost(e.target.value)}
-                onKeyDown={e=>{ if(e.key==="Enter" && communityNewPost.trim()) { setCommunityPosts(ps=>[{id:Date.now(),author:"You",role:"USER",time:"just now",title:communityNewPost.slice(0,80),body:"",tags:[],likes:0,replies:0,type:"post",liked:false,saved:false},...ps]); setCommunityNewPost(""); toast({ type:"success", message:"Posted!" }); }}}
-                placeholder="Share something with the community…"
-                style={{ flex:1, padding:"8px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:14, outline:"none", color:C.gray700, background:C.white }}/>
-              <button onClick={() => { if (!communityNewPost.trim()) return; setCommunityPosts(ps=>[{id:Date.now(),author:"You",role:"USER",time:"just now",title:communityNewPost.slice(0,80),body:"",tags:[],likes:0,replies:0,type:"post",liked:false,saved:false},...ps]); setCommunityNewPost(""); toast({ type:"success", message:"Posted!" }); }}
-                style={{ flexShrink:0, width:34, height:34, borderRadius:"50%", background:communityNewPost.trim() ? C.primary : C.gray200, border:"none", cursor:communityNewPost.trim() ? "pointer" : "default", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.15s" }}>
-                <Icon name="paper-plane-tilt" size={16} color="#fff" weight="fill"/>
-              </button>
-            </div>
-            {communityPosts.map(post => (
-              <div key={post.id} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"16px 18px", marginBottom:12 }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
-                  <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-                    <Avatar name={post.author} size={36}/>
-                    <div>
-                      <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"wrap" }}>
-                        <span style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{post.author}</span>
-                        {post.role==="MENTOR" && <Badge label="MENTOR" color={C.success} bg={C.successLight} size={12}/>}
-                        {post.type==="question" && <Badge label="QUESTION" color={C.primary} bg={C.primaryLight} size={12}/>}
-                      </div>
-                      <div style={{ fontSize:12, color:C.gray400 }}>{post.time}</div>
-                    </div>
+          <div className="sd-tab-content" style={{ padding:"20px 24px", background:C.gray50, minHeight:400 }}>
+            <div style={{ display:"flex", gap:20, alignItems:"flex-start" }}>
+              {/* Left: Posts feed */}
+              <div style={{ flex:1, minWidth:0 }}>
+                {/* Post input */}
+                <div style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"12px 14px", marginBottom:16, display:"flex", gap:10, alignItems:"center" }}>
+                  <Avatar name={userProfile.name} size={32}/>
+                  <input ref={chatInputRef} value={communityNewPost} onChange={e=>setCommunityNewPost(e.target.value)}
+                    onKeyDown={e=>{ if(e.key==="Enter" && communityNewPost.trim()) { setCommunityPosts(ps=>[{id:Date.now(),author:"You",role:"USER",time:"just now",title:communityNewPost.slice(0,80),body:"",tags:[],likes:0,replies:0,type:"post",liked:false,saved:false},...ps]); setCommunityNewPost(""); toast({ type:"success", message:"Posted!" }); }}}
+                    placeholder="Share something with the community…"
+                    style={{ flex:1, padding:"8px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:14, outline:"none", color:C.gray700, background:C.white }}/>
+                  <button onClick={() => { if (!communityNewPost.trim()) return; setCommunityPosts(ps=>[{id:Date.now(),author:"You",role:"USER",time:"just now",title:communityNewPost.slice(0,80),body:"",tags:[],likes:0,replies:0,type:"post",liked:false,saved:false},...ps]); setCommunityNewPost(""); toast({ type:"success", message:"Posted!" }); }}
+                    style={{ flexShrink:0, width:34, height:34, borderRadius:"50%", background:communityNewPost.trim() ? C.primary : C.gray200, border:"none", cursor:communityNewPost.trim() ? "pointer" : "default", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.15s" }}>
+                    <Icon name="paper-plane-tilt" size={16} color="#fff" weight="fill"/>
+                  </button>
+                </div>
+                {/* Post count header */}
+                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, marginBottom:12, letterSpacing:.3 }}>
+                  {communityPosts.length === 0 ? "0 Posts" : `${communityPosts.length} Post${communityPosts.length !== 1 ? "s" : ""}`}
+                </div>
+                {communityPosts.length === 0 ? (
+                  <div style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"40px 24px", textAlign:"center" }}>
+                    <Icon name="chat-circle-dots" size={40} color={C.gray300}/>
+                    <div style={{ marginTop:12, fontSize:14, fontWeight:600, color:C.gray500 }}>No posts yet</div>
+                    <div style={{ fontSize:13, color:C.gray400, marginTop:4 }}>Be the first to start a conversation!</div>
                   </div>
-                  <div style={{ position:"relative" }}>
-                    <button onClick={()=>setCommunityOpenMenu(communityOpenMenu===post.id?null:post.id)}
-                      style={{ width:28, height:28, borderRadius:6, border:"none", background:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}
-                      onMouseEnter={e=>e.currentTarget.style.background=C.gray100} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                      <Icon name="dots-three" size={16} color={C.gray500}/>
-                    </button>
-                    {communityOpenMenu===post.id && (
-                      <DropdownMenu
-                        items={[
-                          { icon:"bookmark", label:post.saved?"Unsave":"Save", action:()=>{ setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,saved:!p.saved}:p)); toast({type:"success",message:post.saved?"Removed":"Saved!"}); setCommunityOpenMenu(null); } },
-                          { icon:"share-network", label:"Share", action:()=>{ toast({type:"info",message:"Link copied!"}); setCommunityOpenMenu(null); } },
-                          { icon:"flag", label:"Report", action:()=>{ toast({type:"warning",message:"Report submitted."}); setCommunityOpenMenu(null); } },
-                          ...(post.author==="You"?[{ icon:"trash", label:"Delete", danger:true, action:()=>{ setCommunityPosts(ps=>ps.filter(p=>p.id!==post.id)); toast({type:"success",message:"Deleted."}); setCommunityOpenMenu(null); } }]:[]),
-                        ]}
-                        onClose={()=>setCommunityOpenMenu(null)}
-                      />
+                ) : communityPosts.map(post => (
+                  <div key={post.id} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"16px 18px", marginBottom:12 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
+                      <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+                        <Avatar name={post.author} size={36}/>
+                        <div>
+                          <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"wrap" }}>
+                            <span style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{post.author}</span>
+                            {post.role==="MENTOR" && <Badge label="MENTOR" color={C.success} bg={C.successLight} size={12}/>}
+                            {post.type==="question" && <Badge label="QUESTION" color={C.primary} bg={C.primaryLight} size={12}/>}
+                          </div>
+                          <div style={{ fontSize:12, color:C.gray400 }}>{post.time}</div>
+                        </div>
+                      </div>
+                      <div style={{ position:"relative" }}>
+                        <button onClick={()=>setCommunityOpenMenu(communityOpenMenu===post.id?null:post.id)}
+                          style={{ width:28, height:28, borderRadius:6, border:"none", background:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}
+                          onMouseEnter={e=>e.currentTarget.style.background=C.gray100} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                          <Icon name="dots-three" size={16} color={C.gray500}/>
+                        </button>
+                        {communityOpenMenu===post.id && (
+                          <DropdownMenu
+                            items={[
+                              { icon:"bookmark", label:post.saved?"Unsave":"Save", action:()=>{ setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,saved:!p.saved}:p)); toast({type:"success",message:post.saved?"Removed":"Saved!"}); setCommunityOpenMenu(null); } },
+                              { icon:"share-network", label:"Share", action:()=>{ toast({type:"info",message:"Link copied!"}); setCommunityOpenMenu(null); } },
+                              { icon:"flag", label:"Report", action:()=>{ toast({type:"warning",message:"Report submitted."}); setCommunityOpenMenu(null); } },
+                              ...(post.author==="You"?[{ icon:"trash", label:"Delete", danger:true, action:()=>{ setCommunityPosts(ps=>ps.filter(p=>p.id!==post.id)); toast({type:"success",message:"Deleted."}); setCommunityOpenMenu(null); } }]:[]),
+                            ]}
+                            onClose={()=>setCommunityOpenMenu(null)}
+                          />
+                        )}
+                      </div>
+                    </div>
+                    <div style={{ fontSize:14, fontWeight:700, color:C.gray900, marginBottom:5, lineHeight:1.4 }}>{post.title}</div>
+                    {post.body && <p style={{ margin:"0 0 8px", fontSize:14, color:C.gray600, lineHeight:1.6, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{post.body}</p>}
+                    {post.tags.length>0 && <div style={{ display:"flex", gap:6, marginBottom:8 }}>{post.tags.map(t=><span key={t} style={{ fontSize:12, background:C.gray100, color:C.gray600, padding:"2px 8px", borderRadius:99 }}>{t}</span>)}</div>}
+                    <div style={{ display:"flex", gap:2, paddingTop:10, borderTop:`1px solid ${C.gray100}` }}>
+                      <button onClick={()=>setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,liked:!p.liked,likes:p.liked?p.likes-1:p.likes+1}:p))}
+                        style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", borderRadius:8, border:"none", background:post.liked?C.errorLight:"transparent", color:post.liked?C.error:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
+                        <Icon name={post.liked?"heart":"heart-straight"} size={14} color={post.liked?C.error:C.gray500}/>{post.likes}
+                      </button>
+                      <button onClick={()=>setCommunityReplyingTo(communityReplyingTo===post.id?null:post.id)}
+                        style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", borderRadius:8, border:"none", background:"transparent", color:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}
+                        onMouseEnter={e=>e.currentTarget.style.background=C.gray100} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                        <Icon name="chat-circle" size={14} color={C.gray500}/>{post.replies}
+                      </button>
+                      <button onClick={()=>toast({type:"info",message:"Link copied!"})}
+                        style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", borderRadius:8, border:"none", background:"transparent", color:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}
+                        onMouseEnter={e=>e.currentTarget.style.background=C.gray100} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                        <Icon name="share-network" size={14} color={C.gray500}/>Share
+                      </button>
+                      {post.saved && <Icon name="bookmark" size={15} color={C.primary} style={{ marginLeft:"auto", alignSelf:"center" }}/>}
+                    </div>
+                    {communityReplyingTo===post.id && (
+                      <div style={{ marginTop:10, display:"flex", gap:8 }}>
+                        <Avatar name={userProfile.name} size={26}/>
+                        <div style={{ flex:1, display:"flex", gap:8 }}>
+                          <input value={communityReplyText} onChange={e=>setCommunityReplyText(e.target.value)}
+                            onKeyDown={e=>{ if(e.key==="Enter" && communityReplyText.trim()) { setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1}:p)); setCommunityReplyingTo(null); setCommunityReplyText(""); toast({type:"success",message:"Reply posted!"}); }}}
+                            placeholder="Write a reply…"
+                            style={{ flex:1, padding:"6px 10px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:12, outline:"none", color:C.gray700, background:C.white }}/>
+                          <Btn size="sm" onClick={()=>{ if(!communityReplyText.trim()) return; setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1}:p)); setCommunityReplyingTo(null); setCommunityReplyText(""); toast({type:"success",message:"Reply posted!"}); }}>Reply</Btn>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Right: Session details panel */}
+              <div style={{ width:260, flexShrink:0, display:"flex", flexDirection:"column", gap:12 }}>
+                {/* Stats */}
+                <div style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"16px 18px" }}>
+                  <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:14 }}>Session Stats</div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                      <div style={{ width:34, height:34, borderRadius:8, background:C.primaryLight, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                        <Icon name="eye" size={16} color={C.primary}/>
+                      </div>
+                      <div>
+                        <div style={{ fontSize:16, fontWeight:800, color:C.gray900, lineHeight:1 }}>—</div>
+                        <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>Active viewers</div>
+                      </div>
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                      <div style={{ width:34, height:34, borderRadius:8, background:"#f0fdf4", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                        <Icon name="users" size={16} color={C.success}/>
+                      </div>
+                      <div>
+                        <div style={{ fontSize:16, fontWeight:800, color:C.gray900, lineHeight:1 }}>{session.registrations ?? "—"}</div>
+                        <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>Registrations</div>
+                      </div>
+                    </div>
+                    {session.duration && (
+                      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                        <div style={{ width:34, height:34, borderRadius:8, background:"#fff7ed", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                          <Icon name="clock" size={16} color="#f97316"/>
+                        </div>
+                        <div>
+                          <div style={{ fontSize:16, fontWeight:800, color:C.gray900, lineHeight:1 }}>{session.duration}</div>
+                          <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>Duration</div>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
-                <div style={{ fontSize:14, fontWeight:700, color:C.gray900, marginBottom:5, lineHeight:1.4 }}>{post.title}</div>
-                {post.body && <p style={{ margin:"0 0 8px", fontSize:14, color:C.gray600, lineHeight:1.6, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{post.body}</p>}
-                {post.tags.length>0 && <div style={{ display:"flex", gap:6, marginBottom:8 }}>{post.tags.map(t=><span key={t} style={{ fontSize:12, background:C.gray100, color:C.gray600, padding:"2px 8px", borderRadius:99 }}>{t}</span>)}</div>}
-                <div style={{ display:"flex", gap:2, paddingTop:10, borderTop:`1px solid ${C.gray100}` }}>
-                  <button onClick={()=>setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,liked:!p.liked,likes:p.liked?p.likes-1:p.likes+1}:p))}
-                    style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", borderRadius:8, border:"none", background:post.liked?C.errorLight:"transparent", color:post.liked?C.error:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
-                    <Icon name={post.liked?"heart":"heart-straight"} size={14} color={post.liked?C.error:C.gray500}/>{post.likes}
-                  </button>
-                  <button onClick={()=>setCommunityReplyingTo(communityReplyingTo===post.id?null:post.id)}
-                    style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", borderRadius:8, border:"none", background:"transparent", color:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}
-                    onMouseEnter={e=>e.currentTarget.style.background=C.gray100} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                    <Icon name="chat-circle" size={14} color={C.gray500}/>{post.replies}
-                  </button>
-                  <button onClick={()=>toast({type:"info",message:"Link copied!"})}
-                    style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 10px", borderRadius:8, border:"none", background:"transparent", color:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}
-                    onMouseEnter={e=>e.currentTarget.style.background=C.gray100} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                    <Icon name="share-network" size={14} color={C.gray500}/>Share
-                  </button>
-                  {post.saved && <Icon name="bookmark" size={15} color={C.primary} style={{ marginLeft:"auto", alignSelf:"center" }}/>}
+
+                {/* About this session */}
+                <div style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"16px 18px" }}>
+                  <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>About this Session</div>
+                  {session.description ? (
+                    <p style={{ margin:0, fontSize:13, color:C.gray600, lineHeight:1.7 }}>{session.description}</p>
+                  ) : (
+                    <p style={{ margin:0, fontSize:13, color:C.gray400, lineHeight:1.7, fontStyle:"italic" }}>No description provided.</p>
+                  )}
+                  {session.category && (
+                    <div style={{ marginTop:12, display:"inline-flex", alignItems:"center", gap:5, background:C.gray100, borderRadius:99, padding:"4px 10px" }}>
+                      <Icon name="tag" size={12} color={C.gray500}/>
+                      <span style={{ fontSize:12, color:C.gray600, fontWeight:600 }}>{session.category}</span>
+                    </div>
+                  )}
                 </div>
-                {communityReplyingTo===post.id && (
-                  <div style={{ marginTop:10, display:"flex", gap:8 }}>
-                    <Avatar name={userProfile.name} size={26}/>
-                    <div style={{ flex:1, display:"flex", gap:8 }}>
-                      <input value={communityReplyText} onChange={e=>setCommunityReplyText(e.target.value)}
-                        onKeyDown={e=>{ if(e.key==="Enter" && communityReplyText.trim()) { setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1}:p)); setCommunityReplyingTo(null); setCommunityReplyText(""); toast({type:"success",message:"Reply posted!"}); }}}
-                        placeholder="Write a reply…"
-                        style={{ flex:1, padding:"6px 10px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:12, outline:"none", color:C.gray700, background:C.white }}/>
-                      <Btn size="sm" onClick={()=>{ if(!communityReplyText.trim()) return; setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1}:p)); setCommunityReplyingTo(null); setCommunityReplyText(""); toast({type:"success",message:"Reply posted!"}); }}>Reply</Btn>
+
+                {/* Instructor */}
+                {session.instructor && (
+                  <div style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"16px 18px" }}>
+                    <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:12 }}>Instructor</div>
+                    <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+                      <Avatar name={session.instructor} src={INSTRUCTOR_AVATARS[session.instructor]} size={40}/>
+                      <div>
+                        <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{session.instructor}</div>
+                        <div style={{ fontSize:12, color:C.gray400 }}>Speaker</div>
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
-            ))}
+            </div>
           </div>
         )}
       </div>
