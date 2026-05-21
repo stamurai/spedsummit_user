@@ -5158,7 +5158,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
           </div>
           <div style={{ fontSize:18, fontWeight:800, color:C.gray900, marginBottom:10 }}>No certificates yet</div>
           <div style={{ fontSize:14, color:C.gray500, lineHeight:1.7, maxWidth:340, marginBottom:28 }}>
-            Complete a session and pass the final assessment to earn your first certificate. Your achievements will appear here.
+            Complete a session and pass the final assessment to earn your first certificate.
           </div>
         </div>
       )}
