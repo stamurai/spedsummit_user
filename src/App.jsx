@@ -4274,19 +4274,17 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                       </button>
                       {post.saved && <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:4, fontSize:12, color:C.primary, fontWeight:600 }}><Icon name="bookmark" size={14} color={C.primary} weight="fill"/>Saved</div>}
                     </div>
-                    {/* Reply box */}
-                    {communityReplyingTo===post.id && (
-                      <div style={{ padding:"12px 16px 14px", borderTop:`1px solid ${isDark?"rgba(255,255,255,0.07)":C.gray100}`, display:"flex", gap:10 }}>
-                        <Avatar name={userProfile.name} size={28}/>
-                        <div style={{ flex:1, display:"flex", gap:8 }}>
-                          <input value={communityReplyText} onChange={e=>setCommunityReplyText(e.target.value)}
-                            onKeyDown={e=>{ if(e.key==="Enter" && communityReplyText.trim()) { setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1}:p)); setCommunityReplyingTo(null); setCommunityReplyText(""); toast({type:"success",message:"Reply posted!"}); }}}
-                            placeholder="Write a reply…"
-                            style={{ flex:1, padding:"7px 12px", border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, borderRadius:8, fontSize:13, outline:"none", color:isDark?"#fff":C.gray700, background:isDark?"rgba(255,255,255,0.05)":"transparent" }}/>
-                          <Btn size="sm" onClick={()=>{ if(!communityReplyText.trim()) return; setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1}:p)); setCommunityReplyingTo(null); setCommunityReplyText(""); toast({type:"success",message:"Reply posted!"}); }}>Reply</Btn>
-                        </div>
+                    {/* Reply box — always visible */}
+                    <div style={{ padding:"12px 16px 14px", borderTop:`1px solid ${isDark?"rgba(255,255,255,0.07)":C.gray100}`, display:"flex", gap:10 }}>
+                      <Avatar name={userProfile.name} size={28}/>
+                      <div style={{ flex:1, display:"flex", gap:8 }}>
+                        <input value={communityReplyingTo===post.id ? communityReplyText : ""} onChange={e=>{ setCommunityReplyingTo(post.id); setCommunityReplyText(e.target.value); }}
+                          onKeyDown={e=>{ if(e.key==="Enter" && communityReplyText.trim()) { setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1}:p)); setCommunityReplyingTo(null); setCommunityReplyText(""); toast({type:"success",message:"Reply posted!"}); }}}
+                          placeholder="Write a reply…"
+                          style={{ flex:1, padding:"7px 12px", border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, borderRadius:8, fontSize:13, outline:"none", color:isDark?"#fff":C.gray700, background:isDark?"rgba(255,255,255,0.05)":"transparent" }}/>
+                        <Btn size="sm" onClick={()=>{ if(!communityReplyText.trim() || communityReplyingTo!==post.id) return; setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1}:p)); setCommunityReplyingTo(null); setCommunityReplyText(""); toast({type:"success",message:"Reply posted!"}); }}>Reply</Btn>
                       </div>
-                    )}
+                    </div>
                   </div>
                 ))}
               </div>
