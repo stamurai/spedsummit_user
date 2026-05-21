@@ -9560,15 +9560,15 @@ function SpAccordionFeature({ T }) {
   const [activeId, setActiveId] = useState(1);
   const active = FEATURES.find(f => f.id === activeId);
   return (
-    <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
+    <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#27385A" }}>
       <div style={{ maxWidth:1100, margin:"0 auto" }}>
         {/* Header */}
         <div style={{ textAlign:"center", marginBottom:52 }}>
-          <p style={{ margin:"0 0 10px", fontSize:13, fontWeight:700, color:T.muted, letterSpacing:1, textTransform:"uppercase" }}>AbleSpace Features</p>
-          <h2 style={{ margin:"0 0 14px", fontSize:"clamp(28px,4vw,42px)", fontWeight:800, color:T.text, letterSpacing:-1.2, lineHeight:1.15 }}>
+          <p style={{ margin:"0 0 10px", fontSize:13, fontWeight:700, color:"rgba(255,255,255,0.6)", letterSpacing:1, textTransform:"uppercase" }}>AbleSpace Features</p>
+          <h2 style={{ margin:"0 0 14px", fontSize:"clamp(28px,4vw,42px)", fontWeight:800, color:"#fff", letterSpacing:-1.2, lineHeight:1.15 }}>
             AI-Powered IEP Goal Tracking
           </h2>
-          <p style={{ margin:"0 auto", fontSize:16, color:T.muted, lineHeight:1.7, maxWidth:480 }}>
+          <p style={{ margin:"0 auto", fontSize:16, color:"rgba(255,255,255,0.7)", lineHeight:1.7, maxWidth:480 }}>
             Track IEP goals, services, and accommodations in one place - with AI-powered speed and accuracy.
           </p>
         </div>
@@ -9579,9 +9579,9 @@ function SpAccordionFeature({ T }) {
           .sp-acc-list { flex:1; }
           @media(max-width:768px){ .sp-acc-wrap { flex-direction:column; gap:32px; } .sp-acc-img { display:none !important; } .sp-acc-mobile-img { display:block !important; } }
           @media(min-width:769px){ .sp-acc-mobile-img { display:none !important; } }
-          .sp-acc-item { border-bottom:1px solid ${T.border}; }
+          .sp-acc-item { border-bottom:1px solid rgba(255,255,255,0.12); }
           .sp-acc-trigger { width:100%; background:none; border:none; cursor:pointer; padding:20px 0; display:flex; align-items:center; justify-content:space-between; gap:12; text-align:left; font-family:inherit; }
-          .sp-acc-trigger:hover h6 { color:${T.text}; }
+          .sp-acc-trigger:hover h6 { color:#fff !important; }
           .sp-acc-chevron { transition:transform 0.25s ease; flex-shrink:0; }
           .sp-acc-chevron.open { transform:rotate(180deg); }
           .sp-acc-content { overflow:hidden; transition:max-height 0.3s ease, opacity 0.3s ease; }
@@ -9595,19 +9595,19 @@ function SpAccordionFeature({ T }) {
               return (
                 <div key={f.id} className="sp-acc-item">
                   <button className="sp-acc-trigger" onClick={() => setActiveId(f.id)}>
-                    <h6 style={{ margin:0, fontSize:18, fontWeight:700, lineHeight:1.3, color: isOpen ? T.text : T.muted, transition:"color 0.2s" }}>
+                    <h6 style={{ margin:0, fontSize:18, fontWeight:700, lineHeight:1.3, color: isOpen ? "#fff" : "rgba(255,255,255,0.55)", transition:"color 0.2s" }}>
                       {f.title}
                     </h6>
-                    <svg className={`sp-acc-chevron${isOpen?" open":""}`} width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                    <svg className={`sp-acc-chevron${isOpen?" open":""}`} width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
                       <path d="M6 9l6 6 6-6"/>
                     </svg>
                   </button>
                   <div className="sp-acc-content" style={{ maxHeight: isOpen ? 800 : 0, opacity: isOpen ? 1 : 0 }}>
-                    <p style={{ margin:"0 0 16px", fontSize:14, color:T.muted, lineHeight:1.7 }}>{f.description}</p>
+                    <p style={{ margin:"0 0 16px", fontSize:14, color:"rgba(255,255,255,0.6)", lineHeight:1.7 }}>{f.description}</p>
                     {/* Mobile image — shown inline below description */}
                     <div className="sp-acc-mobile-img" style={{ marginBottom:20 }}>
-                      <div style={{ width:"100%", aspectRatio:"1840/1424", overflow:"hidden" }}>
-                        <img src={f.image} alt={f.title} style={{ width:"100%", height:"100%", objectFit:"contain", objectPosition:"top center", display:"block" }}/>
+                      <div style={{ width:"100%", aspectRatio:"1840/1424", overflow:"hidden", borderRadius:12 }}>
+                        <img src={f.image} alt={f.title} style={{ width:"100%", height:"100%", objectFit:"contain", objectPosition:"top center", display:"block", borderRadius:12 }}/>
                       </div>
                     </div>
                   </div>
@@ -9618,9 +9618,9 @@ function SpAccordionFeature({ T }) {
 
           {/* Right: image preview */}
           <div className="sp-acc-img">
-            <div style={{ width:"100%", aspectRatio:"1840/1424", overflow:"hidden" }}>
+            <div style={{ width:"100%", borderRadius:12, overflow:"hidden", background:"#1e2d47", padding:"24px 24px 0", boxShadow:"0 8px 32px rgba(0,0,0,0.25)" }}>
               <img src={active.image} alt={active.title}
-                style={{ width:"100%", height:"100%", objectFit:"contain", objectPosition:"top center", display:"block", transition:"opacity 0.3s ease" }}/>
+                style={{ width:"100%", height:"auto", display:"block", borderRadius:"12px 12px 0 0", transition:"opacity 0.3s ease" }}/>
             </div>
           </div>
         </div>
@@ -9723,8 +9723,17 @@ function SpBentoChart({ T }) {
   );
 }
 
-function LandingPage({ onGetStarted }) {
+function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvatar = null, onGoToDashboard, onLogout }) {
   const [showAuth, setShowAuth] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef(null);
+
+  useEffect(() => {
+    if (!profileMenuOpen) return;
+    const handler = (e) => { if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) setProfileMenuOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [profileMenuOpen]);
   const [selectedSession, setSelectedSession] = useState(null);
   const [faqOpen, setFaqOpen] = useState(null);
   const [scheduleTab, setScheduleTab] = useState("upcoming");
@@ -9831,9 +9840,9 @@ function LandingPage({ onGetStarted }) {
     const instr = selectedInstructor;
     const paras = instr.bio.split("\n\n");
     return (
-      <div style={{ minHeight:"100vh", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", background:"#fff", color:T.text }}>
+      <div style={{ minHeight:"100vh", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", background:"#FEF5EC", color:T.text }}>
         {/* Nav */}
-        <nav style={{ position:"sticky", top:0, zIndex:100, background:"rgba(255,255,255,0.95)", backdropFilter:"blur(8px)", borderBottom:`1px solid ${T.border}`, height:60, display:"flex", alignItems:"center", padding:"0 24px" }}>
+        <nav style={{ position:"sticky", top:0, zIndex:100, background:"rgba(254,245,236,0.95)", backdropFilter:"blur(8px)", borderBottom:`1px solid ${T.border}`, height:60, display:"flex", alignItems:"center", padding:"0 24px" }}>
           <div style={{ maxWidth:1024, margin:"0 auto", width:"100%", display:"flex", alignItems:"center" }}>
             <button onClick={()=>{ setSelectedInstructor(null); window.scrollTo(0,0); }}
               style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", fontSize:14, color:T.muted, cursor:"pointer", padding:"4px 8px", borderRadius:6, transition:"background .12s, color .12s" }}
@@ -9978,12 +9987,56 @@ function LandingPage({ onGetStarted }) {
                 onMouseEnter={e=>{ e.currentTarget.style.background="rgba(245,158,11,0.1)"; e.currentTarget.style.color=T.text; }}
                 onMouseLeave={e=>{ e.currentTarget.style.background="none"; e.currentTarget.style.color=T.muted; }}>{l}</button>
             ))}
-            <button onClick={()=>setShowAuth(true)}
-              style={{ marginLeft:8, padding:"0 16px", height:36, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
-              onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
-              onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-              Start for free
-            </button>
+            {isLoggedIn ? (
+              <div ref={profileMenuRef} style={{ position:"relative", marginLeft:8 }}>
+                <button onClick={()=>setProfileMenuOpen(o=>!o)}
+                  style={{ display:"flex", alignItems:"center", gap:8, padding:"4px 12px 4px 4px", height:40, background:"none", border:`1px solid ${T.border}`, borderRadius:99, cursor:"pointer", transition:"border-color .12s, background .12s" }}
+                  onMouseEnter={e=>{ e.currentTarget.style.borderColor="#d1c4ae"; e.currentTarget.style.background="rgba(0,0,0,0.03)"; }}
+                  onMouseLeave={e=>{ e.currentTarget.style.borderColor=T.border; e.currentTarget.style.background="none"; }}>
+                  {userAvatar
+                    ? <img src={userAvatar} alt={userName} style={{ width:30, height:30, borderRadius:"50%", objectFit:"cover", flexShrink:0 }}/>
+                    : <div style={{ width:30, height:30, borderRadius:"50%", background:T.blue, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:"#fff", flexShrink:0 }}>{(userName||"U")[0].toUpperCase()}</div>
+                  }
+                  <span style={{ fontSize:13, fontWeight:600, color:T.text, maxWidth:100, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{userName || "Account"}</span>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ flexShrink:0, opacity:.5, transform: profileMenuOpen?"rotate(180deg)":"rotate(0deg)", transition:"transform .2s" }}><path d="M2 4l4 4 4-4" stroke={T.text} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </button>
+                {profileMenuOpen && (
+                  <div style={{ position:"absolute", top:"calc(100% + 8px)", right:0, minWidth:200, background:T.bg, border:`1px solid ${T.border}`, borderRadius:14, boxShadow:"0 8px 32px rgba(0,0,0,0.12)", overflow:"hidden", zIndex:200 }}>
+                    <div style={{ padding:"14px 16px 10px", borderBottom:`1px solid ${T.border}` }}>
+                      <div style={{ fontSize:13, fontWeight:700, color:T.text }}>{userName || "Account"}</div>
+                      <div style={{ fontSize:11, color:T.muted, marginTop:2 }}>SPED Summit learner</div>
+                    </div>
+                    {[
+                      { icon:"squares-four", label:"My Dashboard", action:()=>{ setProfileMenuOpen(false); onGoToDashboard?.(); } },
+                      { icon:"certificate", label:"My Certificates", action:()=>{ setProfileMenuOpen(false); onGoToDashboard?.(); } },
+                      { icon:"gear", label:"Account Settings", action:()=>{ setProfileMenuOpen(false); onGoToDashboard?.(); } },
+                    ].map(({ icon, label, action })=>(
+                      <button key={label} onClick={action}
+                        style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"11px 16px", background:"none", border:"none", fontSize:13, color:T.text, cursor:"pointer", textAlign:"left", transition:"background .1s" }}
+                        onMouseEnter={e=>e.currentTarget.style.background="rgba(0,0,0,0.04)"}
+                        onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                        <Icon name={icon} size={15} color={T.muted}/>{label}
+                      </button>
+                    ))}
+                    <div style={{ borderTop:`1px solid ${T.border}`, padding:"6px 0" }}>
+                      <button onClick={()=>{ setProfileMenuOpen(false); onLogout?.(); }}
+                        style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"11px 16px", background:"none", border:"none", fontSize:13, color:"#e53e3e", cursor:"pointer", textAlign:"left", transition:"background .1s" }}
+                        onMouseEnter={e=>e.currentTarget.style.background="rgba(229,62,62,0.06)"}
+                        onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                        <Icon name="sign-out" size={15} color="#e53e3e"/>Log out
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button onClick={()=>setShowAuth(true)}
+                style={{ marginLeft:8, padding:"0 16px", height:36, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
+                onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
+                onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
+                Start for free
+              </button>
+            )}
           </div>
           {/* Mobile hamburger */}
           <button onClick={()=>setNavOpen(o=>!o)} className="v1-nav-hamburger"
@@ -10011,12 +10064,25 @@ function LandingPage({ onGetStarted }) {
                 onMouseLeave={e=>e.currentTarget.style.background="none"}>{l}</button>
             ))}
           </div>
-          <button onClick={()=>{ setNavOpen(false); setShowAuth(true); }}
-            style={{ width:"100%", padding:"14px", fontSize:15, fontWeight:700, background:T.blue, color:"#fff", border:"none", borderRadius:12, cursor:"pointer", transition:"background .15s" }}
-            onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
-            onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-            Start for free
-          </button>
+          {isLoggedIn ? (
+            <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
+              <button onClick={()=>{ setNavOpen(false); onGoToDashboard?.(); }}
+                style={{ width:"100%", padding:"13px 16px", fontSize:15, fontWeight:700, background:T.blue, color:"#fff", border:"none", borderRadius:12, cursor:"pointer" }}>
+                My Dashboard
+              </button>
+              <button onClick={()=>{ setNavOpen(false); onLogout?.(); }}
+                style={{ width:"100%", padding:"13px 16px", fontSize:14, fontWeight:600, background:"none", color:"#e53e3e", border:`1px solid rgba(229,62,62,0.3)`, borderRadius:12, cursor:"pointer" }}>
+                Log out
+              </button>
+            </div>
+          ) : (
+            <button onClick={()=>{ setNavOpen(false); setShowAuth(true); }}
+              style={{ width:"100%", padding:"14px", fontSize:15, fontWeight:700, background:T.blue, color:"#fff", border:"none", borderRadius:12, cursor:"pointer", transition:"background .15s" }}
+              onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
+              onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
+              Start for free
+            </button>
+          )}
         </div>,
         document.body
       )}
@@ -10093,7 +10159,7 @@ function LandingPage({ onGetStarted }) {
           const CARD_W = 150, CARD_H = 190;
           const n = experts.length;
           return (
-            <div className="lp-hero-collage" style={{ position:"absolute", bottom:-72, left:0, right:0, height:500, overflow:"hidden", zIndex:2 }}>
+            <div className="lp-hero-collage" style={{ position:"absolute", bottom:-120, left:0, right:0, height:500, overflow:"hidden", zIndex:2 }}>
               <div className="lp-hero-collage-inner" style={{ display:"flex", justifyContent:"center", gap:10 }}>
                 {[...cols, ...cols].map((col, ci) => {
                   const top = experts[ci % n];
@@ -10366,7 +10432,8 @@ function LandingPage({ onGetStarted }) {
               borderRadius: 16,
               overflow: "hidden",
               height: "100%",
-              boxShadow: "0 8px 24px rgba(43, 46, 51, 0.08), 0 2px 6px rgba(43, 46, 51, 0.04)",
+              boxSizing: "border-box",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
             };
             const containerVariants = {
               hidden: { opacity: 0 },
@@ -10384,11 +10451,11 @@ function LandingPage({ onGetStarted }) {
                 whileInView="visible"
                 viewport={{ once: true, margin: "-60px" }}
                 className="lp-bento-grid"
-              style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gridTemplateRows:"repeat(2, minmax(160px,auto))", gap:20 }}
+              style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gridTemplateRows:"repeat(2, 1fr)", gap:20 }}
               >
                 {/* Slot 1 — Learners Connected (col 1, row 1) */}
                 <motion.div variants={itemVariants} style={{ gridColumn:"1", gridRow:"1" }}>
-                  <div className="lp-bento-card" style={{ ...cardBase, padding:"22px 22px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
+                  <div className="lp-bento-card" style={{ ...cardBase, padding:"28px 28px 24px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
                     <div>
                       <div style={{ fontSize:15, fontWeight:700, color:T.text, marginBottom:3 }}>Learners Connected</div>
                       <div style={{ fontSize:13, color:T.muted }}>4,200+ Active Educators</div>
@@ -10411,7 +10478,7 @@ function LandingPage({ onGetStarted }) {
 
                 {/* Slot 2 — Big stat (col 2, row 1) */}
                 <motion.div variants={itemVariants} style={{ gridColumn:"2", gridRow:"1" }}>
-                  <div className="lp-bento-card" style={{ ...cardBase, position:"relative", display:"flex", flexDirection:"column", justifyContent:"flex-end", padding:"22px 22px" }}>
+                  <div className="lp-bento-card" style={{ ...cardBase, position:"relative", display:"flex", flexDirection:"column", justifyContent:"flex-end", padding:"28px 28px 24px" }}>
                     <div style={{ position:"relative" }}>
                       <div style={{ fontSize:"clamp(36px,10vw,64px)", fontWeight:900, color:T.text, letterSpacing:-3, lineHeight:1 }}>100%</div>
                       <div style={{ fontSize:13, color:T.muted, marginTop:4, fontWeight:500 }}>Free to attend</div>
@@ -10421,7 +10488,7 @@ function LandingPage({ onGetStarted }) {
 
                 {/* Slot 3 — Completion Rate (col 1, row 2) */}
                 <motion.div variants={itemVariants} style={{ gridColumn:"1", gridRow:"2" }}>
-                  <div className="lp-bento-card" style={{ ...cardBase, padding:"22px 22px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
+                  <div className="lp-bento-card" style={{ ...cardBase, padding:"28px 28px 24px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
                     <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
                       <div>
                         <div style={{ fontSize:15, fontWeight:700, color:T.text, marginBottom:2 }}>Completion Rate</div>
@@ -10440,7 +10507,7 @@ function LandingPage({ onGetStarted }) {
 
                 {/* Slot 4 — Self-paced (col 2, row 2) */}
                 <motion.div variants={itemVariants} style={{ gridColumn:"2", gridRow:"2" }}>
-                  <div className="lp-bento-card" style={{ ...cardBase, padding:"22px 22px", display:"flex", flexDirection:"column", justifyContent:"flex-end" }}>
+                  <div className="lp-bento-card" style={{ ...cardBase, padding:"28px 28px 24px", display:"flex", flexDirection:"column", justifyContent:"flex-end" }}>
                     <div style={{ width:40, height:40, borderRadius:10, background:"rgba(16,185,129,0.1)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:14 }}>
                       <Icon name="play-circle" size={20} color="#10b981"/>
                     </div>
@@ -10592,22 +10659,22 @@ function LandingPage({ onGetStarted }) {
 
           {/* Apply banner */}
           <div style={{ maxWidth:1200, margin:"48px auto 0", padding:"0 24px" }}>
-            <div className="lp-apply-banner" style={{ borderRadius:16, border:`1px solid ${T.border}`, background:"#FEF5EC", padding:24, display:"flex", alignItems:"center", gap:24 }}>
-              <div style={{ width:56, height:56, borderRadius:12, background:"#ede9fe", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                <Icon name="student" size={28} color="#7c3aed"/>
-              </div>
-              <div style={{ flex:1 }}>
-                <div style={{ fontWeight:700, fontSize:17, color:T.text, marginBottom:4 }}>Want to share your expertise in special education?</div>
-                <div style={{ fontSize:14, color:T.muted, lineHeight:1.5 }}>Apply to be a speaker at SPED Summit!</div>
+            <div className="lp-apply-banner" style={{ borderRadius:16, background:T.bg, border:`1px solid ${T.border}`, padding:"22px 28px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:24 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+                <div style={{ width:40, height:40, borderRadius:10, background:"rgba(245,158,11,0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <Icon name="student" size={20} color="#d97706"/>
+                </div>
+                <div>
+                  <div style={{ fontWeight:700, fontSize:15, color:T.text, marginBottom:2 }}>Want to share your expertise in special education?</div>
+                  <div style={{ fontSize:13, color:T.muted, lineHeight:1.5 }}>Join our speaker lineup at SPED Summit — applications are open.</div>
+                </div>
               </div>
               <button onClick={()=>setShowAuth(true)}
                 className="lp-apply-banner-btn"
-              style={{ flexShrink:0, display:"flex", alignItems:"center", gap:8, padding:"0 20px", height:40, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background 150ms ease, transform 160ms cubic-bezier(0.23,1,0.32,1)", whiteSpace:"nowrap" }}
-                onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
-                onMouseLeave={e=>e.currentTarget.style.background=T.blue}
-                onMouseDown={e=>e.currentTarget.style.transform="scale(0.97)"}
-                onMouseUp={e=>e.currentTarget.style.transform=""}>
-                Apply
+                style={{ flexShrink:0, padding:"0 20px", height:40, background:"transparent", color:T.text, border:`1.5px solid ${T.border}`, borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", whiteSpace:"nowrap", transition:"border-color 150ms, background 150ms" }}
+                onMouseEnter={e=>{ e.currentTarget.style.borderColor=T.blue; e.currentTarget.style.color=T.blue; }}
+                onMouseLeave={e=>{ e.currentTarget.style.borderColor=T.border; e.currentTarget.style.color=T.text; }}>
+                Apply to Speak
               </button>
             </div>
           </div>
@@ -10622,12 +10689,8 @@ function LandingPage({ onGetStarted }) {
           const [opacity, setOpacity] = useState(0);
           return (
             <div ref={ref}
-              onMouseMove={e=>{ const r=ref.current.getBoundingClientRect(); setPos({ x:e.clientX-r.left, y:e.clientY-r.top }); }}
-              onMouseEnter={e=>{ setOpacity(1); e.currentTarget.style.borderColor=T.border; e.currentTarget.style.boxShadow="0 4px 24px rgba(0,0,0,0.08)"; }}
-              onMouseLeave={e=>{ setOpacity(0); e.currentTarget.style.borderColor=T.border; e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)"; }}
-              style={{ position:"relative", overflow:"hidden", borderRadius:16, border:`1px solid ${T.border}`, background:"#FEF5EC", transition:"box-shadow 0.2s, border-color 0.2s", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", ...style }}
+              style={{ position:"relative", overflow:"hidden", borderRadius:16, border:`1px solid ${T.border}`, background:"#FEF5EC", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", ...style }}
             >
-              <div style={{ pointerEvents:"none", position:"absolute", inset:-1, transition:"opacity 0.3s", opacity, background:`radial-gradient(500px circle at ${pos.x}px ${pos.y}px, ${spotlightColor}, transparent 40%)`, zIndex:0 }}/>
               <div style={{ position:"relative", zIndex:1 }}>{children}</div>
             </div>
           );
@@ -11773,7 +11836,7 @@ export default function App() {
     return (
       <>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} onGoToDashboard={handleGoToDashboard}/>
+        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToDashboard} onLogout={()=>{ sessionStorage.clear(); setIsLoggedIn(false); setPage("dashboard"); setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); }}/>
       </>
     );
   }
