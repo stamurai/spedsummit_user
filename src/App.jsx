@@ -9874,6 +9874,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
     return () => document.removeEventListener("mousedown", handler);
   }, [profileMenuOpen]);
   const [selectedSession, setSelectedSession] = useState(null);
+  const savedScrollY = useRef(0);
   const [faqOpen, setFaqOpen] = useState(null);
   const [scheduleTab, setScheduleTab] = useState("upcoming");
   const [instructorPage, setInstructorPage] = useState(0);
@@ -9986,7 +9987,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
         {/* Nav */}
         <nav style={{ position:"sticky", top:0, zIndex:100, background:"rgba(254,245,236,0.95)", backdropFilter:"blur(8px)", borderBottom:`1px solid ${T.border}`, height:60, display:"flex", alignItems:"center", padding:"0 24px" }}>
           <div style={{ maxWidth:1024, margin:"0 auto", width:"100%", display:"flex", alignItems:"center" }}>
-            <button onClick={()=>{ setSelectedInstructor(null); window.scrollTo(0,0); }}
+            <button onClick={()=>{ setSelectedInstructor(null); requestAnimationFrame(()=>window.scrollTo(0, savedScrollY.current)); }}
               style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", fontSize:14, color:T.muted, cursor:"pointer", padding:"4px 8px", borderRadius:6, transition:"background .12s, color .12s" }}
               onMouseEnter={e=>{ e.currentTarget.style.background=T.hover; e.currentTarget.style.color=T.text; }}
               onMouseLeave={e=>{ e.currentTarget.style.background="none"; e.currentTarget.style.color=T.muted; }}>
@@ -10071,7 +10072,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       <>
         <SessionPublicPage
           session={selectedSession}
-          onBack={() => setSelectedSession(null)}
+          onBack={() => { setSelectedSession(null); requestAnimationFrame(()=>window.scrollTo(0, savedScrollY.current)); }}
           onRegister={() => setShowAuth(true)}
           registerLabel={_isPastSession ? "View Recording" : "Register"}
         />
@@ -10800,7 +10801,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                 {/* Duplicate cards for seamless loop */}
                 {[...experts, ...experts].map((e, i) => (
                   <div key={i} className="spk-card"
-                    onClick={() => { setSelectedInstructor(e); window.scrollTo(0, 0); }}>
+                    onClick={() => { savedScrollY.current = window.scrollY; setSelectedInstructor(e); window.scrollTo(0, 0); }}>
                     {/* Full-height portrait image */}
                     <div style={{ height:"368px", overflow:"hidden" }}>
                       <img className="spk-img" src={e.img} alt={e.name}/>
@@ -10968,7 +10969,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                   const cardClickable = !isLoggedIn || isAvailable;
                   const handleCardClick = () => {
                     if (isLoggedIn && isAvailable) { onWatchSession ? onWatchSession(s) : onGetStarted(s.id); }
-                    else if (!isLoggedIn) { setSelectedSession(s); }
+                    else if (!isLoggedIn) { savedScrollY.current = window.scrollY; setSelectedSession(s); window.scrollTo(0,0); }
                     // logged in + not available → do nothing
                   };
                   return (
