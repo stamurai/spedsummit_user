@@ -4299,15 +4299,12 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                       {/* Reply input */}
                       <div style={{ padding:"10px 16px 14px", display:"flex", gap:10, alignItems:"center" }}>
                         <Avatar name={userProfile.name} size={28}/>
-                        <div style={{ flex:1, display:"flex", gap:8, alignItems:"center", background:isDark?"rgba(255,255,255,0.05)":C.gray50, borderRadius:99, padding:"6px 6px 6px 14px", border:`1px solid ${isDark?"rgba(255,255,255,0.08)":C.gray200}` }}>
+                        <div style={{ flex:1, display:"flex", gap:8 }}>
                           <input value={communityReplyText[post.id]||""} onChange={e=>setCommunityReplyText(prev=>({...prev,[post.id]:e.target.value}))}
                             onKeyDown={e=>{ const txt=(communityReplyText[post.id]||"").trim(); if(e.key==="Enter" && txt) { setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1,comments:[...(p.comments||[]),{author:userProfile.name||"You",time:"just now",text:txt}]}:p)); setCommunityReplyText(prev=>({...prev,[post.id]:""})); toast({type:"success",message:"Comment posted!"}); }}}
                             placeholder="Write a comment…"
-                            style={{ flex:1, border:"none", background:"transparent", fontSize:13, outline:"none", color:isDark?"#fff":C.gray700 }}/>
-                          <button onClick={()=>{ const txt=(communityReplyText[post.id]||"").trim(); if(!txt) return; setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1,comments:[...(p.comments||[]),{author:userProfile.name||"You",time:"just now",text:txt}]}:p)); setCommunityReplyText(prev=>({...prev,[post.id]:""})); toast({type:"success",message:"Comment posted!"}); }}
-                            style={{ width:30, height:30, borderRadius:"50%", background:(communityReplyText[post.id]||"").trim()?C.primary:C.gray300, border:"none", cursor:(communityReplyText[post.id]||"").trim()?"pointer":"default", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background .15s" }}>
-                            <Icon name="arrow-up" size={14} color="#fff" weight="bold"/>
-                          </button>
+                            style={{ flex:1, padding:"7px 12px", border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, borderRadius:8, fontSize:13, outline:"none", color:isDark?"#fff":C.gray700, background:isDark?"rgba(255,255,255,0.05)":"transparent" }}/>
+                          <Btn size="sm" onClick={()=>{ const txt=(communityReplyText[post.id]||"").trim(); if(!txt) return; setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1,comments:[...(p.comments||[]),{author:userProfile.name||"You",time:"just now",text:txt}]}:p)); setCommunityReplyText(prev=>({...prev,[post.id]:""})); toast({type:"success",message:"Comment posted!"}); }}>Reply</Btn>
                         </div>
                       </div>
                     </div>
