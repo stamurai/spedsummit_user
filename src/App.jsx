@@ -11434,6 +11434,7 @@ function LandingPageV2({ onGetStarted }) {
 ───────────────────────────────────────────────────────────────────────────── */
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLanding, setShowLanding] = useState(true);
 
   const fetchSessions = useCallback(() => {
     supabase.from("sessions").select("*").then(({ data, error }) => {
@@ -11823,23 +11824,21 @@ export default function App() {
 
   const activePage = page==="session-detail" ? (isAdmin?"admin-sessions":"sessions") : page;
 
-  if (page === "landing" || !isLoggedIn) {
+  if (showLanding) {
     const handleGetStarted = (sessionId, role = "user") => {
       setIsLoggedIn(true);
-      sessionStorage.setItem("loggedIn", "1");
-      sessionStorage.setItem("isAdmin", "0");
       if (sessionId) enroll(sessionId);
       // Stay on landing — profile icon will appear in nav
     };
     const handleGoToDashboard = () => {
       const p = isAdmin ? "admin-overview" : "dashboard";
       setPage(p);
-      sessionStorage.setItem("page", p);
+      setShowLanding(false);
     };
     return (
       <>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToDashboard} onLogout={()=>{ sessionStorage.clear(); setIsLoggedIn(false); setPage("dashboard"); setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); }}/>
+        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToDashboard} onLogout={()=>{ setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); }}/>
       </>
     );
   }
@@ -11960,7 +11959,7 @@ export default function App() {
                 toast={toast}
                 isDark={isDark}
                 onToggleDarkMode={() => setIsDark(v => !v)}
-                onLogout={() => { sessionStorage.clear(); setIsLoggedIn(false); setPage("dashboard"); setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); setShowPricingOverlay(false); }}
+                onLogout={() => { sessionStorage.clear(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); setShowPricingOverlay(false); }}
                 onNavigateProfile={() => { setShowPricingOverlay(false); nav("profile"); }}
                 onOpenSession={openSession}
                 onNavigate={nav}
