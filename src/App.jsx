@@ -10015,9 +10015,9 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                       <div style={{ fontSize:11, color:T.muted, marginTop:2 }}>SPED Summit learner</div>
                     </div>
                     {[
-                      { icon:"squares-four", label:"My Dashboard", action:()=>{ setProfileMenuOpen(false); onGoToDashboard?.(); } },
-                      { icon:"certificate", label:"My Certificates", action:()=>{ setProfileMenuOpen(false); onGoToDashboard?.(); } },
-                      { icon:"gear", label:"Account Settings", action:()=>{ setProfileMenuOpen(false); onGoToDashboard?.(); } },
+                      { icon:"squares-four", label:"My Dashboard", action:()=>{ setProfileMenuOpen(false); onGoToDashboard?.("dashboard"); } },
+                      { icon:"certificate", label:"My Certificates", action:()=>{ setProfileMenuOpen(false); onGoToDashboard?.("certifications"); } },
+                      { icon:"gear", label:"Account Settings", action:()=>{ setProfileMenuOpen(false); onGoToDashboard?.("profile"); } },
                     ].map(({ icon, label, action })=>(
                       <button key={label} onClick={action}
                         style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"11px 16px", background:"none", border:"none", fontSize:13, color:T.text, cursor:"pointer", textAlign:"left", transition:"background .1s" }}
@@ -11830,15 +11830,14 @@ export default function App() {
       if (sessionId) enroll(sessionId);
       // Stay on landing — profile icon will appear in nav
     };
-    const handleGoToDashboard = () => {
-      const p = isAdmin ? "admin-overview" : "dashboard";
-      setPage(p);
+    const handleGoToPage = (p) => {
+      setPage(p || (isAdmin ? "admin-overview" : "dashboard"));
       setShowLanding(false);
     };
     return (
       <>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToDashboard} onLogout={async ()=>{ await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); }}/>
+        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToPage} onLogout={async ()=>{ await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); }}/>
       </>
     );
   }
