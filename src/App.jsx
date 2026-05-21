@@ -4848,6 +4848,7 @@ function PastSessionsTab({ onOpenSeason, sessions = [], seasons = SEASONS }) {
           .ps-filters select { width:100%; }
         }
       `}</style>
+      {filledSeasons.length > 0 && (
       <div className="ps-header-row" style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20, gap:10 }}>
         <div style={{ fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3 }}>Past Sessions</div>
         <div className="ps-filters" style={{ display:"flex", alignItems:"center", gap:8 }}>
@@ -4869,8 +4870,9 @@ function PastSessionsTab({ onOpenSeason, sessions = [], seasons = SEASONS }) {
           </div>
         </div>
       </div>
+      )}
 
-      {filtered.length === 0 ? (
+      {filledSeasons.length === 0 ? null : filtered.length === 0 ? (
         <Empty fullPage>
           <EmptyMedia variant="icon" color="#6490E8"><Icon name="funnel" size={22} color="#6490E8"/></EmptyMedia>
           <EmptyHeader>
@@ -5147,10 +5149,6 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
           <div style={{ fontSize:18, fontWeight:800, color:C.gray900, marginBottom:10 }}>No certificates yet</div>
           <div style={{ fontSize:14, color:C.gray500, lineHeight:1.7, maxWidth:340, marginBottom:28 }}>
             Complete a session and pass the final assessment to earn your first certificate. Your achievements will appear here.
-          </div>
-          <div style={{ display:"flex", alignItems:"center", gap:8, background:"#fff", border:`1px solid ${C.gray200}`, borderRadius:10, padding:"10px 16px" }}>
-            <Icon name="play-circle" size={16} color={C.blue}/>
-            <span style={{ fontSize:13, color:C.gray600, fontWeight:500 }}>Start a session to begin earning</span>
           </div>
         </div>
       )}
