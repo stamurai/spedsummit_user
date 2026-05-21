@@ -3851,6 +3851,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const [communityOpenMenu, setCommunityOpenMenu] = useState(null);
   const [communityReplyingTo, setCommunityReplyingTo] = useState(null);
   const [communityReplyText, setCommunityReplyText] = useState({});
+  const [communityDeleteConfirm, setCommunityDeleteConfirm] = useState(null);
   const chatRef = useRef(null);
   const chatInputRef = useRef(null);
   const lesson = session.lessons[activeLesson] || session.lessons[0];
@@ -4242,7 +4243,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                             items={[
                               ...(post.author===adminName||post.author==="You"?[{ icon:"pencil", label:"Edit", action:()=>{ toast({type:"info",message:"Edit coming soon!"}); setCommunityOpenMenu(null); } }]:[]),
                               { icon:"share-network", label:"Share", action:()=>{ toast({type:"info",message:"Link copied!"}); setCommunityOpenMenu(null); } },
-                              ...(post.author===adminName||post.author==="You"?[{ icon:"trash", label:"Delete", danger:true, action:()=>{ setCommunityPosts(ps=>ps.filter(p=>p.id!==post.id)); toast({type:"success",message:"Deleted."}); setCommunityOpenMenu(null); } }]:[]),
+                              ...(post.author===adminName||post.author==="You"?[{ icon:"trash", label:"Delete", danger:true, action:()=>{ setCommunityDeleteConfirm(post.id); setCommunityOpenMenu(null); } }]:[]),
                             ]}
                             onClose={()=>setCommunityOpenMenu(null)}
                           />
@@ -4310,6 +4311,26 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                   </div>
                 ))}
               </div>
+
+              {/* Delete confirmation modal */}
+              {communityDeleteConfirm && (
+                <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center" }} onClick={()=>setCommunityDeleteConfirm(null)}>
+                  <div style={{ background:"#fff", borderRadius:16, padding:"28px 28px 20px", width:360, boxShadow:"0 24px 60px rgba(0,0,0,0.2)" }} onClick={e=>e.stopPropagation()}>
+                    <div style={{ fontWeight:800, fontSize:18, color:C.gray900, marginBottom:8 }}>Delete this post?</div>
+                    <p style={{ margin:"0 0 24px", fontSize:14, color:C.gray500, lineHeight:1.6 }}>Are you sure you want to delete this post? This action cannot be undone.</p>
+                    <div style={{ display:"flex", justifyContent:"flex-end", gap:10 }}>
+                      <button onClick={()=>setCommunityDeleteConfirm(null)}
+                        style={{ padding:"9px 20px", borderRadius:10, border:`1px solid ${C.gray200}`, background:C.white, fontSize:14, fontWeight:600, color:C.gray700, cursor:"pointer" }}>
+                        Cancel
+                      </button>
+                      <button onClick={()=>{ setCommunityPosts(ps=>ps.filter(p=>p.id!==communityDeleteConfirm)); setCommunityDeleteConfirm(null); toast({type:"success",message:"Post deleted."}); }}
+                        style={{ padding:"9px 20px", borderRadius:10, border:"none", background:"#ef4444", fontSize:14, fontWeight:600, color:"#fff", cursor:"pointer" }}>
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Right: Session details panel */}
               <div style={{ width:260, flexShrink:0, display:"flex", flexDirection:"column", gap:12 }}>
