@@ -4196,7 +4196,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               <div style={{ flex:1, minWidth:0 }}>
                 {/* Post input */}
                 <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"12px 14px", marginBottom:16, display:"flex", gap:10, alignItems:"center" }}>
-                  <Avatar name={userProfile.name} size={32}/>
+                  <Avatar name={adminName||"You"} src={adminAvatar} size={32}/>
                   <input ref={chatInputRef} value={communityNewPost} onChange={e=>setCommunityNewPost(e.target.value)}
                     onKeyDown={e=>{ if(e.key==="Enter" && communityNewPost.trim()) { setCommunityPosts(ps=>[{id:Date.now(),author:"You",role:"USER",time:"just now",title:communityNewPost.slice(0,80),body:"",tags:[],likes:0,replies:0,type:"post",liked:false,saved:false,comments:[]},...ps]); setCommunityNewPost(""); toast({ type:"success", message:"Posted!" }); }}}
                     placeholder="Share something with the community…"
@@ -4298,13 +4298,13 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                       )}
                       {/* Reply input */}
                       <div style={{ padding:"10px 16px 14px", display:"flex", gap:10, alignItems:"center" }}>
-                        <Avatar name={userProfile.name} size={28}/>
+                        <Avatar name={adminName||"You"} src={adminAvatar} size={28}/>
                         <div style={{ flex:1, display:"flex", gap:8 }}>
                           <input value={communityReplyText[post.id]||""} onChange={e=>setCommunityReplyText(prev=>({...prev,[post.id]:e.target.value}))}
-                            onKeyDown={e=>{ const txt=(communityReplyText[post.id]||"").trim(); if(e.key==="Enter" && txt) { setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1,comments:[...(p.comments||[]),{author:userProfile.name||"You",time:"just now",text:txt}]}:p)); setCommunityReplyText(prev=>({...prev,[post.id]:""})); toast({type:"success",message:"Comment posted!"}); }}}
+                            onKeyDown={e=>{ const txt=(communityReplyText[post.id]||"").trim(); if(e.key==="Enter" && txt) { setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1,comments:[...(p.comments||[]),{author:adminName||"You",time:"just now",text:txt}]}:p)); setCommunityReplyText(prev=>({...prev,[post.id]:""})); toast({type:"success",message:"Comment posted!"}); }}}
                             placeholder="Write a comment…"
                             style={{ flex:1, padding:"7px 12px", border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, borderRadius:8, fontSize:13, outline:"none", color:isDark?"#fff":C.gray700, background:isDark?"rgba(255,255,255,0.05)":"transparent" }}/>
-                          <Btn size="sm" disabled={!(communityReplyText[post.id]||"").trim()} onClick={()=>{ const txt=(communityReplyText[post.id]||"").trim(); if(!txt) return; setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1,comments:[...(p.comments||[]),{author:userProfile.name||"You",time:"just now",text:txt}]}:p)); setCommunityReplyText(prev=>({...prev,[post.id]:""})); toast({type:"success",message:"Comment posted!"}); }}>Reply</Btn>
+                          <Btn size="sm" disabled={!(communityReplyText[post.id]||"").trim()} onClick={()=>{ const txt=(communityReplyText[post.id]||"").trim(); if(!txt) return; setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1,comments:[...(p.comments||[]),{author:adminName||"You",time:"just now",text:txt}]}:p)); setCommunityReplyText(prev=>({...prev,[post.id]:""})); toast({type:"success",message:"Comment posted!"}); }}>Reply</Btn>
                         </div>
                       </div>
                     </div>
