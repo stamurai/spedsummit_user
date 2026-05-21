@@ -10814,10 +10814,16 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                   const isAvailable = isSessionAvailable(s.id);
                   const ctaLabel = isLoggedIn ? (isAvailable ? "Watch Now" : `Available ${schedItem?.date || d.date}`) : "Register Now";
                   const instrRole= INSTRUCTOR_ROLES[s.instructor] || "Instructor";
+                  const cardClickable = !isLoggedIn || isAvailable;
+                  const handleCardClick = () => {
+                    if (isLoggedIn && isAvailable) { onGetStarted(s.id); }
+                    else if (!isLoggedIn) { setSelectedSession(s); }
+                    // logged in + not available → do nothing
+                  };
                   return (
                     <div key={s.id} className="lp-session-card"
-                      style={{ background:"#FEF5EC", border:`1px solid ${T.border}`, borderRadius:12, boxShadow:"0 8px 24px rgba(43, 46, 51, 0.08), 0 2px 6px rgba(43, 46, 51, 0.04)", display:"flex", flexDirection:"column", alignItems:"stretch", overflow:"hidden", cursor:"pointer", height:"100%" }}
-                      onClick={()=>setSelectedSession(s)}>
+                      style={{ background:"#FEF5EC", border:`1px solid ${T.border}`, borderRadius:12, boxShadow:"0 8px 24px rgba(43, 46, 51, 0.08), 0 2px 6px rgba(43, 46, 51, 0.04)", display:"flex", flexDirection:"column", alignItems:"stretch", overflow:"hidden", cursor: cardClickable ? "pointer" : "default", height:"100%", opacity: isLoggedIn && !isAvailable ? 0.7 : 1 }}
+                      onClick={handleCardClick}>
 
                       {/* ── Top: instructor image with name overlay ── */}
                       <div className="lp-session-card-img" style={{ flexShrink:0, width:"100%", height:160, position:"relative" }}>
@@ -10845,10 +10851,11 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                           {schedItem?.description || s.description}
                         </div>
                         <button
-                          onClick={e=>{ e.stopPropagation(); isLoggedIn && isAvailable ? onGetStarted(s.id) : isLoggedIn ? null : setSelectedSession(s); }}
-                          style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", padding:"0 13px", height:36, background: isLoggedIn && !isAvailable ? T.muted : T.blue, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor: isLoggedIn && !isAvailable ? "default" : "pointer", fontFamily:"inherit", transition:"background .12s", opacity: isLoggedIn && !isAvailable ? 0.7 : 1 }}
-                          onMouseEnter={e=>{ if(!(isLoggedIn && !isAvailable)) e.currentTarget.style.background=T.blueHov; }}
-                          onMouseLeave={e=>{ if(!(isLoggedIn && !isAvailable)) e.currentTarget.style.background=T.blue; }}>
+                          onClick={e=>{ e.stopPropagation(); handleCardClick(); }}
+                          disabled={isLoggedIn && !isAvailable}
+                          style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", padding:"0 13px", height:36, background: isLoggedIn && !isAvailable ? "#c0c4cc" : T.blue, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor: cardClickable ? "pointer" : "default", fontFamily:"inherit", transition:"background .12s" }}
+                          onMouseEnter={e=>{ if(cardClickable) e.currentTarget.style.background=T.blueHov; }}
+                          onMouseLeave={e=>{ if(cardClickable) e.currentTarget.style.background= isLoggedIn && !isAvailable ? "#c0c4cc" : T.blue; }}>
                           {ctaLabel}
                         </button>
                       </div>
