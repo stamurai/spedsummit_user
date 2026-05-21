@@ -8604,7 +8604,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
   const totalResources = Object.values(sectionRes).reduce((n,arr)=>n+arr.length,0);
 
   return (
-    <div ref={pageRef} style={{ minHeight:"100vh", background:"#fff", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+    <div ref={pageRef} style={{ background:"#fff", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       <style>{`
         @media(max-width:680px){
           .spp-nav { padding:0 16px !important; }
@@ -9848,7 +9848,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
     const instr = selectedInstructor;
     const paras = instr.bio.split("\n\n");
     return (
-      <div style={{ minHeight:"100vh", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", background:"#FEF5EC", color:T.text }}>
+      <div style={{ fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", background:"#FEF5EC", color:T.text }}>
         {/* Nav */}
         <nav style={{ position:"sticky", top:0, zIndex:100, background:"rgba(254,245,236,0.95)", backdropFilter:"blur(8px)", borderBottom:`1px solid ${T.border}`, height:60, display:"flex", alignItems:"center", padding:"0 24px" }}>
           <div style={{ maxWidth:1024, margin:"0 auto", width:"100%", display:"flex", alignItems:"center" }}>
@@ -11838,7 +11838,7 @@ export default function App() {
     return (
       <>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToDashboard} onLogout={()=>{ setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); }}/>
+        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToDashboard} onLogout={async ()=>{ await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); }}/>
       </>
     );
   }
@@ -11853,10 +11853,12 @@ export default function App() {
         toast={toast}
         isDark={isDark}
         onToggleDarkMode={() => setIsDark(v => !v)}
-        onLogout={() => {
+        onLogout={async () => {
+          await supabase.auth.signOut();
           sessionStorage.clear();
-          setIsLoggedIn(false); setPage("dashboard"); setIsAdmin(false);
-          setEnrolledIds(new Set([1,2,3])); setQuizStates({});
+          setIsLoggedIn(false); setShowLanding(true); setPage("dashboard");
+          setUserName(""); setUserEmail(""); setUserAvatar(null);
+          setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({});
         }}
         onNavigateProfile={() => nav("profile")}
         onOpenSession={openSession}
@@ -11959,7 +11961,7 @@ export default function App() {
                 toast={toast}
                 isDark={isDark}
                 onToggleDarkMode={() => setIsDark(v => !v)}
-                onLogout={() => { sessionStorage.clear(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); setShowPricingOverlay(false); }}
+                onLogout={async () => { await supabase.auth.signOut(); sessionStorage.clear(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); setShowPricingOverlay(false); }}
                 onNavigateProfile={() => { setShowPricingOverlay(false); nav("profile"); }}
                 onOpenSession={openSession}
                 onNavigate={nav}
