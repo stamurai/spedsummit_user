@@ -2710,7 +2710,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
         .db-cal-day:hover { background:var(--c-gray100) !important; }
 
         /* ── Dashboard layout ── */
-        .db-main-wrap { display:flex; align-items:flex-start; gap:24px; padding:28px 32px; max-width:1400px; margin:0 auto; box-sizing:border-box; width:100%; }
+        .db-main-wrap { display:flex; align-items:flex-start; gap:24px; padding:28px 32px 28px; max-width:1400px; margin:0 auto; box-sizing:border-box; width:100%; }
         .db-right-panel { width:240px; flex-shrink:0; }
 
         /* ── Session cards ── */
@@ -2904,7 +2904,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
 
               {/* ── UPCOMING SESSIONS ── */}
               {upcomingSchedule.length > 0 && (
-                <div style={{ marginBottom:32 }} className="db-upcoming-section">
+                <div style={{ marginBottom:0 }} className="db-upcoming-section">
                   <div style={{ fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3, marginBottom:16 }}>Upcoming sessions</div>
                   <div className="db-upcoming-list" style={isMobile ? { display:"flex", flexDirection:"column", gap:12 } : {}}>
                     {upcomingSchedule.slice(0,4).map((item) => {
