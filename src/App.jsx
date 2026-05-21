@@ -11873,7 +11873,7 @@ export default function App() {
         userName={userName}
         userAvatar={userAvatar}
         seasons={seasons}
-        sessions={sessions}
+        sessions={SESSIONS.map(s => { const remote = sessions.find(r => r.id === s.id); return remote ? { ...s, ...remote } : s; })}
         onBrowseSelect={(season, year) => {
           if (season === "all") {
             // Year filter — find first season matching that year
