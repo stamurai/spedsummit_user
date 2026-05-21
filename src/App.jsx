@@ -4240,7 +4240,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                         {communityOpenMenu===post.id && (
                           <DropdownMenu
                             items={[
-                              ...(post.author===adminName||post.author==="You"?[{ icon:"pencil-simple", label:"Edit", action:()=>{ toast({type:"info",message:"Edit coming soon!"}); setCommunityOpenMenu(null); } }]:[]),
+                              ...(post.author===adminName||post.author==="You"?[{ icon:"pencil", label:"Edit", action:()=>{ toast({type:"info",message:"Edit coming soon!"}); setCommunityOpenMenu(null); } }]:[]),
                               { icon:"share-network", label:"Share", action:()=>{ toast({type:"info",message:"Link copied!"}); setCommunityOpenMenu(null); } },
                               ...(post.author===adminName||post.author==="You"?[{ icon:"trash", label:"Delete", danger:true, action:()=>{ setCommunityPosts(ps=>ps.filter(p=>p.id!==post.id)); toast({type:"success",message:"Deleted."}); setCommunityOpenMenu(null); } }]:[]),
                             ]}
