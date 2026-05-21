@@ -4873,13 +4873,15 @@ function PastSessionsTab({ onOpenSeason, sessions = [], seasons = SEASONS }) {
       )}
 
       {filledSeasons.length === 0 ? (
-        <Empty fullPage>
-          <EmptyMedia variant="icon" color="#6490E8"><Icon name="clock" size={22} color="#6490E8"/></EmptyMedia>
-          <EmptyHeader>
-            <EmptyTitle>No past sessions yet</EmptyTitle>
-            <EmptyDescription>Completed summit seasons will appear here once they wrap up.</EmptyDescription>
-          </EmptyHeader>
-        </Empty>
+        <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"60px 32px", textAlign:"center", minHeight:400 }}>
+          <div style={{ width:72, height:72, borderRadius:20, background:"rgba(100,144,232,0.10)", border:"1.5px solid rgba(100,144,232,0.2)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:20 }}>
+            <Icon name="clock" size={34} color="#6490E8"/>
+          </div>
+          <div style={{ fontSize:18, fontWeight:800, color:C.gray900, marginBottom:10 }}>No past sessions yet</div>
+          <div style={{ fontSize:14, color:C.gray500, lineHeight:1.7, maxWidth:340 }}>
+            Completed summit seasons will appear here once they wrap up.
+          </div>
+        </div>
       ) : filtered.length === 0 ? (
         <Empty fullPage>
           <EmptyMedia variant="icon" color="#6490E8"><Icon name="funnel" size={22} color="#6490E8"/></EmptyMedia>
