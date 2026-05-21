@@ -2677,7 +2677,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
     return scheduledDates.filter(sd => sd.date.getDate()===day && sd.date.getMonth()===calMon && sd.date.getFullYear()===calYear);
   }
   const today = new Date();
-  const inProgressSessions = enrolledSessions.filter(s => s.status === "in-progress" || s.status === "not-started");
+  const inProgressSessions = sessions.filter(s => s.status === "in-progress" || s.status === "not-started" || s.status === "completed");
   const completedSessions  = enrolledSessions.filter(s => s.status === "completed");
 
   /* ── Filter options derived from SEASONS ── */
@@ -2891,11 +2891,11 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
               {/* ── CONTINUE LEARNING ── */}
               {filteredInProgress.length > 0 && <div style={{ marginBottom:32 }}>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16, gap:10 }}>
-                  <div style={{ fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3 }}>Continue watching</div>
+                  <div style={{ fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3 }}>All Sessions</div>
                 </div>
                   <div className="db-continue-list" style={isMobile ? { display:"flex", flexDirection:"row", overflowX:"scroll", overflowY:"hidden", gap:12, paddingTop:0, paddingBottom:8, paddingLeft:16, paddingRight:0, marginLeft:-16, marginRight:-16, width:"calc(100% + 32px)", boxSizing:"border-box", WebkitOverflowScrolling:"touch", scrollSnapType:"x mandatory", scrollPaddingLeft:16, touchAction:"pan-x pan-y", overscrollBehaviorX:"contain" } : { display:"flex", flexDirection:"column", gap:12 }}>
                     {filteredInProgress.map(s => {
-                      const lbl = s.status==="in-progress" ? "Resume" : "Start";
+                      const lbl = s.status==="completed" ? "Watch Again" : s.status==="in-progress" ? "Resume" : isSessionAvailable(s.id) ? "Watch Now" : "Start";
                       return renderSessionCard(s, lbl);
                     })}
                     {isMobile && <div style={{ flexShrink:0, width:16, height:1 }} aria-hidden="true" />}
