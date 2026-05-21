@@ -9979,7 +9979,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
     const instr = selectedInstructor;
     const paras = instr.bio.split("\n\n");
     return (
-      <div style={{ fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", background:"#FEF5EC", color:T.text }}>
+      <div style={{ fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", background:"#FEF5EC", color:T.text, minHeight:"100vh" }}>
         {/* Nav */}
         <nav style={{ position:"sticky", top:0, zIndex:100, background:"rgba(254,245,236,0.95)", backdropFilter:"blur(8px)", borderBottom:`1px solid ${T.border}`, height:60, display:"flex", alignItems:"center", padding:"0 24px" }}>
           <div style={{ maxWidth:1024, margin:"0 auto", width:"100%", display:"flex", alignItems:"center" }}>
