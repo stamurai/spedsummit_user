@@ -10131,7 +10131,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
 
           {/* CTAs */}
           <div className="animate-fade-in-up lp-hero-cta-row" style={{ opacity:0, animationDelay:"0.5s", display:"flex", gap:12, justifyContent:"center", alignItems:"center", flexWrap:"wrap" }}>
-            <button onClick={()=>isLoggedIn ? onGetStarted(null) : setShowAuth(true)}
+            <button onClick={()=>isLoggedIn ? onGoToDashboard?.("dashboard") : setShowAuth(true)}
               style={{ padding:"0 26px", height:44, minWidth:200, background:T.blue, color:"#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
               onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
               onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
@@ -10985,7 +10985,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               </p>
             </div>
             <div className="lp-footer-cta-btns" style={{ display:"flex", gap:10, flexShrink:0 }}>
-              <button onClick={()=>isLoggedIn ? onGetStarted(null) : setShowAuth(true)}
+              <button onClick={()=>isLoggedIn ? onGoToDashboard?.("dashboard") : setShowAuth(true)}
                 style={{ padding:"0 24px", height:42, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
                 onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
                 onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
