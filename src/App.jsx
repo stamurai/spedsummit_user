@@ -9266,7 +9266,7 @@ function SubscribePage({ onBack, onGetStarted }) {
   );
 }
 
-function V1PricingCardOnly({ onGetStarted, onClose }) {
+function V1PricingCardOnly({ onGetStarted, onClose, isLoggedIn = false }) {
   const [testiIdx, setTestiIdx] = useState(0);
   useEffect(() => {
     const id = setInterval(() => setTestiIdx(p => (p + 1) % V1_PRICING_TESTI.length), 5000);
@@ -9375,7 +9375,7 @@ function V1PricingCardOnly({ onGetStarted, onClose }) {
   );
 }
 
-function V1PricingSection({ onGetStarted }) {
+function V1PricingSection({ onGetStarted, isLoggedIn = false }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, amount: 0.2 });
   const [testiIdx, setTestiIdx] = useState(0);
@@ -9462,7 +9462,7 @@ function V1PricingSection({ onGetStarted }) {
                 onMouseEnter={e=>{ e.currentTarget.style.background="#4f7de0"; e.currentTarget.style.transform="translateY(-1px)"; }}
                 onMouseLeave={e=>{ e.currentTarget.style.background="#6490E8"; e.currentTarget.style.transform="none"; }}
               >
-                Start for free
+                {isLoggedIn ? "Go to Dashboard" : "Start for free"}
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ marginLeft:"auto" }}><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </button>
             </div>
@@ -10131,11 +10131,11 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
 
           {/* CTAs */}
           <div className="animate-fade-in-up lp-hero-cta-row" style={{ opacity:0, animationDelay:"0.5s", display:"flex", gap:12, justifyContent:"center", alignItems:"center", flexWrap:"wrap" }}>
-            <button onClick={()=>setShowAuth(true)}
+            <button onClick={()=>isLoggedIn ? onGetStarted(null) : setShowAuth(true)}
               style={{ padding:"0 26px", height:44, minWidth:200, background:T.blue, color:"#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
               onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
               onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-              Start for free
+              {isLoggedIn ? "Go to Dashboard" : "Start for free"}
             </button>
             <button onClick={()=>document.getElementById("sessions")?.scrollIntoView({ behavior:"smooth" })}
               style={{ padding:"0 26px", height:44, minWidth:200, background:"transparent", color:T.text, border:`1.5px solid ${T.border}`, borderRadius:10, fontSize:15, fontWeight:500, cursor:"pointer", transition:"background .15s, border-color .15s" }}
@@ -10748,14 +10748,14 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               </div>
 
               {/* CTA */}
-              <div style={{ textAlign:"center", marginTop:48 }}>
+              {!isLoggedIn && <div style={{ textAlign:"center", marginTop:48 }}>
                 <button onClick={()=>setShowAuth(true)}
                   style={{ padding:"12px 32px", background:T.blue, color:"#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:700, cursor:"pointer", transition:"background .12s" }}
                   onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
                   onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
                   Start for free
                 </button>
-              </div>
+              </div>}
             </div>
             <style>{`@media(max-width:900px){.giveaway-grid{grid-template-columns:repeat(2,1fr)!important}} @media(max-width:600px){.giveaway-grid{grid-template-columns:1fr!important}}`}</style>
           </section>
@@ -10811,7 +10811,8 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                   const catBadge = CAT_BADGE[s.category] || { label:s.category, bg:C.gray100, color:C.gray700 };
                   const avatarSrc= INSTRUCTOR_AVATARS[s.instructor];
                   const schedItem= SCHEDULE.find(i => i.id === s.id);
-                  const ctaLabel = "Register Now";
+                  const isAvailable = isSessionAvailable(s.id);
+                  const ctaLabel = isLoggedIn ? (isAvailable ? "Watch Now" : `Available ${schedItem?.date || d.date}`) : "Register Now";
                   const instrRole= INSTRUCTOR_ROLES[s.instructor] || "Instructor";
                   return (
                     <div key={s.id} className="lp-session-card"
@@ -10844,10 +10845,10 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                           {schedItem?.description || s.description}
                         </div>
                         <button
-                          onClick={e=>{ e.stopPropagation(); setSelectedSession(s); }}
-                          style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", padding:"0 13px", height:36, background:T.blue, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"background .12s" }}
-                          onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
-                          onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
+                          onClick={e=>{ e.stopPropagation(); isLoggedIn && isAvailable ? onGetStarted(s.id) : isLoggedIn ? null : setSelectedSession(s); }}
+                          style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", padding:"0 13px", height:36, background: isLoggedIn && !isAvailable ? T.muted : T.blue, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor: isLoggedIn && !isAvailable ? "default" : "pointer", fontFamily:"inherit", transition:"background .12s", opacity: isLoggedIn && !isAvailable ? 0.7 : 1 }}
+                          onMouseEnter={e=>{ if(!(isLoggedIn && !isAvailable)) e.currentTarget.style.background=T.blueHov; }}
+                          onMouseLeave={e=>{ if(!(isLoggedIn && !isAvailable)) e.currentTarget.style.background=T.blue; }}>
                           {ctaLabel}
                         </button>
                       </div>
@@ -10933,7 +10934,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       </section>
 
       {/* ── Pricing ── */}
-      <V1PricingSection onGetStarted={onGetStarted} />
+      <V1PricingSection onGetStarted={onGetStarted} isLoggedIn={isLoggedIn} />
 
       {/* ── FAQ ── */}
       <section id="help" style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
@@ -10977,11 +10978,11 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               </p>
             </div>
             <div className="lp-footer-cta-btns" style={{ display:"flex", gap:10, flexShrink:0 }}>
-              <button onClick={()=>setShowAuth(true)}
+              <button onClick={()=>isLoggedIn ? onGetStarted(null) : setShowAuth(true)}
                 style={{ padding:"0 24px", height:42, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
                 onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
                 onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-                Start for free
+                {isLoggedIn ? "Go to Dashboard" : "Start for free"}
               </button>
               <button onClick={()=>document.getElementById("sessions")?.scrollIntoView({ behavior:"smooth" })}
                 style={{ padding:"0 24px", height:42, background:"transparent", color:T.text, border:`1px solid ${T.border}`, borderRadius:8, fontSize:14, fontWeight:500, cursor:"pointer", transition:"background .15s, border-color .15s" }}
