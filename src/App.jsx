@@ -9731,7 +9731,7 @@ function SpBentoChart({ T }) {
   );
 }
 
-function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvatar = null, onGoToDashboard, onLogout }) {
+function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvatar = null, onGoToDashboard, onLogout, onWatchSession }) {
   const [showAuth, setShowAuth] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
@@ -10816,7 +10816,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                   const instrRole= INSTRUCTOR_ROLES[s.instructor] || "Instructor";
                   const cardClickable = !isLoggedIn || isAvailable;
                   const handleCardClick = () => {
-                    if (isLoggedIn && isAvailable) { onGetStarted(s.id); }
+                    if (isLoggedIn && isAvailable) { onWatchSession ? onWatchSession(s) : onGetStarted(s.id); }
                     else if (!isLoggedIn) { setSelectedSession(s); }
                     // logged in + not available → do nothing
                   };
@@ -11845,7 +11845,7 @@ export default function App() {
     return (
       <>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToPage} onLogout={async ()=>{ await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); }}/>
+        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToPage} onWatchSession={(s)=>{ setShowLanding(false); openSession(s, "landing"); }} onLogout={async ()=>{ await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); }}/>
       </>
     );
   }
