@@ -9462,7 +9462,7 @@ function V1PricingSection({ onGetStarted, isLoggedIn = false }) {
                 onMouseEnter={e=>{ e.currentTarget.style.background="#4f7de0"; e.currentTarget.style.transform="translateY(-1px)"; }}
                 onMouseLeave={e=>{ e.currentTarget.style.background="#6490E8"; e.currentTarget.style.transform="none"; }}
               >
-                {isLoggedIn ? "Go to Dashboard" : "Start for free"}
+                {isLoggedIn ? "Subscribe" : "Start for free"}
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ marginLeft:"auto" }}><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </button>
             </div>
