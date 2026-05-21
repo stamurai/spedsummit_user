@@ -11472,11 +11472,6 @@ export default function App() {
         setUserAvatar(meta.avatar_url || meta.picture || null);
         setIsLoggedIn(true);
         sessionStorage.setItem("loggedIn", "1");
-        const p = sessionStorage.getItem("page");
-        if (!p || p === "landing") {
-          setPage("dashboard");
-          sessionStorage.setItem("page", "dashboard");
-        }
         fetchSessions();
       }
     });
