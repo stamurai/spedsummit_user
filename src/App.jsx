@@ -2918,7 +2918,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
               {/* ── CONTINUE LEARNING ── */}
               {(sessionsLoading || filteredInProgress.length > 0) && <div style={{ marginBottom:32 }}>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16, gap:10 }}>
-                  <div style={{ fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3 }}>All Sessions</div>
+                  <div style={{ fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3 }}>Continue Watching</div>
                 </div>
                 {sessionsLoading ? (
                   <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
@@ -2927,7 +2927,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                 ) : (
                   <div className="db-continue-list" style={isMobile ? { display:"flex", flexDirection:"row", overflowX:"scroll", overflowY:"hidden", gap:12, paddingTop:0, paddingBottom:8, paddingLeft:16, paddingRight:0, marginLeft:-16, marginRight:-16, width:"calc(100% + 32px)", boxSizing:"border-box", WebkitOverflowScrolling:"touch", scrollSnapType:"x mandatory", scrollPaddingLeft:16, touchAction:"pan-x pan-y", overscrollBehaviorX:"contain" } : { display:"flex", flexDirection:"column", gap:12 }}>
                     {filteredInProgress.map(s => {
-                      const lbl = s.status==="completed" ? "Watch Again" : s.status==="in-progress" ? "Resume" : isSessionAvailable(s.id) ? "Watch Now" : "Start";
+                      const lbl = s.status==="completed" ? "Watch Again" : s.status==="in-progress" ? "Resume" : "Watch Now";
                       return renderSessionCard(s, lbl);
                     })}
                     {isMobile && <div style={{ flexShrink:0, width:16, height:1 }} aria-hidden="true" />}
