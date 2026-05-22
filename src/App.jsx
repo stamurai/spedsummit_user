@@ -1306,7 +1306,7 @@ function SearchBar({ onOpenSession, onNavigate, isAdmin = false, sessions = [] }
             <div>
               <div style={{ padding:"8px 14px 4px", fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase" }}>Instructors</div>
               {instructorResults.map(s => (
-                <button key={s.instructor} onClick={() => pick(() => onOpenSession(s))}
+                <button key={s.instructor} onClick={() => pick(() => onOpenInstructor ? onOpenInstructor(s.instructor) : onOpenSession(s))}
                   style={{ width:"100%", display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:"none", border:"none", cursor:"pointer", textAlign:"left" }}
                   onMouseEnter={e => e.currentTarget.style.background = C.gray50}
                   onMouseLeave={e => e.currentTarget.style.background = "none"}>
@@ -1447,7 +1447,7 @@ function ReferFriendsModal({ onClose, userName }) {
   );
 }
 
-function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, onOpenSession, onNavigate, userName = "", userAvatar, onBrowseSelect, seasons = SEASONS, sessions = [] }) {
+function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, onOpenSession, onNavigate, userName = "", userAvatar, onBrowseSelect, seasons = SEASONS, sessions = [], onOpenInstructor }) {
   const [showNotif, setShowNotif] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showReferModal, setShowReferModal] = useState(false);
@@ -9878,7 +9878,7 @@ function SpBentoChart({ T }) {
   );
 }
 
-function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvatar = null, onGoToDashboard, onLogout, onWatchSession }) {
+function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvatar = null, onGoToDashboard, onLogout, onWatchSession, openInstructorName = null, onInstructorOpened }) {
   const [showAuth, setShowAuth] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
@@ -9951,6 +9951,13 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       highlights:["Progress monitoring systems that work","Data visualization for IEP meetings","Making data-driven instructional adjustments"] },
   ];
   const [selectedInstructor, setSelectedInstructor] = useState(null);
+
+  useEffect(() => {
+    if (openInstructorName) {
+      const match = experts.find(e => e.name === openInstructorName);
+      if (match) { savedScrollY.current = window.scrollY; setSelectedInstructor(match); window.scrollTo(0,0); onInstructorOpened?.(); }
+    }
+  }, [openInstructorName]);
 
   const testimonials = [
     { stars:5, text:"SPED Summit gave me the practical tools I could use in my classroom the very next day. The sessions are so mindful and packed with the right content.", name:"Maria Gonzalez", role:"Special Ed Teacher", img:"https://images.unsplash.com/photo-1573497491208-6b1acb260507?w=80&h=80&fit=crop&auto=format" },
@@ -11611,6 +11618,7 @@ function LandingPageV2({ onGetStarted }) {
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLanding, setShowLanding] = useState(true);
+  const [openInstructorName, setOpenInstructorName] = useState(null);
 
   const fetchSessions = useCallback(() => {
     supabase.from("sessions").select("*").then(({ data, error }) => {
@@ -12013,7 +12021,7 @@ export default function App() {
     return (
       <>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToPage} onWatchSession={(s)=>{ setShowLanding(false); openSession(s, "landing"); }} onLogout={async ()=>{ await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); }}/>
+        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToPage} onWatchSession={(s)=>{ setShowLanding(false); openSession(s, "landing"); }} onLogout={async ()=>{ await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); }} openInstructorName={openInstructorName} onInstructorOpened={()=>setOpenInstructorName(null)}/>
       </>
     );
   }
@@ -12042,6 +12050,7 @@ export default function App() {
         userAvatar={userAvatar}
         seasons={seasons}
         sessions={SESSIONS.map(s => { const remote = sessions.find(r => r.id === s.id); return remote ? { ...s, ...remote } : s; })}
+        onOpenInstructor={(name) => { setOpenInstructorName(name); setShowLanding(true); }}
         onBrowseSelect={(season, year) => {
           if (season === "all") {
             // Year filter — find first season matching that year
