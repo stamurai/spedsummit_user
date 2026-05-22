@@ -8827,7 +8827,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
     }
     window.scrollTo(0, 0);
   }, []);
-  const gradients = ["linear-gradient(135deg,#1e3a5f,#3699ff)","linear-gradient(135deg,#4c1d95,#a855f7)","linear-gradient(135deg,#166534,#50cd89)","linear-gradient(135deg,#7c2d12,#f97316)","linear-gradient(135deg,#164e63,#06b6d4)"];
+  const gradients = ["linear-gradient(135deg,#1e3a5f,#6490E8)","linear-gradient(135deg,#1a3060,#4a77d4)","linear-gradient(135deg,#162850,#3b6fd4)","linear-gradient(135deg,#1c3566,#5580e8)","linear-gradient(135deg,#152d5a,#6490E8)"];
   const si = (session.id - 1) % gradients.length;
 
   // Group lessons into sections
@@ -8895,7 +8895,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                   <div style={{ fontSize:14, color:"rgba(255,255,255,0.6)" }}>Register to unlock all {session.lessons?.length} lessons in this course.</div>
                 </div>
                 <button onClick={() => { setPreviewOpen(false); handleRegister(); }}
-                  style={{ flexShrink:0, background:"linear-gradient(135deg,#3699ff,#a855f7)", border:"none", borderRadius:10, padding:"12px 24px", fontSize:14, fontWeight:700, color:"#fff", cursor:"pointer", whiteSpace:"nowrap" }}>
+                  style={{ flexShrink:0, background:"#6490E8", border:"none", borderRadius:10, padding:"12px 24px", fontSize:14, fontWeight:700, color:"#fff", cursor:"pointer", whiteSpace:"nowrap" }}>
                   {registerLabel || "Register"}
                 </button>
               </div>
@@ -8915,8 +8915,8 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
           </div>
         ) : (
           <button onClick={handleRegister}
-            style={{ padding:"9px 22px", background:"#3699ff", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer" }}
-            onMouseEnter={e=>e.currentTarget.style.background="#187de4"} onMouseLeave={e=>e.currentTarget.style.background="#3699ff"}>
+            style={{ padding:"9px 22px", background:"#6490E8", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer" }}
+            onMouseEnter={e=>e.currentTarget.style.background="#4a77d4"} onMouseLeave={e=>e.currentTarget.style.background="#6490E8"}>
             {registerLabel || "Register"}
           </button>
         )}
@@ -8987,7 +8987,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
             <div style={{ fontSize:12, fontWeight:700, color:"#9a9bb0", letterSpacing:1, marginBottom:18 }}>ABOUT THE INSTRUCTOR</div>
             {/* Instructor header row */}
             <div className="spp-instructor-row" style={{ display:"flex", alignItems:"center", gap:14, marginBottom:16 }}>
-              <div style={{ width:44, height:44, borderRadius:"50%", background:"linear-gradient(135deg,#3699ff,#a855f7)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              <div style={{ width:44, height:44, borderRadius:"50%", background:"linear-gradient(135deg,#1e3a5f,#6490E8)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                 <span style={{ fontSize:16, fontWeight:900, color:"#fff", letterSpacing:-0.5 }}>
                   {session.instructor?.split(" ").map(w=>w[0]).slice(0,2).join("")}
                 </span>
@@ -9057,17 +9057,17 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                             background: isFree ? "#f0f7ff" : "#fff" }}>
                             {/* Phosphor icon instead of plain circle */}
                             <div style={{ width:22, height:22, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                              <Icon name={isQuiz ? "article" : "play-circle"} size={20} color={isQuiz ? "#a855f7" : "#707685"}/>
+                              <Icon name={isQuiz ? "article" : "play-circle"} size={20} color={isQuiz ? "#6490E8" : "#707685"}/>
                             </div>
                             <div style={{ flex:1, minWidth:0 }}>
                               <div style={{ fontSize:14, color:"#181c32", lineHeight:1.4 }}>{l.title}</div>
-                              <div style={{ fontSize:12, color: isQuiz?"#a855f7":"#707685", marginTop:2 }}>
+                              <div style={{ fontSize:12, color: isQuiz?"#6490E8":"#707685", marginTop:2 }}>
                                 {isQuiz ? `${l.questions} question${l.questions!==1?"s":""}` : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
                               </div>
                             </div>
                             {isFree && (
                               <span onClick={() => setPreviewOpen(true)}
-                                style={{ fontSize:12, fontWeight:600, color:"#3699ff", background:"#e1f0ff", borderRadius:6, padding:"2px 8px", flexShrink:0, cursor:"pointer" }}>
+                                style={{ fontSize:12, fontWeight:600, color:"#6490E8", background:"#eef3fd", borderRadius:6, padding:"2px 8px", flexShrink:0, cursor:"pointer" }}>
                                 Preview
                               </span>
                             )}
@@ -9076,7 +9076,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                         );
                       })}
                       {secResources.map(r => {
-                        const tc = r.type==="PDF"?{c:"#dc2626",b:"#fef2f2"}:r.type==="PPTX"?{c:"#ea580c",b:"#fff7ed"}:r.type==="ZIP"?{c:"#7c3aed",b:"#f5f3ff"}:{c:"#3699ff",b:"#e1f0ff"};
+                        const tc = r.type==="PDF"?{c:"#dc2626",b:"#fef2f2"}:r.type==="PPTX"?{c:"#ea580c",b:"#fff7ed"}:r.type==="ZIP"?{c:"#7c3aed",b:"#f5f3ff"}:{c:"#6490E8",b:"#eef3fd"};
                         const rIcon = r.type==="PDF" ? "file-pdf" : r.type==="PPTX" ? "article" : r.type==="ZIP" ? "paperclip" : "paperclip";
                         return (
                           <div key={r.id} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 20px", borderTop:"1px solid #f3f4f6", background:"#fff" }}>
@@ -9217,7 +9217,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                       Starting in <span style={{ fontWeight:700, color:"#f97316" }}>{countdownLabel}</span>
                     </div>
                   ) : (
-                    <button onClick={onBack} style={{ width:"100%", padding:"11px 0", background:"#3699ff", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer" }}>
+                    <button onClick={onBack} style={{ width:"100%", padding:"11px 0", background:"#6490E8", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer" }}>
                       Go to My Sessions
                     </button>
                   )}
@@ -9225,8 +9225,8 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
               ) : (
                 <>
                   <button onClick={handleRegister}
-                    style={{ width:"100%", padding:"13px 0", background:"#3699ff", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:800, cursor:"pointer", marginBottom:8 }}
-                    onMouseEnter={e=>e.currentTarget.style.background="#187de4"} onMouseLeave={e=>e.currentTarget.style.background="#3699ff"}>
+                    style={{ width:"100%", padding:"13px 0", background:"#6490E8", color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:800, cursor:"pointer", marginBottom:8 }}
+                    onMouseEnter={e=>e.currentTarget.style.background="#4a77d4"} onMouseLeave={e=>e.currentTarget.style.background="#6490E8"}>
                     {registerLabel || "Register"}
                   </button>
                   <div style={{ fontSize:12, textAlign:"center", color:"#707685", marginBottom:10 }}>No credit card required</div>
@@ -9242,7 +9242,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                   { icon:"device-mobile", text:"Access on any device" },
                 ].map(item => (
                   <div key={item.text} style={{ display:"flex", alignItems:"center", gap:8, fontSize:12, color:"#5e6278" }}>
-                    <Icon name={item.icon} size={13} color="#3699ff"/>
+                    <Icon name={item.icon} size={13} color="#6490E8"/>
                     {item.text}
                   </div>
                 ))}
