@@ -11727,9 +11727,46 @@ function LandingPageV2({ onGetStarted }) {
    APP
 ───────────────────────────────────────────────────────────────────────────── */
 export default function App() {
+  // ── ALL useState declarations MUST come before any useCallback/useEffect ──
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLanding, setShowLanding] = useState(true);
   const [openInstructorName, setOpenInstructorName] = useState(null);
+  const [page, setPage] = useState("dashboard");
+  const [isAdmin] = useState(false);
+  const [isDark, setIsDark] = useState(() => { const h = new Date().getHours(); return h >= 19 || h < 6; });
+  const [landingV, setLandingV] = useState(1);
+  const [activeSession,   setActiveSession]   = useState(null);
+  const [sessionSource,   setSessionSource]   = useState("sessions");
+  const [sessionBackLabel, setSessionBackLabel] = useState(null);
+  const [editingSession,  setEditingSession]  = useState(null);
+  const { toasts, toast, remove } = useToast();
+  const [quizStates, setQuizStates] = useState({});
+  const [enrolledIds, setEnrolledIds] = useState(new Set());
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [userAvatar, setUserAvatar] = useState(null);
+  const [scheduleRegistrations, setScheduleRegistrations] = useState({});
+  const [sessionsDeepLink, setSessionsDeepLink] = useState(null);
+  const [pastSeasonPageId, setPastSeasonPageId] = useState(null);
+  const [pastSeasonOrigin, setPastSeasonOrigin] = useState("browse");
+  const [showPricingOverlay, setShowPricingOverlay] = useState(false);
+  const [dashFilter, setDashFilter] = useState({ season:"all", year:"all" });
+  const [adminSessions, setAdminSessions] = useState(() => {
+    try { const s = localStorage.getItem("adminSessions"); return s ? JSON.parse(s) : ADMIN_SESSIONS_DATA; } catch { return ADMIN_SESSIONS_DATA; }
+  });
+  const [sessions, setSessions] = useState(() => {
+    try { const s = localStorage.getItem("sessions"); return s ? JSON.parse(s) : []; } catch { return []; }
+  });
+  const [sessionsLoading, setSessionsLoading] = useState(() => {
+    try { return !localStorage.getItem("sessions"); } catch { return true; }
+  });
+  const [spring2026Ids, setSpring2026Ids] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("spring2026Ids") || "[]"); } catch { return []; }
+  });
+  const [assessmentSession, setAssessmentSession] = useState(null);
+  const [certSession,       setCertSession]       = useState(null);
+  const [reviewSession,     setReviewSession]     = useState(null);
+  const [,                  setReviews]           = useState({});
 
   const fetchSessions = useCallback(() => {
     supabase.from("sessions").select("*").then(({ data, error }) => {
@@ -11790,41 +11827,6 @@ export default function App() {
     });
     return () => subscription.unsubscribe();
   }, [fetchSessions, fetchUserProgress]);
-  const [page, setPage] = useState("dashboard");
-  const [isAdmin] = useState(false);
-  const [isDark, setIsDark] = useState(() => { const h = new Date().getHours(); return h >= 19 || h < 6; });
-  const [landingV, setLandingV] = useState(1);
-  const [activeSession,   setActiveSession]   = useState(null);
-  const [sessionSource,   setSessionSource]   = useState("sessions");
-  const [sessionBackLabel, setSessionBackLabel] = useState(null);
-  const [editingSession,  setEditingSession]  = useState(null);
-  const { toasts, toast, remove } = useToast();
-
-  /* ── All state declared before any useCallback that references setters ── */
-  const [quizStates, setQuizStates] = useState({});
-  const [enrolledIds, setEnrolledIds] = useState(new Set());
-  const [userName, setUserName] = useState("");
-  const [userEmail, setUserEmail] = useState("");
-  const [userAvatar, setUserAvatar] = useState(null);
-  const [scheduleRegistrations, setScheduleRegistrations] = useState({});
-  const [sessionsDeepLink, setSessionsDeepLink] = useState(null);
-  const [pastSeasonPageId, setPastSeasonPageId] = useState(null);
-  const [pastSeasonOrigin, setPastSeasonOrigin] = useState("browse");
-  const [showPricingOverlay, setShowPricingOverlay] = useState(false);
-  const [dashFilter, setDashFilter] = useState({ season:"all", year:"all" });
-  const [adminSessions, setAdminSessions] = useState(() => {
-    try { const s = localStorage.getItem("adminSessions"); return s ? JSON.parse(s) : ADMIN_SESSIONS_DATA; } catch { return ADMIN_SESSIONS_DATA; }
-  });
-  const [sessions, setSessions] = useState(() => {
-    try { const s = localStorage.getItem("sessions"); return s ? JSON.parse(s) : []; } catch { return []; }
-  });
-  const [sessionsLoading, setSessionsLoading] = useState(() => {
-    try { return !localStorage.getItem("sessions"); } catch { return true; }
-  });
-  const [spring2026Ids, setSpring2026Ids] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("spring2026Ids") || "[]"); } catch { return []; }
-  });
-
   // Fetch user progress from Supabase and hydrate local state
   const fetchUserProgress = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -11980,11 +11982,6 @@ export default function App() {
     saveUserProgress(sessionId, { enrolled: true });
     toast({ type:"success", title:"Enrolled!", message:"Session added to your courses." });
   }
-
-  const [assessmentSession, setAssessmentSession] = useState(null);
-  const [certSession,       setCertSession]       = useState(null);
-  const [reviewSession,     setReviewSession]     = useState(null);
-  const [,                  setReviews]           = useState({});
 
   function updateQuizState(sessionId, updates) {
     setQuizStates(prev => {
