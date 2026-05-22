@@ -1582,8 +1582,12 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
         <div style={{ position: "relative" }} ref={avatarBtnRef}>
           <button
             onClick={() => setShowProfileMenu(v => !v)}
-            style={{ border: "none", background: "transparent", padding: 0, cursor: "pointer", borderRadius: "50%" }}>
-            <Avatar name={userName} src={userAvatar} size={34}/>
+            style={{ border:`1px solid ${isDark?"rgba(255,255,255,0.15)":C.gray200}`, background: isDark?"rgba(255,255,255,0.06)":"transparent", padding:"4px 10px 4px 4px", cursor: "pointer", borderRadius: 99, display:"flex", alignItems:"center", gap:8, transition:"background .15s" }}
+            onMouseEnter={e=>e.currentTarget.style.background=isDark?"rgba(255,255,255,0.1)":C.gray50}
+            onMouseLeave={e=>e.currentTarget.style.background=isDark?"rgba(255,255,255,0.06)":"transparent"}>
+            <Avatar name={userName} src={userAvatar} size={28}/>
+            {userName && <span style={{ fontSize:13, fontWeight:600, color:isDark?"#fff":C.gray800, maxWidth:80, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{userName.split(" ")[0]}</span>}
+            <Icon name="caret-down" size={12} color={isDark?"rgba(255,255,255,0.5)":C.gray500}/>
           </button>
           {showProfileMenu && (
             <DropdownMenu anchorRef={avatarBtnRef}
