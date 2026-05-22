@@ -3854,6 +3854,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const [communityDeleteConfirm, setCommunityDeleteConfirm] = useState(null);
   const [communityEditingId, setCommunityEditingId] = useState(null);
   const [communityEditText, setCommunityEditText] = useState("");
+  const [communitySharePost, setCommunitySharePost] = useState(null);
   const chatRef = useRef(null);
   const chatInputRef = useRef(null);
   const lesson = session.lessons[activeLesson] || session.lessons[0];
@@ -4244,7 +4245,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                           <DropdownMenu
                             items={[
                               ...(post.author===adminName||post.author==="You"?[{ icon:"pencil", label:"Edit", action:()=>{ setCommunityEditingId(post.id); setCommunityEditText(post.title); setCommunityOpenMenu(null); } }]:[]),
-                              { icon:"share-network", label:"Share", action:()=>{ toast({type:"info",message:"Link copied!"}); setCommunityOpenMenu(null); } },
+                              { icon:"share-network", label:"Share", action:()=>{ setCommunitySharePost(post); setCommunityOpenMenu(null); } },
                               ...(post.author===adminName||post.author==="You"?[{ icon:"trash", label:"Delete", danger:true, action:()=>{ setCommunityDeleteConfirm(post.id); setCommunityOpenMenu(null); } }]:[]),
                             ]}
                             onClose={()=>setCommunityOpenMenu(null)}
@@ -4327,6 +4328,50 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                   </div>
                 ))}
               </div>
+
+              {/* Share modal */}
+              {communitySharePost && (
+                <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center" }} onClick={()=>setCommunitySharePost(null)}>
+                  <div style={{ background:"#fff", borderRadius:20, padding:"28px 28px 24px", width:400, boxShadow:"0 24px 60px rgba(0,0,0,0.2)" }} onClick={e=>e.stopPropagation()}>
+                    {/* Header */}
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+                      <div style={{ fontWeight:800, fontSize:18, color:C.gray900 }}>Share to socials</div>
+                      <button onClick={()=>setCommunitySharePost(null)} style={{ width:30, height:30, borderRadius:"50%", border:`1px solid ${C.gray200}`, background:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        <Icon name="x" size={14} color={C.gray500}/>
+                      </button>
+                    </div>
+                    {/* Link copy row */}
+                    <div style={{ display:"flex", alignItems:"center", gap:10, background:C.gray50, border:`1px solid ${C.gray200}`, borderRadius:12, padding:"10px 14px", marginBottom:8 }}>
+                      <Icon name="link" size={18} color={C.gray500}/>
+                      <span style={{ flex:1, fontSize:13, color:C.gray600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>spedsummit.com/community/{communitySharePost.id}</span>
+                      <button onClick={()=>{ navigator.clipboard?.writeText(`spedsummit.com/community/${communitySharePost.id}`).catch(()=>{}); toast({type:"success",message:"Link copied!"}); }}
+                        style={{ flexShrink:0, padding:"6px 16px", borderRadius:99, background:C.primary, border:"none", color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer" }}>
+                        Copy
+                      </button>
+                    </div>
+                    <div style={{ fontSize:12, color:C.gray400, marginBottom:20, textAlign:"center" }}>Share this post with your network</div>
+                    {/* Social icons */}
+                    <div style={{ fontSize:13, fontWeight:700, color:C.gray700, marginBottom:14 }}>Share via</div>
+                    <div style={{ display:"flex", gap:16, justifyContent:"center" }}>
+                      {[
+                        { label:"Facebook", color:"#1877F2", icon:"https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/facebook.svg", bg:"#1877F2" },
+                        { label:"WhatsApp", color:"#25D366", icon:"", bg:"#25D366" },
+                        { label:"LinkedIn", color:"#0A66C2", icon:"", bg:"#0A66C2" },
+                        { label:"X", color:"#000", icon:"", bg:"#000" },
+                        { label:"Email", color:"#EA4335", icon:"", bg:"#EA4335" },
+                      ].map(s => (
+                        <button key={s.label} onClick={()=>{ toast({type:"info",message:`Shared to ${s.label}!`}); setCommunitySharePost(null); }}
+                          style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:8, background:"none", border:"none", cursor:"pointer" }}>
+                          <div style={{ width:52, height:52, borderRadius:"50%", background:s.bg, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                            <Icon name={s.label==="X"?"x-logo":s.label==="Email"?"envelope":s.label==="WhatsApp"?"whatsapp":s.label==="LinkedIn"?"linkedin-logo":"facebook-logo"} size={24} color="#fff"/>
+                          </div>
+                          <span style={{ fontSize:12, color:C.gray600, fontWeight:500 }}>{s.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Delete confirmation modal */}
               {communityDeleteConfirm && (
