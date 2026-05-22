@@ -9954,7 +9954,21 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
 
   useEffect(() => {
     if (openInstructorName) {
-      const match = experts.find(e => e.name === openInstructorName);
+      let match = experts.find(e => e.name === openInstructorName);
+      if (!match) {
+        // Fall back to building a basic profile from SESSIONS data
+        const s = SESSIONS.find(s => s.instructor === openInstructorName);
+        if (s) match = {
+          name: s.instructor,
+          role: s.instructorBio ? s.instructorBio.split(" ").slice(0,4).join(" ") : "Instructor",
+          org: "",
+          img: INSTRUCTOR_AVATARS[s.instructor] || "",
+          bio: s.instructorBio || "No bio available.",
+          session: s.title,
+          sessionDesc: s.description || "",
+          highlights: [],
+        };
+      }
       if (match) { savedScrollY.current = window.scrollY; setSelectedInstructor(match); window.scrollTo(0,0); onInstructorOpened?.(); }
     }
   }, [openInstructorName]);
