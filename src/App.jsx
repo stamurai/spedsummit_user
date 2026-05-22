@@ -674,6 +674,29 @@ function getCTA(s) {
   return { label:"Start Session", disabled:false };
 }
 
+function Skeleton({ width="100%", height=16, radius=8, style:s={} }) {
+  return (
+    <div style={{ width, height, borderRadius:radius, background:"linear-gradient(90deg,#e5e7eb 25%,#f3f4f6 50%,#e5e7eb 75%)", backgroundSize:"200% 100%", animation:"skeleton-shimmer 1.4s infinite", flexShrink:0, ...s }}/>
+  );
+}
+
+function SkeletonSessionCard() {
+  return (
+    <div style={{ background:"#fff", borderRadius:14, border:"1px solid #e5e7eb", overflow:"hidden" }}>
+      <Skeleton height={160} radius={0}/>
+      <div style={{ padding:"14px 16px 16px", display:"flex", flexDirection:"column", gap:10 }}>
+        <Skeleton height={14} width="60%" radius={6}/>
+        <Skeleton height={18} width="90%" radius={6}/>
+        <Skeleton height={14} width="75%" radius={6}/>
+        <div style={{ display:"flex", gap:8, marginTop:4 }}>
+          <Skeleton height={28} width={90} radius={8}/>
+          <Skeleton height={28} width={70} radius={8}/>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Avatar({ name, src, size=36 }) {
   const [imgFailed, setImgFailed] = useState(false);
   const colors = ["#6490E8","#4a77d4","#FF8F6C","#2B2E33","#5D636F","#7aa3ee","#a0b8f0"];
@@ -2134,7 +2157,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 /* ─────────────────────────────────────────────────────────────────────────────
    DASHBOARD
 ───────────────────────────────────────────────────────────────────────────── */
-function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS, externalFilter, onFilterChange, isAdmin = false }) {
+function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS, externalFilter, onFilterChange, isAdmin = false, sessionsLoading = false }) {
   const [vw, setVw] = useState(window.innerWidth);
   useEffect(() => {
     const handler = () => setVw(window.innerWidth);
@@ -2893,10 +2916,15 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
               })()}
 
               {/* ── CONTINUE LEARNING ── */}
-              {filteredInProgress.length > 0 && <div style={{ marginBottom:32 }}>
+              {(sessionsLoading || filteredInProgress.length > 0) && <div style={{ marginBottom:32 }}>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16, gap:10 }}>
                   <div style={{ fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3 }}>All Sessions</div>
                 </div>
+                {sessionsLoading ? (
+                  <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                    {Array(3).fill(0).map((_,i) => <SkeletonSessionCard key={i}/>)}
+                  </div>
+                ) : (
                   <div className="db-continue-list" style={isMobile ? { display:"flex", flexDirection:"row", overflowX:"scroll", overflowY:"hidden", gap:12, paddingTop:0, paddingBottom:8, paddingLeft:16, paddingRight:0, marginLeft:-16, marginRight:-16, width:"calc(100% + 32px)", boxSizing:"border-box", WebkitOverflowScrolling:"touch", scrollSnapType:"x mandatory", scrollPaddingLeft:16, touchAction:"pan-x pan-y", overscrollBehaviorX:"contain" } : { display:"flex", flexDirection:"column", gap:12 }}>
                     {filteredInProgress.map(s => {
                       const lbl = s.status==="completed" ? "Watch Again" : s.status==="in-progress" ? "Resume" : isSessionAvailable(s.id) ? "Watch Now" : "Start";
@@ -2904,6 +2932,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                     })}
                     {isMobile && <div style={{ flexShrink:0, width:16, height:1 }} aria-hidden="true" />}
                   </div>
+                )}
               </div>}
 
               {/* ── UPCOMING SESSIONS ── */}
@@ -3342,7 +3371,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
 /* ─────────────────────────────────────────────────────────────────────────────
    SESSIONS PAGE
 ───────────────────────────────────────────────────────────────────────────── */
-function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set(), onNavigate, initialSeason = null, onSeasonChange, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS, seasons = SEASONS }) {
+function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set(), onNavigate, initialSeason = null, onSeasonChange, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS, seasons = SEASONS, sessionsLoading = false }) {
   const [activeSeason, setActiveSeason] = useState(initialSeason);
   const [hoveredSeason, setHoveredSeason] = useState(null);
   function changeSeason(id) { setActiveSeason(id); onSeasonChange?.(id); }
@@ -3431,7 +3460,23 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
       })()}
 
       {/* ── Season folder cards — only show seasons with real sessions ── */}
-      {(() => {
+      {sessionsLoading ? (
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px, 1fr))", gap:20 }}>
+          {Array(4).fill(0).map((_,i) => (
+            <div key={i} style={{ background:"#fff", borderRadius:14, border:"1px solid #e5e7eb", overflow:"hidden" }}>
+              <Skeleton height={140} radius={0}/>
+              <div style={{ padding:"14px 16px 16px", display:"flex", flexDirection:"column", gap:10 }}>
+                <Skeleton height={14} width="50%" radius={6}/>
+                <Skeleton height={18} width="80%" radius={6}/>
+                <div style={{ display:"flex", gap:8, marginTop:4 }}>
+                  <Skeleton height={22} width={70} radius={6}/>
+                  <Skeleton height={22} width={50} radius={6}/>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (() => {
         const filledSeasons = seasons.filter(s => sessions.some(sess => s.sessionIds.includes(sess.id)));
         if (filledSeasons.length === 0 && sessions.length === 0) return (
           <Empty fullPage>
@@ -11713,6 +11758,8 @@ export default function App() {
         });
       });
 
+      setSessionsLoading(false);
+
       setSpring2026Ids(prev => {
         const supabaseIds = new Set(rows.map(s => s.id));
         const surviving = prev.filter(id => supabaseIds.has(id));
@@ -11764,6 +11811,9 @@ export default function App() {
   });
   const [sessions, setSessions] = useState(() => {
     try { const s = localStorage.getItem("sessions"); return s ? JSON.parse(s) : []; } catch { return []; }
+  });
+  const [sessionsLoading, setSessionsLoading] = useState(() => {
+    try { return !localStorage.getItem("sessions"); } catch { return true; }
   });
   const [spring2026Ids, setSpring2026Ids] = useState(() => {
     try { return JSON.parse(localStorage.getItem("spring2026Ids") || "[]"); } catch { return []; }
@@ -12071,8 +12121,8 @@ export default function App() {
         </div>
       );
     }
-    if (page==="dashboard") { if (isAdmin) { nav("admin-overview"); return null; } const mergedSessions = SESSIONS.map(s => { const remote = sessions.find(r => r.id === s.id); return remote ? { ...s, ...remote } : s; }); return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenPastSeason={(id)=>{ setPastSeasonPageId(id); nav("past-season"); }} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={mergedSessions} externalFilter={dashFilter} onFilterChange={setDashFilter} isAdmin={isAdmin}/>; }
-    if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={sessions} seasons={seasons}/>;
+    if (page==="dashboard") { if (isAdmin) { nav("admin-overview"); return null; } const mergedSessions = SESSIONS.map(s => { const remote = sessions.find(r => r.id === s.id); return remote ? { ...s, ...remote } : s; }); return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenPastSeason={(id)=>{ setPastSeasonPageId(id); nav("past-season"); }} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={mergedSessions} externalFilter={dashFilter} onFilterChange={setDashFilter} isAdmin={isAdmin} sessionsLoading={sessionsLoading}/>; }
+    if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={sessions} seasons={seasons} sessionsLoading={sessionsLoading}/>;
     if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
     if (page==="community") return <CommunityPage toast={toast}/>;
@@ -12304,6 +12354,7 @@ export default function App() {
         @keyframes toastIn { from{opacity:0;transform:translateX(30px)} to{opacity:1;transform:translateX(0)} }
         @keyframes fadeIn  { from{opacity:0;transform:scale(.95)} to{opacity:1;transform:scale(1)} }
         @keyframes spin    { to{transform:rotate(360deg)} }
+        @keyframes skeleton-shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #e4e6ef; border-radius: 99px; }
