@@ -4332,7 +4332,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               {/* Share modal */}
               {communitySharePost && (
                 <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center" }} onClick={()=>setCommunitySharePost(null)}>
-                  <div style={{ background:"#fff", borderRadius:20, padding:"28px 28px 24px", width:400, boxShadow:"0 24px 60px rgba(0,0,0,0.2)" }} onClick={e=>e.stopPropagation()}>
+                  <div style={{ background:"#fff", borderRadius:20, padding:"28px 28px 36px", width:400, boxShadow:"0 24px 60px rgba(0,0,0,0.2)" }} onClick={e=>e.stopPropagation()}>
                     {/* Header */}
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
                       <div style={{ fontWeight:800, fontSize:18, color:C.gray900 }}>Share to socials</div>
