@@ -9950,26 +9950,31 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       session:"Using Data to Drive SPED Instruction", sessionDesc:"How to collect meaningful data, monitor student progress, and use evidence to make better instructional decisions.",
       highlights:["Progress monitoring systems that work","Data visualization for IEP meetings","Making data-driven instructional adjustments"] },
   ];
-  const [selectedInstructor, setSelectedInstructor] = useState(null);
+  function resolveInstructor(name) {
+    if (!name) return null;
+    let match = experts.find(e => e.name === name);
+    if (!match) {
+      const s = SESSIONS.find(s => s.instructor === name);
+      if (s) match = {
+        name: s.instructor,
+        role: s.instructorBio ? s.instructorBio.split(" ").slice(0,6).join(" ") : "Instructor",
+        org: "",
+        img: INSTRUCTOR_AVATARS[s.instructor] || "",
+        bio: s.instructorBio || "No bio available.",
+        session: s.title,
+        sessionDesc: s.description || "",
+        highlights: [],
+      };
+    }
+    return match || null;
+  }
+
+  const [selectedInstructor, setSelectedInstructor] = useState(() => resolveInstructor(openInstructorName));
 
   useEffect(() => {
     if (openInstructorName) {
-      let match = experts.find(e => e.name === openInstructorName);
-      if (!match) {
-        // Fall back to building a basic profile from SESSIONS data
-        const s = SESSIONS.find(s => s.instructor === openInstructorName);
-        if (s) match = {
-          name: s.instructor,
-          role: s.instructorBio ? s.instructorBio.split(" ").slice(0,4).join(" ") : "Instructor",
-          org: "",
-          img: INSTRUCTOR_AVATARS[s.instructor] || "",
-          bio: s.instructorBio || "No bio available.",
-          session: s.title,
-          sessionDesc: s.description || "",
-          highlights: [],
-        };
-      }
-      if (match) { savedScrollY.current = window.scrollY; setSelectedInstructor(match); window.scrollTo(0,0); onInstructorOpened?.(); }
+      const match = resolveInstructor(openInstructorName);
+      if (match) { setSelectedInstructor(match); window.scrollTo(0,0); onInstructorOpened?.(); }
     }
   }, [openInstructorName]);
 
