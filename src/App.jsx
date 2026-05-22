@@ -11999,6 +11999,15 @@ export default function App() {
             <div style={{ fontSize:13, color:C.gray500 }}>Past Season · {seasonSessions.length} session{seasonSessions.length!==1?"s":""}</div>
           </div>
           <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+            {seasonSessions.length === 0 && (
+              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"80px 24px", textAlign:"center" }}>
+                <div style={{ width:72, height:72, borderRadius:20, background:C.gray100, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:20 }}>
+                  <Icon name="video" size={32} color={C.gray300}/>
+                </div>
+                <div style={{ fontSize:17, fontWeight:700, color:C.gray700, marginBottom:8 }}>No sessions yet</div>
+                <div style={{ fontSize:14, color:C.gray400, maxWidth:280, lineHeight:1.6 }}>Sessions for this season haven't been added yet. Check back soon.</div>
+              </div>
+            )}
             {seasonSessions.map(s => {
               const catBadge = CAT_BADGE_PS[s.category] || { label:s.category, bg:C.gray100, color:C.gray700 };
               const instrRole = INST_ROLES_PS[s.instructor] || "Instructor";
