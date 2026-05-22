@@ -9485,8 +9485,6 @@ function V1TestiCol({ items, duration }) {
 const V1_PRICING_FEATURES = [
   "Just $19/year — includes 1 month free trial",
   "Win 1 month free Ablespace Pro subscription",
-  "1 year on-demand replay access",
-  "Interactive quizzes after each session",
   "Downloadable completion certificate",
 ];
 
