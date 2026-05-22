@@ -12000,7 +12000,7 @@ export default function App() {
           </div>
           <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
             {seasonSessions.length === 0 && (
-              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"80px 24px", textAlign:"center" }}>
+              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"60vh", textAlign:"center" }}>
                 <div style={{ width:72, height:72, borderRadius:20, background:C.gray100, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:20 }}>
                   <Icon name="video" size={32} color={C.gray300}/>
                 </div>
