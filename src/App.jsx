@@ -11800,15 +11800,30 @@ export default function App() {
   const [editingSession,  setEditingSession]  = useState(null);
   const { toasts, toast, remove } = useToast();
 
-  /* ── Quiz state — declared early so fetchUserProgress can reference setQuizStates ── */
+  /* ── All state declared before any useCallback that references setters ── */
   const [quizStates, setQuizStates] = useState({});
-
-  /* ── Enrolled sessions ── */
   const [enrolledIds, setEnrolledIds] = useState(new Set());
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [userAvatar, setUserAvatar] = useState(null);
   const [scheduleRegistrations, setScheduleRegistrations] = useState({});
+  const [sessionsDeepLink, setSessionsDeepLink] = useState(null);
+  const [pastSeasonPageId, setPastSeasonPageId] = useState(null);
+  const [pastSeasonOrigin, setPastSeasonOrigin] = useState("browse");
+  const [showPricingOverlay, setShowPricingOverlay] = useState(false);
+  const [dashFilter, setDashFilter] = useState({ season:"all", year:"all" });
+  const [adminSessions, setAdminSessions] = useState(() => {
+    try { const s = localStorage.getItem("adminSessions"); return s ? JSON.parse(s) : ADMIN_SESSIONS_DATA; } catch { return ADMIN_SESSIONS_DATA; }
+  });
+  const [sessions, setSessions] = useState(() => {
+    try { const s = localStorage.getItem("sessions"); return s ? JSON.parse(s) : []; } catch { return []; }
+  });
+  const [sessionsLoading, setSessionsLoading] = useState(() => {
+    try { return !localStorage.getItem("sessions"); } catch { return true; }
+  });
+  const [spring2026Ids, setSpring2026Ids] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("spring2026Ids") || "[]"); } catch { return []; }
+  });
 
   // Fetch user progress from Supabase and hydrate local state
   const fetchUserProgress = useCallback(async () => {
@@ -11849,23 +11864,6 @@ export default function App() {
       { onConflict: "user_id,session_id" }
     );
   }, []);
-  const [sessionsDeepLink, setSessionsDeepLink] = useState(null);
-  const [pastSeasonPageId, setPastSeasonPageId] = useState(null);
-  const [pastSeasonOrigin, setPastSeasonOrigin] = useState("browse");
-  const [showPricingOverlay, setShowPricingOverlay] = useState(false);
-  const [dashFilter, setDashFilter] = useState({ season:"all", year:"all" });
-  const [adminSessions, setAdminSessions] = useState(() => {
-    try { const s = localStorage.getItem("adminSessions"); return s ? JSON.parse(s) : ADMIN_SESSIONS_DATA; } catch { return ADMIN_SESSIONS_DATA; }
-  });
-  const [sessions, setSessions] = useState(() => {
-    try { const s = localStorage.getItem("sessions"); return s ? JSON.parse(s) : []; } catch { return []; }
-  });
-  const [sessionsLoading, setSessionsLoading] = useState(() => {
-    try { return !localStorage.getItem("sessions"); } catch { return true; }
-  });
-  const [spring2026Ids, setSpring2026Ids] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("spring2026Ids") || "[]"); } catch { return []; }
-  });
   useEffect(() => { localStorage.setItem("spring2026Ids", JSON.stringify(spring2026Ids)); }, [spring2026Ids]);
 
   // Wrapped setter that also persists new registrations to Supabase
