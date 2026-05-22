@@ -343,8 +343,8 @@ function SessionThumb({ id = 1, height = 160, overlay = false, noPlayHover = fal
   const vimeoId = extractVimeoId(vimeoUrl);
   const vimeoThumbSrc = vimeoId ? `https://vumbnail.com/${vimeoId}.jpg` : null;
   const [src, setSrc] = useState(vimeoThumbSrc || fallbackSrc);
-  useEffect(() => { setSrc(vimeoThumbSrc || fallbackSrc); }, [vimeoUrl]);
   const [hov, setHov] = useState(false);
+  useEffect(() => { setSrc(vimeoThumbSrc || fallbackSrc); }, [vimeoUrl]);
   return (
     <div onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
       style={{ width:"100%", height, position:"relative", overflow:"hidden", background:"#e5e7eb" }}>
@@ -2159,13 +2159,6 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 ───────────────────────────────────────────────────────────────────────────── */
 function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS, externalFilter, onFilterChange, isAdmin = false, sessionsLoading = false }) {
   const [vw, setVw] = useState(window.innerWidth);
-  useEffect(() => {
-    const handler = () => setVw(window.innerWidth);
-    window.addEventListener('resize', handler);
-    return () => window.removeEventListener('resize', handler);
-  }, []);
-  const isMobile = vw <= 600;
-  const isTablet = vw > 600 && vw <= 900;
   const [calendarItem, setCalendarItem] = useState(null);
   const [calDaySession, setCalDaySession] = useState(null);
   const [previewSession, setPreviewSession] = useState(null);
@@ -2173,6 +2166,13 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
   const [calMonth, setCalMonth] = useState(() => new Date(2026, 3, 1));
   const [filterSeason, setFilterSeason] = useState(externalFilter?.season || "all");
   const [filterYear,   setFilterYear]   = useState(externalFilter?.year   || "all");
+  useEffect(() => {
+    const handler = () => setVw(window.innerWidth);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+  const isMobile = vw <= 600;
+  const isTablet = vw > 600 && vw <= 900;
 
   useEffect(() => {
     if (externalFilter) {
@@ -3799,8 +3799,8 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress }) {
   const storageKey = videoId ? `vimeo_pos_${videoId}` : null;
   const savedTime = storageKey ? (parseFloat(localStorage.getItem(storageKey)) || 0) : 0;
   const onProgressRef = useRef(onProgress);
-  useEffect(() => { onProgressRef.current = onProgress; }, [onProgress]);
   const [embedError, setEmbedError] = useState(null);
+  useEffect(() => { onProgressRef.current = onProgress; }, [onProgress]);
 
   useEffect(() => {
     if (!videoId) return;
@@ -3906,6 +3906,10 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const [communitySharePost, setCommunitySharePost] = useState(null);
   const chatRef = useRef(null);
   const chatInputRef = useRef(null);
+  const containerRef = useRef(null);
+  const videoRef = useRef(null);
+  const [narrow, setNarrow] = useState(false);
+  const [videoHeight, setVideoHeight] = useState(0);
   const lesson = session.lessons[activeLesson] || session.lessons[0];
 
   useEffect(() => {
@@ -3938,10 +3942,6 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   }
 
   // Responsive: detect if the container is narrow + measure video height for sidebar
-  const containerRef = useRef(null);
-  const videoRef = useRef(null);
-  const [narrow, setNarrow] = useState(false);
-  const [videoHeight, setVideoHeight] = useState(0);
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -4731,6 +4731,9 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
   const [publicProfile,setPublicProfile]= useState(false);
   const [twoFA,        setTwoFA]        = useState(true);
   const [photoUrl,     setPhotoUrl]     = useState(userAvatar);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [pwForm, setPwForm] = useState({ current:"", newPw:"", confirm:"" });
+  const [mobileDrilled, setMobileDrilled] = useState(false);
 
   // Sync if auth data loads after mount
   useEffect(() => {
@@ -4754,9 +4757,6 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
     onNameChange?.(form.name);
     toast({ type:"success", title:"Profile saved", message:"Your changes have been updated." });
   }
-
-  const [changingPassword, setChangingPassword] = useState(false);
-  const [pwForm, setPwForm] = useState({ current:"", newPw:"", confirm:"" });
 
   const sidebarNav = [
     { id:"personal",       icon:"user-circle", label:"Personal details" },
@@ -4949,8 +4949,6 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
       </div>
     );
   }
-
-  const [mobileDrilled, setMobileDrilled] = useState(false);
 
   function handleMobileNav(id) {
     setActiveSection(id);
@@ -6226,7 +6224,6 @@ function CurriculumBuilder({ toast, initialSections, onSectionsChange }) {
     ]}];
   });
 
-  useEffect(() => { onSectionsChange?.(sections); }, [sections]);
   const [editingSectionId, setEditingSectionId] = useState(null);
   const [editingLessonId,  setEditingLessonId]  = useState(null);
   const [vimeoLinkId,      setVimeoLinkId]      = useState(null); // { secId, lesId }
@@ -6241,6 +6238,7 @@ function CurriculumBuilder({ toast, initialSections, onSectionsChange }) {
   const [uploadingMaterialId,    setUploadingMaterialId]    = useState(null);
   const [matDropOver,            setMatDropOver]            = useState(false);
   const materialDropInputRef = useRef(null);
+  useEffect(() => { onSectionsChange?.(sections); }, [sections]);
 
   // ── helpers ──────────────────────────────────────────────────────────────
   function patchLesson(secId, lesId, patch) {
