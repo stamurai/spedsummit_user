@@ -9483,7 +9483,7 @@ function V1TestiCol({ items, duration }) {
 }
 
 const V1_PRICING_FEATURES = [
-  "Just $19 — includes 1 month free trial",
+  "Just $19/year — includes 1 month free trial",
   "Win 1 month free Ablespace Pro subscription",
   "1 year on-demand replay access",
   "Interactive quizzes after each session",
@@ -9553,7 +9553,7 @@ function V1PricingCardOnly({ onGetStarted, onClose, isLoggedIn = false }) {
             <p style={{ margin:"0 0 24px", fontSize:14, color:"#6B7280", lineHeight:1.6 }}>Build your next SPED skill set with this comprehensive free summit</p>
             <div style={{ display:"flex", alignItems:"baseline", gap:10, marginBottom:8 }}>
               <span style={{ fontSize:"clamp(44px,7vw,64px)", fontWeight:900, lineHeight:1, letterSpacing:-2, color:"#111827" }}>$19</span>
-              <span style={{ fontSize:16, color:"#707685", marginBottom:6 }}>/month</span>
+              <span style={{ fontSize:16, color:"#707685", marginBottom:6 }}>/year</span>
             </div>
             <div style={{ marginBottom:32, marginTop:8 }}>
               {[
@@ -9679,7 +9679,7 @@ function V1PricingSection({ onGetStarted, isLoggedIn = false }) {
             {/* Price */}
             <div style={{ display:"flex", alignItems:"baseline", gap:10, marginBottom:8 }}>
               <span style={{ fontSize:"clamp(44px,7vw,64px)", fontWeight:900, lineHeight:1, letterSpacing:-2, color:"#111827" }}>$19</span>
-              <span style={{ fontSize:16, color:"#707685", marginBottom:6 }}>/month</span>
+              <span style={{ fontSize:16, color:"#707685", marginBottom:6 }}>/year</span>
             </div>
 
             {/* Benefits */}
