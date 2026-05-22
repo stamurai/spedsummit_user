@@ -8981,7 +8981,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
       <div className="spp-body" style={{ maxWidth:1100, margin:"0 auto", padding:"40px 48px", display:"grid", gridTemplateColumns:"1fr 340px", gap:40, alignItems:"start" }}>
 
         {/* Left: about + curriculum */}
-        <div style={{ background:"#fff", borderRadius:16, border:"1px solid #f0e8df", padding:"28px 32px" }}>
+        <div>
           {/* About instructor */}
           <div style={{ marginBottom:40 }}>
             <div style={{ fontSize:12, fontWeight:700, color:"#9a9bb0", letterSpacing:1, marginBottom:18 }}>ABOUT THE INSTRUCTOR</div>
@@ -9028,16 +9028,16 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
           <div style={{ fontSize:14, color:"#5e6278", marginBottom:20 }}>
             {sections.length} sections · {session.lessons.length} lessons · {session.duration} total
           </div>
-          <div style={{ border:"1px solid #e4e6ef", borderRadius:14, overflow:"hidden" }}>
+          <div style={{ border:"1px solid #f0e8df", borderRadius:14, overflow:"hidden", background:"#fff" }}>
             {sections.map((sec, si) => {
               const key = `s${si}`;
               const collapsed = collapsedSections[key];
               const secResources = (SESSION_RESOURCES[session.id] || {})[sec.title] || [];
               return (
-                <div key={key} style={{ borderBottom: si < sections.length-1 ? "1px solid #e4e6ef" : "none" }}>
+                <div key={key} style={{ borderBottom: si < sections.length-1 ? "1px solid #f0e8df" : "none" }}>
                   {/* Section header */}
                   <button onClick={() => setCollapsedSections(s=>({...s,[key]:!s[key]}))}
-                    style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 20px", background:"#f9fafb", border:"none", cursor:"pointer", textAlign:"left", gap:8 }}>
+                    style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 20px", background:"#fdf0e4", border:"none", cursor:"pointer", textAlign:"left", gap:8 }}>
                     <div>
                       <div style={{ fontSize:14, fontWeight:700, color:"#181c32" }}>{si===0?"":si+". "}{sec.title}</div>
                       <div style={{ fontSize:12, color:"#7e8299", marginTop:2 }}>
@@ -9053,8 +9053,8 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                         const isQuiz = l.type === "quiz";
                         const isFree = li === 0 && si === 0;
                         return (
-                          <div key={String(l.id)} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 20px", borderTop:"1px solid #f3f4f6",
-                            background: isFree ? "#f0f7ff" : "#fff" }}>
+                          <div key={String(l.id)} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 20px", borderTop:"1px solid #f0e8df",
+                            background: isFree ? "#fef5ec" : "#fff" }}>
                             {/* Phosphor icon instead of plain circle */}
                             <div style={{ width:22, height:22, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                               <Icon name={isQuiz ? "article" : "play-circle"} size={20} color={isQuiz ? "#6490E8" : "#707685"}/>
@@ -9079,7 +9079,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                         const tc = r.type==="PDF"?{c:"#dc2626",b:"#fef2f2"}:r.type==="PPTX"?{c:"#ea580c",b:"#fff7ed"}:r.type==="ZIP"?{c:"#7c3aed",b:"#f5f3ff"}:{c:"#6490E8",b:"#eef3fd"};
                         const rIcon = r.type==="PDF" ? "file-pdf" : r.type==="PPTX" ? "article" : r.type==="ZIP" ? "paperclip" : "paperclip";
                         return (
-                          <div key={r.id} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 20px", borderTop:"1px solid #f3f4f6", background:"#fff" }}>
+                          <div key={r.id} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 20px", borderTop:"1px solid #f0e8df", background:"#fff" }}>
                             <div style={{ width:22, height:22, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                               <Icon name={rIcon} size={18} color={tc.c}/>
                             </div>
@@ -9106,7 +9106,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
             <div style={{ fontSize:20, fontWeight:800, color:"#181c32", marginBottom:24 }}>Learner Reviews</div>
 
             {/* Rating summary */}
-            <div className="spp-rating-summary" style={{ display:"flex", gap:32, alignItems:"center", marginBottom:28, padding:24, borderRadius:16, border:"1px solid #e4e6ef", background:"#fff" }}>
+            <div className="spp-rating-summary" style={{ display:"flex", gap:32, alignItems:"center", marginBottom:28, padding:24, borderRadius:16, border:"1px solid #f0e8df", background:"#fff" }}>
               {/* Big number */}
               <div style={{ textAlign:"center", flexShrink:0 }}>
                 <div style={{ fontSize:56, fontWeight:900, color:"#181c32", lineHeight:1 }}>4.8</div>
@@ -9146,7 +9146,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
               { name:"Alex Reinholt",    role:"Learning & Development Manager", rating:4, date:"Feb 28, 2025", text:"Very informative overall. Covers the 'what' and 'why' well — would love a deeper dive into the 'how' in a follow-up session." },
               { name:"Priya Nair",       role:"Curriculum Coordinator",         rating:5, date:"Feb 14, 2025", text:"Engaging content, well-paced, and the instructor's passion really comes through. Worth every minute." },
             ].map((r, i) => (
-              <div key={i} style={{ padding:"20px 0", borderBottom: i < 3 ? "1px solid #f3f4f6" : "none" }}>
+              <div key={i} style={{ padding:"20px 0", borderBottom: i < 3 ? "1px solid #f0e8df" : "none" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
                   <div style={{ width:40, height:40, borderRadius:"50%", background:`hsl(${i*67},60%,55%)`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                     <span style={{ fontSize:16, fontWeight:800, color:"#fff" }}>{r.name[0]}</span>
@@ -9188,7 +9188,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
             </div>
             <div style={{ padding:20 }}>
               {/* Stats */}
-              <div style={{ display:"flex", gap:0, marginBottom:18, borderRadius:10, border:"1px solid #f0e8df", overflow:"hidden" }}>
+              <div style={{ display:"flex", gap:0, marginBottom:18, borderRadius:10, border:"1px solid #f0e8df", overflow:"hidden", background:"#fdf8f4" }}>
                 {[
                   { val:"4.8", icon:<Icon name="star" size={12} color="#f59e0b"/>, sub:"ratings", valColor:"#b45309" },
                   { val:"1,240", sub:"Students", valColor:"#181c32" },
