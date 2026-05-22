@@ -4735,13 +4735,13 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
   const [pwForm, setPwForm] = useState({ current:"", newPw:"", confirm:"" });
   const [mobileDrilled, setMobileDrilled] = useState(false);
 
+  const photoInputRef = useRef(null);
+
   // Sync if auth data loads after mount
   useEffect(() => {
     setForm(f => ({ ...f, name: userName, email: userEmail }));
     if (userAvatar) setPhotoUrl(userAvatar);
   }, [userName, userEmail, userAvatar]);
-
-  const photoInputRef = useRef(null);
 
   function handlePhotoFile(file) {
     if (!file) return;
@@ -9972,13 +9972,6 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
   const [showAuth, setShowAuth] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
-
-  useEffect(() => {
-    if (!profileMenuOpen) return;
-    const handler = (e) => { if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) setProfileMenuOpen(false); };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [profileMenuOpen]);
   const [selectedSession, setSelectedSession] = useState(null);
   const savedScrollY = useRef(0);
   const [faqOpen, setFaqOpen] = useState(null);
@@ -9986,9 +9979,16 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
   const [instructorPage, setInstructorPage] = useState(0);
   const [testimonialPage, setTestimonialPage] = useState(0);
   const [heroTab, setHeroTab] = useState("watch");
-
   const [navOpen, setNavOpen] = useState(false);
   const [navScrolled, setNavScrolled] = useState(false);
+  const [selectedInstructor, setSelectedInstructor] = useState(() => resolveInstructor(openInstructorName));
+
+  useEffect(() => {
+    if (!profileMenuOpen) return;
+    const handler = (e) => { if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) setProfileMenuOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [profileMenuOpen]);
 
   useEffect(() => {
     const onScroll = () => setNavScrolled(window.scrollY > 10);
@@ -10058,8 +10058,6 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
     }
     return match || null;
   }
-
-  const [selectedInstructor, setSelectedInstructor] = useState(() => resolveInstructor(openInstructorName));
 
   useEffect(() => {
     if (openInstructorName) {
