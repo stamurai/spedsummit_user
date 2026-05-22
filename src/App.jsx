@@ -11779,10 +11779,17 @@ export default function App() {
         setIsLoggedIn(true);
         sessionStorage.setItem("loggedIn", "1");
         fetchSessions();
+        fetchUserProgress();
+      }
+      if (event === "SIGNED_OUT") {
+        setEnrolledIds(new Set());
+        setScheduleRegistrations({});
+        setQuizStates({});
+        setSessions(prev => prev.map(s => ({ ...s, progress: 0, status: "not-started" })));
       }
     });
     return () => subscription.unsubscribe();
-  }, [fetchSessions]);
+  }, [fetchSessions, fetchUserProgress]);
   const [page, setPage] = useState("dashboard");
   const [isAdmin] = useState(false);
   const [isDark, setIsDark] = useState(() => { const h = new Date().getHours(); return h >= 19 || h < 6; });
@@ -11793,12 +11800,52 @@ export default function App() {
   const [editingSession,  setEditingSession]  = useState(null);
   const { toasts, toast, remove } = useToast();
 
-  /* ── Enrolled sessions (pre-seeded with sessions that have progress) ── */
-  const [enrolledIds, setEnrolledIds] = useState(new Set([1, 2, 3]));
+  /* ── Enrolled sessions ── */
+  const [enrolledIds, setEnrolledIds] = useState(new Set());
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [userAvatar, setUserAvatar] = useState(null);
   const [scheduleRegistrations, setScheduleRegistrations] = useState({});
+
+  // Fetch user progress from Supabase and hydrate local state
+  const fetchUserProgress = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data, error } = await supabase.from("user_progress").select("*").eq("user_id", user.id);
+    if (error) { console.error("[Supabase] progress fetch error:", error.message); return; }
+    if (!data || data.length === 0) return;
+
+    const newEnrolled = new Set();
+    const newRegs = {};
+    setSessions(prev => prev.map(s => {
+      const row = data.find(r => r.session_id === s.id);
+      if (!row) return s;
+      if (row.enrolled) newEnrolled.add(s.id);
+      if (row.registered) newRegs[s.id] = true;
+      return { ...s, progress: row.progress ?? s.progress, status: row.status ?? s.status };
+    }));
+    setEnrolledIds(newEnrolled);
+    setScheduleRegistrations(newRegs);
+    setQuizStates(prev => {
+      const next = { ...prev };
+      data.forEach(row => {
+        if (row.quiz_state && Object.keys(row.quiz_state).length > 0) {
+          next[row.session_id] = row.quiz_state;
+        }
+      });
+      return next;
+    });
+  }, []);
+
+  // Upsert a single session's progress row
+  const saveUserProgress = useCallback(async (sessionId, fields) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from("user_progress").upsert(
+      { user_id: user.id, session_id: sessionId, updated_at: new Date().toISOString(), ...fields },
+      { onConflict: "user_id,session_id" }
+    );
+  }, []);
   const [sessionsDeepLink, setSessionsDeepLink] = useState(null);
   const [pastSeasonPageId, setPastSeasonPageId] = useState(null);
   const [pastSeasonOrigin, setPastSeasonOrigin] = useState("browse");
@@ -11817,11 +11864,39 @@ export default function App() {
     try { return JSON.parse(localStorage.getItem("spring2026Ids") || "[]"); } catch { return []; }
   });
   useEffect(() => { localStorage.setItem("spring2026Ids", JSON.stringify(spring2026Ids)); }, [spring2026Ids]);
+
+  // Wrapped setter that also persists new registrations to Supabase
+  const setScheduleRegistrationsAndSave = useCallback((updater) => {
+    setScheduleRegistrations(prev => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      // Find newly registered session ids and persist them
+      Object.keys(next).forEach(id => {
+        if (!prev[id]) saveUserProgress(Number(id), { registered: true });
+      });
+      return next;
+    });
+  }, [saveUserProgress]);
   // Merged seasons — Spring 2026 gets any newly created sessions without a date
   const seasons = SEASONS.map(s => s.id === "spring-2026" ? { ...s, sessionIds: [...s.sessionIds, ...spring2026Ids] } : s);
 
   useEffect(() => { try { localStorage.setItem("sessions", JSON.stringify(sessions)); } catch {} }, [sessions]);
   useEffect(() => { try { localStorage.setItem("adminSessions", JSON.stringify(adminSessions)); } catch {} }, [adminSessions]);
+
+  // On mount, restore session if user is already logged in (e.g. page refresh)
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const meta = session.user.user_metadata || {};
+        const name = meta.full_name || meta.name || session.user.email || "User";
+        setUserName(name.split(" ")[0] || name);
+        setUserEmail(session.user.email || "");
+        setUserAvatar(meta.avatar_url || meta.picture || null);
+        setIsLoggedIn(true);
+        sessionStorage.setItem("loggedIn", "1");
+        fetchUserProgress();
+      }
+    });
+  }, [fetchUserProgress]);
 
   // Fetch admin-published sessions from Supabase — refresh on mount, tab focus, and every 30s
   useEffect(() => {
@@ -11890,6 +11965,7 @@ export default function App() {
 
   function enroll(sessionId) {
     setEnrolledIds(prev => new Set([...prev, sessionId]));
+    saveUserProgress(sessionId, { enrolled: true });
     toast({ type:"success", title:"Enrolled!", message:"Session added to your courses." });
   }
 
@@ -11901,7 +11977,11 @@ export default function App() {
   const [,                  setReviews]           = useState({});
 
   function updateQuizState(sessionId, updates) {
-    setQuizStates(prev => ({ ...prev, [sessionId]: { ...(prev[sessionId] || { status:"not-taken" }), ...updates } }));
+    setQuizStates(prev => {
+      const next = { ...prev, [sessionId]: { ...(prev[sessionId] || { status:"not-taken" }), ...updates } };
+      saveUserProgress(sessionId, { quiz_state: next[sessionId] });
+      return next;
+    });
   }
 
   function handleAssessmentClick(session) { setAssessmentSession(session); }
@@ -11935,10 +12015,10 @@ export default function App() {
   }
 
   function updateProgress(sessionId, pct, activeLessonIdx) {
+    const newStatus = pct >= 100 ? "completed" : "in-progress";
     setSessions(prev => prev.map(s => {
       if (s.id !== sessionId) return s;
-      const updated = { ...s, progress: pct, status: pct >= 100 ? "completed" : "in-progress" };
-      // Persist lesson unlock: mark current lesson completed, unlock next one
+      const updated = { ...s, progress: pct, status: newStatus };
       if (pct >= 80 && activeLessonIdx != null && s.lessons?.length > 0) {
         const lessons = s.lessons.map((l, i) => {
           if (i === activeLessonIdx) return { ...l, status: "completed" };
@@ -11949,6 +12029,7 @@ export default function App() {
       }
       return updated;
     }));
+    saveUserProgress(sessionId, { progress: pct, status: newStatus, enrolled: true });
   }
 
   async function updateSession(id, form, sections) {
@@ -12119,9 +12200,9 @@ export default function App() {
         </div>
       );
     }
-    if (page==="dashboard") { if (isAdmin) { nav("admin-overview"); return null; } const mergedSessions = SESSIONS.map(s => { const remote = sessions.find(r => r.id === s.id); return remote ? { ...s, ...remote } : s; }); return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenPastSeason={(id)=>{ setPastSeasonPageId(id); nav("past-season"); }} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={mergedSessions} externalFilter={dashFilter} onFilterChange={setDashFilter} isAdmin={isAdmin} sessionsLoading={sessionsLoading}/>; }
-    if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations} sessions={sessions} seasons={seasons} sessionsLoading={sessionsLoading}/>;
-    if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrations}/>;
+    if (page==="dashboard") { if (isAdmin) { nav("admin-overview"); return null; } const mergedSessions = SESSIONS.map(s => { const remote = sessions.find(r => r.id === s.id); return remote ? { ...s, ...remote } : s; }); return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenPastSeason={(id)=>{ setPastSeasonPageId(id); nav("past-season"); }} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={mergedSessions} externalFilter={dashFilter} onFilterChange={setDashFilter} isAdmin={isAdmin} sessionsLoading={sessionsLoading}/>; }
+    if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} seasons={seasons} sessionsLoading={sessionsLoading}/>;
+    if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
     if (page==="community") return <CommunityPage toast={toast}/>;
     if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick} userName={userName} sessions={sessions} seasons={seasons}/>;
