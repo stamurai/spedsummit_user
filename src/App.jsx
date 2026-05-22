@@ -4011,9 +4011,8 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           .sd-instructor-stats { overflow-x:auto; }
           .sd-instructor-stats > div { min-width:72px; }
           .sd-info-btns { flex-wrap:wrap !important; gap:6px !important; }
-          .community-layout { flex-direction:column !important; padding:16px !important; }
-          .community-right-panel { width:100% !important; flex-direction:row !important; flex-wrap:wrap !important; gap:10px !important; }
-          .community-right-panel > div { flex:1; min-width:calc(50% - 5px); }
+          .community-layout { flex-direction:column !important; padding:14px !important; gap:14px !important; }
+          .community-right-panel { width:100% !important; flex-direction:column !important; gap:10px !important; }
         }
       `}</style>
 
