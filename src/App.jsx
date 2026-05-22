@@ -11747,18 +11747,10 @@ export default function App() {
   const [pastSeasonOrigin, setPastSeasonOrigin] = useState("browse");
   const [showPricingOverlay, setShowPricingOverlay] = useState(false);
   const [dashFilter, setDashFilter] = useState({ season:"all", year:"all" });
-  const [adminSessions, setAdminSessions] = useState(() => {
-    try { const s = localStorage.getItem("adminSessions"); return s ? JSON.parse(s) : ADMIN_SESSIONS_DATA; } catch { return ADMIN_SESSIONS_DATA; }
-  });
-  const [sessions, setSessions] = useState(() => {
-    try { const s = localStorage.getItem("sessions"); return s ? JSON.parse(s) : []; } catch { return []; }
-  });
-  const [sessionsLoading, setSessionsLoading] = useState(() => {
-    try { return !localStorage.getItem("sessions"); } catch { return true; }
-  });
-  const [spring2026Ids, setSpring2026Ids] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("spring2026Ids") || "[]"); } catch { return []; }
-  });
+  const [adminSessions, setAdminSessions] = useState(ADMIN_SESSIONS_DATA);
+  const [sessions, setSessions] = useState([]);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
+  const [spring2026Ids, setSpring2026Ids] = useState([]);
   const [assessmentSession, setAssessmentSession] = useState(null);
   const [certSession,       setCertSession]       = useState(null);
   const [reviewSession,     setReviewSession]     = useState(null);
@@ -11858,7 +11850,6 @@ export default function App() {
     );
   }
 
-  useEffect(() => { localStorage.setItem("spring2026Ids", JSON.stringify(spring2026Ids)); }, [spring2026Ids]);
 
   function setScheduleRegistrationsAndSave(updater) {
     setScheduleRegistrations(prev => {
@@ -11870,8 +11861,6 @@ export default function App() {
   // Merged seasons — Spring 2026 gets any newly created sessions without a date
   const seasons = SEASONS.map(s => s.id === "spring-2026" ? { ...s, sessionIds: [...s.sessionIds, ...spring2026Ids] } : s);
 
-  useEffect(() => { try { localStorage.setItem("sessions", JSON.stringify(sessions)); } catch {} }, [sessions]);
-  useEffect(() => { try { localStorage.setItem("adminSessions", JSON.stringify(adminSessions)); } catch {} }, [adminSessions]);
 
   // On mount, restore session if user is already logged in (e.g. page refresh)
   useEffect(() => {
