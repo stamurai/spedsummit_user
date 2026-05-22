@@ -11822,15 +11822,13 @@ export default function App() {
       }
     });
     return () => subscription.unsubscribe();
-  }, [fetchSessions, fetchUserProgress]);
-  // Fetch user progress from Supabase and hydrate local state
-  const fetchUserProgress = useCallback(async () => {
+  }, [fetchSessions]);
+  async function fetchUserProgress() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const { data, error } = await supabase.from("user_progress").select("*").eq("user_id", user.id);
     if (error) { console.error("[Supabase] progress fetch error:", error.message); return; }
     if (!data || data.length === 0) return;
-
     const newEnrolled = new Set();
     const newRegs = {};
     setSessions(prev => prev.map(s => {
@@ -11845,36 +11843,30 @@ export default function App() {
     setQuizStates(prev => {
       const next = { ...prev };
       data.forEach(row => {
-        if (row.quiz_state && Object.keys(row.quiz_state).length > 0) {
-          next[row.session_id] = row.quiz_state;
-        }
+        if (row.quiz_state && Object.keys(row.quiz_state).length > 0) next[row.session_id] = row.quiz_state;
       });
       return next;
     });
-  }, []);
+  }
 
-  // Upsert a single session's progress row
-  const saveUserProgress = useCallback(async (sessionId, fields) => {
+  async function saveUserProgress(sessionId, fields) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     await supabase.from("user_progress").upsert(
       { user_id: user.id, session_id: sessionId, updated_at: new Date().toISOString(), ...fields },
       { onConflict: "user_id,session_id" }
     );
-  }, []);
+  }
+
   useEffect(() => { localStorage.setItem("spring2026Ids", JSON.stringify(spring2026Ids)); }, [spring2026Ids]);
 
-  // Wrapped setter that also persists new registrations to Supabase
-  const setScheduleRegistrationsAndSave = useCallback((updater) => {
+  function setScheduleRegistrationsAndSave(updater) {
     setScheduleRegistrations(prev => {
       const next = typeof updater === "function" ? updater(prev) : updater;
-      // Find newly registered session ids and persist them
-      Object.keys(next).forEach(id => {
-        if (!prev[id]) saveUserProgress(Number(id), { registered: true });
-      });
+      Object.keys(next).forEach(id => { if (!prev[id]) saveUserProgress(Number(id), { registered: true }); });
       return next;
     });
-  }, [saveUserProgress]);
+  }
   // Merged seasons — Spring 2026 gets any newly created sessions without a date
   const seasons = SEASONS.map(s => s.id === "spring-2026" ? { ...s, sessionIds: [...s.sessionIds, ...spring2026Ids] } : s);
 
@@ -11895,7 +11887,7 @@ export default function App() {
         fetchUserProgress();
       }
     });
-  }, [fetchUserProgress]);
+  }, []);
 
   // Fetch sessions on mount + realtime subscription for instant cross-device updates
   useEffect(() => {
