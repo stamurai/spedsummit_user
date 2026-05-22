@@ -4011,8 +4011,6 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           .sd-instructor-stats { overflow-x:auto; }
           .sd-instructor-stats > div { min-width:72px; }
           .sd-info-btns { flex-wrap:wrap !important; gap:6px !important; }
-          .community-layout { flex-direction:column !important; padding:14px !important; gap:14px !important; }
-          .community-right-panel { width:100% !important; flex-direction:column !important; gap:10px !important; }
         }
       `}</style>
 
@@ -4445,7 +4443,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               )}
 
               {/* Right: Session details panel */}
-              <div className="community-right-panel" style={{ width:260, flexShrink:0, display:"flex", flexDirection:"column", gap:12 }}>
+              <div style={{ width: narrow ? "100%" : 260, flexShrink:0, display:"flex", flexDirection:"column", gap:12 }}>
                 {/* Stats */}
                 <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"16px 18px" }}>
                   <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:14 }}>Session Stats</div>
@@ -4555,8 +4553,8 @@ function CommunityPage({ toast }) {
   }
 
   return (
-    <div className="community-layout" style={{ display:"flex", gap:20, padding:24, background:C.gray50, minHeight:"100%" }}>
-      <div style={{ flex:1, minWidth:0 }}>
+    <div style={{ display:"flex", flexDirection: narrow ? "column" : "row", gap:20, padding: narrow ? 14 : 24, background:C.gray50, minHeight:"100%", boxSizing:"border-box", width:"100%" }}>
+      <div style={{ flex:1, minWidth:0, width:"100%" }}>
         <div style={{ marginBottom:20 }}>
           <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>COLLABORATIVE HUB</div>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
