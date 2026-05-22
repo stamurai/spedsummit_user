@@ -8845,7 +8845,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
   const totalResources = Object.values(sectionRes).reduce((n,arr)=>n+arr.length,0);
 
   return (
-    <div ref={pageRef} style={{ background:C.gray50, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+    <div ref={pageRef} style={{ background:"#FEF5EC", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       <style>{`
         @media(max-width:680px){
           .spp-nav { padding:0 16px !important; }
@@ -8905,7 +8905,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
       })()}
 
       {/* Nav */}
-      <nav className="spp-nav" style={{ position:"sticky", top:0, zIndex:100, background:"rgba(255,255,255,0.95)", backdropFilter:"blur(8px)", borderBottom:"1px solid #f0e8df", padding:"0 48px", height:60, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+      <nav className="spp-nav" style={{ position:"sticky", top:0, zIndex:100, background:"rgba(254,245,236,0.95)", backdropFilter:"blur(8px)", borderBottom:"1px solid #f0e8df", padding:"0 48px", height:60, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
         <div style={{ display:"flex", alignItems:"center", cursor:"pointer" }} onClick={onBack}>
           <img src="/Container.png" alt="SPED Summit" style={{ height:28, width:"auto", display:"block" }}/>
         </div>
@@ -8981,7 +8981,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
       <div className="spp-body" style={{ maxWidth:1100, margin:"0 auto", padding:"40px 48px", display:"grid", gridTemplateColumns:"1fr 340px", gap:40, alignItems:"start" }}>
 
         {/* Left: about + curriculum */}
-        <div style={{ background:"#fff", borderRadius:16, border:"1px solid #e4e6ef", padding:"28px 32px" }}>
+        <div style={{ background:"#fff", borderRadius:16, border:"1px solid #f0e8df", padding:"28px 32px" }}>
           {/* About instructor */}
           <div style={{ marginBottom:40 }}>
             <div style={{ fontSize:12, fontWeight:700, color:"#9a9bb0", letterSpacing:1, marginBottom:18 }}>ABOUT THE INSTRUCTOR</div>
@@ -9181,7 +9181,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
 
         {/* Right: single unified sticky card */}
         <div className="spp-sticky-card" style={{ position:"sticky", top:76 }}>
-          <div style={{ border:"1px solid #e4e6ef", borderRadius:16, overflow:"hidden", boxShadow:"0 4px 24px rgba(0,0,0,0.08)" }}>
+          <div style={{ border:"1px solid #f0e8df", borderRadius:16, overflow:"hidden", boxShadow:"0 4px 24px rgba(0,0,0,0.06)" }}>
             {/* Preview thumbnail */}
             <div style={{ height:150, position:"relative", overflow:"hidden" }}>
               <SessionThumb id={session.id} height={150} noPlayHover/>
