@@ -9037,7 +9037,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                 <div key={key} style={{ borderBottom: si < sections.length-1 ? "1px solid #f0e8df" : "none" }}>
                   {/* Section header */}
                   <button onClick={() => setCollapsedSections(s=>({...s,[key]:!s[key]}))}
-                    style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 20px", background:"#fdf0e4", border:"none", cursor:"pointer", textAlign:"left", gap:8 }}>
+                    style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 20px", background:"#fff", border:"none", cursor:"pointer", textAlign:"left", gap:8 }}>
                     <div>
                       <div style={{ fontSize:14, fontWeight:700, color:"#181c32" }}>{si===0?"":si+". "}{sec.title}</div>
                       <div style={{ fontSize:12, color:"#7e8299", marginTop:2 }}>
@@ -9054,7 +9054,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
                         const isFree = li === 0 && si === 0;
                         return (
                           <div key={String(l.id)} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 20px", borderTop:"1px solid #f0e8df",
-                            background: isFree ? "#fef5ec" : "#fff" }}>
+                            background: "#fff" }}>
                             {/* Phosphor icon instead of plain circle */}
                             <div style={{ width:22, height:22, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                               <Icon name={isQuiz ? "article" : "play-circle"} size={20} color={isQuiz ? "#6490E8" : "#707685"}/>
