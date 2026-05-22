@@ -11898,15 +11898,26 @@ export default function App() {
     });
   }, [fetchUserProgress]);
 
-  // Fetch admin-published sessions from Supabase — refresh on mount, tab focus, and every 30s
+  // Fetch sessions on mount + realtime subscription for instant cross-device updates
   useEffect(() => {
     fetchSessions();
-    // Re-fetch when user returns to the tab (switching from admin site on same device)
+
+    // Realtime: any INSERT/UPDATE/DELETE on the sessions table triggers an immediate re-fetch
+    const channel = supabase
+      .channel("sessions-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "sessions" }, () => {
+        fetchSessions();
+      })
+      .subscribe();
+
+    // Fallback: re-fetch on tab focus (switching from admin site)
     const onVisible = () => { if (document.visibilityState === "visible") fetchSessions(); };
     document.addEventListener("visibilitychange", onVisible);
-    // Poll every 30s so other devices see new/deleted sessions without a hard reload
-    const interval = setInterval(fetchSessions, 30000);
-    return () => { document.removeEventListener("visibilitychange", onVisible); clearInterval(interval); };
+
+    return () => {
+      supabase.removeChannel(channel);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [fetchSessions]);
 
   async function addAdminSession(form, publish, sections) {
