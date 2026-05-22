@@ -3852,6 +3852,8 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const [communityReplyingTo, setCommunityReplyingTo] = useState(null);
   const [communityReplyText, setCommunityReplyText] = useState({});
   const [communityDeleteConfirm, setCommunityDeleteConfirm] = useState(null);
+  const [communityEditingId, setCommunityEditingId] = useState(null);
+  const [communityEditText, setCommunityEditText] = useState("");
   const chatRef = useRef(null);
   const chatInputRef = useRef(null);
   const lesson = session.lessons[activeLesson] || session.lessons[0];
@@ -4241,7 +4243,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                         {communityOpenMenu===post.id && (
                           <DropdownMenu
                             items={[
-                              ...(post.author===adminName||post.author==="You"?[{ icon:"pencil", label:"Edit", action:()=>{ toast({type:"info",message:"Edit coming soon!"}); setCommunityOpenMenu(null); } }]:[]),
+                              ...(post.author===adminName||post.author==="You"?[{ icon:"pencil", label:"Edit", action:()=>{ setCommunityEditingId(post.id); setCommunityEditText(post.title); setCommunityOpenMenu(null); } }]:[]),
                               { icon:"share-network", label:"Share", action:()=>{ toast({type:"info",message:"Link copied!"}); setCommunityOpenMenu(null); } },
                               ...(post.author===adminName||post.author==="You"?[{ icon:"trash", label:"Delete", danger:true, action:()=>{ setCommunityDeleteConfirm(post.id); setCommunityOpenMenu(null); } }]:[]),
                             ]}
@@ -4252,9 +4254,23 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                     </div>
                     {/* Post content */}
                     <div style={{ padding:"0 18px 14px" }}>
-                      <div style={{ fontSize:15, fontWeight:700, color:isDark?"#fff":C.gray900, marginBottom:6, lineHeight:1.5 }}>{post.title}</div>
-                      {post.body && <p style={{ margin:"0 0 10px", fontSize:14, color:isDark?"rgba(255,255,255,0.6)":C.gray600, lineHeight:1.65, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:3, WebkitBoxOrient:"vertical" }}>{post.body}</p>}
-                      {post.tags.length>0 && <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>{post.tags.map(t=><span key={t} style={{ fontSize:11, background:isDark?"rgba(255,255,255,0.08)":C.gray100, color:isDark?"rgba(255,255,255,0.5)":C.gray500, padding:"3px 9px", borderRadius:99, fontWeight:600 }}>{t}</span>)}</div>}
+                      {communityEditingId === post.id ? (
+                        <div>
+                          <textarea value={communityEditText} onChange={e=>setCommunityEditText(e.target.value)}
+                            autoFocus
+                            style={{ width:"100%", minHeight:72, padding:"10px 12px", border:`1px solid ${C.primary}`, borderRadius:8, fontSize:14, fontWeight:600, color:isDark?"#fff":C.gray900, background:isDark?"rgba(255,255,255,0.06)":"#fafafa", outline:"none", resize:"vertical", lineHeight:1.5, boxSizing:"border-box", marginBottom:10 }}/>
+                          <div style={{ display:"flex", gap:8 }}>
+                            <Btn size="sm" onClick={()=>{ if(!communityEditText.trim()) return; setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,title:communityEditText.trim()}:p)); setCommunityEditingId(null); toast({type:"success",message:"Post updated!"}); }}>Save</Btn>
+                            <button onClick={()=>setCommunityEditingId(null)} style={{ padding:"5px 14px", borderRadius:8, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, background:"transparent", fontSize:13, fontWeight:600, color:isDark?"rgba(255,255,255,0.6)":C.gray500, cursor:"pointer" }}>Cancel</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div style={{ fontSize:15, fontWeight:700, color:isDark?"#fff":C.gray900, marginBottom:6, lineHeight:1.5 }}>{post.title}</div>
+                          {post.body && <p style={{ margin:"0 0 10px", fontSize:14, color:isDark?"rgba(255,255,255,0.6)":C.gray600, lineHeight:1.65, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:3, WebkitBoxOrient:"vertical" }}>{post.body}</p>}
+                          {post.tags.length>0 && <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>{post.tags.map(t=><span key={t} style={{ fontSize:11, background:isDark?"rgba(255,255,255,0.08)":C.gray100, color:isDark?"rgba(255,255,255,0.5)":C.gray500, padding:"3px 9px", borderRadius:99, fontWeight:600 }}>{t}</span>)}</div>}
+                        </>
+                      )}
                     </div>
                     {/* Action bar */}
                     <div style={{ display:"flex", alignItems:"center", gap:4, padding:"10px 14px", borderTop:`1px solid ${isDark?"rgba(255,255,255,0.07)":C.gray100}` }}>
