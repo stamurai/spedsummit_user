@@ -8845,7 +8845,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
   const totalResources = Object.values(sectionRes).reduce((n,arr)=>n+arr.length,0);
 
   return (
-    <div ref={pageRef} style={{ background:"#fff", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+    <div ref={pageRef} style={{ background:C.gray50, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       <style>{`
         @media(max-width:680px){
           .spp-nav { padding:0 16px !important; }
@@ -8981,7 +8981,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
       <div className="spp-body" style={{ maxWidth:1100, margin:"0 auto", padding:"40px 48px", display:"grid", gridTemplateColumns:"1fr 340px", gap:40, alignItems:"start" }}>
 
         {/* Left: about + curriculum */}
-        <div>
+        <div style={{ background:"#fff", borderRadius:16, border:"1px solid #e4e6ef", padding:"28px 32px" }}>
           {/* About instructor */}
           <div style={{ marginBottom:40 }}>
             <div style={{ fontSize:12, fontWeight:700, color:"#9a9bb0", letterSpacing:1, marginBottom:18 }}>ABOUT THE INSTRUCTOR</div>
@@ -9106,7 +9106,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
             <div style={{ fontSize:20, fontWeight:800, color:"#181c32", marginBottom:24 }}>Learner Reviews</div>
 
             {/* Rating summary */}
-            <div className="spp-rating-summary" style={{ display:"flex", gap:32, alignItems:"center", marginBottom:28, padding:24, borderRadius:16, border:"1px solid #e4e6ef", background:"#fafafa" }}>
+            <div className="spp-rating-summary" style={{ display:"flex", gap:32, alignItems:"center", marginBottom:28, padding:24, borderRadius:16, border:"1px solid #e4e6ef", background:"#fff" }}>
               {/* Big number */}
               <div style={{ textAlign:"center", flexShrink:0 }}>
                 <div style={{ fontSize:56, fontWeight:900, color:"#181c32", lineHeight:1 }}>4.8</div>
