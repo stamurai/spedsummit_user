@@ -1594,7 +1594,7 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
               items={[
                 {
                   icon: "user-circle",
-                  label: "Account Settings",
+                  label: "My Profile",
                   action: () => { setShowProfileMenu(false); onNavigateProfile?.(); },
                 },
                 {
