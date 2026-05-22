@@ -11800,6 +11800,9 @@ export default function App() {
   const [editingSession,  setEditingSession]  = useState(null);
   const { toasts, toast, remove } = useToast();
 
+  /* ── Quiz state — declared early so fetchUserProgress can reference setQuizStates ── */
+  const [quizStates, setQuizStates] = useState({});
+
   /* ── Enrolled sessions ── */
   const [enrolledIds, setEnrolledIds] = useState(new Set());
   const [userName, setUserName] = useState("");
@@ -11980,8 +11983,6 @@ export default function App() {
     toast({ type:"success", title:"Enrolled!", message:"Session added to your courses." });
   }
 
-  /* ── Quiz state: { [sessionId]: { status, score, currentQ, answers } } ── */
-  const [quizStates,        setQuizStates]        = useState({ 1: { status:"passed", score:92 }, 2: { status:"passed", score:85 } });
   const [assessmentSession, setAssessmentSession] = useState(null);
   const [certSession,       setCertSession]       = useState(null);
   const [reviewSession,     setReviewSession]     = useState(null);
