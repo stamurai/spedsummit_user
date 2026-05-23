@@ -8597,8 +8597,10 @@ function AuthModal({ onClose, onLogin }) {
         setMode("signin");
         setPassword("");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        const { data: signInData, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        console.log("[Auth] signInWithPassword result:", { user: signInData?.user?.email, error: error?.message });
         if (error) { setAuthError(error.message); return; }
+        console.log("[Auth] calling onLogin");
         onLogin("user");
       }
     } finally {
@@ -11820,7 +11822,8 @@ export default function App() {
   // Handle Google OAuth redirect — fires when user returns from Google sign-in
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session) {
+      console.log("[Auth] onAuthStateChange:", event, session?.user?.email || null);
+      if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") && session) {
         const meta = session.user.user_metadata || {};
         const name = meta.full_name || meta.name || session.user.email || "User";
         setUserName(name.split(" ")[0] || name);
@@ -11828,7 +11831,7 @@ export default function App() {
         setUserAvatar(meta.avatar_url || meta.picture || null);
         setIsLoggedIn(true);
         setShowLanding(false);
-        setPage("dashboard");
+        if (event === "SIGNED_IN") setPage("dashboard");
         sessionStorage.setItem("loggedIn", "1");
         fetchSessions();
         fetchUserProgress();
@@ -11899,6 +11902,7 @@ export default function App() {
         setUserEmail(session.user.email || "");
         setUserAvatar(meta.avatar_url || meta.picture || null);
         setIsLoggedIn(true);
+        setShowLanding(false);
         sessionStorage.setItem("loggedIn", "1");
         fetchUserProgress();
       }
@@ -12273,6 +12277,7 @@ export default function App() {
 
   if (showLanding) {
     const handleGetStarted = (sessionId, role = "user") => {
+      console.log("[Auth] handleGetStarted called, role=", role);
       setIsLoggedIn(true);
       setShowLanding(false);
       setPage(role === "admin" ? "admin-overview" : "dashboard");
