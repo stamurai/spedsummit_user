@@ -8597,10 +8597,8 @@ function AuthModal({ onClose, onLogin }) {
         setMode("signin");
         setPassword("");
       } else {
-        const { data: signInData, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-        console.log("[Auth] signInWithPassword result:", { user: signInData?.user?.email, error: error?.message });
+        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) { setAuthError(error.message); return; }
-        console.log("[Auth] calling onLogin");
         onLogin("user");
       }
     } finally {
@@ -11822,7 +11820,6 @@ export default function App() {
   // Handle Google OAuth redirect — fires when user returns from Google sign-in
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("[Auth] onAuthStateChange:", event, session?.user?.email || null);
       if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") && session) {
         const meta = session.user.user_metadata || {};
         const name = meta.full_name || meta.name || session.user.email || "User";
@@ -12277,7 +12274,6 @@ export default function App() {
 
   if (showLanding) {
     const handleGetStarted = (sessionId, role = "user") => {
-      console.log("[Auth] handleGetStarted called, role=", role);
       setIsLoggedIn(true);
       setShowLanding(false);
       setPage(role === "admin" ? "admin-overview" : "dashboard");
