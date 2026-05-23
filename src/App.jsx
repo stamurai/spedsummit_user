@@ -8562,6 +8562,8 @@ function AuthModal({ onClose, onLogin }) {
   const [legalModal, setLegalModal]= useState(null);
   const [resetSent,  setResetSent] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
 
   const isAdmin = step === "admin-auth";
 
@@ -8575,13 +8577,33 @@ function AuthModal({ onClose, onLogin }) {
       console.error("Google login error:", error.message);
       setGoogleLoading(false);
     }
-    // On success, browser redirects to Google — no further action needed here
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
-    onLogin(isAdmin ? "admin" : "user");
+    setAuthLoading(true);
+    setAuthError("");
+    try {
+      if (mode === "signup") {
+        const { error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: { data: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: `${firstName.trim()} ${lastName.trim()}`.trim() } },
+        });
+        if (error) { setAuthError(error.message); return; }
+        // Supabase sends a confirmation email — inform user
+        setAuthError("✓ Check your email to confirm your account, then sign in.");
+        setMode("signin");
+        setPassword("");
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        if (error) { setAuthError(error.message); return; }
+        onLogin("user");
+      }
+    } finally {
+      setAuthLoading(false);
+    }
   }
 
   const inp = {
@@ -8706,7 +8728,7 @@ function AuthModal({ onClose, onLogin }) {
               {!isAdmin && (
                 <div style={{ display:"flex", background:"#f1f5f9", borderRadius:8, padding:3, marginBottom:20 }}>
                   {["signup","signin"].map(m => (
-                    <button key={m} onClick={()=>setMode(m)}
+                    <button key={m} onClick={()=>{ setMode(m); setAuthError(""); }}
                       style={{ flex:1, padding:"7px 0", borderRadius:6, border:"none", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"all .15s",
                         background: mode===m ? "#fff" : "transparent",
                         color: mode===m ? "#0f172a" : "#94a3b8",
@@ -8762,11 +8784,16 @@ function AuthModal({ onClose, onLogin }) {
                   <input value={password} onChange={e=>setPassword(e.target.value)} placeholder={mode === "signup" ? "Create a password" : "Enter your password"} type="password" required style={inp}
                     onFocus={e=>e.target.style.borderColor="#6490E8"} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
                 </div>
-                <button type="submit"
-                  style={{ width:"100%", padding:"12px", borderRadius:8, border:"none", background:"#6490E8", color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit", transition:"background .15s" }}
-                  onMouseEnter={e=>e.currentTarget.style.background="#4f7de0"}
-                  onMouseLeave={e=>e.currentTarget.style.background="#6490E8"}>
-                  {isAdmin ? "Sign In" : mode === "signup" ? "Create Account" : "Sign In"}
+                {authError && (
+                  <div style={{ marginBottom:12, padding:"10px 12px", borderRadius:8, background: authError.startsWith("✓") ? "#f0fdf4" : "#fef2f2", border:`1px solid ${authError.startsWith("✓") ? "#bbf7d0" : "#fecaca"}`, fontSize:13, color: authError.startsWith("✓") ? "#16a34a" : "#dc2626", lineHeight:1.5 }}>
+                    {authError}
+                  </div>
+                )}
+                <button type="submit" disabled={authLoading}
+                  style={{ width:"100%", padding:"12px", borderRadius:8, border:"none", background: authLoading ? "#a0b8f0" : "#6490E8", color:"#fff", fontSize:14, fontWeight:700, cursor: authLoading ? "not-allowed" : "pointer", fontFamily:"inherit", transition:"background .15s" }}
+                  onMouseEnter={e=>{ if (!authLoading) e.currentTarget.style.background="#4f7de0"; }}
+                  onMouseLeave={e=>{ if (!authLoading) e.currentTarget.style.background="#6490E8"; }}>
+                  {authLoading ? "Please wait…" : isAdmin ? "Sign In" : mode === "signup" ? "Create Account" : "Sign In"}
                 </button>
                 {!isAdmin && (
                   <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:12 }}>
