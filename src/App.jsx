@@ -12272,8 +12272,9 @@ export default function App() {
   if (showLanding) {
     const handleGetStarted = (sessionId, role = "user") => {
       setIsLoggedIn(true);
+      setShowLanding(false);
+      setPage(role === "admin" ? "admin-overview" : "dashboard");
       if (sessionId) enroll(sessionId);
-      // Stay on landing — profile icon will appear in nav
     };
     const handleGoToPage = (p) => {
       setPage(p || (isAdmin ? "admin-overview" : "dashboard"));
