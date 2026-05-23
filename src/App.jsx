@@ -12016,9 +12016,12 @@ export default function App() {
 
   const scrollContainerRef = useRef(null);
 
-  // Seed the initial browser history entry so back never escapes the app
+  // Seed the initial browser history entry so back never escapes the app.
+  // IMPORTANT: only update the state object — never change the URL here.
+  // Changing the URL (even just removing the hash) would strip Supabase's OAuth
+  // callback params (?code= or #access_token=) before it can parse them.
   useEffect(() => {
-    window.history.replaceState({ page: "dashboard", isApp: true }, "", window.location.pathname);
+    window.history.replaceState({ page: "dashboard", isApp: true }, "");
   }, []);
 
   function _applyPage(p, keepSession = false) {
