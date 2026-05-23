@@ -11827,6 +11827,8 @@ export default function App() {
         setUserEmail(session.user.email || "");
         setUserAvatar(meta.avatar_url || meta.picture || null);
         setIsLoggedIn(true);
+        setShowLanding(false);
+        setPage("dashboard");
         sessionStorage.setItem("loggedIn", "1");
         fetchSessions();
         fetchUserProgress();
