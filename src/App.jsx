@@ -984,7 +984,6 @@ const SEARCH_PAGES = [
   { id:"dashboard",      label:"My Learnings",    icon:"house",        type:"page" },
   { id:"sessions",       label:"Browse Sessions", icon:"video",        type:"page" },
   { id:"past-sessions",  label:"Past Sessions",   icon:"clock",        type:"page" },
-  { id:"certifications", label:"My Certificates", icon:"certificate",  type:"page" },
   { id:"schedule",       label:"Schedule",        icon:"calendar",     type:"page" },
   { id:"profile",        label:"My Profile",      icon:"user-circle",  type:"page" },
 ];
@@ -1662,7 +1661,6 @@ function Sidebar({ active, onChange, isAdmin }) {
     { id:"dashboard",      icon:"house",        label:"My Learnings"    },
     { id:"sessions",       icon:"play-circle",  label:"All Sessions"    },
     { id:"schedules",      icon:"calendar",     label:"Schedules"       },
-    { id:"certifications", icon:"certificate",  label:"My Certificates" },
   ];
   const adminNav = [
     { id:"admin-overview",  icon:"house",       label:"Overview"    },
@@ -10298,7 +10296,6 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                     </div>
                     {[
                       { icon:"squares-four", label:"My Dashboard", action:()=>{ setProfileMenuOpen(false); onGoToDashboard?.("dashboard"); } },
-                      { icon:"certificate", label:"My Certificates", action:()=>{ setProfileMenuOpen(false); onGoToDashboard?.("certifications"); } },
                       { icon:"gear", label:"Account Settings", action:()=>{ setProfileMenuOpen(false); onGoToDashboard?.("profile"); } },
                     ].map(({ icon, label, action })=>(
                       <button key={label} onClick={action}
@@ -11728,6 +11725,7 @@ export default function App() {
   const [showLanding, setShowLanding] = useState(true);
   const [openInstructorName, setOpenInstructorName] = useState(null);
   const [page, setPage] = useState("dashboard");
+  const navHistoryRef = useRef(["dashboard"]);
   const [isAdmin] = useState(false);
   const [isDark, setIsDark] = useState(() => { const h = new Date().getHours(); return h >= 19 || h < 6; });
   const [landingV, setLandingV] = useState(1);
@@ -11987,7 +11985,48 @@ export default function App() {
   }
 
   const scrollContainerRef = useRef(null);
-  function nav(p) { setPage(p); sessionStorage.setItem("page", p); setActiveSession(null); setEditingSession(null); if (p === "sessions") setSessionsDeepLink(null); if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0; }
+
+  // Seed the initial browser history entry so back never escapes the app
+  useEffect(() => {
+    window.history.replaceState({ page: "dashboard", isApp: true }, "", window.location.pathname);
+  }, []);
+
+  function _applyPage(p, keepSession = false) {
+    setPage(p); sessionStorage.setItem("page", p);
+    if (!keepSession) { setActiveSession(null); setEditingSession(null); }
+    if (p === "sessions") setSessionsDeepLink(null);
+    if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0;
+  }
+
+  function nav(p) {
+    const prev = navHistoryRef.current[navHistoryRef.current.length - 1];
+    if (prev !== p) {
+      navHistoryRef.current = [...navHistoryRef.current, p];
+      window.history.pushState({ page: p, isApp: true }, "", window.location.pathname);
+    }
+    _applyPage(p);
+  }
+
+  useEffect(() => {
+    function handlePopState(e) {
+      // If it's an app state entry, use it directly
+      if (e.state?.isApp) {
+        const targetPage = e.state.page;
+        // Sync our history stack to match
+        const idx = navHistoryRef.current.lastIndexOf(targetPage);
+        if (idx >= 0) navHistoryRef.current = navHistoryRef.current.slice(0, idx + 1);
+        else navHistoryRef.current = [targetPage];
+        _applyPage(targetPage);
+      } else {
+        // Went back to initial entry — re-push a dashboard entry to prevent leaving the app
+        window.history.pushState({ page: "dashboard", isApp: true }, "", window.location.pathname);
+        navHistoryRef.current = ["dashboard"];
+        _applyPage("dashboard");
+      }
+    }
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
   function navToSeason(seasonId) { setSessionsDeepLink(seasonId); setPage("sessions"); setActiveSession(null); }
 
   function openEdit(s) {
@@ -12046,11 +12085,16 @@ export default function App() {
   }
 
   function openSession(s, source) {
+    const src = (source === "landing" ? "dashboard" : source) || page;
     setActiveSession(s);
-    setSessionSource(source || page);
+    setSessionSource(src);
     const season = SEASONS.find(season => season.sessionIds.includes(s.id));
     setSessionBackLabel(season ? season.name : null);
+    // Push session-detail to browser history so back returns to the source page
+    navHistoryRef.current = [...navHistoryRef.current, "session-detail"];
+    window.history.pushState({ page: "session-detail", isApp: true }, "", window.location.pathname);
     setPage("session-detail");
+    if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0;
   }
 
   function toggleAdmin() { /* user-only app — no toggle */ }
@@ -12298,7 +12342,7 @@ export default function App() {
           />}
         </div>
 
-        <div ref={scrollContainerRef} className={`app-scroll-area${(page==="profile"||page==="session-detail"||page==="past-season"||activeSession||sessionsDeepLink)?" no-bottom-nav":""}`} style={{ flex:1, overflowY:"auto", overflowX:"clip" }}>{renderPage()}{!isAdmin && page !== "profile" && <Footer onNavigate={nav}/>}</div>
+        <div ref={scrollContainerRef} className={`app-scroll-area${(page==="profile"||page==="session-detail"||page==="past-season"||activeSession||sessionsDeepLink)?" no-bottom-nav":""}`} style={{ flex:1, overflowY:"auto", overflowX:"clip", background:C.gray50 }}>{renderPage()}{!isAdmin && page !== "profile" && <Footer onNavigate={nav}/>}</div>
       </div>
 
       {/* Mobile bottom nav — hidden when drilling into sub-pages */}
