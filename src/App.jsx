@@ -9841,7 +9841,7 @@ function SpAccordionFeature({ T }) {
   const [activeId, setActiveId] = useState(1);
   const active = FEATURES.find(f => f.id === activeId);
   return (
-    <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:"#27385A" }}>
+    <section style={{ padding:"80px 24px 0", borderBottom:`1px solid ${T.border}`, background:"#27385A" }}>
       <div style={{ maxWidth:1100, margin:"0 auto" }}>
         {/* Header */}
         <div style={{ textAlign:"center", marginBottom:52 }}>
@@ -9855,8 +9855,8 @@ function SpAccordionFeature({ T }) {
         </div>
 
         <style>{`
-          .sp-acc-wrap { display:flex; gap:64px; align-items:flex-start; }
-          .sp-acc-img  { width:55%; flex-shrink:0; position:sticky; top:80px; }
+          .sp-acc-wrap { display:flex; gap:56px; align-items:center; }
+          .sp-acc-img  { width:58%; flex-shrink:0; position:sticky; top:80px; align-self:flex-end; }
           .sp-acc-list { flex:1; }
           @media(max-width:768px){ .sp-acc-wrap { flex-direction:column; gap:32px; } .sp-acc-img { display:none !important; } .sp-acc-mobile-img { display:block !important; } }
           @media(min-width:769px){ .sp-acc-mobile-img { display:none !important; } }
@@ -9899,9 +9899,9 @@ function SpAccordionFeature({ T }) {
 
           {/* Right: image preview */}
           <div className="sp-acc-img">
-            <div style={{ width:"100%", borderRadius:12, overflow:"hidden", background:"#1e2d47", padding:"24px 24px 0", boxShadow:"0 8px 32px rgba(0,0,0,0.25)" }}>
+            <div style={{ width:"100%", borderRadius:"16px 16px 0 0", overflow:"hidden", background:"#1e2d47", padding:"28px 28px 0", boxShadow:"0 8px 40px rgba(0,0,0,0.35)" }}>
               <img src={active.image} alt={active.title}
-                style={{ width:"100%", height:"auto", display:"block", borderRadius:"12px 12px 0 0", transition:"opacity 0.3s ease" }}/>
+                style={{ width:"100%", height:"auto", display:"block", borderRadius:"10px 10px 0 0", transition:"opacity 0.3s ease" }}/>
             </div>
           </div>
         </div>
