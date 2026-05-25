@@ -6640,7 +6640,7 @@ function AdminCreateSession({ onBack, toast, onSave }) {
     { id:101, title:"Welcome & course overview", type:"video", duration:"", status:"draft", vimeoUrl:"", questions:[], quizExpanded:false },
   ]}]);
   const sectionsRef = useRef(sections);
-  function handleSectionsChange(secs) { sectionsRef.current = secs; setSections(secs); }
+  function handleSectionsChange(secs) { sectionsRef.current = secs; }
 
   // Warn on browser refresh/close if the form has unsaved content
   useEffect(() => {
@@ -6776,9 +6776,6 @@ function AdminCreateSession({ onBack, toast, onSave }) {
           </div>
           <div style={{ padding:"0 16px 24px" }}>
             {renderTabContent()}
-            <div style={{ display: tab === "curriculum" ? "block" : "none" }}>
-              <CurriculumBuilder toast={toast} initialSections={sections} onSectionsChange={handleSectionsChange}/>
-            </div>
             <div className="acs-actions" style={{ display:"flex", justifyContent:"flex-end", gap:8, paddingTop:24, borderTop:`1px solid ${C.gray200}`, marginTop:24 }}>
               <Btn variant="outline" onClick={() => setMobileDrilled(false)}>Close</Btn>
               {tab === "availability"
@@ -6823,10 +6820,6 @@ function AdminCreateSession({ onBack, toast, onSave }) {
 
           <div style={{ flex:1 }}>
             {renderTabContent()}
-            {/* Always mounted so lesson state survives tab switches */}
-            <div style={{ display: tab === "curriculum" ? "block" : "none" }}>
-              <CurriculumBuilder toast={toast} initialSections={sections} onSectionsChange={handleSectionsChange}/>
-            </div>
           </div>
 
           {/* Actions */}
@@ -6840,6 +6833,13 @@ function AdminCreateSession({ onBack, toast, onSave }) {
         </div>
 
       </div>
+
+      {/* Single CurriculumBuilder — always mounted so state survives tab and mobile-drill switches */}
+      <div style={{ display: tab === "curriculum" ? "flex" : "none", flexDirection:"column",
+        maxWidth:960, width:"100%", margin:"0 auto", padding:"0 28px 32px", boxSizing:"border-box" }}>
+        <CurriculumBuilder toast={toast} initialSections={null} onSectionsChange={handleSectionsChange}/>
+      </div>
+
     </div>
   );
 
