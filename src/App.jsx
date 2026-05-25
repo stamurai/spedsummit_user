@@ -11193,17 +11193,14 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
             };
 
             const now = new Date();
-            // Only show sessions whose availableFrom is in the future (truly upcoming)
-            // Sessions that are already live belong in the dashboard's Continue Learning
-            const gridSessions = sessions.filter(s => {
-              const from = s.availableFrom || s.available_from;
-              return from ? new Date(from) > now : false;
-            });
+            // Show all admin-uploaded sessions. The availableFrom date controls button
+            // state (Watch Now vs locked), not whether the card appears here.
+            const gridSessions = sessions;
 
             if (sessionsLoading || gridSessions.length === 0) {
               return (
                 <div style={{ textAlign:"center", padding:"48px 0", color:T.muted, fontSize:15 }}>
-                  {sessionsLoading ? "Loading sessions…" : "No upcoming sessions scheduled yet. Check back soon."}
+                  {sessionsLoading ? "Loading sessions…" : "No sessions uploaded yet. Check back soon."}
                 </div>
               );
             }
