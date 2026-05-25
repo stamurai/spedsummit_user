@@ -4732,12 +4732,66 @@ function ProfileField({ label, children }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    PROFILE PAGE
 ───────────────────────────────────────────────────────────────────────────── */
+function DeactivateModal({ onClose, onConfirm }) {
+  const [typed, setTyped] = useState("");
+  const CONFIRM_WORD = "deactivate";
+  const ready = typed.trim().toLowerCase() === CONFIRM_WORD;
+  return (
+    <div style={{ position:"fixed", inset:0, zIndex:1200, background:"rgba(15,23,42,0.6)", display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background:"#fff", borderRadius:16, width:"100%", maxWidth:440, boxShadow:"0 24px 60px rgba(0,0,0,0.18)", overflow:"hidden" }}>
+        {/* Header */}
+        <div style={{ padding:"24px 24px 0", display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12 }}>
+          <div style={{ width:44, height:44, borderRadius:12, background:"#fef2f2", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+            <Icon name="warning" size={22} color="#ef4444" weight="fill"/>
+          </div>
+          <button onClick={onClose} style={{ width:32, height:32, borderRadius:8, border:`1px solid ${C.gray200}`, background:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", marginLeft:"auto" }}>
+            <Icon name="x" size={14} color={C.gray500}/>
+          </button>
+        </div>
+        {/* Body */}
+        <div style={{ padding:"16px 24px 24px" }}>
+          <h3 style={{ margin:"0 0 6px", fontSize:18, fontWeight:800, color:C.gray900 }}>Deactivate your account?</h3>
+          <p style={{ margin:"0 0 20px", fontSize:14, color:C.gray500, lineHeight:1.6 }}>
+            This will <strong style={{ color:C.gray800 }}>permanently delete</strong> your profile, all learning progress, certificates, and quiz data. <strong style={{ color:C.error }}>This action cannot be undone.</strong>
+          </p>
+          {/* Type to confirm */}
+          <div style={{ background:"#fef2f2", border:"1px solid #fca5a5", borderRadius:10, padding:"14px 16px", marginBottom:16 }}>
+            <p style={{ margin:"0 0 10px", fontSize:13, color:"#7f1d1d", lineHeight:1.5 }}>
+              To confirm, type <strong style={{ letterSpacing:.5 }}>"{CONFIRM_WORD}"</strong> below:
+            </p>
+            <input
+              value={typed}
+              onChange={e => setTyped(e.target.value)}
+              placeholder={CONFIRM_WORD}
+              autoFocus
+              style={{ width:"100%", padding:"10px 12px", border:`1.5px solid ${ready ? "#ef4444" : "#fca5a5"}`, borderRadius:8, fontSize:14, outline:"none", fontFamily:"inherit", color:C.gray900, background:"#fff", boxSizing:"border-box", transition:"border-color .15s" }}
+            />
+          </div>
+          {/* Actions */}
+          <div style={{ display:"flex", gap:10 }}>
+            <button onClick={onClose}
+              style={{ flex:1, padding:"11px 0", borderRadius:9, border:`1px solid ${C.gray200}`, background:"#fff", fontSize:14, fontWeight:600, color:C.gray700, cursor:"pointer", fontFamily:"inherit" }}>
+              Cancel
+            </button>
+            <button onClick={ready ? onConfirm : undefined} disabled={!ready}
+              style={{ flex:1, padding:"11px 0", borderRadius:9, border:"none", background: ready ? "#ef4444" : "#fca5a5", fontSize:14, fontWeight:700, color:"#fff", cursor: ready ? "pointer" : "not-allowed", fontFamily:"inherit", transition:"background .15s" }}>
+              Deactivate account
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, onNameChange, onBack }) {
   const [activeSection, setActiveSection] = useState("personal");
   const [form, setForm] = useState({ name:userName, title:"", email:userEmail, phone:"", language:"English (US)" });
   const [notifEmail,   setNotifEmail]   = useState(true);
   const [notifMentor,  setNotifMentor]  = useState(true);
   const [publicProfile,setPublicProfile]= useState(false);
+  const [showDeactivateModal, setShowDeactivateModal] = useState(false);
   const [twoFA,        setTwoFA]        = useState(true);
   const [photoUrl,     setPhotoUrl]     = useState(userAvatar);
   const [changingPassword, setChangingPassword] = useState(false);
@@ -4949,7 +5003,7 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
               <div style={{ fontSize:14, fontWeight:600, color:C.error }}>Deactivate Account</div>
               <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>Permanently remove your profile and all learning progress. This cannot be undone.</div>
             </div>
-            <button onClick={()=>toast({type:"error",title:"Are you sure?",message:"This action is permanent."})}
+            <button onClick={() => setShowDeactivateModal(true)}
               style={{ padding:"8px 18px", background:"transparent", color:C.error, border:`1px solid ${C.errorBorder}`, borderRadius:8, fontSize:13, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap", flexShrink:0 }}>
               Deactivate
             </button>
@@ -5060,6 +5114,18 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
 
       </div>
     </div>
+
+    {showDeactivateModal && (
+      <DeactivateModal
+        onClose={() => setShowDeactivateModal(false)}
+        onConfirm={async () => {
+          setShowDeactivateModal(false);
+          await supabase.auth.signOut();
+          toast({ type:"success", title:"Account deactivated", message:"Your account has been removed." });
+          onBack();
+        }}
+      />
+    )}
   );
 }
 
