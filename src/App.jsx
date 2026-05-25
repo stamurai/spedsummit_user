@@ -11849,9 +11849,9 @@ function LandingPageV2({ onGetStarted }) {
 export default function App() {
   // ── ALL useState declarations MUST come before any useCallback/useEffect ──
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showLanding, setShowLanding] = useState(true);
+  const [showLanding, setShowLanding] = useState(() => sessionStorage.getItem("showLanding") !== "0");
   const [openInstructorName, setOpenInstructorName] = useState(null);
-  const [page, setPage] = useState("dashboard");
+  const [page, setPage] = useState(() => sessionStorage.getItem("page") || "dashboard");
   const navHistoryRef = useRef(["dashboard"]);
   const [isAdmin] = useState(false);
   const [isDark, setIsDark] = useState(() => { const h = new Date().getHours(); return h >= 19 || h < 6; });
@@ -12122,6 +12122,11 @@ export default function App() {
   useEffect(() => {
     window.history.replaceState({ page: "dashboard", isApp: true }, "");
   }, []);
+
+  // Persist showLanding so refresh restores the correct view
+  useEffect(() => {
+    sessionStorage.setItem("showLanding", showLanding ? "1" : "0");
+  }, [showLanding]);
 
   function _applyPage(p, keepSession = false) {
     setPage(p); sessionStorage.setItem("page", p);
