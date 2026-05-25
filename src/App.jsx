@@ -11827,7 +11827,6 @@ export default function App() {
         setUserEmail(session.user.email || "");
         setUserAvatar(meta.avatar_url || meta.picture || null);
         setIsLoggedIn(true);
-        setShowLanding(false);
         if (event === "SIGNED_IN") setPage("dashboard");
         sessionStorage.setItem("loggedIn", "1");
         fetchSessions();
@@ -11899,18 +11898,12 @@ export default function App() {
         setUserEmail(session.user.email || "");
         setUserAvatar(meta.avatar_url || meta.picture || null);
         setIsLoggedIn(true);
-        setShowLanding(false);
         sessionStorage.setItem("loggedIn", "1");
         fetchUserProgress();
       }
     });
   }, []);
 
-  // Safety net: whenever the user becomes logged-in, always leave the landing page
-  // (unless they explicitly opened it to view an instructor profile)
-  useEffect(() => {
-    if (isLoggedIn && !openInstructorName) setShowLanding(false);
-  }, [isLoggedIn, openInstructorName]);
 
   // Fetch sessions on mount + realtime subscription for instant cross-device updates
   useEffect(() => {
@@ -12284,9 +12277,17 @@ export default function App() {
   if (showLanding) {
     const handleGetStarted = (sessionId, role = "user") => {
       setIsLoggedIn(true);
-      setShowLanding(false);
-      setPage(role === "admin" ? "admin-overview" : "dashboard");
-      if (sessionId) enroll(sessionId);
+      // Only leave the landing page if the user explicitly clicked a session
+      // or the "Go to Dashboard" button — not just because auth completed.
+      if (sessionId) {
+        setShowLanding(false);
+        setPage(role === "admin" ? "admin-overview" : "dashboard");
+        enroll(sessionId);
+      } else if (role === "admin") {
+        setShowLanding(false);
+        setPage("admin-overview");
+      }
+      // role === "user" with no sessionId → stay on landing, page updates to logged-in state
     };
     const handleGoToPage = (p) => {
       setPage(p || (isAdmin ? "admin-overview" : "dashboard"));
