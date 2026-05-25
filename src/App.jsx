@@ -6642,6 +6642,22 @@ function AdminCreateSession({ onBack, toast, onSave }) {
   const sectionsRef = useRef(sections);
   function handleSectionsChange(secs) { sectionsRef.current = secs; setSections(secs); }
 
+  // Warn on browser refresh/close if the form has unsaved content
+  useEffect(() => {
+    function isDirty() {
+      if (form.title.trim() || form.desc.trim() || form.instructorName.trim()) return true;
+      const secs = sectionsRef.current || [];
+      return secs.some(sec => sec.lessons.some(l => l.vimeoUrl || l.questions?.length > 0));
+    }
+    function handleBeforeUnload(e) {
+      if (!isDirty()) return;
+      e.preventDefault();
+      e.returnValue = "";
+    }
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [form]);
+
   const [questions,  setQuestions]  = useState([]);
   const [typeMenuId, setTypeMenuId] = useState(null);
 
