@@ -9841,7 +9841,7 @@ function SpAccordionFeature({ T }) {
   const [activeId, setActiveId] = useState(1);
   const active = FEATURES.find(f => f.id === activeId);
   return (
-    <section style={{ padding:"80px 24px 0", borderBottom:`1px solid ${T.border}`, background:"#27385A" }}>
+    <section style={{ padding:"80px 24px 64px", borderBottom:`1px solid ${T.border}`, background:"#27385A" }}>
       <div style={{ maxWidth:1100, margin:"0 auto" }}>
         {/* Header */}
         <div style={{ textAlign:"center", marginBottom:52 }}>
@@ -9856,7 +9856,7 @@ function SpAccordionFeature({ T }) {
 
         <style>{`
           .sp-acc-wrap { display:flex; gap:56px; align-items:center; }
-          .sp-acc-img  { width:58%; flex-shrink:0; position:sticky; top:80px; align-self:flex-end; }
+          .sp-acc-img  { width:58%; flex-shrink:0; align-self:center; }
           .sp-acc-list { flex:1; }
           @media(max-width:768px){ .sp-acc-wrap { flex-direction:column; gap:32px; } .sp-acc-img { display:none !important; } .sp-acc-mobile-img { display:block !important; } }
           @media(min-width:769px){ .sp-acc-mobile-img { display:none !important; } }
