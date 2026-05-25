@@ -10340,8 +10340,6 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
     "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=480&h=260&fit=crop&auto=format",
     "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=480&h=260&fit=crop&auto=format",
   ];
-  const allSessions = SESSIONS.filter(s => !isSessionArchived(s.id));
-
   return (
     <div style={{ minHeight:"100vh", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", background:T.bg, overflowX:"clip", color:T.text }}>
       <style>{`
