@@ -11906,6 +11906,12 @@ export default function App() {
     });
   }, []);
 
+  // Safety net: whenever the user becomes logged-in, always leave the landing page
+  // (unless they explicitly opened it to view an instructor profile)
+  useEffect(() => {
+    if (isLoggedIn && !openInstructorName) setShowLanding(false);
+  }, [isLoggedIn, openInstructorName]);
+
   // Fetch sessions on mount + realtime subscription for instant cross-device updates
   useEffect(() => {
     fetchSessions();
