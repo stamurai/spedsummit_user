@@ -10084,6 +10084,18 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
   const [testimonialPage, setTestimonialPage] = useState(0);
   const [heroTab, setHeroTab] = useState("watch");
   const [navOpen, setNavOpen] = useState(false);
+  const [, setNow] = useState(() => Date.now());
+
+  // Re-render when a session's availableFrom time arrives so availability flips in real-time
+  useEffect(() => {
+    const upcoming = sessions.filter(s => s.availableFrom && new Date(s.availableFrom) > new Date());
+    if (upcoming.length === 0) return;
+    const nextUnlock = Math.min(...upcoming.map(s => new Date(s.availableFrom).getTime()));
+    const delay = nextUnlock - Date.now();
+    if (delay <= 0) return;
+    const t = setTimeout(() => setNow(Date.now()), delay + 500);
+    return () => clearTimeout(t);
+  }, [sessions]);
   const [navScrolled, setNavScrolled] = useState(false);
   const [selectedInstructor, setSelectedInstructor] = useState(() => resolveInstructor(openInstructorName));
 
