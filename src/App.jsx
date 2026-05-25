@@ -10072,7 +10072,7 @@ function SpBentoChart({ T }) {
   );
 }
 
-function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvatar = null, onGoToDashboard, onLogout, onWatchSession, openInstructorName = null, onInstructorOpened }) {
+function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvatar = null, onGoToDashboard, onLogout, onWatchSession, openInstructorName = null, onInstructorOpened, sessions = [], sessionsLoading = false }) {
   const [showAuth, setShowAuth] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
@@ -11157,19 +11157,8 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
             <p style={{ margin:"8px 0 0", fontSize:15, color:T.muted }}>Register for these upcoming live sessions — free for all educators.</p>
           </div>
 
-          {/* Session cards — pixel-matched to reference design */}
+          {/* Session cards — sourced from Supabase via sessions prop */}
           {(()=>{
-            const SD = {
-              1:{ date:"Mar 26", time:"09:00 AM", sessionType:"Opening" },
-              2:{ date:"Mar 26", time:"11:00 AM", sessionType:"Keynote" },
-              3:{ date:"Jan 6",  time:"09:00 AM", sessionType:"Workshop" },
-              4:{ date:"Jan 7",  time:"02:00 PM", sessionType:"Networking" },
-              5:{ date:"Apr 15", time:"09:00 AM", sessionType:"Workshop" },
-              6:{ date:"Apr 15", time:"11:00 AM", sessionType:"Panel Discussion" },
-              7:{ date:"Apr 16", time:"09:00 AM", sessionType:"Workshop" },
-              8:{ date:"Apr 16", time:"11:00 AM", sessionType:"Keynote" },
-            };
-            /* Category badge: short topic label, amber-toned like the reference */
             const CAT_BADGE = {
               "TECHNOLOGY":    { label:"Technology",    bg:"rgba(234,179,8,0.15)",   color:"#fbbf24" },
               "ACCESSIBILITY": { label:"Accessibility", bg:"rgba(139,92,246,0.15)",  color:"#a78bfa" },
@@ -11178,32 +11167,39 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               "COMMUNICATION": { label:"Communication", bg:"rgba(249,115,22,0.15)",  color:"#fb923c" },
               "TEAMWORK":      { label:"Teamwork",      bg:"rgba(168,85,247,0.15)",  color:"#c084fc" },
             };
-            const INSTRUCTOR_ROLES = {
-              "Tara Roehl":     "Mindfulness & Wellness Specialist",
-              "Casey Harrison": "Inclusion Specialist",
-              "Jordan Smith":   "Speech-Language Pathologist",
-              "Morgan Lee":     "SPED Leadership Coach",
-              "Dr. Emily Tran": "AI & Technology Educator",
-              "Dr. Sarah Kim":  "AAC Specialist, BCBA",
-              "Sydney Bassard": "Dyslexia & Literacy Expert",
-              "Diana Williams": "SPED Leadership Coach",
+
+            // Format availableFrom date/time for display
+            const fmtDateTime = (iso) => {
+              if (!iso) return { date: "", time: "" };
+              const d = new Date(iso);
+              const date = d.toLocaleDateString("en-US", { month:"short", day:"numeric" });
+              const time = d.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit", hour12:true });
+              return { date, time };
             };
-            const gridSessions = SESSIONS.filter(s => SD[s.id]);
+
+            const gridSessions = sessions.length > 0 ? sessions : [];
+
+            if (sessionsLoading || gridSessions.length === 0) {
+              return (
+                <div style={{ textAlign:"center", padding:"48px 0", color:T.muted, fontSize:15 }}>
+                  {sessionsLoading ? "Loading sessions…" : "No sessions scheduled yet. Check back soon."}
+                </div>
+              );
+            }
+
+            const cols = Math.min(gridSessions.length, 4);
             return (
-              <div className="lp-sessions-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4, minmax(0, 1fr))", gridTemplateRows:"repeat(2, auto)", gap:16 }}>
+              <div className="lp-sessions-grid" style={{ display:"grid", gridTemplateColumns:`repeat(${cols}, minmax(0, 1fr))`, gap:16 }}>
                 {gridSessions.map(s => {
-                  const d        = SD[s.id];
-                  const catBadge = CAT_BADGE[s.category] || { label:s.category, bg:C.gray100, color:C.gray700 };
-                  const avatarSrc= INSTRUCTOR_AVATARS[s.instructor];
-                  const schedItem= SCHEDULE.find(i => i.id === s.id);
+                  const catBadge = CAT_BADGE[s.category] || { label:s.category || "Session", bg:C.gray100, color:C.gray700 };
+                  const avatarSrc = INSTRUCTOR_AVATARS[s.instructor];
                   const isAvailable = isSessionAvailable(s.id);
-                  const ctaLabel = isLoggedIn ? (isAvailable ? "Watch Now" : `Available ${schedItem?.date || d.date}`) : "Register Now";
-                  const instrRole= INSTRUCTOR_ROLES[s.instructor] || "Instructor";
+                  const { date, time } = fmtDateTime(s.availableFrom);
+                  const ctaLabel = isLoggedIn ? (isAvailable ? "Watch Now" : (date ? `Available ${date}` : "Coming Soon")) : "Register Now";
                   const cardClickable = !isLoggedIn || isAvailable;
                   const handleCardClick = () => {
                     if (isLoggedIn && isAvailable) { onWatchSession ? onWatchSession(s) : onGetStarted(s.id); }
                     else if (!isLoggedIn) { savedScrollY.current = window.scrollY; setSelectedSession(s); window.scrollTo(0,0); }
-                    // logged in + not available → do nothing
                   };
                   return (
                     <div key={s.id} className="lp-session-card"
@@ -11211,13 +11207,16 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                       onClick={handleCardClick}>
 
                       {/* ── Top: instructor image with name overlay ── */}
-                      <div className="lp-session-card-img" style={{ flexShrink:0, width:"100%", height:160, position:"relative" }}>
-                        <img src={avatarSrc} alt={s.instructor}
-                          style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top center", display:"block" }}/>
+                      <div className="lp-session-card-img" style={{ flexShrink:0, width:"100%", height:160, position:"relative", background:C.gray200 }}>
+                        {avatarSrc
+                          ? <img src={avatarSrc} alt={s.instructor} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top center", display:"block" }}/>
+                          : <div style={{ width:"100%", height:"100%", background:"linear-gradient(135deg,#1e3a5f,#2d5a9e)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                              <span style={{ fontSize:40, fontWeight:800, color:"rgba(255,255,255,0.3)" }}>{(s.instructor||"?")[0]}</span>
+                            </div>
+                        }
                         <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.25) 45%, transparent 75%)" }}/>
                         <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"0 10px 10px" }}>
-                          <div style={{ fontSize:15, fontWeight:700, color:"#fff", lineHeight:1.25 }}>{s.instructor}</div>
-                          <div style={{ fontSize:13, color:"rgba(255,255,255,0.72)", marginTop:3, lineHeight:1.3 }}>{instrRole}</div>
+                          <div style={{ fontSize:15, fontWeight:700, color:"#fff", lineHeight:1.25 }}>{s.instructor || "Instructor"}</div>
                         </div>
                       </div>
 
@@ -11229,11 +11228,13 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                           </span>
                         </div>
                         <div style={{ fontSize:15, fontWeight:700, color:C.gray900, lineHeight:1.35, marginBottom:6, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>{s.title}</div>
-                        <div style={{ fontSize:12, fontWeight:500, color:C.gray700, marginBottom:6 }}>
-                          {schedItem?.date || d.date} · {schedItem?.time || d.time}
-                        </div>
+                        {(date || time) && (
+                          <div style={{ fontSize:12, fontWeight:500, color:C.gray700, marginBottom:6 }}>
+                            {[date, time].filter(Boolean).join(" · ")}
+                          </div>
+                        )}
                         <div style={{ fontSize:12, color:C.gray600, lineHeight:1.5, marginBottom:14, flex:1, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
-                          {schedItem?.description || s.description}
+                          {s.description}
                         </div>
                         <button
                           onClick={e=>{ e.stopPropagation(); handleCardClick(); }}
@@ -12375,7 +12376,7 @@ export default function App() {
     return (
       <>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToPage} onWatchSession={(s)=>{ setShowLanding(false); openSession(s, "landing"); }} onLogout={async ()=>{ await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); }} openInstructorName={openInstructorName} onInstructorOpened={()=>setOpenInstructorName(null)}/>
+        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToPage} onWatchSession={(s)=>{ setShowLanding(false); openSession(s, "landing"); }} onLogout={async ()=>{ await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); }} openInstructorName={openInstructorName} onInstructorOpened={()=>setOpenInstructorName(null)} sessions={sessions} sessionsLoading={sessionsLoading}/>
       </>
     );
   }
