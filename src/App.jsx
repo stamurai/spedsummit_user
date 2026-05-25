@@ -10086,11 +10086,16 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
   const [navOpen, setNavOpen] = useState(false);
   const [, setNow] = useState(() => Date.now());
 
-  // Re-render when a session's availableFrom time arrives so availability flips in real-time
+  // Re-render when a session's availableFrom time arrives:
+  // - removes it from the Upcoming section (it's now live)
+  // - triggers the next timer for the session after that
   useEffect(() => {
-    const upcoming = sessions.filter(s => s.availableFrom && new Date(s.availableFrom) > new Date());
+    const upcoming = sessions.filter(s => {
+      const from = s.availableFrom || s.available_from;
+      return from && new Date(from) > new Date();
+    });
     if (upcoming.length === 0) return;
-    const nextUnlock = Math.min(...upcoming.map(s => new Date(s.availableFrom).getTime()));
+    const nextUnlock = Math.min(...upcoming.map(s => new Date(s.availableFrom || s.available_from).getTime()));
     const delay = nextUnlock - Date.now();
     if (delay <= 0) return;
     const t = setTimeout(() => setNow(Date.now()), delay + 500);
@@ -11189,12 +11194,18 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               return { date, time };
             };
 
-            const gridSessions = sessions.length > 0 ? sessions : [];
+            const now = new Date();
+            // Only show sessions whose availableFrom is in the future (truly upcoming)
+            // Sessions that are already live belong in the dashboard's Continue Learning
+            const gridSessions = sessions.filter(s => {
+              const from = s.availableFrom || s.available_from;
+              return from ? new Date(from) > now : false;
+            });
 
             if (sessionsLoading || gridSessions.length === 0) {
               return (
                 <div style={{ textAlign:"center", padding:"48px 0", color:T.muted, fontSize:15 }}>
-                  {sessionsLoading ? "Loading sessions…" : "No sessions scheduled yet. Check back soon."}
+                  {sessionsLoading ? "Loading sessions…" : "No upcoming sessions scheduled yet. Check back soon."}
                 </div>
               );
             }
