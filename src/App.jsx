@@ -11187,9 +11187,8 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               );
             }
 
-            const cols = Math.min(gridSessions.length, 4);
             return (
-              <div className="lp-sessions-grid" style={{ display:"grid", gridTemplateColumns:`repeat(${cols}, minmax(0, 1fr))`, gap:16 }}>
+              <div className="lp-sessions-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4, minmax(0, 1fr))", gridTemplateRows:"repeat(2, auto)", gap:16 }}>
                 {gridSessions.map(s => {
                   const catBadge = CAT_BADGE[s.category] || { label:s.category || "Session", bg:C.gray100, color:C.gray700 };
                   const avatarSrc = INSTRUCTOR_AVATARS[s.instructor];
