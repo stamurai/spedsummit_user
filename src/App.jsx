@@ -9855,17 +9855,17 @@ function SpAccordionFeature({ T }) {
         </div>
 
         <style>{`
-          .sp-acc-wrap { display:flex; gap:56px; align-items:center; }
-          .sp-acc-img  { width:58%; flex-shrink:0; align-self:center; }
-          .sp-acc-list { flex:1; }
-          @media(max-width:768px){ .sp-acc-wrap { flex-direction:column; gap:32px; } .sp-acc-img { display:none !important; } .sp-acc-mobile-img { display:block !important; } }
+          .sp-acc-wrap { display:flex; gap:56px; align-items:stretch; min-height:580px; }
+          .sp-acc-list { flex:1; display:flex; flex-direction:column; justify-content:center; }
+          .sp-acc-img  { width:58%; flex-shrink:0; display:flex; align-items:center; }
+          @media(max-width:768px){ .sp-acc-wrap { flex-direction:column; gap:32px; min-height:unset; } .sp-acc-img { display:none !important; } .sp-acc-mobile-img { display:block !important; } }
           @media(min-width:769px){ .sp-acc-mobile-img { display:none !important; } }
           .sp-acc-item { border-bottom:1px solid rgba(255,255,255,0.12); }
           .sp-acc-trigger { width:100%; background:none; border:none; cursor:pointer; padding:20px 0; display:flex; align-items:center; justify-content:space-between; gap:12; text-align:left; font-family:inherit; }
           .sp-acc-trigger:hover h6 { color:#fff !important; }
           .sp-acc-chevron { transition:transform 0.25s ease; flex-shrink:0; }
           .sp-acc-chevron.open { transform:rotate(180deg); }
-          .sp-acc-content { overflow:hidden; transition:max-height 0.3s ease, opacity 0.3s ease; }
+          .sp-acc-content { overflow:hidden; transition:opacity 0.2s ease; }
         `}</style>
 
         <div className="sp-acc-wrap">
@@ -9883,7 +9883,7 @@ function SpAccordionFeature({ T }) {
                       <path d="M6 9l6 6 6-6"/>
                     </svg>
                   </button>
-                  <div className="sp-acc-content" style={{ maxHeight: isOpen ? 800 : 0, opacity: isOpen ? 1 : 0 }}>
+                  <div className="sp-acc-content" style={{ display: isOpen ? "block" : "none", opacity: isOpen ? 1 : 0 }}>
                     <p style={{ margin:"0 0 16px", fontSize:14, color:"rgba(255,255,255,0.6)", lineHeight:1.7 }}>{f.description}</p>
                     {/* Mobile image — shown inline below description */}
                     <div className="sp-acc-mobile-img" style={{ marginBottom:20 }}>
@@ -9897,7 +9897,7 @@ function SpAccordionFeature({ T }) {
             })}
           </div>
 
-          {/* Right: image preview */}
+          {/* Right: image preview — fixed position, never moves */}
           <div className="sp-acc-img">
             <div style={{ width:"100%", borderRadius:"16px 16px 0 0", overflow:"hidden", background:"#1e2d47", padding:"28px 28px 0", boxShadow:"0 8px 40px rgba(0,0,0,0.35)" }}>
               <img src={active.image} alt={active.title}
