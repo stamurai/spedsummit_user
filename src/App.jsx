@@ -6626,6 +6626,46 @@ function CurriculumBuilder({ toast, initialSections, onSectionsChange }) {
 }
 
 
+function DiscardModal({ onDiscard, onKeep }) {
+  return (
+    <div style={{ position:"fixed", inset:0, zIndex:1300, background:"rgba(15,23,42,0.55)",
+      display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}
+      onClick={e => { if (e.target === e.currentTarget) onKeep(); }}>
+      <div style={{ background:"#fff", borderRadius:16, width:"100%", maxWidth:420,
+        boxShadow:"0 24px 60px rgba(0,0,0,0.18)", overflow:"hidden" }}>
+        <div style={{ padding:"28px 28px 24px" }}>
+          <div style={{ width:44, height:44, borderRadius:12, background:"#fff7ed",
+            display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <div style={{ fontSize:17, fontWeight:800, color:"#0f172a", marginBottom:8 }}>Discard changes?</div>
+          <div style={{ fontSize:14, color:"#64748b", lineHeight:1.6 }}>
+            You have unsaved changes. If you go back now, all your edits — including lesson details, video links, and availability settings — will be lost.
+          </div>
+        </div>
+        <div style={{ display:"flex", gap:10, padding:"0 28px 24px" }}>
+          <button onClick={onKeep}
+            style={{ flex:1, height:42, background:"#f1f5f9", border:"none", borderRadius:10,
+              fontSize:14, fontWeight:600, color:"#334155", cursor:"pointer", fontFamily:"inherit" }}
+            onMouseEnter={e=>e.currentTarget.style.background="#e2e8f0"}
+            onMouseLeave={e=>e.currentTarget.style.background="#f1f5f9"}>
+            Keep editing
+          </button>
+          <button onClick={onDiscard}
+            style={{ flex:1, height:42, background:"#ef4444", border:"none", borderRadius:10,
+              fontSize:14, fontWeight:600, color:"#fff", cursor:"pointer", fontFamily:"inherit" }}
+            onMouseEnter={e=>e.currentTarget.style.background="#dc2626"}
+            onMouseLeave={e=>e.currentTarget.style.background="#ef4444"}>
+            Discard
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AdminCreateSession({ onBack, toast, onSave }) {
   const [tab,  setTab]  = useState("details");
   const [form, setForm] = useState({
@@ -6641,14 +6681,17 @@ function AdminCreateSession({ onBack, toast, onSave }) {
   ]}]);
   const sectionsRef = useRef(sections);
   function handleSectionsChange(secs) { sectionsRef.current = secs; }
+  const [showDiscard, setShowDiscard] = useState(false);
 
-  // Warn on browser refresh/close if the form has unsaved content
+  function isDirty() {
+    if (form.title.trim() || form.desc.trim() || form.instructorName.trim()) return true;
+    const secs = sectionsRef.current || [];
+    return secs.some(sec => sec.lessons.some(l => l.vimeoUrl || l.questions?.length > 0));
+  }
+  function tryBack() { if (isDirty()) setShowDiscard(true); else onBack(); }
+
+  // Warn on browser refresh/close
   useEffect(() => {
-    function isDirty() {
-      if (form.title.trim() || form.desc.trim() || form.instructorName.trim()) return true;
-      const secs = sectionsRef.current || [];
-      return secs.some(sec => sec.lessons.some(l => l.vimeoUrl || l.questions?.length > 0));
-    }
     function handleBeforeUnload(e) {
       if (!isDirty()) return;
       e.preventDefault();
@@ -6739,7 +6782,7 @@ function AdminCreateSession({ onBack, toast, onSave }) {
       {!mobileDrilled && (
         <div className="acs-mobile-hub" style={{ flex:1 }}>
           <div style={{ padding:"16px 16px 12px" }}>
-            <button onClick={onBack} style={{ display:"inline-flex", alignItems:"center", gap:6, background:"none", border:"none", padding:"0 0 12px", cursor:"pointer", color:C.gray500, fontSize:13, fontWeight:600, fontFamily:"inherit" }}>
+            <button onClick={tryBack} style={{ display:"inline-flex", alignItems:"center", gap:6, background:"none", border:"none", padding:"0 0 12px", cursor:"pointer", color:C.gray500, fontSize:13, fontWeight:600, fontFamily:"inherit" }}>
               <Icon name="arrow-left" size={16} color={C.gray500}/>
               Back
             </button>
@@ -6766,7 +6809,7 @@ function AdminCreateSession({ onBack, toast, onSave }) {
       {mobileDrilled && (
         <div className="acs-mobile-detail" style={{ flex:1 }}>
           <div style={{ padding:"16px 16px 0" }}>
-            <button onClick={() => setMobileDrilled(false)}
+            <button onClick={tryBack}
               style={{ display:"inline-flex", alignItems:"center", gap:6, background:"none", border:"none", padding:"0 0 12px", cursor:"pointer", color:C.gray500, fontSize:13, fontWeight:600, fontFamily:"inherit" }}>
               <Icon name="arrow-left" size={16} color={C.gray500}/>
               Back
@@ -6777,7 +6820,7 @@ function AdminCreateSession({ onBack, toast, onSave }) {
           <div style={{ padding:"0 16px 24px" }}>
             {renderTabContent()}
             <div className="acs-actions" style={{ display:"flex", justifyContent:"flex-end", gap:8, paddingTop:24, borderTop:`1px solid ${C.gray200}`, marginTop:24 }}>
-              <Btn variant="outline" onClick={() => setMobileDrilled(false)}>Close</Btn>
+              <Btn variant="outline" onClick={tryBack}>Close</Btn>
               {tab === "availability"
                 ? <Btn onClick={()=>save(true)}>Publish</Btn>
                 : <Btn onClick={() => { setTab(tab==="details"?"curriculum":"availability"); }}>Continue</Btn>
@@ -6824,7 +6867,7 @@ function AdminCreateSession({ onBack, toast, onSave }) {
 
           {/* Actions */}
           <div style={{ display:"flex", justifyContent:"flex-end", gap:8, paddingTop:24, borderTop:`1px solid ${C.gray200}`, marginTop:24 }}>
-            <Btn variant="outline" onClick={onBack}>Close</Btn>
+            <Btn variant="outline" onClick={tryBack}>Close</Btn>
             {tab === "availability"
               ? <Btn onClick={()=>save(true)}>Publish</Btn>
               : <Btn onClick={()=>setTab(tab==="details"?"curriculum":"availability")}>Continue</Btn>
@@ -6840,6 +6883,7 @@ function AdminCreateSession({ onBack, toast, onSave }) {
         <CurriculumBuilder toast={toast} initialSections={null} onSectionsChange={handleSectionsChange}/>
       </div>
 
+    {showDiscard && <DiscardModal onDiscard={onBack} onKeep={() => setShowDiscard(false)}/>}
     </div>
   );
 
@@ -7033,6 +7077,9 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
     setQuestions(qs => qs.filter(q => q.id!==id));
   }
 
+  const [showDiscard, setShowDiscard] = useState(false);
+  function tryBack() { setShowDiscard(true); }
+
   function save() {
     if (!form.title.trim()) { toast({ type:"error", title:"Title required", message:"Please add a session title before saving." }); return; }
     if (onSave) onSave(session.id, form, sectionsRef.current);
@@ -7044,6 +7091,13 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
     toast({ type:"info", message:"Changes discarded." });
     onBack();
   }
+
+  // Warn on browser refresh/close
+  useEffect(() => {
+    function handleBeforeUnload(e) { e.preventDefault(); e.returnValue = ""; }
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
 
 
   const TABS = [
@@ -7090,7 +7144,7 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
       {!mobileDrilled && (
         <div className="aes-mobile-hub" style={{ flex:1 }}>
           <div style={{ padding:"16px 16px 12px" }}>
-            <button onClick={onBack} style={{ display:"inline-flex", alignItems:"center", gap:6, background:"none", border:"none", padding:"0 0 12px", cursor:"pointer", color:C.gray500, fontSize:13, fontWeight:600, fontFamily:"inherit" }}>
+            <button onClick={tryBack} style={{ display:"inline-flex", alignItems:"center", gap:6, background:"none", border:"none", padding:"0 0 12px", cursor:"pointer", color:C.gray500, fontSize:13, fontWeight:600, fontFamily:"inherit" }}>
               <Icon name="arrow-left" size={16} color={C.gray500}/>
               Back
             </button>
@@ -7117,7 +7171,7 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
       {mobileDrilled && (
         <div className="aes-mobile-detail" style={{ flex:1 }}>
           <div style={{ padding:"16px 16px 0" }}>
-            <button onClick={() => setMobileDrilled(false)}
+            <button onClick={tryBack}
               style={{ display:"inline-flex", alignItems:"center", gap:6, background:"none", border:"none", padding:"0 0 12px", cursor:"pointer", color:C.gray500, fontSize:13, fontWeight:600, fontFamily:"inherit" }}>
               <Icon name="arrow-left" size={16} color={C.gray500}/>
               Back
@@ -7128,7 +7182,7 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
           <div style={{ padding:"0 16px 24px" }}>
             {renderTabContent()}
             <div className="aes-actions" style={{ display:"flex", justifyContent:"flex-end", gap:8, paddingTop:24, borderTop:`1px solid ${C.gray200}`, marginTop:24 }}>
-              <Btn variant="outline" onClick={() => setMobileDrilled(false)}>Close</Btn>
+              <Btn variant="outline" onClick={tryBack}>Close</Btn>
               {tab === "availability"
                 ? <Btn onClick={save}>Save Changes</Btn>
                 : <Btn onClick={() => { setTab(tab==="details"?"curriculum":"availability"); }}>Continue</Btn>
@@ -7176,7 +7230,7 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
 
           {/* Actions */}
           <div style={{ display:"flex", justifyContent:"flex-end", gap:8, paddingTop:24, borderTop:`1px solid ${C.gray200}`, marginTop:24 }}>
-            <Btn variant="outline" onClick={onBack}>Close</Btn>
+            <Btn variant="outline" onClick={tryBack}>Close</Btn>
             {tab === "availability"
               ? <Btn onClick={save}>Save Changes</Btn>
               : <Btn onClick={()=>setTab(tab==="details"?"curriculum":"availability")}>Continue</Btn>
@@ -7185,6 +7239,7 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
         </div>
 
       </div>
+    {showDiscard && <DiscardModal onDiscard={discard} onKeep={() => setShowDiscard(false)}/>}
     </div>
   );
 
