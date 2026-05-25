@@ -6636,9 +6636,11 @@ function AdminCreateSession({ onBack, toast, onSave }) {
     discussion:true, qa:true, spinWheel:false, certificate:false, commentVisibility:"visible",
   });
   const upd = (k,v) => setForm(f=>({...f,[k]:v}));
-  const sectionsRef = useRef(null);
-  function handleSectionsChange(secs) { sectionsRef.current = secs; }
-  const initialSections = null;
+  const [sections, setSections] = useState([{ id:1, title:"Introduction", collapsed:false, resources:[], lessons:[
+    { id:101, title:"Welcome & course overview", type:"video", duration:"", status:"draft", vimeoUrl:"", questions:[], quizExpanded:false },
+  ]}]);
+  const sectionsRef = useRef(sections);
+  function handleSectionsChange(secs) { sectionsRef.current = secs; setSections(secs); }
 
   const [questions,  setQuestions]  = useState([]);
   const [typeMenuId, setTypeMenuId] = useState(null);
@@ -6758,6 +6760,9 @@ function AdminCreateSession({ onBack, toast, onSave }) {
           </div>
           <div style={{ padding:"0 16px 24px" }}>
             {renderTabContent()}
+            <div style={{ display: tab === "curriculum" ? "block" : "none" }}>
+              <CurriculumBuilder toast={toast} initialSections={sections} onSectionsChange={handleSectionsChange}/>
+            </div>
             <div className="acs-actions" style={{ display:"flex", justifyContent:"flex-end", gap:8, paddingTop:24, borderTop:`1px solid ${C.gray200}`, marginTop:24 }}>
               <Btn variant="outline" onClick={() => setMobileDrilled(false)}>Close</Btn>
               {tab === "availability"
@@ -6802,6 +6807,10 @@ function AdminCreateSession({ onBack, toast, onSave }) {
 
           <div style={{ flex:1 }}>
             {renderTabContent()}
+            {/* Always mounted so lesson state survives tab switches */}
+            <div style={{ display: tab === "curriculum" ? "block" : "none" }}>
+              <CurriculumBuilder toast={toast} initialSections={sections} onSectionsChange={handleSectionsChange}/>
+            </div>
           </div>
 
           {/* Actions */}
@@ -6913,10 +6922,6 @@ function AdminCreateSession({ onBack, toast, onSave }) {
               </div>
             </>}
 
-          {/* ── LESSONS tab ── */}
-          {tab === "curriculum" && (
-            <CurriculumBuilder toast={toast} initialSections={initialSections} onSectionsChange={handleSectionsChange}/>
-          )}
   </>); }
 }
 
