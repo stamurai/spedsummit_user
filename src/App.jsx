@@ -5021,6 +5021,7 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
   const sectionLabels = { personal:"Personal details", security:"Password and security", notifications:"Notifications", danger:"Deactivate account" };
 
   return (
+    <>
     <div style={{ minHeight:"100%", background:C.gray50, display:"flex", flexDirection:"column", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       <style>{`
         .profile-wrap { max-width:960px; width:100%; margin:0 auto; display:flex; gap:0; align-items:stretch; flex:1; box-sizing:border-box; }
@@ -5126,6 +5127,7 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
         }}
       />
     )}
+    </>
   );
 }
 
