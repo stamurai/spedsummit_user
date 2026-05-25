@@ -1469,7 +1469,7 @@ function ReferFriendsModal({ onClose, userName }) {
   );
 }
 
-function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, onOpenSession, onNavigate, userName = "", userAvatar, onBrowseSelect, seasons = SEASONS, sessions = [], onOpenInstructor }) {
+function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, onOpenSession, onNavigate, userName = "", userAvatar, onBrowseSelect, seasons = SEASONS, sessions = [], onOpenInstructor, onGoHome }) {
   const [showNotif, setShowNotif] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showReferModal, setShowReferModal] = useState(false);
@@ -1503,8 +1503,19 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
         <img src="/Container.png" alt="SPED Summit" style={{ height:28, width:"auto", display:"block" }}/>
       </div>
 
+      {/* Home button — user only, hidden on mobile */}
+      {!isAdmin && (
+        <button className="topbar-browse"
+          onClick={onGoHome}
+          style={{ marginLeft:16, flexShrink:0, display:"inline-flex", alignItems:"center", gap:5, background:"none", border:"none", cursor:"pointer", fontSize:14, fontWeight:600, color:C.gray700, padding:"6px 10px", borderRadius:8, fontFamily:"inherit", transition:"color .15s" }}
+          onMouseEnter={e => e.currentTarget.style.color = C.gray900}
+          onMouseLeave={e => e.currentTarget.style.color = C.gray700}>
+          Home
+        </button>
+      )}
+
       {/* Browse button — user only, hidden on mobile (bottom nav handles it) */}
-      <div className="topbar-browse" style={{ position:"relative", marginLeft:16, flexShrink:0, display: isAdmin ? "none" : "block" }} ref={browseRef}>
+      <div className="topbar-browse" style={{ position:"relative", marginLeft:4, flexShrink:0, display: isAdmin ? "none" : "block" }} ref={browseRef}>
         <button
           onClick={() => setShowBrowse(v => !v)}
           style={{ display:"inline-flex", alignItems:"center", gap:5, background:"none", border:"none", cursor:"pointer", fontSize:14, fontWeight:600, color: showBrowse ? C.primary : C.gray700, padding:"6px 10px", borderRadius:8, fontFamily:"inherit", transition:"color .15s" }}
@@ -12325,6 +12336,7 @@ export default function App() {
         userAvatar={userAvatar}
         seasons={seasons}
         sessions={SESSIONS.map(s => { const remote = sessions.find(r => r.id === s.id); return remote ? { ...s, ...remote } : s; })}
+        onGoHome={() => setShowLanding(true)}
         onOpenInstructor={(name) => { setOpenInstructorName(name); setShowLanding(true); }}
         onBrowseSelect={(season, year) => {
           if (season === "all") {
