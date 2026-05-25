@@ -9899,9 +9899,9 @@ function SpAccordionFeature({ T }) {
 
           {/* Right: image preview — fixed position, never moves */}
           <div className="sp-acc-img">
-            <div style={{ width:"100%", borderRadius:"16px 16px 0 0", overflow:"hidden", background:"#1e2d47", padding:"28px 28px 0", boxShadow:"0 8px 40px rgba(0,0,0,0.35)" }}>
+            <div style={{ width:"100%", borderRadius:16, overflow:"hidden", background:"#1e2d47", padding:"28px 28px 28px", boxShadow:"0 8px 40px rgba(0,0,0,0.35)" }}>
               <img src={active.image} alt={active.title}
-                style={{ width:"100%", height:"auto", display:"block", borderRadius:"10px 10px 0 0", transition:"opacity 0.3s ease" }}/>
+                style={{ width:"100%", height:"auto", display:"block", borderRadius:10, transition:"opacity 0.3s ease" }}/>
             </div>
           </div>
         </div>
