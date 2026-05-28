@@ -2978,7 +2978,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                             <div className="db-upcoming-desc" style={{ fontSize:13, color:C.gray600, lineHeight:1.6, marginBottom:10, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
                               {session?.description || ""}
                             </div>
-                            <div style={{ paddingTop:8 }}>
+                            <div style={{ marginTop:"auto", paddingTop:8 }}>
                               <div style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:13, fontWeight:600, color:C.gray600, background:C.gray50, border:`1px solid ${C.gray200}`, borderRadius:8, padding:"7px 13px", cursor:"default" }}>
                                 <Icon name="calendar" size={13} color={C.gray500}/>
                                 Available {item.date}{item.time ? ` · ${item.time}` : ""}
