@@ -6880,17 +6880,15 @@ function AdminCreateSession({ onBack, toast, onSave }) {
 
       </div>
 
-      {/* Single CurriculumBuilder — always mounted so state survives tab and mobile-drill switches */}
-      <div style={{ display: tab === "curriculum" ? "flex" : "none", flexDirection:"column",
-        maxWidth:960, width:"100%", margin:"0 auto", padding:"0 28px 32px", boxSizing:"border-box" }}>
-        <CurriculumBuilder toast={toast} initialSections={null} onSectionsChange={handleSectionsChange}/>
-      </div>
-
     {showDiscard && <DiscardModal onDiscard={onBack} onKeep={() => setShowDiscard(false)}/>}
     </div>
   );
 
   function renderTabContent() { return (<>
+            {/* CurriculumBuilder always rendered (never unmounts) — hidden via display when not active */}
+            <div style={{ display: tab === "curriculum" ? "block" : "none" }}>
+              <CurriculumBuilder toast={toast} initialSections={null} onSectionsChange={handleSectionsChange}/>
+            </div>
             {/* ── SESSION DETAILS tab ── */}
             {tab === "details" && <>
               {/* Session Info card */}
@@ -7242,17 +7240,15 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
         </div>
 
       </div>
-      {/* Single CurriculumBuilder — always mounted so state survives tab and mobile-drill switches */}
-      <div style={{ display: tab === "curriculum" ? "flex" : "none", flexDirection:"column",
-        maxWidth:960, width:"100%", margin:"0 auto", padding:"0 28px 32px", boxSizing:"border-box" }}>
-        <CurriculumBuilder toast={toast} initialSections={initialSections} onSectionsChange={handleSectionsChange}/>
-      </div>
-
     {showDiscard && <DiscardModal onDiscard={discard} onKeep={() => setShowDiscard(false)}/>}
     </div>
   );
 
   function renderTabContent() { return (<>
+            {/* CurriculumBuilder always rendered (never unmounts) — hidden via display when not active */}
+            <div style={{ display: tab === "curriculum" ? "block" : "none" }}>
+              <CurriculumBuilder toast={toast} initialSections={initialSections} onSectionsChange={handleSectionsChange}/>
+            </div>
             {/* ── DETAILS tab ── */}
             {tab === "details" && <>
               {/* Session Info card */}
