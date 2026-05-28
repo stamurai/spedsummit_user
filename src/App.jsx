@@ -1256,7 +1256,7 @@ function SearchBar({ onOpenSession, onNavigate, isAdmin = false, sessions = [] }
   }, [open]);
 
   const q = query.trim().toLowerCase();
-  const searchPool = isAdmin ? ADMIN_SESSIONS_DATA : sessions;
+  const searchPool = sessions;
   const pagePool   = isAdmin ? ADMIN_SEARCH_PAGES  : SEARCH_PAGES;
 
   const sessionResults = q.length < 1 ? [] : searchPool.filter(s =>
@@ -1961,7 +1961,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 
   /* ── Determine assessment CTA ── */
   const qs = quizState.status; // "not-taken" | "in-progress" | "passed" | "failed" | undefined
-  const hasAssessment = !!SESSION_QUIZZES[session.id];
+  const hasAssessment = getSessionQuestions(session).length > 0;
   const watchedEnough = session.progress >= 80;
   const showAssessmentCTA = session.status === "completed" && hasAssessment && watchedEnough;
 
@@ -2089,8 +2089,8 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
           {/* Progress bar + meta */}
           {qs === "in-progress" ? (
             <div style={{ display:"flex", flexDirection:"column", gap:5, marginBottom:12 }}>
-              <ProgressBar value={Math.round(((quizState.currentQ||0) / (SESSION_QUIZZES[session.id]?.length||5)) * 100)} color="#6490E8" height={5}/>
-              <span style={{ fontSize:12, color:C.gray500 }}>Assessment in progress · Q{(quizState.currentQ||0)+1}/{SESSION_QUIZZES[session.id]?.length||5}</span>
+              <ProgressBar value={Math.round(((quizState.currentQ||0) / (getSessionQuestions(session).length||5)) * 100)} color="#6490E8" height={5}/>
+              <span style={{ fontSize:12, color:C.gray500 }}>Assessment in progress · Q{(quizState.currentQ||0)+1}/{getSessionQuestions(session).length||5}</span>
             </div>
           ) : (
             <div style={{ marginBottom:12 }}>
@@ -2166,7 +2166,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 /* ─────────────────────────────────────────────────────────────────────────────
    DASHBOARD
 ───────────────────────────────────────────────────────────────────────────── */
-function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS, externalFilter, onFilterChange, isAdmin = false, sessionsLoading = false }) {
+function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS, seasons = SEASONS, schedule = SCHEDULE, externalFilter, onFilterChange, isAdmin = false, sessionsLoading = false }) {
   const [vw, setVw] = useState(window.innerWidth);
   const [calendarItem, setCalendarItem] = useState(null);
   const [calDaySession, setCalDaySession] = useState(null);
@@ -2191,9 +2191,12 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
   }, [externalFilter?.season, externalFilter?.year]);
 
   const enrolledSessions = sessions.filter(s => enrolledIds.has(s.id));
-  const upcomingSchedule = SCHEDULE.filter(i => i.status === "upcoming");
+  const upcomingSchedule = schedule.filter(i => i.status === "upcoming");
   const completed     = enrolledSessions.filter(s => s.status === "completed").length;
-  const certsEarned   = enrolledSessions.filter(s => s.status === "completed").length;
+  const certsEarned   = enrolledSessions.filter(s => {
+    const hasQuiz = getSessionQuestions(s).length > 0;
+    return hasQuiz ? quizStates?.[s.id]?.status === "passed" : s.status === "completed";
+  }).length;
   const totalEnrolled = enrolledSessions.length;
   const pct = totalEnrolled > 0 ? Math.round((completed / totalEnrolled) * 100) : 0;
   const hasStarted = enrolledSessions.some(s => s.progress > 0 || s.status === "completed" || s.status === "in-progress");
@@ -2704,7 +2707,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
       return isNaN(d) ? null : d;
     } catch { return null; }
   }
-  const scheduledDates = SCHEDULE.map(item => ({ date: parseSessionDate(item.date), item })).filter(x => x.date);
+  const scheduledDates = schedule.map(item => ({ date: parseSessionDate(item.date), item })).filter(x => x.date);
   const calYear  = calMonth.getFullYear();
   const calMon   = calMonth.getMonth();
   const daysInMon = new Date(calYear, calMon + 1, 0).getDate();
@@ -2716,13 +2719,13 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
   const inProgressSessions = sessions.filter(s => s.status === "in-progress" || s.status === "not-started" || s.status === "completed");
   const completedSessions  = enrolledSessions.filter(s => s.status === "completed");
 
-  /* ── Filter options derived from SEASONS ── */
-  const seasonOptions = [...new Set(SEASONS.map(s => s.name.split(" ")[0]))];
-  const yearOptions   = [...new Set(SEASONS.map(s => s.name.split(" ")[1]))].sort((a,b) => b - a);
+  /* ── Filter options derived from seasons ── */
+  const seasonOptions = [...new Set(seasons.map(s => s.name.split(" ")[0]))];
+  const yearOptions   = [...new Set(seasons.map(s => s.name.split(" ")[1]))].sort((a,b) => b - a);
 
   function sessionMatchesFilter(s) {
     if (filterSeason === "all" && filterYear === "all") return true;
-    const season = SEASONS.find(se => se.sessionIds.includes(s.id));
+    const season = seasons.find(se => se.sessionIds.includes(s.id));
     if (!season) return false;
     const [sName, sYear] = season.name.split(" ");
     if (filterSeason !== "all" && sName !== filterSeason) return false;
@@ -2813,7 +2816,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
           function renderSessionCard(s, btnLabel) {
             const catBadge = CAT_BADGE_MAP[s.category] || { label:s.category, bg:C.gray100, color:C.gray700 };
             const instrRole = INST_ROLES[s.instructor] || "Instructor";
-            const schedItem = SCHEDULE.find(i => i.id === s.id);
+            const schedItem = schedule.find(i => i.id === s.id);
             const typeLabel = schedItem ? schedItem.type.charAt(0) + schedItem.type.slice(1).toLowerCase() : "Session";
             return (
               <div key={s.id} className="db-course-row db-session-card-row"
@@ -2953,7 +2956,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                       const typeColor = SCHEDULE_TYPE_COLORS[item.type];
                       const catBadge = typeColor ? { label: item.type, bg: typeColor.bg, color: typeColor.c } : (CAT_BADGE_MAP[item.category] || { label: item.type, bg:"rgba(100,144,232,0.12)", color:"#7aa3ee" });
                       const instrRole = INST_ROLES[item.instructor] || "Instructor";
-                      const session = SESSIONS.find(s => s.id === item.id);
+                      const session = sessions.find(s => s.id === item.id);
                       return (
                         <div key={item.id} className="db-session-card-row db-upcoming-session-card"
                           style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, cursor:"default", overflow:"hidden", width:"100%", boxSizing:"border-box", ...(isMobile ? { flexDirection:"column", minHeight:"unset" } : {}) }}>
@@ -3566,7 +3569,7 @@ function SeasonFolderCard({ season, sessions, onOpen }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    SCHEDULE PAGE
 ───────────────────────────────────────────────────────────────────────────── */
-function SchedulePage({ onOpenSession, toast, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{} }) {
+function SchedulePage({ onOpenSession, toast, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS, schedule = SCHEDULE }) {
   const [btnStates, setBtnStates] = useState({});
   const [calendarItem, setCalendarItem] = useState(null);
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -3579,7 +3582,7 @@ function SchedulePage({ onOpenSession, toast, scheduleRegistrations = {}, setSch
   function handleCta(item) {
     const cta = getCta(item);
     if (cta==="Watch Again"||cta==="Resume Lesson") {
-      const s = SESSIONS.find(s=>s.id===item.id);
+      const s = sessions.find(s=>s.id===item.id);
       if (s) onOpenSession(s);
       else toast({ type:"info", title:"Opening session…", message:item.title.slice(0,50) });
       return;
@@ -3590,7 +3593,7 @@ function SchedulePage({ onOpenSession, toast, scheduleRegistrations = {}, setSch
   }
 
   // Group items by date label
-  const filtered = SCHEDULE.filter(item => item.status === activeTab);
+  const filtered = schedule.filter(item => item.status === activeTab);
   const grouped = filtered.reduce((acc, item) => {
     if (!acc[item.date]) acc[item.date] = [];
     acc[item.date].push(item);
@@ -3598,8 +3601,8 @@ function SchedulePage({ onOpenSession, toast, scheduleRegistrations = {}, setSch
   }, {});
   const dateGroups = Object.entries(grouped);
 
-  const upcomingCount = SCHEDULE.filter(i => i.status === "upcoming").length;
-  const pastCount = SCHEDULE.filter(i => i.status === "past").length;
+  const upcomingCount = schedule.filter(i => i.status === "upcoming").length;
+  const pastCount = schedule.filter(i => i.status === "past").length;
 
   return (
     <div style={{ padding:24, background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
@@ -5209,7 +5212,7 @@ function PastSessionsTab({ onOpenSeason, sessions = [], seasons = SEASONS }) {
       ) : (
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16 }}>
           {filtered.map(season => {
-            const thumbSrc = INSTRUCTOR_AVATARS[SESSIONS.find(s => season.sessionIds.includes(s.id))?.instructor]
+            const thumbSrc = INSTRUCTOR_AVATARS[sessions.find(s => season.sessionIds.includes(s.id))?.instructor]
               || "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&h=340&fit=crop";
             return (
               <div key={season.id}
@@ -5258,7 +5261,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
     const lessonQuizzes = (session.lessons || []).filter(l => l.type === "quiz");
     const qs = quizStates[session.id];
     const finalPassed = qs?.status === "passed";
-    const hasFinal = !!SESSION_QUIZZES[session.id];
+    const hasFinal = getSessionQuestions(session).length > 0;
 
     function lessonQuizStatus(l) {
       if (l.status === "completed") return { label:"Completed", color:C.success, bg:C.successLight };
@@ -5423,7 +5426,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
             const qs = quizStates[s.id];
             const passed  = qs?.status === "passed";
             const inProg  = qs?.status === "in-progress" || qs?.status === "failed";
-            const hasQuiz = !!SESSION_QUIZZES[s.id];
+            const hasQuiz = getSessionQuestions(s).length > 0;
             const lessonQuizCount = (s.lessons || []).filter(l => l.type === "quiz").length;
             const lessonDoneCount = (s.lessons || []).filter(l => l.type === "quiz" && l.status === "completed").length;
 
@@ -5481,7 +5484,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
       {totalEarned > 0 && <div style={{ display:"flex", flexDirection:"column", gap:32 }}>
         {seasons.filter(season => sessions.some(s => season.sessionIds.includes(s.id))).map(season => {
           const seasonSessions  = sessions.filter(s => season.sessionIds.includes(s.id));
-          const withQuiz  = seasonSessions.filter(s => !!SESSION_QUIZZES[s.id]);
+          const withQuiz  = seasonSessions.filter(s => getSessionQuestions(s).length > 0);
           const earned    = withQuiz.filter(s => quizStates[s.id]?.status === "passed").length;
           const total     = withQuiz.length;
           const allEarned = total > 0 && earned === total;
@@ -5505,7 +5508,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
                 {seasonSessions.map((s, i) => {
                   const qs = quizStates[s.id];
                   const passed   = qs?.status === "passed";
-                  const hasQuiz  = !!SESSION_QUIZZES[s.id];
+                  const hasQuiz  = getSessionQuestions(s).length > 0;
                   const lessonQuizCount = (s.lessons || []).filter(l => l.type === "quiz").length;
                   const lessonDoneCount = (s.lessons || []).filter(l => l.type === "quiz" && l.status === "completed").length;
 
@@ -5566,7 +5569,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
 /* ─────────────────────────────────────────────────────────────────────────────
    ADMIN OVERVIEW
 ───────────────────────────────────────────────────────────────────────────── */
-function AdminOverview({ onNavigate, onEditSession, toast }) {
+function AdminOverview({ onNavigate, onEditSession, toast, adminSessions = [] }) {
   return (
     <div className="ao-wrap" style={{ background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       <style>{`
@@ -5615,7 +5618,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
               View all <Icon name="caret-right" size={14} color={C.primary}/>
             </button>
           </div>
-          {ADMIN_SESSIONS_DATA.map((s,i,arr)=>{
+          {adminSessions.slice(0,5).map((s,i,arr)=>{
             const sc = ADMIN_STATUS_COLORS[s.status] || ADMIN_STATUS_COLORS.DRAFT;
             return (
               <div key={s.id} className="ao-sess-row" style={{ borderBottom:i<arr.length-1?`1px solid ${C.gray100}`:"none" }}>
@@ -5665,7 +5668,7 @@ function AdminOverview({ onNavigate, onEditSession, toast }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    ADMIN SESSIONS PAGE
 ───────────────────────────────────────────────────────────────────────────── */
-function AdminSessionsPage({ onNavigate, onEditSession, toast, adminSessions = ADMIN_SESSIONS_DATA, setAdminSessions }) {
+function AdminSessionsPage({ onNavigate, onEditSession, toast, adminSessions = [], setAdminSessions }) {
   const [filter, setFilter] = useState("ALL");
   const statuses = ["ALL", "LIVE", "DRAFT", "ARCHIVED"];
   const filtered = filter === "ALL" ? adminSessions :
@@ -5950,7 +5953,7 @@ function MiniBarChart48({ data }) {
   );
 }
 
-function AnalyticsPage({ onEditSession }) {
+function AnalyticsPage({ onEditSession, sessions = [] }) {
   const [range,     setRange]     = useState("28d");
   const [showRange, setShowRange] = useState(false);
 
@@ -5991,7 +5994,7 @@ function AnalyticsPage({ onEditSession }) {
   const stat  = STATS[range];
   const trend = TREND[range];
 
-  const TOP_SESSIONS = SESSIONS.slice(0, 4).map((s, i) => ({
+  const TOP_SESSIONS = sessions.slice(0, 4).map((s, i) => ({
     ...s,
     avgDuration: ["18:24","14:52","22:10","8:45"][i],
     avgPct:      ["78%","45%","91%","24%"][i],
@@ -7239,6 +7242,12 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
         </div>
 
       </div>
+      {/* Single CurriculumBuilder — always mounted so state survives tab and mobile-drill switches */}
+      <div style={{ display: tab === "curriculum" ? "flex" : "none", flexDirection:"column",
+        maxWidth:960, width:"100%", margin:"0 auto", padding:"0 28px 32px", boxSizing:"border-box" }}>
+        <CurriculumBuilder toast={toast} initialSections={initialSections} onSectionsChange={handleSectionsChange}/>
+      </div>
+
     {showDiscard && <DiscardModal onDiscard={discard} onKeep={() => setShowDiscard(false)}/>}
     </div>
   );
@@ -7339,10 +7348,6 @@ function AdminEditSession({ session, onBack, toast, onSave }) {
               </div>
             </>}
 
-          {/* ── LESSONS tab ── */}
-          {tab === "curriculum" && (
-            <CurriculumBuilder toast={toast} initialSections={initialSections} onSectionsChange={handleSectionsChange}/>
-          )}
   </>); }
 }
 
@@ -7406,6 +7411,16 @@ const LEADERBOARD_DATA = [
 /* ─────────────────────────────────────────────────────────────────────────────
    SESSION QUIZZES  (5 questions per session, keyed by session id)
 ───────────────────────────────────────────────────────────────────────────── */
+function getSessionQuestions(session) {
+  if (SESSION_QUIZZES[session?.id]) return SESSION_QUIZZES[session.id];
+  if (session?.quiz_questions?.length) return session.quiz_questions;
+  return (session?.lessons || []).flatMap(l =>
+    (l.questions || [])
+      .filter(q => q.text && q.options?.some(o => o))
+      .map(q => ({ q: q.text, opts: q.options, a: q.correct ?? 0 }))
+  );
+}
+
 const SESSION_QUIZZES = {
   1: [
     { q:"What does a 'window of tolerance' refer to in trauma-informed teaching?", opts:["The classroom noise level","The zone of optimal arousal for learning","Break time between lessons","Window ventilation policy"], a:1 },
@@ -7458,7 +7473,7 @@ const SESSION_QUIZZES = {
    • 80% threshold for pass
 ───────────────────────────────────────────────────────────────────────────── */
 function SessionQuizModal({ session, quizState = {}, onClose, onSaveProgress, onFinish }) {
-  const questions = SESSION_QUIZZES[session.id] || [];
+  const questions = getSessionQuestions(session);
   const resumeQ   = quizState.currentQ || 0;
   const resumeAns = quizState.answers  || {};
 
@@ -10241,7 +10256,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
     if (!name) return null;
     let match = experts.find(e => e.name === name);
     if (!match) {
-      const s = SESSIONS.find(s => s.instructor === name);
+      const s = sessions.find(s => s.instructor === name) || SESSIONS.find(s => s.instructor === name);
       if (s) match = {
         name: s.instructor,
         role: s.instructorBio ? s.instructorBio.split(" ").slice(0,6).join(" ") : "Instructor",
@@ -10306,7 +10321,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
   if (selectedInstructor) {
     const instr = selectedInstructor;
     const paras = instr.bio.split("\n\n");
-    const instrSession = SESSIONS.find(s => s.instructor === instr.name);
+    const instrSession = sessions.find(s => s.instructor === instr.name) || SESSIONS.find(s => s.instructor === instr.name);
     const instrSessionAvailable = instrSession ? isSessionAvailable(instrSession.id) : false;
     const instrSessionDate = instrSession?.date || instrSession?.scheduledDate || null;
     return (
@@ -11945,10 +11960,12 @@ export default function App() {
   const [pastSeasonOrigin, setPastSeasonOrigin] = useState("browse");
   const [showPricingOverlay, setShowPricingOverlay] = useState(false);
   const [dashFilter, setDashFilter] = useState({ season:"all", year:"all" });
-  const [adminSessions, setAdminSessions] = useState(ADMIN_SESSIONS_DATA);
+  const [adminSessions, setAdminSessions] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [sessionsLoading, setSessionsLoading] = useState(true);
   const [spring2026Ids, setSpring2026Ids] = useState([]);
+  const [seasonsData, setSeasonsData] = useState([]);
+  const [scheduleData, setScheduleData] = useState([]);
   const [assessmentSession, setAssessmentSession] = useState(null);
   const [certSession,       setCertSession]       = useState(null);
   const [reviewSession,     setReviewSession]     = useState(null);
@@ -11968,6 +11985,7 @@ export default function App() {
         lessons: s.lessons || [],
         availableFrom: s.available_from || null,
         availableTo: s.available_to || null,
+        quiz_questions: s.quiz_questions || null,
       });
 
       const rows = data || [];
@@ -11980,6 +11998,16 @@ export default function App() {
       });
 
       setSessionsLoading(false);
+
+      // Derive adminSessions from Supabase rows
+      setAdminSessions(rows.map(s => {
+        const state = getSessionState({ available_from: s.available_from, available_to: s.available_to });
+        const statusLabel = state === "live" ? "LIVE" : state === "past" ? "ARCHIVED" : "DRAFT";
+        const dateLabel = s.available_from
+          ? new Date(s.available_from).toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" })
+          : "";
+        return { id: s.id, title: s.title, category: s.category || "SPED", status: statusLabel, date: dateLabel, enrolled: 0, availableFrom: s.available_from || "", availableTo: s.available_to || "" };
+      }));
 
       setSpring2026Ids(prev => {
         const supabaseIds = new Set(rows.map(s => s.id));
@@ -12057,8 +12085,9 @@ export default function App() {
       return next;
     });
   }
-  // Merged seasons — Spring 2026 gets any newly created sessions without a date
-  const seasons = SEASONS.map(s => s.id === "spring-2026" ? { ...s, sessionIds: [...s.sessionIds, ...spring2026Ids] } : s);
+  // Merged seasons — use Supabase data when available, fall back to hardcoded SEASONS
+  const seasonsBase = seasonsData.length > 0 ? seasonsData : SEASONS;
+  const seasons = seasonsBase.map(s => s.id === "spring-2026" ? { ...s, sessionIds: [...(s.sessionIds || []), ...spring2026Ids] } : s);
 
 
   // On mount, restore session if user is already logged in (e.g. page refresh)
@@ -12077,6 +12106,20 @@ export default function App() {
     });
   }, []);
 
+
+  // Fetch seasons and schedule from Supabase on mount
+  useEffect(() => {
+    supabase.from("seasons").select("*").then(({ data, error }) => {
+      if (error) { console.error("[Supabase] seasons fetch error:", error.message); return; }
+      if (data && data.length > 0) {
+        setSeasonsData(data.map(s => ({ ...s, sessionIds: s.session_ids || [] })));
+      }
+    });
+    supabase.from("schedule").select("*").then(({ data, error }) => {
+      if (error) { console.error("[Supabase] schedule fetch error:", error.message); return; }
+      if (data && data.length > 0) setScheduleData(data);
+    });
+  }, []);
 
   // Fetch sessions on mount + realtime subscription for instant cross-device updates
   useEffect(() => {
@@ -12177,7 +12220,7 @@ export default function App() {
 
   function handleAssessmentFinish(sessionId, score, passed) {
     updateQuizState(sessionId, { status: passed ? "passed" : "failed", score, currentQ: 0, answers: {} });
-    const session = SESSIONS.find(s => s.id === sessionId);
+    const session = sessions.find(s => s.id === sessionId) || SESSIONS.find(s => s.id === sessionId);
     if (session) setReviewSession({ session, score, passed });
     if (passed) {
       toast({ type:"success", title:"🏆 Assessment Passed!", message:`You scored ${score}% — your certificate is ready!` });
@@ -12281,6 +12324,7 @@ export default function App() {
       description: form.desc, vimeo_url: form.vimeoUrl,
       available_from: form.availableFrom || null, available_to: form.availableTo || null,
       ...(updatedLessons ? { lessons: updatedLessons } : {}),
+      ...(form.quiz_questions ? { quiz_questions: form.quiz_questions } : {}),
     };
     const { error } = await supabase.from("sessions").update(supabaseUpdate).eq("id", id);
     if (error) { toast({ type:"error", title:"Update failed", message: error.message }); return; }
@@ -12298,7 +12342,7 @@ export default function App() {
     const src = (source === "landing" ? "dashboard" : source) || page;
     setActiveSession(s);
     setSessionSource(src);
-    const season = SEASONS.find(season => season.sessionIds.includes(s.id));
+    const season = seasons.find(season => season.sessionIds.includes(s.id));
     setSessionBackLabel(season ? season.name : null);
     // Push session-detail to browser history so back returns to the source page
     navHistoryRef.current = [...navHistoryRef.current, "session-detail"];
@@ -12321,11 +12365,11 @@ export default function App() {
       return <SessionDetail session={liveSession} onBack={()=>nav(isAdmin?"admin-sessions":sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress} adminName={userName} adminAvatar={userAvatar} isDark={isDark}/>;
     }
     if (isAdmin) {
-      if (page==="admin-overview") return <AdminOverview onNavigate={nav} onEditSession={openEdit} toast={toast}/>;
+      if (page==="admin-overview") return <AdminOverview onNavigate={nav} onEditSession={openEdit} toast={toast} adminSessions={adminSessions}/>;
       if (page==="admin-sessions") return <AdminSessionsPage onNavigate={nav} onEditSession={openEdit} toast={toast} adminSessions={adminSessions} setAdminSessions={setAdminSessions}/>;
       if (page==="admin-create") return <AdminCreateSession onBack={()=>nav("admin-sessions")} toast={toast} onSave={addAdminSession}/>;
       if (page==="admin-edit" && editingSession) return <AdminEditSession session={editingSession} onBack={()=>nav("admin-sessions")} toast={toast} onSave={updateSession}/>;
-      if (page==="admin-analytics") return <AnalyticsPage onEditSession={openEdit}/>;
+      if (page==="admin-analytics") return <AnalyticsPage onEditSession={openEdit} sessions={sessions}/>;
     }
     if (page==="past-season" && pastSeasonPageId) {
       const season = seasons.find(s => s.id === pastSeasonPageId);
@@ -12438,9 +12482,9 @@ export default function App() {
         </div>
       );
     }
-    if (page==="dashboard") { if (isAdmin) { nav("admin-overview"); return null; } return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenPastSeason={(id)=>{ setPastSeasonPageId(id); nav("past-season"); }} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} externalFilter={dashFilter} onFilterChange={setDashFilter} isAdmin={isAdmin} sessionsLoading={sessionsLoading}/>; }
+    if (page==="dashboard") { if (isAdmin) { nav("admin-overview"); return null; } return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenPastSeason={(id)=>{ setPastSeasonPageId(id); nav("past-season"); }} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} seasons={seasons} schedule={scheduleData.length > 0 ? scheduleData : SCHEDULE} externalFilter={dashFilter} onFilterChange={setDashFilter} isAdmin={isAdmin} sessionsLoading={sessionsLoading}/>; }
     if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} seasons={seasons} sessionsLoading={sessionsLoading}/>;
-    if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave}/>;
+    if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} schedule={scheduleData.length > 0 ? scheduleData : SCHEDULE}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
     if (page==="community") return <CommunityPage toast={toast}/>;
     if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick} userName={userName} sessions={sessions} seasons={seasons}/>;
@@ -12502,7 +12546,7 @@ export default function App() {
         userName={userName}
         userAvatar={userAvatar}
         seasons={seasons}
-        sessions={SESSIONS.map(s => { const remote = sessions.find(r => r.id === s.id); return remote ? { ...s, ...remote } : s; })}
+        sessions={sessions}
         onGoHome={() => setShowLanding(true)}
         onOpenInstructor={(name) => { setOpenInstructorName(name); setShowLanding(true); }}
         onBrowseSelect={(season, year) => {
