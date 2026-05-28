@@ -12523,7 +12523,7 @@ export default function App() {
     return (
       <>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToPage} onWatchSession={(s)=>{ setShowLanding(false); openSession(s, "landing"); }} onLogout={async ()=>{ await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); sessionStorage.removeItem("isAdmin"); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); }} openInstructorName={openInstructorName} onInstructorOpened={()=>setOpenInstructorName(null)} sessions={sessions} sessionsLoading={sessionsLoading}/>
+        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToPage} onWatchSession={(s)=>{ setShowLanding(false); openSession(s, "landing"); }} onLogout={async ()=>{ sessionStorage.setItem("loggedOut","1"); sessionStorage.removeItem("isAdmin"); sessionStorage.removeItem("loggedIn"); sessionStorage.setItem("showLanding","1"); await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); setEnrolledIds(new Set()); setQuizStates({}); }} openInstructorName={openInstructorName} onInstructorOpened={()=>setOpenInstructorName(null)} sessions={sessions} sessionsLoading={sessionsLoading}/>
       </>
     );
   }
@@ -12539,11 +12539,14 @@ export default function App() {
         isDark={isDark}
         onToggleDarkMode={() => setIsDark(v => !v)}
         onLogout={async () => {
+          sessionStorage.setItem("loggedOut", "1");
+          sessionStorage.removeItem("isAdmin");
+          sessionStorage.removeItem("loggedIn");
+          sessionStorage.setItem("showLanding", "1");
           await supabase.auth.signOut();
-          sessionStorage.clear();
           setIsLoggedIn(false); setShowLanding(true); setPage("dashboard");
           setUserName(""); setUserEmail(""); setUserAvatar(null);
-          setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({});
+          setIsAdmin(false); setEnrolledIds(new Set()); setQuizStates({});
         }}
         onNavigateProfile={() => nav("profile")}
         onOpenSession={openSession}
@@ -12648,7 +12651,7 @@ export default function App() {
                 toast={toast}
                 isDark={isDark}
                 onToggleDarkMode={() => setIsDark(v => !v)}
-                onLogout={async () => { await supabase.auth.signOut(); sessionStorage.clear(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); setShowPricingOverlay(false); }}
+                onLogout={async () => { sessionStorage.setItem("loggedOut","1"); sessionStorage.removeItem("isAdmin"); sessionStorage.removeItem("loggedIn"); sessionStorage.setItem("showLanding","1"); await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); setEnrolledIds(new Set()); setQuizStates({}); setShowPricingOverlay(false); }}
                 onNavigateProfile={() => { setShowPricingOverlay(false); nav("profile"); }}
                 onOpenSession={openSession}
                 onNavigate={nav}
