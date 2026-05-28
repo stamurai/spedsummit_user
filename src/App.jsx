@@ -8716,7 +8716,7 @@ function LegalModal({ type, onClose }) {
   );
 }
 
-function AuthModal({ onClose, onLogin, defaultStep = "user-auth" }) {
+function AuthModal({ onClose, onLogin, defaultStep = "user-auth", noOverlay = false }) {
   // step: "role-select" | "user-auth" | "admin-auth" | "forgot-password"
   const [step,       setStep]      = useState(defaultStep);
   const [mode,       setMode]      = useState("signup");
@@ -8781,7 +8781,7 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth" }) {
   };
 
   return (
-    <div style={{ position:"fixed", inset:0, zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(15,23,42,0.55)", padding:20 }}>
+    <div style={{ position:"fixed", inset:0, zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", background: noOverlay ? "transparent" : "rgba(15,23,42,0.55)", padding:20 }}>
       <div style={{ background:"#fff", borderRadius:16, width:"100%", maxWidth:420, position:"relative", boxShadow:"0 20px 60px rgba(0,0,0,0.15), 0 1px 0 rgba(255,255,255,0.8) inset" }}>
 
         {/* ── ROLE SELECT ── */}
@@ -12526,7 +12526,7 @@ export default function App() {
     return (
       <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"#faf5f0", flexDirection:"column", gap:24 }}>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-        <AuthModal onClose={()=>{}} onLogin={(role) => {
+        <AuthModal noOverlay onClose={()=>{}} onLogin={(role) => {
           if (role === "admin") {
             setIsAdmin(true);
             setIsLoggedIn(true);
