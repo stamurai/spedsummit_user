@@ -8970,7 +8970,7 @@ function AuthModal({ onClose, onLogin }) {
                   onMouseLeave={e=>{ if (!authLoading) e.currentTarget.style.background="#6490E8"; }}>
                   {authLoading ? "Please wait…" : isAdmin ? "Sign In" : mode === "signup" ? "Create Account" : "Sign In"}
                 </button>
-                {!isAdmin ? (
+                {!isAdmin && (
                   <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:12 }}>
                     <label style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
                       <input type="checkbox" checked={keepSigned} onChange={e=>setKeepSigned(e.target.checked)} style={{ width:14, height:14, accentColor:"#6490E8", cursor:"pointer" }}/>
