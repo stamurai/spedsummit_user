@@ -12018,7 +12018,7 @@ export default function App() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") && session) {
-        if (event === "INITIAL_SESSION" && sessionStorage.getItem("loggedOut") === "1") return;
+        if (sessionStorage.getItem("loggedOut") === "1") return;
         const meta = session.user.user_metadata || {};
         const name = meta.full_name || meta.name || session.user.email || "User";
         setUserName(name.split(" ")[0] || name);
