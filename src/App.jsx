@@ -8716,9 +8716,9 @@ function LegalModal({ type, onClose }) {
   );
 }
 
-function AuthModal({ onClose, onLogin }) {
+function AuthModal({ onClose, onLogin, defaultStep = "user-auth" }) {
   // step: "role-select" | "user-auth" | "admin-auth" | "forgot-password"
-  const [step,       setStep]      = useState("user-auth");
+  const [step,       setStep]      = useState(defaultStep);
   const [mode,       setMode]      = useState("signup");
   const [email,      setEmail]     = useState("");
   const [password,   setPassword]  = useState("");
@@ -11939,14 +11939,16 @@ function LandingPageV2({ onGetStarted }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    APP
 ───────────────────────────────────────────────────────────────────────────── */
+const IS_ADMIN_DOMAIN = typeof window !== "undefined" && window.location.hostname.includes("admin");
+
 export default function App() {
   // ── ALL useState declarations MUST come before any useCallback/useEffect ──
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showLanding, setShowLanding] = useState(() => sessionStorage.getItem("showLanding") !== "0");
+  const [showLanding, setShowLanding] = useState(() => IS_ADMIN_DOMAIN ? false : sessionStorage.getItem("showLanding") !== "0");
   const [openInstructorName, setOpenInstructorName] = useState(null);
-  const [page, setPage] = useState(() => sessionStorage.getItem("page") || "dashboard");
+  const [page, setPage] = useState(() => IS_ADMIN_DOMAIN ? (sessionStorage.getItem("page") || "admin-overview") : (sessionStorage.getItem("page") || "dashboard"));
   const navHistoryRef = useRef(["dashboard"]);
-  const [isAdmin, setIsAdmin] = useState(() => sessionStorage.getItem("isAdmin") === "1");
+  const [isAdmin, setIsAdmin] = useState(() => IS_ADMIN_DOMAIN ? sessionStorage.getItem("isAdmin") === "1" : sessionStorage.getItem("isAdmin") === "1");
   const [isDark, setIsDark] = useState(() => { const h = new Date().getHours(); return h >= 19 || h < 6; });
   const [landingV, setLandingV] = useState(1);
   const [activeSession,   setActiveSession]   = useState(null);
@@ -12508,6 +12510,24 @@ export default function App() {
   }
 
   const activePage = page==="session-detail" ? (isAdmin?"admin-sessions":"sessions") : page;
+
+  // Admin domain: show admin login gate until authenticated
+  if (IS_ADMIN_DOMAIN && !isLoggedIn) {
+    return (
+      <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"#faf5f0", flexDirection:"column", gap:24 }}>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+        <AuthModal onClose={()=>{}} onLogin={(role) => {
+          if (role === "admin") {
+            setIsAdmin(true);
+            setIsLoggedIn(true);
+            sessionStorage.setItem("isAdmin", "1");
+            sessionStorage.removeItem("loggedOut");
+            setPage("admin-overview");
+          }
+        }} defaultStep="admin-auth"/>
+      </div>
+    );
+  }
 
   if (showLanding) {
     const handleGetStarted = (sessionId, role = "user") => {
