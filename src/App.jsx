@@ -8767,7 +8767,7 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth" }) {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) { setAuthError(error.message); return; }
-        onLogin("user");
+        onLogin(isAdmin ? "admin" : "user");
       }
     } finally {
       setAuthLoading(false);
