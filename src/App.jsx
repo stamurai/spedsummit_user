@@ -8889,7 +8889,7 @@ function AuthModal({ onClose, onLogin }) {
               {!isAdmin && <p style={{ margin:"0 0 16px", fontSize:13, color:"#94a3b8" }}>
                 {mode === "signup" ? "Join thousands of SPED educators today." : "Sign in to access your account."}
               </p>}
-              {isAdmin && <div style={{ marginBottom:20 }}/>}
+              {isAdmin && <p style={{ margin:"0 0 20px", fontSize:13, color:"#94a3b8" }}>Sign in to manage the SPED Summit platform.</p>}
 
               {/* Sign in / Sign up toggle */}
               {!isAdmin && (
@@ -8946,11 +8946,19 @@ function AuthModal({ onClose, onLogin }) {
                   <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Work Email" type="email" required style={inp}
                     onFocus={e=>e.target.style.borderColor="#6490E8"} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
                 </div>
-                <div style={{ marginBottom:16 }}>
+                <div style={{ marginBottom: isAdmin ? 8 : 16 }}>
                   <label style={{ display:"block", fontSize:12, fontWeight:600, color:"#2B2E33", marginBottom:5 }}>Password</label>
                   <input value={password} onChange={e=>setPassword(e.target.value)} placeholder={mode === "signup" ? "Create a password" : "Enter your password"} type="password" required style={inp}
                     onFocus={e=>e.target.style.borderColor="#6490E8"} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
                 </div>
+                {isAdmin && (
+                  <div style={{ display:"flex", justifyContent:"flex-end", marginBottom:16 }}>
+                    <button type="button" onClick={()=>{ setForgotFromAdmin(true); setStep("forgot-password"); }}
+                      style={{ background:"none", border:"none", color:"#6490E8", fontSize:13, fontWeight:500, cursor:"pointer", textDecoration:"underline", padding:0, fontFamily:"inherit" }}>
+                      Forgot password?
+                    </button>
+                  </div>
+                )}
                 {authError && (
                   <div style={{ marginBottom:12, padding:"10px 12px", borderRadius:8, background: authError.startsWith("✓") ? "#f0fdf4" : "#fef2f2", border:`1px solid ${authError.startsWith("✓") ? "#bbf7d0" : "#fecaca"}`, fontSize:13, color: authError.startsWith("✓") ? "#16a34a" : "#dc2626", lineHeight:1.5 }}>
                     {authError}
@@ -8962,11 +8970,7 @@ function AuthModal({ onClose, onLogin }) {
                   onMouseLeave={e=>{ if (!authLoading) e.currentTarget.style.background="#6490E8"; }}>
                   {authLoading ? "Please wait…" : isAdmin ? "Sign In" : mode === "signup" ? "Create Account" : "Sign In"}
                 </button>
-                {isAdmin ? (
-                  <div style={{ display:"flex", justifyContent:"flex-end", marginTop:12 }}>
-                    <span onClick={()=>{ setForgotFromAdmin(true); setStep("forgot-password"); }} style={{ fontSize:13, color:"#6490E8", cursor:"pointer", fontWeight:500, textDecoration:"underline" }}>Forgot password?</span>
-                  </div>
-                ) : (
+                {!isAdmin ? (
                   <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:12 }}>
                     <label style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
                       <input type="checkbox" checked={keepSigned} onChange={e=>setKeepSigned(e.target.checked)} style={{ width:14, height:14, accentColor:"#6490E8", cursor:"pointer" }}/>
