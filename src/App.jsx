@@ -8727,6 +8727,7 @@ function AuthModal({ onClose, onLogin }) {
   const [keepSigned, setKeepSigned]= useState(true);
   const [legalModal, setLegalModal]= useState(null);
   const [resetSent,  setResetSent] = useState(false);
+  const [forgotFromAdmin, setForgotFromAdmin] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
@@ -8842,7 +8843,7 @@ function AuthModal({ onClose, onLogin }) {
                     onMouseLeave={e=>e.currentTarget.style.background="#6490E8"}>
                     Send Reset Link
                   </button>
-                  <button type="button" onClick={()=>setStep("user-auth")}
+                  <button type="button" onClick={()=>{ setStep(forgotFromAdmin ? "admin-auth" : "user-auth"); setForgotFromAdmin(false); }}
                     style={{ width:"100%", padding:"12px", borderRadius:8, border:"1px solid #e2e8f0", background:"#fff", color:"#64748b", fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}
                     onMouseEnter={e=>e.currentTarget.style.background="#f8fafc"}
                     onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
@@ -8858,7 +8859,7 @@ function AuthModal({ onClose, onLogin }) {
                   </div>
                   <h2 style={{ margin:"0 0 8px", fontSize:18, fontWeight:800, color:"#0f172a" }}>Check your email</h2>
                   <p style={{ margin:"0 0 24px", fontSize:13, color:"#94a3b8", lineHeight:1.6 }}>We sent a password reset link to <strong style={{ color:"#0f172a" }}>{email}</strong>. Check your inbox and follow the instructions.</p>
-                  <button onClick={()=>{ setStep("user-auth"); setMode("signin"); setResetSent(false); }}
+                  <button onClick={()=>{ setStep(forgotFromAdmin ? "admin-auth" : "user-auth"); setMode("signin"); setResetSent(false); setForgotFromAdmin(false); }}
                     style={{ width:"100%", padding:"12px", borderRadius:8, border:"1px solid #e2e8f0", background:"#fff", color:"#64748b", fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}
                     onMouseEnter={e=>e.currentTarget.style.background="#f8fafc"}
                     onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
@@ -8961,13 +8962,17 @@ function AuthModal({ onClose, onLogin }) {
                   onMouseLeave={e=>{ if (!authLoading) e.currentTarget.style.background="#6490E8"; }}>
                   {authLoading ? "Please wait…" : isAdmin ? "Sign In" : mode === "signup" ? "Create Account" : "Sign In"}
                 </button>
-                {!isAdmin && (
+                {isAdmin ? (
+                  <div style={{ display:"flex", justifyContent:"flex-end", marginTop:12 }}>
+                    <span onClick={()=>{ setForgotFromAdmin(true); setStep("forgot-password"); }} style={{ fontSize:13, color:"#6490E8", cursor:"pointer", fontWeight:500, textDecoration:"underline" }}>Forgot password?</span>
+                  </div>
+                ) : (
                   <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:12 }}>
                     <label style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
                       <input type="checkbox" checked={keepSigned} onChange={e=>setKeepSigned(e.target.checked)} style={{ width:14, height:14, accentColor:"#6490E8", cursor:"pointer" }}/>
                       <span style={{ fontSize:13, color:"#2B2E33" }}>Keep me signed in</span>
                     </label>
-                    {mode === "signin" && <span onClick={()=>setStep("forgot-password")} style={{ fontSize:13, color:"#6490E8", cursor:"pointer", fontWeight:500, textDecoration:"underline" }}>Forgot password?</span>}
+                    {mode === "signin" && <span onClick={()=>{ setForgotFromAdmin(false); setStep("forgot-password"); }} style={{ fontSize:13, color:"#6490E8", cursor:"pointer", fontWeight:500, textDecoration:"underline" }}>Forgot password?</span>}
                   </div>
                 )}
               </form>
