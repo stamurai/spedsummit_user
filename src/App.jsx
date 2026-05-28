@@ -12368,7 +12368,7 @@ export default function App() {
       const liveSession = sessions.find(s => s.id === activeSession.id) || activeSession;
       return <SessionDetail session={liveSession} onBack={()=>nav(isAdmin?"admin-sessions":sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress} adminName={userName} adminAvatar={userAvatar} isDark={isDark}/>;
     }
-    if (isAdmin) {
+    if (isAdmin && isLoggedIn) {
       if (page==="admin-overview") return <AdminOverview onNavigate={nav} onEditSession={openEdit} toast={toast} adminSessions={adminSessions}/>;
       if (page==="admin-sessions") return <AdminSessionsPage onNavigate={nav} onEditSession={openEdit} toast={toast} adminSessions={adminSessions} setAdminSessions={setAdminSessions}/>;
       if (page==="admin-create") return <AdminCreateSession onBack={()=>nav("admin-sessions")} toast={toast} onSave={addAdminSession}/>;
@@ -12523,7 +12523,7 @@ export default function App() {
     return (
       <>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToPage} onWatchSession={(s)=>{ setShowLanding(false); openSession(s, "landing"); }} onLogout={async ()=>{ sessionStorage.setItem("loggedOut","1"); sessionStorage.removeItem("isAdmin"); sessionStorage.removeItem("loggedIn"); sessionStorage.setItem("showLanding","1"); await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); setEnrolledIds(new Set()); setQuizStates({}); }} openInstructorName={openInstructorName} onInstructorOpened={()=>setOpenInstructorName(null)} sessions={sessions} sessionsLoading={sessionsLoading}/>
+        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToPage} onWatchSession={(s)=>{ setShowLanding(false); openSession(s, "landing"); }} onLogout={async ()=>{ sessionStorage.setItem("loggedOut","1"); sessionStorage.removeItem("isAdmin"); sessionStorage.removeItem("loggedIn"); sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("page","dashboard"); await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); setEnrolledIds(new Set()); setQuizStates({}); }} openInstructorName={openInstructorName} onInstructorOpened={()=>setOpenInstructorName(null)} sessions={sessions} sessionsLoading={sessionsLoading}/>
       </>
     );
   }
@@ -12543,6 +12543,7 @@ export default function App() {
           sessionStorage.removeItem("isAdmin");
           sessionStorage.removeItem("loggedIn");
           sessionStorage.setItem("showLanding", "1");
+          sessionStorage.setItem("page", "dashboard");
           await supabase.auth.signOut();
           setIsLoggedIn(false); setShowLanding(true); setPage("dashboard");
           setUserName(""); setUserEmail(""); setUserAvatar(null);
@@ -12651,7 +12652,7 @@ export default function App() {
                 toast={toast}
                 isDark={isDark}
                 onToggleDarkMode={() => setIsDark(v => !v)}
-                onLogout={async () => { sessionStorage.setItem("loggedOut","1"); sessionStorage.removeItem("isAdmin"); sessionStorage.removeItem("loggedIn"); sessionStorage.setItem("showLanding","1"); await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); setEnrolledIds(new Set()); setQuizStates({}); setShowPricingOverlay(false); }}
+                onLogout={async () => { sessionStorage.setItem("loggedOut","1"); sessionStorage.removeItem("isAdmin"); sessionStorage.removeItem("loggedIn"); sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("page","dashboard"); await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); setEnrolledIds(new Set()); setQuizStates({}); setShowPricingOverlay(false); }}
                 onNavigateProfile={() => { setShowPricingOverlay(false); nav("profile"); }}
                 onOpenSession={openSession}
                 onNavigate={nav}
