@@ -11937,7 +11937,7 @@ export default function App() {
   const [openInstructorName, setOpenInstructorName] = useState(null);
   const [page, setPage] = useState(() => sessionStorage.getItem("page") || "dashboard");
   const navHistoryRef = useRef(["dashboard"]);
-  const [isAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(() => sessionStorage.getItem("isAdmin") === "1");
   const [isDark, setIsDark] = useState(() => { const h = new Date().getHours(); return h >= 19 || h < 6; });
   const [landingV, setLandingV] = useState(1);
   const [activeSession,   setActiveSession]   = useState(null);
@@ -12038,6 +12038,7 @@ export default function App() {
         setEnrolledIds(new Set()); setScheduleRegistrations({}); setQuizStates({});
         setSessions(prev => prev.map(s => ({ ...s, progress: 0, status: "not-started" })));
         sessionStorage.removeItem("loggedIn");
+        sessionStorage.removeItem("isAdmin");
         sessionStorage.setItem("showLanding", "1");
         sessionStorage.setItem("loggedOut", "1");
       }
@@ -12504,6 +12505,7 @@ export default function App() {
       setIsLoggedIn(true);
       // Only leave the landing page if the user explicitly clicked a session
       // or the "Go to Dashboard" button — not just because auth completed.
+      if (role === "admin") { setIsAdmin(true); sessionStorage.setItem("isAdmin", "1"); }
       if (sessionId) {
         setShowLanding(false);
         setPage(role === "admin" ? "admin-overview" : "dashboard");
@@ -12521,7 +12523,7 @@ export default function App() {
     return (
       <>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToPage} onWatchSession={(s)=>{ setShowLanding(false); openSession(s, "landing"); }} onLogout={async ()=>{ await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); }} openInstructorName={openInstructorName} onInstructorOpened={()=>setOpenInstructorName(null)} sessions={sessions} sessionsLoading={sessionsLoading}/>
+        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToPage} onWatchSession={(s)=>{ setShowLanding(false); openSession(s, "landing"); }} onLogout={async ()=>{ await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); sessionStorage.removeItem("isAdmin"); setEnrolledIds(new Set([1,2,3])); setQuizStates({}); }} openInstructorName={openInstructorName} onInstructorOpened={()=>setOpenInstructorName(null)} sessions={sessions} sessionsLoading={sessionsLoading}/>
       </>
     );
   }
