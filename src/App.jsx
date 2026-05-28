@@ -10603,7 +10603,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               <div style={{ width:22, height:22, border:`1px solid ${T.border}`, borderRadius:5, display:"flex", alignItems:"center", justifyContent:"center" }}>
                 <Icon name="calendar" size={12} color="#f59e0b"/>
               </div>
-              <span style={{ fontSize:13, fontWeight:500, color:T.text }}>05th Jan – 04th Feb 2026</span>
+              <span style={{ fontSize:13, fontWeight:500, color:T.text }}>13th Jul – 12th Aug 2026</span>
             </div>
           </div>
 
