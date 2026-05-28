@@ -12018,22 +12018,28 @@ export default function App() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") && session) {
+        if (event === "INITIAL_SESSION" && sessionStorage.getItem("loggedOut") === "1") return;
         const meta = session.user.user_metadata || {};
         const name = meta.full_name || meta.name || session.user.email || "User";
         setUserName(name.split(" ")[0] || name);
         setUserEmail(session.user.email || "");
         setUserAvatar(meta.avatar_url || meta.picture || null);
         setIsLoggedIn(true);
-        if (event === "SIGNED_IN") setPage("dashboard");
+        if (event === "SIGNED_IN") { setPage("dashboard"); sessionStorage.removeItem("loggedOut"); }
         sessionStorage.setItem("loggedIn", "1");
         fetchSessions();
         fetchUserProgress();
       }
       if (event === "SIGNED_OUT") {
-        setEnrolledIds(new Set());
-        setScheduleRegistrations({});
-        setQuizStates({});
+        setIsLoggedIn(false);
+        setShowLanding(true);
+        setPage("dashboard");
+        setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false);
+        setEnrolledIds(new Set()); setScheduleRegistrations({}); setQuizStates({});
         setSessions(prev => prev.map(s => ({ ...s, progress: 0, status: "not-started" })));
+        sessionStorage.removeItem("loggedIn");
+        sessionStorage.setItem("showLanding", "1");
+        sessionStorage.setItem("loggedOut", "1");
       }
     });
     return () => subscription.unsubscribe();
@@ -12086,8 +12092,9 @@ export default function App() {
   const seasons = seasonsBase.map(s => s.id === "spring-2026" ? { ...s, sessionIds: [...(s.sessionIds || []), ...spring2026Ids] } : s);
 
 
-  // On mount, restore session if user is already logged in (e.g. page refresh)
+  // On mount, restore session only if the user did not explicitly log out
   useEffect(() => {
+    if (sessionStorage.getItem("loggedOut") === "1") return;
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         const meta = session.user.user_metadata || {};
