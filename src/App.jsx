@@ -8879,9 +8879,9 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth" }) {
             <div style={{ padding: isAdmin ? "28px 32px 28px" : "24px 32px 28px" }}>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
                 <img src="/Container.png" alt="SPED Summit" style={{ height:20, display:"block" }}/>
-                <button onClick={onClose} style={{ width:28, height:28, borderRadius:7, border:"1px solid #e2e8f0", background:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                {!isAdmin && <button onClick={onClose} style={{ width:28, height:28, borderRadius:7, border:"1px solid #e2e8f0", background:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                   <Icon name="x" size={13} color="#64748b"/>
-                </button>
+                </button>}
               </div>
 
               <h2 style={{ margin:"0 0 6px", fontSize:18, fontWeight:800, color:"#0f172a" }}>
