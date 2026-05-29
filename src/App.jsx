@@ -8760,8 +8760,11 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", noOverlay = fa
           options: { data: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: `${firstName.trim()} ${lastName.trim()}`.trim() } },
         });
         if (error) { setAuthError(error.message); return; }
-        // Supabase sends a confirmation email — inform user
-        setAuthError("✓ Check your email to confirm your account, then sign in.");
+        if (isAdmin) {
+          setAuthError("✓ Account created! Check your email to confirm, then sign in.");
+        } else {
+          setAuthError("✓ Check your email to confirm your account, then sign in.");
+        }
         setMode("signin");
         setPassword("");
       } else {
@@ -8885,28 +8888,27 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", noOverlay = fa
               </div>
 
               <h2 style={{ margin:"0 0 6px", fontSize:18, fontWeight:800, color:"#0f172a" }}>
-                {isAdmin ? "Admin Sign In" : mode === "signup" ? "Create your account" : "Welcome back"}
+                {isAdmin ? (mode === "signup" ? "Create Admin Account" : "Admin Sign In") : mode === "signup" ? "Create your account" : "Welcome back"}
               </h2>
-              {!isAdmin && <p style={{ margin:"0 0 16px", fontSize:13, color:"#94a3b8" }}>
-                {mode === "signup" ? "Join thousands of SPED educators today." : "Sign in to access your account."}
-              </p>}
-              {isAdmin && <p style={{ margin:"0 0 20px", fontSize:13, color:"#94a3b8" }}>Sign in to manage the SPED Summit platform.</p>}
+              <p style={{ margin:"0 0 20px", fontSize:13, color:"#94a3b8" }}>
+                {isAdmin
+                  ? (mode === "signup" ? "Create a new admin account for the SPED Summit platform." : "Sign in to manage the SPED Summit platform.")
+                  : (mode === "signup" ? "Join thousands of SPED educators today." : "Sign in to access your account.")}
+              </p>
 
               {/* Sign in / Sign up toggle */}
-              {!isAdmin && (
-                <div style={{ display:"flex", background:"#f1f5f9", borderRadius:8, padding:3, marginBottom:20 }}>
-                  {["signup","signin"].map(m => (
-                    <button key={m} onClick={()=>{ setMode(m); setAuthError(""); }}
-                      style={{ flex:1, padding:"7px 0", borderRadius:6, border:"none", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"all .15s",
-                        background: mode===m ? "#fff" : "transparent",
-                        color: mode===m ? "#0f172a" : "#94a3b8",
-                        boxShadow: mode===m ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
-                      }}>
-                      {m === "signup" ? "Sign Up" : "Sign In"}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <div style={{ display:"flex", background:"#f1f5f9", borderRadius:8, padding:3, marginBottom:20 }}>
+                {["signup","signin"].map(m => (
+                  <button key={m} onClick={()=>{ setMode(m); setAuthError(""); }}
+                    style={{ flex:1, padding:"7px 0", borderRadius:6, border:"none", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"all .15s",
+                      background: mode===m ? "#fff" : "transparent",
+                      color: mode===m ? "#0f172a" : "#94a3b8",
+                      boxShadow: mode===m ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
+                    }}>
+                    {m === "signup" ? "Create Account" : "Sign In"}
+                  </button>
+                ))}
+              </div>
 
               {/* Google (user only) */}
               {!isAdmin && (
@@ -8928,7 +8930,7 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", noOverlay = fa
 
               <form onSubmit={handleSubmit}>
                 {/* Name fields — sign up only */}
-                {!isAdmin && mode === "signup" && (
+                {mode === "signup" && (
                   <div style={{ display:"flex", gap:10, marginBottom:12 }}>
                     <div style={{ flex:1 }}>
                       <label style={{ display:"block", fontSize:12, fontWeight:600, color:"#2B2E33", marginBottom:5 }}>First Name</label>
@@ -8961,7 +8963,7 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", noOverlay = fa
                     </button>
                   </div>
                 </div>
-                {isAdmin && (
+                {isAdmin && mode === "signin" && (
                   <div style={{ display:"flex", justifyContent:"flex-end", marginBottom:16 }}>
                     <button type="button" onClick={()=>{ setForgotFromAdmin(true); setStep("forgot-password"); }}
                       style={{ background:"none", border:"none", color:"#6490E8", fontSize:13, fontWeight:500, cursor:"pointer", textDecoration:"underline", padding:0, fontFamily:"inherit" }}>
@@ -8978,7 +8980,7 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", noOverlay = fa
                   style={{ width:"100%", padding:"12px", borderRadius:8, border:"none", background: authLoading ? "#a0b8f0" : "#6490E8", color:"#fff", fontSize:14, fontWeight:700, cursor: authLoading ? "not-allowed" : "pointer", fontFamily:"inherit", transition:"background .15s" }}
                   onMouseEnter={e=>{ if (!authLoading) e.currentTarget.style.background="#4f7de0"; }}
                   onMouseLeave={e=>{ if (!authLoading) e.currentTarget.style.background="#6490E8"; }}>
-                  {authLoading ? "Please wait…" : isAdmin ? "Sign In" : mode === "signup" ? "Create Account" : "Sign In"}
+                  {authLoading ? "Please wait…" : mode === "signup" ? "Create Account" : "Sign In"}
                 </button>
                 {!isAdmin && (
                   <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:12 }}>
