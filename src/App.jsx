@@ -12048,7 +12048,7 @@ export default function App() {
         setUserEmail(session.user.email || "");
         setUserAvatar(meta.avatar_url || meta.picture || null);
         setIsLoggedIn(true);
-        if (event === "SIGNED_IN") { setPage("dashboard"); sessionStorage.removeItem("loggedOut"); }
+        if (event === "SIGNED_IN") { setPage(IS_ADMIN_DOMAIN ? "admin-overview" : "dashboard"); sessionStorage.removeItem("loggedOut"); }
         sessionStorage.setItem("loggedIn", "1");
         fetchSessions();
         fetchUserProgress();
