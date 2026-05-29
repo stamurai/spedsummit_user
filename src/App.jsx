@@ -3916,6 +3916,8 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const [narrow, setNarrow] = useState(false);
   const [videoHeight, setVideoHeight] = useState(0);
   const lesson = session.lessons[activeLesson] || session.lessons[0];
+  const lastSavedPctRef = useRef(-1);
+  const saveThrottleRef = useRef(null);
 
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
@@ -4031,7 +4033,22 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           <div ref={videoRef} style={{ position:"relative", background:"#0f172a", paddingBottom:"56.25%", height:0 }}>
             <div style={{ position:"absolute", inset:0 }}>
               {(session.vimeoUrl || lesson?.vimeoUrl) ? (
-                <VimeoPlayer url={session.vimeoUrl || lesson?.vimeoUrl} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onProgress={pct => { setProgress(pct); onUpdateProgress?.(session.id, pct, activeLesson); if (pct >= 80) { setUnlockedIndices(prev => { const next = new Set(prev); next.add(activeLesson + 1); return next; }); } }}/>
+                <VimeoPlayer url={session.vimeoUrl || lesson?.vimeoUrl} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onProgress={pct => {
+                  setProgress(pct);
+                  if (pct >= 80) { setUnlockedIndices(prev => { const next = new Set(prev); next.add(activeLesson + 1); return next; }); }
+                  // Throttle Supabase saves to once every 5s; always save on milestone crossings
+                  const isMilestone = (pct >= 75 && lastSavedPctRef.current < 75) || (pct >= 100 && lastSavedPctRef.current < 100);
+                  if (isMilestone) {
+                    lastSavedPctRef.current = pct;
+                    onUpdateProgress?.(session.id, pct, activeLesson);
+                  } else if (!saveThrottleRef.current) {
+                    saveThrottleRef.current = setTimeout(() => {
+                      saveThrottleRef.current = null;
+                      lastSavedPctRef.current = pct;
+                      onUpdateProgress?.(session.id, pct, activeLesson);
+                    }, 5000);
+                  }
+                }}/>
               ) : (
                 <>
                   <SessionThumb id={session.id} height="100%" overlay={!playing}/>
