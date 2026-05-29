@@ -9811,8 +9811,18 @@ function LandingPageV2({ onGetStarted }) {
    as [{q, opts, a}] (a = correct option index). quizState persists progress across
    opens: { currentQ, answers, status, score }.
 ───────────────────────────────────────────────────────────────────────────── */
+function getSessionQuestions(session) {
+  if (session?.quiz_questions?.length) return session.quiz_questions;
+  // Fall back to lesson-level questions added via CurriculumBuilder
+  return (session?.lessons || []).flatMap(l =>
+    (l.questions || [])
+      .filter(q => q.text && q.options?.some(o => o))
+      .map(q => ({ q: q.text, opts: q.options, a: q.correct ?? 0 }))
+  );
+}
+
 function SessionQuizModal({ session, quizState, onClose, onSaveProgress, onFinish }) {
-  const questions = session.quiz_questions || [];
+  const questions = getSessionQuestions(session);
   const [currentQ, setCurrentQ] = useState(quizState.currentQ || 0);
   const [answers,  setAnswers]  = useState(quizState.answers  || {});
   const [selected, setSelected] = useState(null);
