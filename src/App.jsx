@@ -8719,7 +8719,7 @@ function LegalModal({ type, onClose }) {
 function AuthModal({ onClose, onLogin, defaultStep = "user-auth", noOverlay = false }) {
   // step: "role-select" | "user-auth" | "admin-auth" | "forgot-password"
   const [step,       setStep]      = useState(defaultStep);
-  const [mode,       setMode]      = useState("signup");
+  const [mode,       setMode]      = useState(defaultStep === "admin-auth" ? "signin" : "signup");
   const [email,      setEmail]     = useState("");
   const [password,   setPassword]  = useState("");
   const [firstName,  setFirstName] = useState("");
