@@ -3795,6 +3795,7 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress }) {
   const storageKey = videoId ? `vimeo_pos_${videoId}` : null;
   const savedTime = storageKey ? (parseFloat(localStorage.getItem(storageKey)) || 0) : 0;
   const onProgressRef = useRef(onProgress);
+  const maxPctRef = useRef(0); // highest % actually played through — seeking forward doesn't count
   const [embedError, setEmbedError] = useState(null);
   useEffect(() => { onProgressRef.current = onProgress; }, [onProgress]);
 
@@ -3810,9 +3811,8 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress }) {
           return;
         }
         if (d.event === "ready" && iframeRef.current) {
-          iframeRef.current.contentWindow.postMessage(JSON.stringify({ method:"addEventListener", value:"timeupdate" }), "https://player.vimeo.com");
-          iframeRef.current.contentWindow.postMessage(JSON.stringify({ method:"addEventListener", value:"play" }), "https://player.vimeo.com");
-          iframeRef.current.contentWindow.postMessage(JSON.stringify({ method:"addEventListener", value:"pause" }), "https://player.vimeo.com");
+          const sub = v => iframeRef.current.contentWindow.postMessage(JSON.stringify({ method:"addEventListener", value:v }), "https://player.vimeo.com");
+          sub("timeupdate"); sub("play"); sub("pause"); sub("seeked");
           if (savedTime > 0) {
             iframeRef.current.contentWindow.postMessage(JSON.stringify({ method:"setCurrentTime", value: savedTime }), "https://player.vimeo.com");
           }
@@ -3823,8 +3823,17 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress }) {
           localStorage.setItem(storageKey, d.data.seconds);
           if (d.data.percent != null) {
             const pct = Math.round(d.data.percent * 100);
-            onProgressRef.current?.(pct);
+            // Only advance max — seeking forward doesn't unlock; rewinding doesn't penalise
+            if (pct > maxPctRef.current) {
+              maxPctRef.current = pct;
+              onProgressRef.current?.(pct);
+            }
           }
+        }
+        // seeked fires after the user drags the scrubber (even while paused).
+        // Report the stored max so UI reflects actual watched progress, not seek destination.
+        if (d.event === "seeked") {
+          onProgressRef.current?.(maxPctRef.current);
         }
       } catch {}
     }
