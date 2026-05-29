@@ -615,6 +615,18 @@ const SESSION_AVAILABILITY = {
 
 // 'live' | 'upcoming' | 'past' | 'unavailable'
 // Accepts either a sessionId (looks up SESSION_AVAILABILITY) or a session object with availableFrom/availableTo
+function parseLocalDate(str) {
+  if (!str) return null;
+  // "2026-05-29" → treat as local midnight, not UTC midnight
+  const d = new Date(str);
+  if (isNaN(d)) return null;
+  // If it's a date-only string (no time component), adjust for UTC offset
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+    return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0);
+  }
+  return d;
+}
+
 function getSessionState(sessionIdOrObj) {
   const now = new Date();
   // If passed a session object with its own date fields (Supabase sessions)
@@ -622,15 +634,19 @@ function getSessionState(sessionIdOrObj) {
     const from = sessionIdOrObj.availableFrom || sessionIdOrObj.available_from;
     const to   = sessionIdOrObj.availableTo   || sessionIdOrObj.available_to;
     if (!from) return "live"; // no date set → always available
-    if (to && now > new Date(to)) return "past";
-    if (now < new Date(from)) return "upcoming";
+    const fromDate = parseLocalDate(from);
+    const toDate   = parseLocalDate(to);
+    if (toDate && now > toDate) return "past";
+    if (fromDate && now < fromDate) return "upcoming";
     return "live";
   }
   // Legacy: look up by id
   const avail = SESSION_AVAILABILITY[sessionIdOrObj];
   if (!avail || !avail.availableFrom) return "unavailable";
-  if (avail.availableTo && now > new Date(avail.availableTo)) return "past";
-  if (now < new Date(avail.availableFrom)) return "upcoming";
+  const fromDate = parseLocalDate(avail.availableFrom);
+  const toDate   = parseLocalDate(avail.availableTo);
+  if (toDate && now > toDate) return "past";
+  if (fromDate && now < fromDate) return "upcoming";
   return "live";
 }
 
