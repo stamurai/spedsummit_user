@@ -6094,7 +6094,7 @@ function AnalyticsPage({ onEditSession, sessions = [] }) {
         const minL = Math.min(...lineData.map(d => d.v));
 
         /* SVG line/area chart helpers */
-        const W = 600, H = 130, PAD = { t:16, r:8, b:28, l:36 };
+        const W = 600, H = 130, PAD = { t:16, r:24, b:28, l:36 };
         const cw = W - PAD.l - PAD.r;
         const ch = H - PAD.t - PAD.b;
         const xOf = i => PAD.l + (i / (lineData.length - 1)) * cw;
