@@ -2164,7 +2164,11 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
   }, [externalFilter?.season, externalFilter?.year]);
 
   const enrolledSessions = sessions.filter(s => enrolledIds.has(s.id));
-  const upcomingSchedule = schedule.filter(i => i.status === "upcoming");
+  const upcomingSchedule = schedule.filter(i => {
+    const liveSession = sessions.find(s => s.id === i.session_id || s.id === i.id);
+    if (liveSession) return getSessionState(liveSession) === "upcoming";
+    return i.status === "upcoming";
+  });
   const completed     = enrolledSessions.filter(s => s.status === "completed").length;
   const certsEarned   = enrolledSessions.filter(s => {
     const hasQuiz = getSessionQuestions(s).length > 0;
@@ -2689,7 +2693,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
     return scheduledDates.filter(sd => sd.date.getDate()===day && sd.date.getMonth()===calMon && sd.date.getFullYear()===calYear);
   }
   const today = new Date();
-  const inProgressSessions = sessions.filter(s => s.status === "in-progress" || s.status === "not-started" || s.status === "completed");
+  const inProgressSessions = sessions.filter(s => getSessionState(s) === "live" && (s.status === "in-progress" || s.status === "not-started" || s.status === "completed"));
   const completedSessions  = enrolledSessions.filter(s => s.status === "completed");
 
   /* ── Filter options derived from seasons ── */
@@ -2954,7 +2958,14 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                             <div style={{ marginTop:"auto", paddingTop:8 }}>
                               <div style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:13, fontWeight:600, color:C.gray600, background:C.gray50, border:`1px solid ${C.gray200}`, borderRadius:8, padding:"7px 13px", cursor:"default" }}>
                                 <Icon name="calendar" size={13} color={C.gray500}/>
-                                Available {item.date}{item.time ? ` · ${item.time}` : ""}
+                                {(() => {
+                                  const af = session?.availableFrom || session?.available_from;
+                                  if (af) {
+                                    const d = parseLocalDate(af);
+                                    return "Available " + d.toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
+                                  }
+                                  return `Available ${item.date}${item.time ? ` · ${item.time}` : ""}`;
+                                })()}
                               </div>
                             </div>
                           </div>
@@ -9821,6 +9832,7 @@ export default function App() {
   const [dashFilter, setDashFilter] = useState({ season:"all", year:"all" });
   const [sessions, setSessions] = useState([]);
   const [sessionsLoading, setSessionsLoading] = useState(true);
+  const [, setTick] = useState(0);
   const [spring2026Ids, setSpring2026Ids] = useState([]);
   const [seasonsData, setSeasonsData] = useState([]);
   const [scheduleData, setScheduleData] = useState([]);
@@ -9997,6 +10009,12 @@ export default function App() {
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, [fetchSessions]);
+
+  // Re-evaluate session states every minute so availability changes reflect without refresh
+  useEffect(() => {
+    const timer = setInterval(() => setTick(t => t + 1), 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   function enroll(sessionId) {
     setEnrolledIds(prev => new Set([...prev, sessionId]));
