@@ -9146,10 +9146,11 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               "TEAMWORK":      { label:"Teamwork",      bg:"rgba(168,85,247,0.15)",  color:"#c084fc" },
             };
 
-            // Format availableFrom date/time for display
+            // Format availableFrom date/time for display (local timezone)
             const fmtDateTime = (iso) => {
               if (!iso) return { date: "", time: "" };
-              const d = new Date(iso);
+              const d = parseLocalDate(iso);
+              if (!d) return { date: "", time: "" };
               const date = d.toLocaleDateString("en-US", { month:"short", day:"numeric" });
               const time = d.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit", hour12:true });
               return { date, time };
@@ -9173,8 +9174,9 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                 {gridSessions.map(s => {
                   const catBadge = CAT_BADGE[s.category] || { label:s.category || "Session", bg:C.gray100, color:C.gray700 };
                   const avatarSrc = INSTRUCTOR_AVATARS[s.instructor];
-                  const isAvailable = isSessionAvailable(s.id);
-                  const { date, time } = fmtDateTime(s.availableFrom);
+                  const sessionState = getSessionState(s);
+                  const isAvailable = sessionState === "live";
+                  const { date, time } = fmtDateTime(s.availableFrom || s.available_from);
                   const ctaLabel = isLoggedIn ? (isAvailable ? "Watch Now" : (date ? `Available ${date}` : "Coming Soon")) : "Register Now";
                   const cardClickable = !isLoggedIn || isAvailable;
                   const handleCardClick = () => {
