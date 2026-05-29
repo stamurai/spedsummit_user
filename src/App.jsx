@@ -9806,6 +9806,181 @@ function LandingPageV2({ onGetStarted }) {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
+   SESSION QUIZ MODAL
+   Renders the per-session assessment. Quiz questions come from session.quiz_questions
+   as [{q, opts, a}] (a = correct option index). quizState persists progress across
+   opens: { currentQ, answers, status, score }.
+───────────────────────────────────────────────────────────────────────────── */
+function SessionQuizModal({ session, quizState, onClose, onSaveProgress, onFinish }) {
+  const questions = session.quiz_questions || [];
+  const [currentQ, setCurrentQ] = useState(quizState.currentQ || 0);
+  const [answers,  setAnswers]  = useState(quizState.answers  || {});
+  const [selected, setSelected] = useState(null);
+  const [showResult, setShowResult] = useState(quizState.status === "passed" || quizState.status === "failed");
+  const [finalScore, setFinalScore] = useState(quizState.score || 0);
+
+  if (!questions.length) {
+    return (
+      <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", zIndex:500,
+                    display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
+        <div style={{ background:C.white, borderRadius:20, width:"100%", maxWidth:480, padding:40, textAlign:"center" }}>
+          <div style={{ fontSize:40, marginBottom:16 }}>📋</div>
+          <h2 style={{ margin:"0 0 8px", fontSize:20, fontWeight:800, color:C.gray900 }}>No Questions Yet</h2>
+          <p style={{ color:C.gray500, fontSize:14, margin:"0 0 24px" }}>Assessment questions haven't been added for this session.</p>
+          <Btn onClick={onClose}>Close</Btn>
+        </div>
+      </div>
+    );
+  }
+
+  const q      = questions[currentQ] || {};
+  const isLast = currentQ === questions.length - 1;
+  const pct    = Math.round((currentQ / questions.length) * 100);
+
+  function selectAnswer(idx) {
+    if (answers[currentQ] !== undefined) return;
+    setSelected(idx);
+  }
+
+  function next() {
+    if (selected === null && answers[currentQ] === undefined) return;
+    const chosenIdx  = selected !== null ? selected : answers[currentQ];
+    const newAnswers = { ...answers, [currentQ]: chosenIdx };
+    setAnswers(newAnswers);
+    setSelected(null);
+    onSaveProgress(session.id, { answers: newAnswers, currentQ: isLast ? 0 : currentQ + 1 });
+
+    if (isLast) {
+      const correct = Object.entries(newAnswers).filter(
+        ([qi, ans]) => questions[Number(qi)]?.a === ans
+      ).length;
+      const score  = Math.round((correct / questions.length) * 100);
+      const passed = score >= 80;
+      setFinalScore(score);
+      setShowResult(true);
+      onFinish(session.id, score, passed);
+    } else {
+      setCurrentQ(q => q + 1);
+    }
+  }
+
+  function optionStyle(i) {
+    const answered   = answers[currentQ] !== undefined;
+    const isSel      = selected === i || answers[currentQ] === i;
+    const isCorrect  = q.a === i;
+
+    let bg = C.white, border = C.gray200, textColor = C.gray700;
+    if (answered) {
+      if (isSel && isCorrect) { bg = C.successLight; border = C.successBorder; textColor = C.success; }
+      else if (isSel)         { bg = C.errorLight;   border = C.errorBorder;   textColor = C.error;   }
+      else if (isCorrect)     { bg = C.successLight; border = C.successBorder; textColor = C.success; }
+    } else if (selected === i) {
+      bg = C.primaryLight; border = C.primary; textColor = C.primary;
+    }
+    return { bg, border, textColor };
+  }
+
+  const passed = finalScore >= 80;
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", zIndex:500,
+                  display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
+      <div style={{ background:C.white, borderRadius:20, width:"100%", maxWidth:560,
+                    boxShadow:"0 24px 64px rgba(0,0,0,0.22)", overflow:"hidden", animation:"fadeIn .2s ease" }}>
+
+        {/* Header */}
+        <div style={{ padding:"18px 24px", borderBottom:`1px solid ${C.gray100}`,
+                      display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+          <div>
+            <div style={{ fontSize:12, fontWeight:700, letterSpacing:1.5, color:C.primary, marginBottom:3 }}>ASSESSMENT</div>
+            <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{session.title}</div>
+          </div>
+          <button onClick={onClose}
+            style={{ width:32, height:32, borderRadius:8, border:`1px solid ${C.gray200}`,
+                     background:C.white, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}
+            onMouseEnter={e=>e.currentTarget.style.background=C.gray50}
+            onMouseLeave={e=>e.currentTarget.style.background=C.white}>
+            <Icon name="x" size={16} color={C.gray500}/>
+          </button>
+        </div>
+
+        {!showResult ? (
+          <div style={{ padding:"24px" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:C.gray400, marginBottom:7 }}>
+              <span>Question {currentQ + 1} of {questions.length}</span>
+              <span>{pct}% complete</span>
+            </div>
+            <ProgressBar value={pct} height={5}/>
+
+            <div style={{ margin:"22px 0 18px", fontSize:16, fontWeight:700, color:C.gray900, lineHeight:1.5 }}>
+              {q.q}
+            </div>
+
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              {(q.opts || []).map((opt, i) => {
+                const { bg, border, textColor } = optionStyle(i);
+                const answered = answers[currentQ] !== undefined;
+                return (
+                  <button key={i} onClick={() => selectAnswer(i)}
+                    style={{ padding:"13px 16px", borderRadius:12, border:`2px solid ${border}`,
+                             background:bg, color:textColor, fontSize:14, fontWeight:500,
+                             textAlign:"left", cursor:answered?"default":"pointer",
+                             transition:"all .15s", display:"flex", alignItems:"center", gap:10 }}>
+                    <span style={{ width:26, height:26, borderRadius:"50%", border:`2px solid ${border}`,
+                                   display:"flex", alignItems:"center", justifyContent:"center",
+                                   fontSize:12, fontWeight:700, flexShrink:0, color:textColor }}>
+                      {String.fromCharCode(65 + i)}
+                    </span>
+                    {opt}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div style={{ marginTop:22, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+              <span style={{ fontSize:12, color:C.gray400 }}>
+                {answers[currentQ] !== undefined
+                  ? (q.a === answers[currentQ] ? "✓ Correct!" : "✗ Incorrect")
+                  : "Select an answer"}
+              </span>
+              <Btn onClick={next} disabled={selected === null && answers[currentQ] === undefined}>
+                {isLast ? "Finish Assessment" : "Next"} <Icon name="caret-right" size={14} color="#fff"/>
+              </Btn>
+            </div>
+          </div>
+        ) : (
+          <div style={{ padding:"40px 24px", textAlign:"left" }}>
+            <div style={{ fontSize:52, marginBottom:12 }}>
+              {passed ? "🏆" : finalScore >= 60 ? "🎯" : "📚"}
+            </div>
+            <h2 style={{ margin:"0 0 6px", fontSize:22, fontWeight:900, color:C.gray900 }}>
+              {passed ? "Assessment Passed!" : finalScore >= 60 ? "Good effort!" : "Keep practising!"}
+            </h2>
+            <p style={{ color:C.gray500, fontSize:14, margin:"0 0 6px" }}>
+              {passed ? "You've earned your certificate for this session." : "You need 80% to pass. Review the material and try again."}
+            </p>
+            <div style={{ fontSize:48, fontWeight:900,
+                          color: passed ? C.success : finalScore >= 60 ? C.warning : C.error,
+                          marginBottom:24 }}>
+              {finalScore}%
+            </div>
+            <div style={{ display:"flex", gap:12 }}>
+              {!passed && (
+                <Btn variant="outline" onClick={() => {
+                  setCurrentQ(0); setAnswers({}); setSelected(null); setShowResult(false); setFinalScore(0);
+                  onSaveProgress(session.id, { currentQ:0, answers:{} });
+                }}>Try Again</Btn>
+              )}
+              <Btn onClick={onClose}>{passed ? "View Certificate" : "Close"}</Btn>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
    APP
 ───────────────────────────────────────────────────────────────────────────── */
 export default function App() {
