@@ -1992,7 +1992,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 
       {/* Thumbnail — tall instructor photo with name/title overlay */}
       <div style={{ position:"relative", flexShrink:0, height:180, background:"#1f2937", overflow:"hidden" }}>
-        <img src={INSTRUCTOR_AVATARS[session.instructor] || "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&h=400&fit=crop"} alt={session.instructor}
+        <img src={session.instructorImage || INSTRUCTOR_AVATARS[session.instructor] || "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&h=400&fit=crop"} alt={session.instructor}
           style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%" }}/>
         {/* Dark gradient for text legibility */}
         <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top,rgba(0,0,0,0.72) 0%,rgba(0,0,0,0.1) 50%,transparent 100%)", pointerEvents:"none" }}/>
@@ -3985,7 +3985,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
       </div>
       {/* Instructor row — like YouTube channel info */}
       <div style={{ padding:"12px 18px 14px", borderTop:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", gap:12 }}>
-        <Avatar name={session.instructor} src={INSTRUCTOR_AVATARS[session.instructor]} size={40}/>
+        <Avatar name={session.instructor} src={session.instructorImage || INSTRUCTOR_AVATARS[session.instructor]} size={40}/>
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ fontWeight:700, fontSize:14, color:C.gray900, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{session.instructor}</div>
           <div style={{ fontSize:12, color:C.gray400, marginTop:1 }}>Special Ed Instructor</div>
@@ -4294,7 +4294,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           <div className="sd-tab-content" style={{ padding:"22px 24px" }}>
             {session.instructor ? (
               <div className="sd-instructor-header" style={{ display:"flex", gap:16, alignItems:"flex-start" }}>
-                <Avatar name={session.instructor} src={INSTRUCTOR_AVATARS[session.instructor]} size={68}/>
+                <Avatar name={session.instructor} src={session.instructorImage || INSTRUCTOR_AVATARS[session.instructor]} size={68}/>
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontWeight:800, fontSize:18, color:C.gray900, marginBottom:session.instructorBio ? 8 : 0 }}>{session.instructor}</div>
                   {session.instructorBio && (
@@ -4570,7 +4570,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                   <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"16px 18px" }}>
                     <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:12 }}>Instructor</div>
                     <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-                      <Avatar name={session.instructor} src={INSTRUCTOR_AVATARS[session.instructor]} size={40}/>
+                      <Avatar name={session.instructor} src={session.instructorImage || INSTRUCTOR_AVATARS[session.instructor]} size={40}/>
                       <div>
                         <div style={{ fontWeight:700, fontSize:14, color:isDark?"#fff":C.gray900 }}>{session.instructor}</div>
                         <div style={{ fontSize:12, color:C.gray400 }}>Speaker</div>
@@ -10108,7 +10108,7 @@ export default function App() {
 
       const toSession = s => ({
         id: s.id, title: s.title, category: s.category,
-        instructor: s.instructor || "", instructorBio: s.instructor_bio || "",
+        instructor: s.instructor || "", instructorBio: s.instructor_bio || "", instructorImage: s.instructor_image || "",
         duration: s.duration || "60 mins", resources: s.resources || 0,
         progress: 0, status: "not-started",
         description: s.description || "",
