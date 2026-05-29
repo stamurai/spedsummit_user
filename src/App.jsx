@@ -2164,11 +2164,23 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
   }, [externalFilter?.season, externalFilter?.year]);
 
   const enrolledSessions = sessions.filter(s => enrolledIds.has(s.id));
-  const upcomingSchedule = schedule.filter(i => {
-    const liveSession = sessions.find(s => s.id === i.session_id || s.id === i.id);
-    if (liveSession) return getSessionState(liveSession) === "upcoming";
-    return i.status === "upcoming";
-  });
+  // Build upcoming list from sessions directly — any session with a future available_from
+  // shows up automatically. Cross-reference schedule for type/date/time metadata.
+  const upcomingSchedule = sessions
+    .filter(s => getSessionState(s) === "upcoming")
+    .map(s => {
+      const schedItem = schedule.find(i => i.session_id === s.id || i.id === s.id);
+      return {
+        id: s.id,
+        session_id: s.id,
+        title: s.title,
+        instructor: s.instructor,
+        type: schedItem?.type || s.category || "WORKSHOP",
+        date: schedItem?.date || "",
+        time: schedItem?.time || "",
+        status: "upcoming",
+      };
+    });
   const completed     = enrolledSessions.filter(s => s.status === "completed").length;
   const certsEarned   = enrolledSessions.filter(s => {
     const hasQuiz = getSessionQuestions(s).length > 0;
@@ -2938,7 +2950,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                         <div key={item.id} className="db-session-card-row db-upcoming-session-card"
                           style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, cursor:"default", overflow:"hidden", width:"100%", boxSizing:"border-box", ...(isMobile ? { flexDirection:"column", minHeight:"unset" } : {}) }}>
                           <div className="db-session-card-thumb" style={isMobile ? { width:"100%", height:160, flexShrink:0 } : {}}>
-                            <img src={INSTRUCTOR_AVATARS[item.instructor]} alt={item.instructor}/>
+                            <img src={session?.instructorImage || INSTRUCTOR_AVATARS[item.instructor]} alt={item.instructor}/>
                             <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.25) 45%, transparent 75%)" }}/>
                             <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"0 10px 10px" }}>
                               <div className="instr-name" style={{ fontSize:15, fontWeight:700, color:"#fff", lineHeight:1.25 }}>{item.instructor}</div>
