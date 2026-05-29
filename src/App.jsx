@@ -654,13 +654,6 @@ const SCHEDULE = [
 const SCHEDULE_TYPE_COLORS = { OPENING:{c:"#7c3aed",bg:"rgba(124,58,237,0.12)"}, KEYNOTE:{c:"#2563eb",bg:"rgba(37,99,235,0.12)"}, WORKSHOP:{c:"#059669",bg:"rgba(5,150,105,0.12)"}, NETWORKING:{c:"#d97706",bg:"rgba(217,119,6,0.12)"}, "PANEL DISCUSSION":{c:"#dc2626",bg:"rgba(220,38,38,0.12)"} };
 const ADMIN_STATUS_COLORS = { LIVE:{c:"#fff",bg:"#10b981"}, DRAFT:{c:"#d97706",bg:"rgba(217,119,6,0.18)"}, ARCHIVED:{c:"var(--c-gray600)",bg:"rgba(156,163,175,0.18)"} };
 
-const ADMIN_SESSIONS_DATA = [
-  { id:1, title:"Mental Health & Teacher Wellness in Special Education", category:"SPED", status:"LIVE", date:"Mar 26, 2026", enrolled:1240, availableFrom:"2026-03-26T09:00", availableTo:"2027-12-31T23:59" },
-  { id:2, title:"Accommodations & Inclusion: Integrating Students into Mainstream Education", category:"SPED", status:"LIVE", date:"Mar 26, 2026", enrolled:850, availableFrom:"2026-03-26T11:00", availableTo:"2027-12-31T23:59" },
-  { id:3, title:"Empowering Language and Literacy Skills with DHH Children", category:"SPED", status:"ARCHIVED", date:"Jan 6, 2025", enrolled:620, availableFrom:"2025-01-06T09:00", availableTo:"2025-06-30T23:59" },
-  { id:4, title:"Paraeducators & Team Collaboration: Training, Delegation & More", category:"SPED", status:"ARCHIVED", date:"Jan 7, 2025", enrolled:410, availableFrom:"2025-01-07T09:00", availableTo:"2025-06-30T23:59" },
-  { id:5, title:"Introduction to Accessibility in SPED", category:"SPED", status:"ARCHIVED", date:"Archived Mar 2026", enrolled:320, availableFrom:"2025-01-01T09:00", availableTo:"2026-03-01T23:59" },
-];
 
 const COMMUNITY_POSTS_DATA = [];
 
@@ -1236,14 +1229,7 @@ function MobileSearchPage({ onOpenSession, onNavigate, onClose, sessions = [] })
   );
 }
 
-const ADMIN_SEARCH_PAGES = [
-  { id:"admin-overview",   label:"Overview",      icon:"house",        type:"page" },
-  { id:"admin-sessions",   label:"My Sessions",   icon:"play-circle",  type:"page" },
-  { id:"admin-analytics",  label:"Analytics",     icon:"chart-bar",    type:"page" },
-  { id:"admin-create",     label:"Create Session", icon:"plus-circle", type:"page" },
-];
-
-function SearchBar({ onOpenSession, onNavigate, isAdmin = false, sessions = [] }) {
+function SearchBar({ onOpenSession, onNavigate, sessions = [] }) {
   const [query, setQuery]   = useState("");
   const [open,  setOpen]    = useState(false);
   const ref = useRef(null);
@@ -1257,7 +1243,7 @@ function SearchBar({ onOpenSession, onNavigate, isAdmin = false, sessions = [] }
 
   const q = query.trim().toLowerCase();
   const searchPool = sessions;
-  const pagePool   = isAdmin ? ADMIN_SEARCH_PAGES  : SEARCH_PAGES;
+  const pagePool   = SEARCH_PAGES;
 
   const sessionResults = q.length < 1 ? [] : searchPool.filter(s =>
     s.title.toLowerCase().includes(q) ||
@@ -1346,7 +1332,7 @@ function SearchBar({ onOpenSession, onNavigate, isAdmin = false, sessions = [] }
             <div>
               <div style={{ padding:"8px 14px 4px", fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase" }}>Sessions</div>
               {sessionResults.map(s => (
-                <button key={s.id} onClick={() => pick(() => isAdmin ? onNavigate("admin-sessions") : onOpenSession(s))}
+                <button key={s.id} onClick={() => pick(() => onOpenSession(s))}
                   style={{ width:"100%", display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:"none", border:"none", cursor:"pointer", textAlign:"left" }}
                   onMouseEnter={e => e.currentTarget.style.background = C.gray50}
                   onMouseLeave={e => e.currentTarget.style.background = "none"}>
@@ -1469,7 +1455,7 @@ function ReferFriendsModal({ onClose, userName }) {
   );
 }
 
-function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, onOpenSession, onNavigate, userName = "", userAvatar, onBrowseSelect, seasons = SEASONS, sessions = [], onOpenInstructor, onGoHome }) {
+function TopBar({ toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, onOpenSession, onNavigate, userName = "", userAvatar, onBrowseSelect, seasons = SEASONS, sessions = [], onOpenInstructor, onGoHome }) {
   const [showNotif, setShowNotif] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showReferModal, setShowReferModal] = useState(false);
@@ -1499,23 +1485,21 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
     <div style={{ height:60, background:C.white, borderBottom:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", paddingLeft:24, paddingRight:24, position:"sticky", top:0, zIndex:100, flexShrink:0 }}>
       {/* Logo */}
       <div style={{ flexShrink:0, display:"flex", alignItems:"center", cursor:"pointer" }}
-        onClick={()=>onNavigate(isAdmin ? "admin-overview" : "dashboard")}>
+        onClick={()=>onNavigate("dashboard")}>
         <img src="/Container.png" alt="SPED Summit" style={{ height:28, width:"auto", display:"block" }}/>
       </div>
 
-      {/* Home button — user only, hidden on mobile */}
-      {!isAdmin && (
-        <button className="topbar-browse"
-          onClick={onGoHome}
-          style={{ marginLeft:16, flexShrink:0, display:"inline-flex", alignItems:"center", gap:5, background:"none", border:"none", cursor:"pointer", fontSize:14, fontWeight:600, color:C.gray700, padding:"6px 10px", borderRadius:8, fontFamily:"inherit", transition:"color .15s" }}
-          onMouseEnter={e => e.currentTarget.style.color = C.gray900}
-          onMouseLeave={e => e.currentTarget.style.color = C.gray700}>
-          Home
-        </button>
-      )}
+      {/* Home button — hidden on mobile */}
+      <button className="topbar-browse"
+        onClick={onGoHome}
+        style={{ marginLeft:16, flexShrink:0, display:"inline-flex", alignItems:"center", gap:5, background:"none", border:"none", cursor:"pointer", fontSize:14, fontWeight:600, color:C.gray700, padding:"6px 10px", borderRadius:8, fontFamily:"inherit", transition:"color .15s" }}
+        onMouseEnter={e => e.currentTarget.style.color = C.gray900}
+        onMouseLeave={e => e.currentTarget.style.color = C.gray700}>
+        Home
+      </button>
 
-      {/* Browse button — user only, hidden on mobile (bottom nav handles it) */}
-      <div className="topbar-browse" style={{ position:"relative", marginLeft:4, flexShrink:0, display: isAdmin ? "none" : "block" }} ref={browseRef}>
+      {/* Browse button — hidden on mobile (bottom nav handles it) */}
+      <div className="topbar-browse" style={{ position:"relative", marginLeft:4, flexShrink:0 }} ref={browseRef}>
         <button
           onClick={() => setShowBrowse(v => !v)}
           style={{ display:"inline-flex", alignItems:"center", gap:5, background:"none", border:"none", cursor:"pointer", fontSize:14, fontWeight:600, color: showBrowse ? C.primary : C.gray700, padding:"6px 10px", borderRadius:8, fontFamily:"inherit", transition:"color .15s" }}
@@ -1569,29 +1553,23 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
         )}
       </div>
 
-      {/* Search — centered, hidden on mobile, hidden for admin */}
-      {!isAdmin && (
-        <div className="topbar-search" style={{ flex:1, display:"flex", justifyContent:"center", padding:"0 16px" }}>
-          <SearchBar onOpenSession={onOpenSession} onNavigate={onNavigate} sessions={sessions}/>
-        </div>
-      )}
-      {isAdmin && <div style={{ flex:1 }}/>}
+      {/* Search — centered, hidden on mobile */}
+      <div className="topbar-search" style={{ flex:1, display:"flex", justifyContent:"center", padding:"0 16px" }}>
+        <SearchBar onOpenSession={onOpenSession} onNavigate={onNavigate} sessions={sessions}/>
+      </div>
 
-      {/* Mobile search icon — user only */}
-      {!isAdmin && (
-        <button className="topbar-search-icon" onClick={() => setShowMobileSearch(true)}
-          style={{ display:"none", width:36, height:36, borderRadius:"50%", border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", alignItems:"center", justifyContent:"center", flexShrink:0, marginLeft:"auto", marginRight:8 }}>
-          <Icon name="magnifying-glass" size={17} color={C.gray700}/>
-        </button>
-      )}
+      {/* Mobile search icon */}
+      <button className="topbar-search-icon" onClick={() => setShowMobileSearch(true)}
+        style={{ display:"none", width:36, height:36, borderRadius:"50%", border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", alignItems:"center", justifyContent:"center", flexShrink:0, marginLeft:"auto", marginRight:8 }}>
+        <Icon name="magnifying-glass" size={17} color={C.gray700}/>
+      </button>
 
       {showMobileSearch && <MobileSearchPage onOpenSession={onOpenSession} onNavigate={onNavigate} onClose={() => setShowMobileSearch(false)} sessions={sessions}/>}
 
       {/* Right actions */}
       <div style={{ flexShrink:0, display:"flex", alignItems:"center", gap:12 }}>
-        {/* Notification button + popover — user only, hidden on mobile (bottom nav handles it) */}
-        {!isAdmin && (
-          <div className="topbar-notif" style={{ position:"relative" }} ref={notifBtnRef}>
+        {/* Notification button + popover — hidden on mobile (bottom nav handles it) */}
+        <div className="topbar-notif" style={{ position:"relative" }} ref={notifBtnRef}>
             <button
               onClick={() => setShowNotif(v => !v)}
               style={{ width:36, height:36, borderRadius:"50%", border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", transition:"background .15s" }}
@@ -1606,7 +1584,6 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
             </button>
             {showNotif && <NotificationPopover onClose={() => setShowNotif(false)} anchorRef={notifBtnRef}/>}
           </div>
-        )}
 
 
         {showReferModal && <ReferFriendsModal onClose={() => setShowReferModal(false)} userName={userName}/>}
@@ -1635,18 +1612,16 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
                   label: isDark ? "Light Mode" : "Dark Mode",
                   action: () => onToggleDarkMode?.(),
                 },
-                ...(!isAdmin ? [
-                  {
-                    icon: "gift",
-                    label: "Refer Friends",
-                    action: () => { setShowProfileMenu(false); setShowReferModal(true); },
-                  },
-                  {
-                    icon: "question",
-                    label: "Help Center",
-                    action: () => toast({ type: "info", message: "Opening Help Center..." }),
-                  },
-                ] : []),
+                {
+                  icon: "gift",
+                  label: "Refer Friends",
+                  action: () => { setShowProfileMenu(false); setShowReferModal(true); },
+                },
+                {
+                  icon: "question",
+                  label: "Help Center",
+                  action: () => toast({ type: "info", message: "Opening Help Center..." }),
+                },
                 {
                   icon: "sign-out",
                   label: "Logout",
@@ -1666,19 +1641,13 @@ function TopBar({ onToggleAdmin, isAdmin, toast, isDark, onToggleDarkMode, onLog
 /* ─────────────────────────────────────────────────────────────────────────────
    SIDEBAR
 ───────────────────────────────────────────────────────────────────────────── */
-function Sidebar({ active, onChange, isAdmin }) {
+function Sidebar({ active, onChange }) {
   const [hov, setHov] = useState(null);
-  const userNav = [
+  const nav = [
     { id:"dashboard",      icon:"house",        label:"My Learnings"    },
     { id:"sessions",       icon:"play-circle",  label:"All Sessions"    },
     { id:"schedules",      icon:"calendar",     label:"Schedules"       },
   ];
-  const adminNav = [
-    { id:"admin-overview",  icon:"house",       label:"Overview"    },
-    { id:"admin-sessions",  icon:"play-circle", label:"My Sessions" },
-    { id:"admin-analytics", icon:"chart-line",  label:"Analytics"   },
-  ];
-  const nav = isAdmin ? adminNav : userNav;
 
   return (
     <div style={{ width:52, background:C.white, borderRight:`1px solid ${C.gray200}`, display:"flex", flexDirection:"column", alignItems:"center", padding:"10px 0 12px", flexShrink:0, height:"100%", gap:2 }}>
@@ -1715,19 +1684,13 @@ function Sidebar({ active, onChange, isAdmin }) {
    TAB BAR  (horizontal top nav — replaces sidebar for logged-in users)
 ───────────────────────────────────────────────────────────────────────────── */
 /* ── LimelightBottomNav ─────────────────────────────────────────────────────── */
-function LimelightBottomNav({ active, onChange, isAdmin, onNotif, notifCount = 0 }) {
-  const userItems = [
+function LimelightBottomNav({ active, onChange, onNotif, notifCount = 0 }) {
+  const items = [
     { id:'dashboard',      icon:'house',            label:'My Learnings' },
     { id:'past-sessions',  icon:'squares-four',  label:'Browse'       },
     { id:'certifications', icon:'certificate',       label:'Achievements'  },
     { id:'__notif__',      icon:'bell',              label:'Notifications' },
   ];
-  const adminItems = [
-    { id:'admin-overview',  icon:'house',       label:'Overview'  },
-    { id:'admin-sessions',  icon:'video',       label:'Sessions'  },
-    { id:'admin-analytics', icon:'chart-bar',   label:'Analytics' },
-  ];
-  const items = isAdmin ? adminItems : userItems;
   const activeIdx = Math.max(0, items.findIndex(i => i.id === active));
 
   const [llLeft, setLlLeft] = useState(-999);
@@ -1801,18 +1764,12 @@ function LimelightBottomNav({ active, onChange, isAdmin, onNotif, notifCount = 0
   );
 }
 
-function TabBar({ active, onChange, isAdmin, breadcrumbs }) {
-  const userNav = [
+function TabBar({ active, onChange, breadcrumbs }) {
+  const nav = [
     { id:"dashboard",      label:"My Learnings"    },
     { id:"past-sessions",  label:"Past Sessions"   },
     { id:"certifications", label:"My Certificates" },
   ];
-  const adminNav = [
-    { id:"admin-overview",  label:"Overview"    },
-    { id:"admin-sessions",  label:"My Sessions" },
-    { id:"admin-analytics", label:"Analytics"   },
-  ];
-  const nav = isAdmin ? adminNav : userNav;
 
   return (
     <>
@@ -5567,2114 +5524,6 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   ADMIN OVERVIEW
-───────────────────────────────────────────────────────────────────────────── */
-function AdminOverview({ onNavigate, onEditSession, toast, adminSessions = [] }) {
-  return (
-    <div className="ao-wrap" style={{ background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
-      <style>{`
-        .ao-wrap      { padding:24px; }
-        .ao-metrics   { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
-        .ao-bottom    { display:grid; grid-template-columns:3fr 2fr; gap:14px; margin-bottom:0; }
-        .ao-h1        { font-size:22px; }
-        .ao-sess-row  { display:flex; align-items:center; gap:10px; padding:14px 0; }
-        .ao-tip-row   { display:flex; align-items:flex-start; gap:12px; padding:14px 0; }
-        @media(max-width:640px){
-          .ao-wrap    { padding:14px 12px; }
-          .ao-metrics { grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:16px; }
-          .ao-bottom  { grid-template-columns:1fr; }
-          .ao-h1      { font-size:17px !important; }
-          .ao-sess-row { padding:10px 0; gap:8px; }
-          .ao-tip-row  { padding:10px 0; gap:10px; }
-        }
-      `}</style>
-      <div style={{ marginBottom:18 }}>
-        <h1 className="ao-h1" style={{ margin:0, fontWeight:700, color:C.gray900, letterSpacing:-0.3, lineHeight:1.25 }}>Overview</h1>
-      </div>
-
-      {/* Metrics */}
-      <div className="ao-metrics">
-        {[
-          {label:"Course Enrollments", val:"12,842", delta:"+15% vs prev"},
-          {label:"Student Rating",     val:"8.4/10", delta:"Top 1%"     },
-          {label:"Total Site Visits",  val:"83",     delta:"+23 today"  },
-          {label:"Total Revenue",      val:"$4,210", delta:"+8% vs prev"},
-        ].map(m=>(
-          <div key={m.label} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"16px" }}>
-            <span style={{ display:"inline-block", fontSize:11, fontWeight:700, color:C.gray500, background:C.gray200, padding:"2px 6px", borderRadius:6, marginBottom:6 }}>{m.delta}</span>
-            <div style={{ fontSize:26, fontWeight:900, color:C.gray900, lineHeight:1, marginBottom:4 }}>{m.val}</div>
-            <div style={{ fontSize:13, fontWeight:600, color:C.gray600, lineHeight:1.5 }}>{m.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Recent activity + growth */}
-      <div className="ao-bottom">
-        {/* Recent sessions snapshot */}
-        <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"16px 16px 6px" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
-            <h2 style={{ margin:0, fontSize:15, fontWeight:700, color:C.gray900 }}>Recent Sessions</h2>
-            <button onClick={()=>onNavigate("admin-sessions")} style={{ background:"none", border:"none", color:C.primary, fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:4, fontFamily:"inherit" }}>
-              View all <Icon name="caret-right" size={14} color={C.primary}/>
-            </button>
-          </div>
-          {adminSessions.slice(0,5).map((s,i,arr)=>{
-            const sc = ADMIN_STATUS_COLORS[s.status] || ADMIN_STATUS_COLORS.DRAFT;
-            return (
-              <div key={s.id} className="ao-sess-row" style={{ borderBottom:i<arr.length-1?`1px solid ${C.gray100}`:"none" }}>
-                <AdminThumb idx={i}/>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontWeight:600, fontSize:14, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", whiteSpace:"normal" }}>{s.title}</div>
-                  <div style={{ display:"flex", alignItems:"center", gap:6, marginTop:3 }}>
-                    <Badge label={s.status} color={sc.c} bg={sc.bg} size={11}/>
-                    <span style={{ fontSize:12, color:C.gray500 }}>{s.date}</span>
-                  </div>
-                </div>
-                <button onClick={() => onEditSession?.(s)} title="Edit session"
-                  style={{ width:26, height:26, borderRadius:7, border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                  <Icon name="pencil" size={12} color={C.gray500}/>
-                </button>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Engagement Guide */}
-        <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:16 }}>
-          <h2 style={{ margin:"0 0 12px", fontSize:15, fontWeight:700, color:C.gray900 }}>Engagement Guide</h2>
-          {[
-            { icon:"clock",            color:"#f59e0b", title:"Optimal Scheduling",       body:"Sessions at 10 AM–2 PM EST see 40% higher live attendance." },
-            { icon:"bell",             color:"#3b82f6", title:"Pre-Session Reminders",    body:"Learners who get both 24h and 1h reminders show 2× higher show-up rates." },
-            { icon:"chat-circle-dots", color:"#10b981", title:"Live Interaction",          body:"Ask a poll in the first 5 minutes — 60% lower drop-off." },
-            { icon:"trophy",           color:"#8b5cf6", title:"Certificates & Rewards",   body:"Offering a certificate increases completion by 35%." },
-            { icon:"megaphone",        color:"#ef4444", title:"Promote Before Going Live", body:"A teaser post 3 days early makes learners 50% more likely to register." },
-          ].map((tip, i, arr) => (
-            <div key={i} className="ao-tip-row" style={{ borderBottom: i < arr.length-1 ? `1px solid ${C.gray100}` : "none" }}>
-              <div style={{ width:28, height:28, borderRadius:8, background:`${tip.color}18`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:1 }}>
-                <Icon name={tip.icon} size={13} color={tip.color}/>
-              </div>
-              <div>
-                <div style={{ fontSize:13, fontWeight:700, color:C.gray900, marginBottom:2, lineHeight:1.4 }}>{tip.title}</div>
-                <div style={{ fontSize:12, color:C.gray500, lineHeight:1.5 }}>{tip.body}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   ADMIN SESSIONS PAGE
-───────────────────────────────────────────────────────────────────────────── */
-function AdminSessionsPage({ onNavigate, onEditSession, toast, adminSessions = [], setAdminSessions }) {
-  const [filter, setFilter] = useState("ALL");
-  const statuses = ["ALL", "LIVE", "DRAFT", "ARCHIVED"];
-  const filtered = filter === "ALL" ? adminSessions :
-                   adminSessions.filter(s => s.status === filter);
-  const archived = adminSessions.filter(s => s.status === "ARCHIVED");
-
-  return (
-    <div className="asp-wrap" style={{ background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
-      <style>{`
-        .asp-wrap  { padding:24px; }
-        .as-stats  { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
-        .asp-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; gap:10px; }
-        .asp-card-desktop { display:flex; }
-        .asp-card-mobile  { display:none; }
-        @media(max-width:640px){
-          .asp-wrap  { padding:16px 12px; }
-          .as-stats  { grid-template-columns:repeat(2,1fr); }
-          .asp-header { flex-direction:row; align-items:center; }
-          .asp-header h1 { font-size:17px !important; }
-          .asp-card-desktop { display:none !important; }
-          .asp-card-mobile  { display:flex !important; }
-        }
-      `}</style>
-      <div className="asp-header">
-        <h1 style={{ margin:0, fontSize:22, fontWeight:700, color:C.gray900, letterSpacing:-0.3, lineHeight:1.25 }}>My Sessions</h1>
-        <Btn onClick={()=>onNavigate("admin-create")}><Icon name="plus" size={14} color="#fff"/>New Session</Btn>
-      </div>
-
-      {/* Summary stats */}
-      <div className="as-stats">
-        {[
-          {label:"Total",    val:adminSessions.length,                                    color:C.gray900},
-          {label:"Live",     val:adminSessions.filter(s=>s.status==="LIVE").length,       color:C.gray900},
-          {label:"Drafts",   val:adminSessions.filter(s=>s.status==="DRAFT").length,      color:C.gray900},
-          {label:"Archived", val:adminSessions.filter(s=>s.status==="ARCHIVED").length,   color:C.gray900},
-        ].map(s=>(
-          <div key={s.label} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"18px 20px" }}>
-            <div style={{ fontSize:30, fontWeight:900, color:s.color, lineHeight:1, marginBottom:6 }}>{s.val}</div>
-            <div style={{ fontSize:14, fontWeight:600, color:C.gray600, lineHeight:1.5 }}>{s.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Filter tabs */}
-      <div style={{ display:"flex", gap:6, marginBottom:16, flexWrap:"wrap" }}>
-        {statuses.map(s=>(
-          <button key={s} onClick={()=>setFilter(s)} aria-pressed={filter===s}
-            style={{ padding:"7px 16px", borderRadius:10, border:`1.5px solid ${filter===s?C.primary:C.gray200}`, background:filter===s?C.primary:C.white, color:filter===s?"#fff":C.gray600, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}>
-            {s === "ALL" ? "All" : s.charAt(0)+s.slice(1).toLowerCase()}
-          </button>
-        ))}
-      </div>
-
-      {/* Archived notice */}
-      {filter === "ARCHIVED" && archived.length > 0 && (
-        <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 14px", background:C.gray100, borderRadius:10, border:`1px solid ${C.gray200}`, marginBottom:16 }}>
-          <Icon name="info" size={14} color={C.gray500}/>
-          <span style={{ fontSize:13, color:C.gray600, lineHeight:1.5 }}>
-            Archived sessions are <strong>not visible to students</strong>. To restore a session, open it and update the <strong>Available To</strong> date to a future date.
-          </span>
-        </div>
-      )}
-
-      {/* Sessions list */}
-      <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, overflow:"hidden" }}>
-        {filtered.length === 0 && (
-          <Empty style={{ margin:"8px 0" }}>
-            <EmptyMedia variant="icon" color="#6490E8"><Icon name="funnel" size={22} color="#6490E8"/></EmptyMedia>
-            <EmptyHeader>
-              <EmptyTitle>No sessions match</EmptyTitle>
-              <EmptyDescription>Try a different filter to find available sessions.</EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        )}
-        {filtered.map((s,i)=>{
-          const sc = ADMIN_STATUS_COLORS[s.status] || ADMIN_STATUS_COLORS.DRAFT;
-          const dateRange = s.availableFrom && s.availableTo
-            ? `${new Date(s.availableFrom).toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${new Date(s.availableTo).toLocaleDateString("en-US",{month:"short",day:"numeric"})}`
-            : s.date;
-          return (
-            <div key={s.id} style={{ borderBottom:i<filtered.length-1?`1px solid ${C.gray200}`:"none", opacity: s.status==="ARCHIVED" ? 0.85 : 1 }}>
-
-              {/* ── Desktop card ── */}
-              <div className="asp-card-desktop" style={{ alignItems:"center", gap:20, padding:"20px 24px" }}
-                onMouseEnter={e=>e.currentTarget.style.background=C.gray50}
-                onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                <AdminThumb idx={i}/>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5 }}>
-                    <Badge label={s.status} color={sc.c} bg={sc.bg} size={11}/>
-                    <span style={{ fontSize:13, fontWeight:500, color:C.gray500 }}>{s.category}</span>
-                  </div>
-                  <div style={{ fontWeight:700, fontSize:15, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", marginBottom:5 }}>{s.title}</div>
-                  <div style={{ fontSize:13, color:C.gray500, display:"flex", gap:14, alignItems:"center", flexWrap:"wrap" }}>
-                    {s.enrolled && <span style={{ display:"flex",alignItems:"center",gap:4 }}><Icon name="users" size={13} color={C.gray400}/>{s.enrolled.toLocaleString()} Enrolled</span>}
-                    {s.rating   && <span style={{ display:"flex",alignItems:"center",gap:4 }}><Icon name="star"  size={13} color={C.warning}/>{s.rating} Stars</span>}
-                    <span style={{ display:"flex",alignItems:"center",gap:4 }}><Icon name="calendar" size={13} color={C.gray400}/>{s.date}</span>
-                    {s.availableFrom && s.availableTo && s.status !== "ARCHIVED" && (
-                      <span style={{ display:"flex",alignItems:"center",gap:4 }}>
-                        <Icon name="clock" size={13} color={C.gray400}/>
-                        {new Date(s.availableFrom).toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})} – {new Date(s.availableTo).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div style={{ display:"flex", gap:6, flexShrink:0 }}>
-                  <button onClick={()=>onEditSession(s)} title="Edit session"
-                    style={{ width:28,height:28,borderRadius:8,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center" }}>
-                    <Icon name="pencil" size={13} color={C.gray500}/>
-                  </button>
-                  <button onClick={()=>toast({type:"info",message:"More options coming soon."})} aria-label="More options"
-                    style={{ width:28,height:28,borderRadius:8,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center" }}>
-                    <Icon name="dots-three-vertical" size={14} color={C.gray500}/>
-                  </button>
-                </div>
-              </div>
-
-              {/* ── Mobile card (Figma design) ── */}
-              <div className="asp-card-mobile" style={{ alignItems:"center", gap:12, padding:"12px 14px" }}>
-                {/* Thumbnail */}
-                <div style={{ width:80, height:80, borderRadius:10, overflow:"hidden", flexShrink:0, background:C.gray200 }}>
-                  <img src={`https://images.unsplash.com/${THUMB_PHOTOS[i % THUMB_PHOTOS.length]}?w=160&h=160&fit=crop&auto=format`} alt="" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }}/>
-                </div>
-                {/* Content */}
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ marginBottom:5 }}>
-                    <Badge label={s.status} color={sc.c} bg={sc.bg} size={11}/>
-                  </div>
-                  <div style={{ fontWeight:700, fontSize:14, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", whiteSpace:"normal", marginBottom:8 }}>{s.title}</div>
-                  <div style={{ display:"flex", alignItems:"center", gap:12, fontSize:12, color:C.gray500 }}>
-                    {s.enrolled && <span style={{ display:"flex",alignItems:"center",gap:4 }}><Icon name="users" size={12} color={C.gray400}/>{(s.enrolled/1000).toFixed(1)}K</span>}
-                    <span style={{ display:"flex",alignItems:"center",gap:4,whiteSpace:"nowrap" }}><Icon name="calendar" size={12} color={C.gray400}/>{dateRange}</span>
-                  </div>
-                </div>
-                {/* Three-dot menu */}
-                <button onClick={()=>onEditSession(s)} aria-label="Edit session"
-                  style={{ width:26,height:26,borderRadius:7,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
-                  <Icon name="pencil" size={12} color={C.gray500}/>
-                </button>
-              </div>
-
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   ANALYTICS
-───────────────────────────────────────────────────────────────────────────── */
-
-function LineAreaChart({ data, color = C.primary }) {
-  const [hov, setHov] = useState(null);
-  const W = 1000, H = 200, pL = 40, pR = 16, pT = 16, pB = 32;
-  const iW = W - pL - pR, iH = H - pT - pB;
-  const maxV = Math.max(...data.map(d => d.v), 1);
-  const xOf  = i => pL + (i / (data.length - 1)) * iW;
-  const yOf  = v => pT + iH - (v / maxV) * iH;
-  const step = data.length > 10 ? Math.ceil(data.length / 7) : 1;
-  const gid  = "waveGrad";
-
-  // Build smooth cubic bezier path (catmull-rom → bezier)
-  const pts = data.map((d, i) => ({ x: xOf(i), y: yOf(d.v) }));
-  function smoothLinePath(ps) {
-    if (ps.length < 2) return "";
-    let d = `M ${ps[0].x} ${ps[0].y}`;
-    for (let i = 0; i < ps.length - 1; i++) {
-      const p0 = ps[Math.max(0, i - 1)];
-      const p1 = ps[i];
-      const p2 = ps[i + 1];
-      const p3 = ps[Math.min(ps.length - 1, i + 2)];
-      const cp1x = p1.x + (p2.x - p0.x) / 5;
-      const cp1y = p1.y + (p2.y - p0.y) / 5;
-      const cp2x = p2.x - (p3.x - p1.x) / 5;
-      const cp2y = p2.y - (p3.y - p1.y) / 5;
-      d += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
-    }
-    return d;
-  }
-  const linePath = smoothLinePath(pts);
-  const areaPath = `${linePath} L ${pts[pts.length-1].x} ${pT+iH} L ${pts[0].x} ${pT+iH} Z`;
-
-  return (
-    <div style={{ position:"relative" }}>
-      <svg viewBox={`0 0 ${W} ${H}`} style={{ width:"100%", display:"block", overflow:"visible" }}
-        onMouseLeave={() => setHov(null)}>
-        <defs>
-          <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%"   stopColor={color} stopOpacity=".28"/>
-            <stop offset="85%"  stopColor={color} stopOpacity=".07"/>
-            <stop offset="100%" stopColor={color} stopOpacity="0"/>
-          </linearGradient>
-        </defs>
-
-        {/* Dashed grid lines */}
-        {[0, .25, .5, .75, 1].map(pct => {
-          const y = pT + iH - pct * iH;
-          const label = pct === 0 ? "0" : pct === 1
-            ? (maxV >= 1000 ? `${(maxV/1000).toFixed(0)}K` : maxV)
-            : (Math.round(pct * maxV) >= 1000 ? `${(Math.round(pct * maxV)/1000).toFixed(0)}K` : Math.round(pct * maxV));
-          return (
-            <g key={pct}>
-              <line x1={pL} y1={y} x2={W - pR} y2={y}
-                stroke="var(--c-gray200)" strokeWidth="1" strokeDasharray="5,4"/>
-              <text x={pL - 6} y={y + 4} textAnchor="end" fontSize="12" fill="var(--c-gray400)" fontFamily="inherit">
-                {label}
-              </text>
-            </g>
-          );
-        })}
-
-        {/* Area fill */}
-        <path d={areaPath} fill={`url(#${gid})`}/>
-
-        {/* Smooth wave line */}
-        <path d={linePath} fill="none" stroke={color} strokeWidth="2.5"
-          strokeLinejoin="round" strokeLinecap="round"/>
-
-        {/* X-axis labels */}
-        {data.map((d, i) => {
-          if (i % step !== 0 && i !== data.length - 1) return null;
-          return (
-            <text key={i} x={xOf(i)} y={H - 5} textAnchor="middle"
-              fontSize="12" fill="var(--c-gray400)" fontFamily="inherit">
-              {d.label}
-            </text>
-          );
-        })}
-
-        {/* Invisible hover zones */}
-        {data.map((d, i) => (
-          <rect key={i} x={xOf(i) - iW / (data.length * 2)} y={pT}
-            width={iW / data.length} height={iH} fill="transparent"
-            onMouseEnter={() => setHov(i)}/>
-        ))}
-
-        {/* Hover indicator */}
-        {hov !== null && (() => {
-          const x = xOf(hov), y = yOf(data[hov].v);
-          return (
-            <g>
-              <line x1={x} y1={pT} x2={x} y2={pT + iH}
-                stroke="var(--c-gray200)" strokeWidth="1.5" strokeDasharray="4,3"/>
-              <circle cx={x} cy={y} r={5.5} fill={color} stroke="#fff" strokeWidth="2.5"/>
-            </g>
-          );
-        })()}
-      </svg>
-
-      {/* Tooltip */}
-      {hov !== null && (() => {
-        const d = data[hov];
-        const leftPct = ((hov / (data.length - 1)) * 100).toFixed(1);
-        return (
-          <div style={{ position:"absolute", top:4, left:`${leftPct}%`, transform:"translateX(-50%)",
-            background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12,
-            padding:"10px 16px", boxShadow:"0 8px 28px rgba(0,0,0,0.12)",
-            pointerEvents:"none", whiteSpace:"nowrap", zIndex:30 }}>
-            <div style={{ fontSize:12, color:C.gray400, marginBottom:2 }}>{d.label}</div>
-            <div style={{ fontSize:22, fontWeight:900, color:C.gray900, lineHeight:1.15 }}>{d.v.toLocaleString()}</div>
-            <div style={{ fontSize:12, color:C.gray500, marginTop:1 }}>views</div>
-          </div>
-        );
-      })()}
-    </div>
-  );
-}
-
-function MiniBarChart48({ data }) {
-  const maxV = Math.max(...data, 1);
-  return (
-    <div style={{ display:"flex", alignItems:"flex-end", gap:1.5, height:40 }}>
-      {data.map((v, i) => (
-        <div key={i} style={{ flex:1, borderRadius:"2px 2px 0 0", minWidth:2,
-          background: v > 0 ? C.primary : C.gray100,
-          height:`${Math.max((v / maxV) * 100, v > 0 ? 14 : 5)}%`,
-          opacity: v > 0 ? 0.85 : 1 }}/>
-      ))}
-    </div>
-  );
-}
-
-function AnalyticsPage({ onEditSession, sessions = [] }) {
-  const [range,     setRange]     = useState("28d");
-  const [showRange, setShowRange] = useState(false);
-
-  const RANGES = [
-    { key:"7d",  label:"Last 7 days",  dates:"Mar 17 – Mar 23, 2026" },
-    { key:"28d", label:"Last 28 days", dates:"Feb 23 – Mar 22, 2026" },
-    { key:"90d", label:"Last 90 days", dates:"Dec 22 – Mar 22, 2026" },
-  ];
-  const activeRange = RANGES.find(r => r.key === range);
-
-  const TREND = {
-    "7d": [
-      {v:245,label:"Mon"},{v:312,label:"Tue"},{v:198,label:"Wed"},
-      {v:400,label:"Thu"},{v:350,label:"Fri"},{v:190,label:"Sat"},{v:280,label:"Sun"},
-    ],
-    "28d": [
-      {v:82,label:"Feb 23"},{v:95,label:"Feb 24"},{v:140,label:"Feb 25"},{v:110,label:"Feb 26"},
-      {v:88,label:"Feb 27"},{v:75,label:"Feb 28"},{v:200,label:"Mar 1"},{v:180,label:"Mar 2"},
-      {v:145,label:"Mar 3"},{v:220,label:"Mar 4"},{v:195,label:"Mar 5"},{v:160,label:"Mar 6"},
-      {v:180,label:"Mar 7"},{v:210,label:"Mar 8"},{v:175,label:"Mar 9"},{v:140,label:"Mar 10"},
-      {v:310,label:"Mar 11"},{v:280,label:"Mar 12"},{v:240,label:"Mar 13"},{v:190,label:"Mar 14"},
-      {v:350,label:"Mar 15"},{v:320,label:"Mar 16"},{v:280,label:"Mar 17"},{v:240,label:"Mar 18"},
-      {v:190,label:"Mar 19"},{v:220,label:"Mar 20"},{v:260,label:"Mar 21"},{v:310,label:"Mar 22"},
-    ],
-    "90d": [
-      {v:180,label:"Dec 22"},{v:210,label:"Dec 29"},{v:240,label:"Jan 5"},
-      {v:280,label:"Jan 12"},{v:260,label:"Jan 19"},{v:300,label:"Jan 26"},
-      {v:320,label:"Feb 2"},{v:350,label:"Feb 9"},{v:380,label:"Feb 16"},
-      {v:360,label:"Feb 23"},{v:400,label:"Mar 1"},{v:420,label:"Mar 15"},{v:310,label:"Mar 22"},
-    ],
-  };
-
-  const STATS = {
-    "7d":  { views:4821,  watch:382,  completion:64, enrolled:12842, viewsDelta:"+12%", watchDelta:"+8%",  compDelta:"+5%"  },
-    "28d": { views:18200, watch:1430, completion:71, enrolled:12842, viewsDelta:"+18%", watchDelta:"+14%", compDelta:"+9%"  },
-    "90d": { views:54000, watch:4200, completion:76, enrolled:12842, viewsDelta:"+28%", watchDelta:"+22%", compDelta:"+15%" },
-  };
-  const stat  = STATS[range];
-  const trend = TREND[range];
-
-  const TOP_SESSIONS = sessions.slice(0, 4).map((s, i) => ({
-    ...s,
-    avgDuration: ["18:24","14:52","22:10","8:45"][i],
-    avgPct:      ["78%","45%","91%","24%"][i],
-    views:       [850,410,320,240][i],
-  }));
-
-  const INSIGHTS = [
-    { icon:"trend-up",        title:"User activity up this week"                     },
-    { icon:"timer",           title:"Watch time drops on weekends"                   },
-    { icon:"check-circle",    title:`Completion at all-time high: ${stat.completion}%` },
-    { icon:"star",            title:"\"AI in SPED\" needs a push"                   },
-    { icon:"certificate",     title:"Certificate downloads up 18% vs last month"    },
-  ];
-
-  return (
-    <div className="aa-wrap" style={{ background:C.gray50, minHeight:"100%", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
-      <style>{`
-        .aa-wrap    { padding:24px; }
-        .aa-metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
-        .aa-bottom  { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-        .aa-header  { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; gap:10px; }
-        @media(max-width:640px){
-          .aa-wrap    { padding:16px 12px; }
-          .aa-metrics { grid-template-columns:repeat(2,1fr); gap:10px; }
-          .aa-bottom  { grid-template-columns:1fr; }
-          .aa-header  { flex-direction:row; align-items:center; }
-          .aa-header h1 { font-size:17px !important; }
-        }
-      `}</style>
-
-      {/* Header */}
-      <div className="aa-header">
-        <h1 style={{ margin:0, fontSize:22, fontWeight:700, color:C.gray900, letterSpacing:-0.3, lineHeight:1.25 }}>Analytics</h1>
-        <div style={{ position:"relative" }}>
-          <button onClick={() => setShowRange(v => !v)}
-            style={{ display:"flex", alignItems:"center", gap:6, background:C.white, border:`1px solid ${C.gray200}`, borderRadius:10, padding:"8px 12px", cursor:"pointer", fontFamily:"inherit" }}>
-            <span style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{activeRange.label}</span>
-            <Icon name="caret-down" size={13} color={C.gray500}/>
-          </button>
-          {showRange && (
-            <div style={{ position:"absolute", right:0, top:"calc(100% + 4px)", background:C.white, border:`1px solid ${C.gray200}`, borderRadius:10, boxShadow:"0 8px 24px rgba(0,0,0,0.10)", zIndex:60, minWidth:150, overflow:"hidden" }}>
-              {RANGES.map(r => (
-                <button key={r.key} onClick={() => { setRange(r.key); setShowRange(false); }}
-                  style={{ display:"block", width:"100%", padding:"10px 16px", background:range===r.key ? C.gray50 : "none", border:"none", cursor:"pointer", fontSize:14, color:range===r.key ? C.gray900 : C.gray600, fontWeight:range===r.key ? 700 : 400, textAlign:"left", fontFamily:"inherit" }}>
-                  {r.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Metric cards */}
-      <div className="aa-metrics">
-        {[
-          { label:"Total Views",      val:stat.views.toLocaleString()    },
-          { label:"Watch Time (hrs)", val:stat.watch.toLocaleString()    },
-          { label:"Completion Rate",  val:`${stat.completion}%`          },
-          { label:"Enrolled",         val:stat.enrolled.toLocaleString() },
-        ].map(m => (
-          <div key={m.label} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, padding:"16px" }}>
-            <div style={{ fontSize:26, fontWeight:900, color:C.gray900, lineHeight:1, marginBottom:4 }}>{m.val}</div>
-            <div style={{ fontSize:13, fontWeight:600, color:C.gray600, lineHeight:1.5 }}>{m.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Activity Chart Card */}
-      <style>{`
-        @keyframes aa-bar-grow { from { transform:scaleY(0); opacity:0; } to { transform:scaleY(1); opacity:1; } }
-        .aa-bar { transform-origin:bottom; animation:aa-bar-grow 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
-        .aa-bar:nth-child(1){ animation-delay:0.00s; } .aa-bar:nth-child(2){ animation-delay:0.07s; }
-        .aa-bar:nth-child(3){ animation-delay:0.14s; } .aa-bar:nth-child(4){ animation-delay:0.21s; }
-        .aa-bar:nth-child(5){ animation-delay:0.28s; } .aa-bar:nth-child(6){ animation-delay:0.35s; }
-        .aa-bar:nth-child(7){ animation-delay:0.42s; }
-        .aa-bar-wrap:hover .aa-bar-tooltip { opacity:1; transform:translateY(0); }
-        .aa-bar-tooltip { opacity:0; transform:translateY(4px); transition:all .15s; pointer-events:none; }
-        .aa-chart-desktop { display:flex; flex-direction:row; align-items:stretch; gap:0; }
-        .aa-chart-mobile  { display:none; }
-        .aa-chart-stat { width:160px; flex-shrink:0; border-right:1px solid; padding-right:24px; margin-right:24px; display:flex; flex-direction:column; justify-content:center; }
-        .aa-chart-line { flex:1; min-width:0; }
-        @media(max-width:640px){
-          .aa-chart-desktop { display:none !important; }
-          .aa-chart-mobile  { display:flex !important; flex-direction:column; gap:16px; }
-          .aa-chart-stat-m  { width:100%; border-bottom:1px solid; padding-bottom:14px; margin-bottom:0; flex-direction:row; align-items:center; justify-content:space-between; display:flex; }
-        }
-      `}</style>
-      {(() => {
-        const barData = range === "7d"
-          ? [{v:245,l:"M"},{v:312,l:"T"},{v:198,l:"W"},{v:400,l:"T"},{v:350,l:"F"},{v:190,l:"S"},{v:280,l:"S"}]
-          : range === "28d"
-          ? [{v:82,l:"W1"},{v:140,l:"W2"},{v:195,l:"W3"},{v:280,l:"W4"}]
-          : [{v:180,l:"Dec"},{v:260,l:"Jan"},{v:350,l:"Feb"},{v:420,l:"Mar"}];
-        const lineData = TREND[range];
-        const maxV = Math.max(...barData.map(d => d.v));
-        const maxL = Math.max(...lineData.map(d => d.v));
-        const minL = Math.min(...lineData.map(d => d.v));
-
-        /* SVG line/area chart helpers */
-        const W = 600, H = 130, PAD = { t:16, r:24, b:28, l:36 };
-        const cw = W - PAD.l - PAD.r;
-        const ch = H - PAD.t - PAD.b;
-        const xOf = i => PAD.l + (i / (lineData.length - 1)) * cw;
-        const yOf = v => PAD.t + ch - ((v - minL) / (maxL - minL || 1)) * ch;
-        /* smooth cubic bezier path */
-        const pts = lineData.map((d,i) => [xOf(i), yOf(d.v)]);
-        const d = pts.reduce((acc,[x,y],i) => {
-          if (i === 0) return `M${x},${y}`;
-          const [px,py] = pts[i-1];
-          const cpx = (px+x)/2;
-          return `${acc} C${cpx},${py} ${cpx},${y} ${x},${y}`;
-        }, "");
-        const area = `${d} L${pts[pts.length-1][0]},${PAD.t+ch} L${PAD.l},${PAD.t+ch} Z`;
-
-        /* Y-axis grid lines */
-        const yTicks = [0, 0.25, 0.5, 0.75, 1].map(r => ({
-          v: Math.round(minL + r*(maxL-minL)),
-          y: PAD.t + ch - r*ch,
-        }));
-
-        /* X-axis labels: show first, middle, last */
-        const xLabels = lineData.length <= 7
-          ? lineData.map((d,i) => ({ l:d.label, x:xOf(i) }))
-          : [0, Math.floor((lineData.length-1)/2), lineData.length-1].map(i => ({ l:lineData[i].label, x:xOf(i) }));
-
-        return (
-          <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"20px 20px 16px", marginBottom:14, boxShadow:"0 1px 4px rgba(0,0,0,0.04)" }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
-              <div>
-                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.4, textTransform:"uppercase", marginBottom:2 }}>Views over time</div>
-                <div style={{ fontSize:11, color:C.gray400 }}>{activeRange.dates}</div>
-              </div>
-            </div>
-
-            {/* ── DESKTOP: line/area chart ── */}
-            <div className="aa-chart-desktop">
-              <div className="aa-chart-stat" style={{ borderColor:C.gray100 }}>
-                <div style={{ fontSize:36, fontWeight:900, color:C.gray900, lineHeight:1, letterSpacing:-1 }}>{stat.views.toLocaleString()}</div>
-                <div style={{ fontSize:12, color:C.gray500, marginTop:4, fontWeight:500 }}>total views</div>
-                <div style={{ display:"inline-flex", alignItems:"center", gap:4, marginTop:10, background:"rgba(16,185,129,0.10)", borderRadius:6, padding:"3px 8px" }}>
-                  <Icon name="trend-up" size={11} color="#10b981"/>
-                  <span style={{ fontSize:12, fontWeight:700, color:"#10b981" }}>{stat.viewsDelta}</span>
-                </div>
-              </div>
-              <div className="aa-chart-line">
-                <svg viewBox={`0 0 ${W} ${H}`} style={{ width:"100%", height:H, display:"block", overflow:"visible" }}>
-                  <defs>
-                    <linearGradient id="aa-grad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={C.primary} stopOpacity="0.18"/>
-                      <stop offset="100%" stopColor={C.primary} stopOpacity="0"/>
-                    </linearGradient>
-                  </defs>
-                  {/* Grid lines */}
-                  {yTicks.map((t,i) => (
-                    <g key={i}>
-                      <line x1={PAD.l} y1={t.y} x2={W-PAD.r} y2={t.y} stroke={C.gray100} strokeWidth="1"/>
-                      <text x={PAD.l-6} y={t.y+4} textAnchor="end" fontSize="10" fill={C.gray400} fontFamily="Inter,sans-serif">{t.v >= 1000 ? `${(t.v/1000).toFixed(t.v%1000===0?0:1)}k` : t.v}</text>
-                    </g>
-                  ))}
-                  {/* Area fill */}
-                  <path d={area} fill="url(#aa-grad)"/>
-                  {/* Line */}
-                  <path d={d} fill="none" stroke={C.primary} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  {/* Data points */}
-                  {pts.map(([x,y],i) => (
-                    <g key={i}>
-                      <circle cx={x} cy={y} r="4" fill={C.white} stroke={C.primary} strokeWidth="2.5"/>
-                      <title>{lineData[i].label}: {lineData[i].v}</title>
-                    </g>
-                  ))}
-                  {/* X labels */}
-                  {xLabels.map((l,i) => (
-                    <text key={i} x={l.x} y={H-4} textAnchor="middle" fontSize="10" fill={C.gray400} fontFamily="Inter,sans-serif">{l.l}</text>
-                  ))}
-                </svg>
-              </div>
-            </div>
-
-            {/* ── MOBILE: bar chart ── */}
-            <div className="aa-chart-mobile">
-              <div className="aa-chart-stat-m" style={{ borderColor:C.gray100 }}>
-                <div>
-                  <div style={{ fontSize:30, fontWeight:900, color:C.gray900, lineHeight:1, letterSpacing:-1 }}>{stat.views.toLocaleString()}</div>
-                  <div style={{ fontSize:12, color:C.gray500, marginTop:3, fontWeight:500 }}>total views</div>
-                </div>
-                <div style={{ display:"inline-flex", alignItems:"center", gap:4, background:"rgba(16,185,129,0.10)", borderRadius:6, padding:"4px 10px" }}>
-                  <Icon name="trend-up" size={11} color="#10b981"/>
-                  <span style={{ fontSize:12, fontWeight:700, color:"#10b981" }}>{stat.viewsDelta}</span>
-                </div>
-              </div>
-              <div key={range} style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", gap:6, height:100 }}>
-                {barData.map((d, i) => {
-                  const pct = maxV > 0 ? Math.max((d.v / maxV) * 100, 8) : 8;
-                  const isMax = d.v === maxV;
-                  return (
-                    <div key={i} className="aa-bar-wrap" style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"flex-end", gap:5, height:"100%", position:"relative" }}>
-                      <div className="aa-bar-tooltip" style={{ position:"absolute", top:-22, background:C.gray900, color:"#fff", fontSize:10, fontWeight:700, borderRadius:5, padding:"3px 6px", whiteSpace:"nowrap" }}>{d.v}</div>
-                      <div className="aa-bar" style={{ width:"100%", borderRadius:"5px 5px 3px 3px", background: isMax ? C.primary : "#b8ccf6", height:`${pct}%` }}/>
-                      <span style={{ fontSize:11, color:C.gray500, fontWeight:600 }}>{d.l}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* Bottom row: top sessions + smart insights */}
-      <div className="aa-bottom">
-
-        {/* Top sessions */}
-        <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:20 }}>
-          <h2 style={{ margin:"0 0 14px", fontSize:16, fontWeight:700, color:C.gray900, lineHeight:1.5 }}>Top Sessions</h2>
-          {/* Header */}
-          <div style={{ display:"grid", gridTemplateColumns:"16px 56px 1fr 72px 44px", gap:"0 10px",
-            padding:"4px 0 8px", borderBottom:`1px solid ${C.gray100}`, marginBottom:2 }}>
-            <span style={{ gridColumn:"1 / 4", fontSize:11, color:C.gray400, fontWeight:700, letterSpacing:.8, textTransform:"uppercase" }}>Content</span>
-            <span style={{ fontSize:11, color:C.gray400, fontWeight:700, letterSpacing:.8, textTransform:"uppercase" }}>Duration</span>
-            <span style={{ fontSize:11, color:C.gray400, fontWeight:700, letterSpacing:.8, textTransform:"uppercase" }}>Views</span>
-          </div>
-          {TOP_SESSIONS.map((s,i) => {
-            const grads = ["linear-gradient(135deg,#1e3a5f,#3699ff)","linear-gradient(135deg,#4c1d95,#a855f7)","linear-gradient(135deg,#166534,#50cd89)","linear-gradient(135deg,#7c2d12,#f97316)"];
-            return (
-              <div key={i}
-                onClick={() => onEditSession?.(s)}
-                style={{ display:"grid", gridTemplateColumns:"16px 56px 1fr 72px 44px", gap:"0 10px",
-                  padding:"10px 0", borderBottom:i<TOP_SESSIONS.length-1?`1px solid ${C.gray100}`:"none",
-                  alignItems:"center", cursor:"pointer", borderRadius:8 }}
-                onMouseEnter={e=>e.currentTarget.style.background=C.gray50}
-                onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                <span style={{ fontSize:12, color:C.gray400, fontWeight:500 }}>{i+1}</span>
-                {/* Thumbnail */}
-                <div style={{ width:56, height:36, borderRadius:6, background:grads[i], flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  <Icon name="play" size={12} color="rgba(255,255,255,0.8)"/>
-                </div>
-                {/* Title — constrained width */}
-                <div style={{ minWidth:0 }}>
-                  <div style={{ fontSize:14, fontWeight:600, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:160 }}>{s.title}</div>
-                  <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{s.avgPct} completed</div>
-                </div>
-                <span style={{ fontSize:14, color:C.gray600 }}>{s.avgDuration}</span>
-                <span style={{ fontSize:14, fontWeight:700, color:C.gray900 }}>{s.views}</span>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Smart Insights */}
-        <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:20 }}>
-          <h2 style={{ margin:"0 0 20px", fontSize:16, fontWeight:700, color:C.gray900, lineHeight:1.5 }}>Smart Insights</h2>
-          {INSIGHTS.map((ins,i) => (
-            <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0",
-              borderBottom:i<INSIGHTS.length-1?`1px solid ${C.gray100}`:"none" }}>
-              <div style={{ width:30, height:30, borderRadius:8, background:C.primaryLight,
-                display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                <Icon name={ins.icon} size={14} color={C.primary}/>
-              </div>
-              <div style={{ fontSize:14, fontWeight:600, color:C.gray900, lineHeight:1.4 }}>{ins.title}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   ADMIN CREATE SESSION
-───────────────────────────────────────────────────────────────────────────── */
-function FormSection({ icon, title, subtitle, children }) {
-  return (
-    <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:24, marginBottom:16 }}>
-      <div style={{ display:"flex", gap:12, marginBottom:20, alignItems:"flex-start" }}>
-        <div style={{ width:36,height:36,borderRadius:10,background:C.primaryLight,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}><Icon name={icon} size={18} color={C.primary}/></div>
-        <div><div style={{ fontWeight:800, fontSize:16, color:C.gray900 }}>{title}</div><div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{subtitle}</div></div>
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function Label({ children, required }) {
-  return <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:5, display:"flex", gap:4 }}>{children}{required&&<span style={{ color:C.error }}>*</span>}</div>;
-}
-
-const inputSt = { width:"100%", padding:"9px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:14, color:C.gray700, outline:"none", background:C.gray50, boxSizing:"border-box", fontFamily:"inherit" };
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   CURRICULUM BUILDER
-───────────────────────────────────────────────────────────────────────────── */
-const CB_Q_TYPES = [
-  { key:"short-answer",    label:"Short answer",    icon:"minus"             },
-  { key:"paragraph",       label:"Paragraph",       icon:"text-align-left"   },
-  { key:"multiple-choice", label:"Multiple choice", icon:"radio-button"      },
-  { key:"checkboxes",      label:"Checkboxes",      icon:"check-square"      },
-  { key:"dropdown",        label:"Dropdown",        icon:"caret-circle-down" },
-];
-
-function CurriculumBuilder({ toast, initialSections, onSectionsChange }) {
-  const [sections,         setSections]         = useState(() => {
-    if (initialSections && initialSections.length) return initialSections;
-    return [{ id:1, title:"Introduction", collapsed:false, resources:[], lessons:[
-      { id:101, title:"Welcome & course overview", type:"video", duration:"", status:"draft", vimeoUrl:"", questions:[], quizExpanded:false },
-      { id:102, title:"New Quiz", type:"quiz", duration:"", status:"draft", vimeoUrl:"", questions:[], quizExpanded:false },
-    ]}];
-  });
-
-  const [editingSectionId, setEditingSectionId] = useState(null);
-  const [editingLessonId,  setEditingLessonId]  = useState(null);
-  const [vimeoLinkId,      setVimeoLinkId]      = useState(null); // { secId, lesId }
-  const [vimeoInputVal,    setVimeoInputVal]    = useState("");
-  const [editingQuestionId, setEditingQuestionId] = useState(null);
-  const [draggingId,       setDraggingId]       = useState(null);
-  const [dragOverId,       setDragOverId]       = useState(null);
-  const dragRef            = useRef(null);
-  const resourceInputRef   = useRef(null);
-  const materialInputRef   = useRef(null);
-  const [uploadingResourceSecId, setUploadingResourceSecId] = useState(null);
-  const [uploadingMaterialId,    setUploadingMaterialId]    = useState(null);
-  const [matDropOver,            setMatDropOver]            = useState(false);
-  const materialDropInputRef = useRef(null);
-  useEffect(() => { onSectionsChange?.(sections); }, [sections]);
-
-  // ── helpers ──────────────────────────────────────────────────────────────
-  function patchLesson(secId, lesId, patch) {
-    setSections(s => s.map(sec => sec.id!==secId ? sec : {
-      ...sec, lessons: sec.lessons.map(l => l.id!==lesId ? l : {...l, ...patch})
-    }));
-  }
-
-
-  function triggerResourceUpload(secId) {
-    setUploadingResourceSecId(secId);
-    setTimeout(() => resourceInputRef.current?.click(), 0);
-  }
-  async function handleResourceChosen(e) {
-    const file = e.target.files?.[0];
-    if (!file || !uploadingResourceSecId) return;
-    e.target.value = "";
-    const ext = file.name.split(".").pop().toUpperCase();
-    const size = file.size > 1024*1024 ? `${(file.size/1024/1024).toFixed(1)} MB` : `${Math.round(file.size/1024)} KB`;
-    const icon = ext==="PDF"?"📄": ext==="PPTX"||ext==="PPT"?"📊": ext==="DOCX"||ext==="DOC"?"📝": ext==="ZIP"?"🗂️":"📎";
-
-    const path = `resources/${Date.now()}_${file.name}`;
-    const { error } = await supabase.storage.from("session-resources").upload(path, file);
-    if (error) { toast({ type:"error", message:"Upload failed: " + error.message }); return; }
-
-    const { data } = supabase.storage.from("session-resources").getPublicUrl(path);
-    const newRes = { id:Date.now(), title:file.name.replace(/\.[^.]+$/, ""), type:ext, size, icon, url: data.publicUrl };
-    setSections(s => s.map(sec => sec.id!==uploadingResourceSecId ? sec : { ...sec, resources:[...sec.resources, newRes] }));
-    toast({ type:"success", message:`"${newRes.title}" added to resources.` });
-    setUploadingResourceSecId(null);
-  }
-  function removeResource(secId, resId) {
-    setSections(s => s.map(sec => sec.id!==secId ? sec : { ...sec, resources:sec.resources.filter(r=>r.id!==resId) }));
-  }
-  async function handleMaterialChosen(e) {
-    const file = e.target.files?.[0];
-    if (!file || !uploadingMaterialId) return;
-    e.target.value = "";
-    const { secId, lesId } = uploadingMaterialId;
-
-    const path = `materials/${Date.now()}_${file.name}`;
-    const { error } = await supabase.storage.from("session-resources").upload(path, file);
-    if (error) { toast({ type:"error", message:"Upload failed: " + error.message }); return; }
-
-    const { data } = supabase.storage.from("session-resources").getPublicUrl(path);
-    patchLesson(secId, lesId, { materialFile: null, materialFileName: file.name, materialUrl: data.publicUrl });
-    toast({ type:"success", message:`"${file.name}" attached.` });
-    setUploadingMaterialId(null);
-  }
-
-  // ── section helpers ───────────────────────────────────────────────────────
-  function addSection() {
-    const id = Date.now();
-    setSections(s => [...s, { id, title:"New Section", collapsed:false, resources:[], lessons:[] }]);
-    setEditingSectionId(id);
-  }
-  function updateSectionTitle(id, title) { setSections(s => s.map(sec => sec.id===id ? {...sec,title} : sec)); }
-  function deleteSection(id)             { setSections(s => s.filter(sec => sec.id!==id)); }
-  function toggleCollapse(id)            { setSections(s => s.map(sec => sec.id===id ? {...sec,collapsed:!sec.collapsed} : sec)); }
-
-  function addLesson(secId, type) {
-    const id = Date.now();
-    setSections(s => s.map(sec => sec.id!==secId ? sec : {
-      ...sec, lessons:[...sec.lessons, { id, title: type==="quiz"?"New Quiz": type==="material"?"New Material":"New Lesson", type, duration:"", status:"draft", vimeoUrl:"", questions:[], quizExpanded: type==="quiz" }]
-    }));
-    setEditingLessonId(id);
-  }
-  function deleteLesson(secId, lesId) {
-    setSections(s => s.map(sec => sec.id!==secId ? sec : { ...sec, lessons:sec.lessons.filter(l=>l.id!==lesId) }));
-  }
-
-  // ── drag-and-drop helpers ─────────────────────────────────────────────────
-  function moveSection(fromId, toId) {
-    if (fromId === toId) return;
-    setSections(s => {
-      const arr = [...s];
-      const fi = arr.findIndex(x => x.id===fromId);
-      const ti = arr.findIndex(x => x.id===toId);
-      if (fi<0||ti<0) return s;
-      const [item] = arr.splice(fi,1);
-      arr.splice(ti,0,item);
-      return arr;
-    });
-  }
-  function moveLesson(secId, fromId, toId) {
-    if (fromId === toId) return;
-    setSections(s => s.map(sec => {
-      if (sec.id!==secId) return sec;
-      const arr = [...sec.lessons];
-      const fi = arr.findIndex(x => x.id===fromId);
-      const ti = arr.findIndex(x => x.id===toId);
-      if (fi<0||ti<0) return sec;
-      const [item] = arr.splice(fi,1);
-      arr.splice(ti,0,item);
-      return {...sec, lessons:arr};
-    }));
-  }
-
-  // ── quiz question helpers ─────────────────────────────────────────────────
-  function addQuestion(secId, lesId) {
-    const q = { id:Date.now(), type:"multiple-choice", text:"", options:["","","",""], correct:0 };
-    setSections(s => s.map(sec => sec.id!==secId ? sec : {
-      ...sec, lessons: sec.lessons.map(l => l.id!==lesId ? l : { ...l, questions:[...l.questions, q] })
-    }));
-    setEditingQuestionId(q.id);
-  }
-  function patchQuestion(secId, lesId, qid, patch) {
-    setSections(s => s.map(sec => sec.id!==secId ? sec : {
-      ...sec, lessons: sec.lessons.map(l => l.id!==lesId ? l : {
-        ...l, questions: l.questions.map(q => q.id!==qid ? q : {...q,...patch})
-      })
-    }));
-  }
-  function deleteQuestion(secId, lesId, qid) {
-    setSections(s => s.map(sec => sec.id!==secId ? sec : {
-      ...sec, lessons: sec.lessons.map(l => l.id!==lesId ? l : { ...l, questions:l.questions.filter(q=>q.id!==qid) })
-    }));
-  }
-
-  const totalLessons   = sections.reduce((n,s) => n + s.lessons.filter(l=>l.type==="video").length, 0);
-  const totalQuizzes   = sections.reduce((n,s) => n + s.lessons.filter(l=>l.type==="quiz").length, 0);
-  const totalMaterials = sections.reduce((n,s) => n + s.lessons.filter(l=>l.type==="material").length, 0);
-
-  // flat lessons across all sections
-  const allLessons = sections.flatMap(sec => sec.lessons.map(l => ({ ...l, _secId: sec.id })));
-
-  function addFlatLesson(type) {
-    if (sections.length === 0) {
-      const secId = Date.now();
-      setSections([{ id: secId, title:"Section 1", collapsed:false, resources:[], lessons:[{ id: secId+1, title: type==="quiz"?"New Quiz": type==="material"?"New Material":"New Lesson", type, duration:"", status:"draft", vimeoUrl:"", questions:[], quizExpanded:false }] }]);
-    } else {
-      addLesson(sections[sections.length-1].id, type);
-    }
-  }
-
-  function deleteFlatLesson(secId, lesId) { deleteLesson(secId, lesId); }
-
-  function addMaterialWithFile(file) {
-    const lesId = Date.now();
-    const name  = file ? file.name.replace(/\.[^.]+$/, "") : "New Material";
-    const mat   = { id:lesId, title:name, type:"material", duration:"", status:"draft", vimeoUrl:"", questions:[], quizExpanded:false, materialFile:file||null, materialFileName:name };
-    if (sections.length === 0) {
-      const secId = lesId + 1;
-      setSections([{ id:secId, title:"Section 1", collapsed:false, resources:[], lessons:[mat] }]);
-    } else {
-      setSections(s => s.map((sec,i) => i < s.length-1 ? sec : { ...sec, lessons:[...sec.lessons, mat] }));
-    }
-  }
-
-  const nonMaterialLessons = allLessons.filter(l => l.type !== "material");
-  const materialLessons    = allLessons.filter(l => l.type === "material");
-
-  return (
-    <div style={{ padding:"0" }}>
-      {/* Hidden file inputs */}
-      <input ref={resourceInputRef} type="file" accept="application/pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip" style={{ display:"none" }} onChange={handleResourceChosen}/>
-      <input ref={materialInputRef} type="file" accept="application/pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.mp3,.mp4" style={{ display:"none" }} onChange={handleMaterialChosen}/>
-      <input ref={materialDropInputRef} type="file" accept="application/pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.mp3,.mp4" style={{ display:"none" }}
-        onChange={e=>{ const f=e.target.files?.[0]; if(f){ e.target.value=""; addMaterialWithFile(f); } }}/>
-
-      {/* Lesson / Quiz cards */}
-      {nonMaterialLessons.map((l, li) => (
-        <div key={l.id} style={{ marginBottom:16 }}>
-          <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>{l.type==="quiz"?"Assessment":"Lesson"}</div>
-          <div style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:24 }}>
-
-          <Label>TITLE</Label>
-          <input value={l.title} onChange={e=>patchLesson(l._secId,l.id,{title:e.target.value})}
-            placeholder="Enter title…"
-            style={{...inputSt, marginBottom:16}}/>
-
-          {/* Video content */}
-          {l.type==="video" && <>
-            <Label>LESSON CONTENT</Label>
-            <input value={l.vimeoUrl||""} onChange={e=>patchLesson(l._secId,l.id,{vimeoUrl:e.target.value})}
-              placeholder="https://vimeo.com/…"
-              style={inputSt}/>
-            <div style={{ fontSize:11, color:C.gray400, marginTop:5 }}>Supported: Vimeo, YouTube, and more.</div>
-          </>}
-
-          {/* Quiz questions — compact rows + inline edit panel */}
-          {l.type==="quiz" && <>
-            <Label>QUESTIONS</Label>
-            <div>
-                {l.questions.map((q, qi) => {
-                  const isEditing = editingQuestionId === q.id;
-                  const answerLetters = ["A","B","C","D","E","F"];
-                  return (
-                    <div key={q.id} style={{ marginBottom:8 }}>
-                      {/* Compact row */}
-                      {!isEditing && (
-                        <div style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", border:`1px solid ${C.gray200}`, borderRadius:10, background:C.white }}>
-                          <div style={{ width:30, height:30, borderRadius:8, background:C.gray100, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:C.gray600, flexShrink:0 }}>{qi+1}</div>
-                          <div style={{ flex:1, minWidth:0 }}>
-                            <div style={{ fontSize:14, fontWeight:600, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{q.text || "Untitled question"}</div>
-                            <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{q.options.filter(o=>o).length} answers</div>
-                          </div>
-                          <button onClick={()=>setEditingQuestionId(q.id)} style={{ width:28,height:28,borderRadius:7,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}><Icon name="pencil" size={13} color={C.gray500}/></button>
-                          <button onClick={()=>deleteQuestion(l._secId,l.id,q.id)} style={{ width:28,height:28,borderRadius:7,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}><Icon name="trash" size={13} color={C.error}/></button>
-                        </div>
-                      )}
-                      {/* Edit question panel */}
-                      {isEditing && (
-                        <div style={{ border:`1px solid ${C.gray200}`, borderRadius:10, overflow:"hidden", background:C.white }}>
-                          <div style={{ padding:"16px 18px", borderBottom:`1px solid ${C.gray100}` }}>
-                            <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:6 }}>QUESTION</div>
-                            <input value={q.text} onChange={e=>patchQuestion(l._secId,l.id,q.id,{text:e.target.value})}
-                              placeholder="Enter your question…"
-                              style={{ width:"100%", padding:"9px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:14, color:C.gray700, outline:"none", background:C.gray50, boxSizing:"border-box", fontFamily:"inherit" }}/>
-                          </div>
-                          <div style={{ padding:"16px 18px", borderBottom:`1px solid ${C.gray100}` }}>
-                            <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, marginBottom:12 }}>ANSWERS</div>
-                            {q.options.map((opt, oi) => (
-                              <div key={oi} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
-                                <div style={{ display:"flex", alignItems:"center", flex:1, border:`1px solid ${C.gray200}`, borderRadius:8, background:C.gray50, overflow:"hidden" }}>
-                                  <span style={{ fontSize:12, fontWeight:700, color:C.gray400, padding:"0 10px", borderRight:`1px solid ${C.gray200}`, alignSelf:"stretch", display:"flex", alignItems:"center", background:C.white, flexShrink:0 }}>{answerLetters[oi]||oi+1}</span>
-                                  <input value={opt} onChange={e=>{ const opts=[...q.options]; opts[oi]=e.target.value; patchQuestion(l._secId,l.id,q.id,{options:opts}); }}
-                                    placeholder={`Answer ${answerLetters[oi]||oi+1}`}
-                                    style={{ flex:1, padding:"9px 12px", border:"none", outline:"none", fontSize:13, color:C.gray700, background:"transparent", fontFamily:"inherit" }}/>
-                                </div>
-                                {/* Right / Wrong toggles */}
-                                <button onClick={()=>patchQuestion(l._secId,l.id,q.id,{correct:oi})}
-                                  style={{ padding:"5px 10px", borderRadius:"6px 0 0 6px", border:`1px solid ${q.correct===oi ? C.primary : C.gray200}`, borderRight:"none", fontSize:12, fontWeight:700, cursor:"pointer", background: q.correct===oi ? C.primary : C.white, color: q.correct===oi ? "#fff" : C.gray600 }}>
-                                  Right
-                                </button>
-                                <button onClick={()=>{ if(q.correct===oi) patchQuestion(l._secId,l.id,q.id,{correct:-1}); }}
-                                  style={{ padding:"5px 10px", borderRadius:"0 6px 6px 0", border:`1px solid ${q.correct!==oi ? C.primary : C.gray200}`, fontSize:12, fontWeight:700, cursor:"pointer", background: q.correct!==oi ? C.primary : C.white, color: q.correct!==oi ? "#fff" : C.gray600 }}>
-                                  Wrong
-                                </button>
-                                <button onClick={()=>{ const opts=q.options.filter((_,i)=>i!==oi); patchQuestion(l._secId,l.id,q.id,{options:opts, correct: q.correct===oi?-1: q.correct>oi?q.correct-1:q.correct}); }}
-                                  style={{ width:26,height:26,borderRadius:6,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
-                                  <Icon name="x" size={11} color={C.gray400}/>
-                                </button>
-                              </div>
-                            ))}
-                            <button onClick={()=>{ const opts=[...q.options,""]; patchQuestion(l._secId,l.id,q.id,{options:opts}); }}
-                              style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, background:C.white, cursor:"pointer", color:C.gray600, fontSize:13, fontWeight:600, marginTop:4 }}>
-                              <Icon name="plus" size={12} color={C.gray500}/> New answer
-                            </button>
-                            {q.correct===-1 && <div style={{ fontSize:12, color:"#dc2626", marginTop:8 }}>You must have at least one right answer.</div>}
-                          </div>
-                          <div style={{ display:"flex", justifyContent:"flex-end", gap:8, padding:"12px 16px" }}>
-                            <button onClick={()=>setEditingQuestionId(null)}
-                              style={{ padding:"7px 16px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:13, fontWeight:600, cursor:"pointer" }}>
-                              Discard
-                            </button>
-                            <button onClick={()=>setEditingQuestionId(null)}
-                              style={{ padding:"7px 16px", borderRadius:8, border:"none", background:C.primary, color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer" }}>
-                              Save
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-            <button onClick={()=>addQuestion(l._secId,l.id)} style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 14px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", fontSize:13, fontWeight:600, color:C.gray600, fontFamily:"inherit", marginTop:8 }}>
-              <Icon name="plus" size={13} color={C.gray500}/>Add question
-            </button>
-          </div>
-          </>}
-          </div>
-        </div>
-      ))}
-      {/* ── Materials section ── */}
-      {materialLessons.map((l, mi) => (
-        <div key={l.id} style={{ marginBottom:16 }}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
-            <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase" }}>Material</div>
-            <button onClick={()=>deleteFlatLesson(l._secId,l.id)}
-              style={{ width:28,height:28,borderRadius:7,border:`1px solid ${C.gray200}`,background:C.white,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
-              <Icon name="trash" size={13} color={C.error}/>
-            </button>
-          </div>
-          <div style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:24 }}>
-
-          <Label>TITLE</Label>
-          <input value={l.title} onChange={e=>patchLesson(l._secId,l.id,{title:e.target.value})}
-            placeholder="Enter title…"
-            style={{...inputSt, marginBottom:16}}/>
-          <Label>MATERIAL</Label>
-            <div
-              onDragOver={e=>{ e.preventDefault(); patchLesson(l._secId,l.id,{_dropOver:true}); }}
-              onDragLeave={()=>patchLesson(l._secId,l.id,{_dropOver:false})}
-              onDrop={e=>{ e.preventDefault(); patchLesson(l._secId,l.id,{_dropOver:false}); const f=e.dataTransfer.files?.[0]; if(f) patchLesson(l._secId,l.id,{materialFile:f,title:l.title||f.name.replace(/\.[^.]+$/,"")}); }}
-              onClick={()=>{ setUploadingMaterialId({secId:l._secId,lesId:l.id}); setTimeout(()=>materialInputRef.current?.click(),0); }}
-              style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:8, padding:"24px 16px", border:`2px dashed ${l._dropOver?"#059669": l.materialFile?"#bbf7d0":C.gray200}`, borderRadius:10, background: l._dropOver?"#f0fdf4": l.materialFile?"#f0fdf4":C.gray50, cursor:"pointer", transition:"all .15s" }}>
-              <Icon name="cloud-arrow-up" size={26} color={l.materialFile?"#059669":C.gray400}/>
-              {l.materialFile
-                ? <span style={{ fontSize:13, fontWeight:600, color:"#059669" }}>{l.materialFile.name}</span>
-                : <>
-                    <span style={{ fontSize:13, fontWeight:600, color:C.gray700 }}>Click here or drag to add materials</span>
-                    <span style={{ fontSize:12, color:C.gray400 }}>Any document or zip file, max size 10MB</span>
-                  </>
-              }
-            </div>
-          </div>
-        </div>
-      ))}
-
-      {/* Add material button */}
-      <button onClick={()=>addMaterialWithFile(null)}
-        style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 16px", border:"none", borderRadius:8, background:C.primary, fontSize:13, fontWeight:600, color:"#fff", cursor:"pointer" }}>
-        <Icon name="plus" size={12} color="#fff"/> Add Material
-      </button>
-    </div>
-  );
-}
-
-
-function DiscardModal({ onDiscard, onKeep }) {
-  return (
-    <div style={{ position:"fixed", inset:0, zIndex:1300, background:"rgba(15,23,42,0.55)",
-      display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}
-      onClick={e => { if (e.target === e.currentTarget) onKeep(); }}>
-      <div style={{ background:"#fff", borderRadius:16, width:"100%", maxWidth:420,
-        boxShadow:"0 24px 60px rgba(0,0,0,0.18)", overflow:"hidden" }}>
-        <div style={{ padding:"28px 28px 24px" }}>
-          <div style={{ width:44, height:44, borderRadius:12, background:"#fff7ed",
-            display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <div style={{ fontSize:17, fontWeight:800, color:"#0f172a", marginBottom:8 }}>Discard changes?</div>
-          <div style={{ fontSize:14, color:"#64748b", lineHeight:1.6 }}>
-            You have unsaved changes. If you go back now, all your edits — including lesson details, video links, and availability settings — will be lost.
-          </div>
-        </div>
-        <div style={{ display:"flex", gap:10, padding:"0 28px 24px" }}>
-          <button onClick={onKeep}
-            style={{ flex:1, height:42, background:"#f1f5f9", border:"none", borderRadius:10,
-              fontSize:14, fontWeight:600, color:"#334155", cursor:"pointer", fontFamily:"inherit" }}
-            onMouseEnter={e=>e.currentTarget.style.background="#e2e8f0"}
-            onMouseLeave={e=>e.currentTarget.style.background="#f1f5f9"}>
-            Keep editing
-          </button>
-          <button onClick={onDiscard}
-            style={{ flex:1, height:42, background:"#ef4444", border:"none", borderRadius:10,
-              fontSize:14, fontWeight:600, color:"#fff", cursor:"pointer", fontFamily:"inherit" }}
-            onMouseEnter={e=>e.currentTarget.style.background="#dc2626"}
-            onMouseLeave={e=>e.currentTarget.style.background="#ef4444"}>
-            Discard
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AdminCreateSession({ onBack, toast, onSave }) {
-  const [tab,  setTab]  = useState("details");
-  const [form, setForm] = useState({
-    title:"", category:"SPED", lang:"English", desc:"",
-    availableFrom:"", availableTo:"",
-    instructorName:"", bio:"",
-    vimeoUrl:"",
-    discussion:true, qa:true, spinWheel:false, certificate:false, commentVisibility:"visible",
-  });
-  const upd = (k,v) => setForm(f=>({...f,[k]:v}));
-  const [sections, setSections] = useState([{ id:1, title:"Introduction", collapsed:false, resources:[], lessons:[
-    { id:101, title:"Welcome & course overview", type:"video", duration:"", status:"draft", vimeoUrl:"", questions:[], quizExpanded:false },
-  ]}]);
-  const sectionsRef = useRef(sections);
-  function handleSectionsChange(secs) { sectionsRef.current = secs; }
-  const [showDiscard, setShowDiscard] = useState(false);
-
-  function isDirty() {
-    if (form.title.trim() || form.desc.trim() || form.instructorName.trim()) return true;
-    const secs = sectionsRef.current || [];
-    return secs.some(sec => sec.lessons.some(l => l.vimeoUrl || l.questions?.length > 0));
-  }
-  function tryBack() { if (isDirty()) setShowDiscard(true); else onBack(); }
-
-  // Warn on browser refresh/close
-  useEffect(() => {
-    function handleBeforeUnload(e) {
-      if (!isDirty()) return;
-      e.preventDefault();
-      e.returnValue = "";
-    }
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [form]);
-
-  const [questions,  setQuestions]  = useState([]);
-  const [typeMenuId, setTypeMenuId] = useState(null);
-
-  const Q_TYPES = [
-    { key:"short-answer",    label:"Short answer",    icon:"minus",             group:1 },
-    { key:"paragraph",       label:"Paragraph",       icon:"text-align-left",   group:1 },
-    { key:"multiple-choice", label:"Multiple choice", icon:"radio-button",      group:2 },
-    { key:"checkboxes",      label:"Checkboxes",      icon:"check-square",      group:2 },
-    { key:"dropdown",        label:"Dropdown",        icon:"caret-circle-down", group:2 },
-  ];
-
-  function addQuestion() {
-    setQuestions(qs => [...qs, { id:Date.now(), type:"multiple-choice", text:"", options:["","","",""], correct:0, correctArr:[] }]);
-  }
-  function updateQuestion(id, text) { setQuestions(qs => qs.map(q => q.id===id ? {...q,text} : q)); }
-  function updateOption(id, oi, value) {
-    setQuestions(qs => qs.map(q => { if(q.id!==id) return q; const opts=[...q.options]; opts[oi]=value; return {...q,options:opts}; }));
-  }
-  function setCorrect(id, oi) { setQuestions(qs => qs.map(q => q.id===id ? {...q,correct:oi} : q)); }
-  function duplicateQuestion(id) {
-    setQuestions(qs => { const idx=qs.findIndex(q=>q.id===id); const copy={...qs[idx],id:Date.now()}; const next=[...qs]; next.splice(idx+1,0,copy); return next; });
-  }
-  function setQuestionType(id, type) { setQuestions(qs => qs.map(q => q.id===id?{...q,type,correct:0,correctArr:[]}:q)); setTypeMenuId(null); }
-  function toggleCheckbox(id, oi) {
-    setQuestions(qs => qs.map(q => { if(q.id!==id) return q; const arr=q.correctArr.includes(oi)?q.correctArr.filter(i=>i!==oi):[...q.correctArr,oi]; return {...q,correctArr:arr}; }));
-  }
-  function deleteQuestion(id) { setQuestions(qs => qs.filter(q=>q.id!==id)); }
-
-  const Toggle = ({ fieldKey }) => (
-    <div onClick={()=>upd(fieldKey,!form[fieldKey])}
-      style={{ width:42,height:23,borderRadius:99,background:form[fieldKey]?C.primary:C.gray300,
-        position:"relative",cursor:"pointer",transition:"background .2s",flexShrink:0 }}>
-      <div style={{ width:17,height:17,borderRadius:"50%",background:"#fff",position:"absolute",
-        top:3,left:form[fieldKey]?22:3,transition:"left .2s" }}/>
-    </div>
-  );
-
-  function save(publish=false) {
-    if (!form.title.trim()) { toast({ type:"error", title:"Title required", message:"Please add a session title before saving." }); return; }
-    onSave && onSave(form, publish, sectionsRef.current);
-    if (publish) { toast({ type:"success", title:"Session published! 🚀", message:`"${form.title}" is now live.` }); }
-    else { toast({ type:"info", title:"Draft saved", message:`"${form.title}" saved as draft.` }); }
-    setTimeout(onBack, 800);
-  }
-
-  const TABS = [
-    { key:"details",      label:"Details"      },
-    { key:"curriculum",   label:"Lessons"      },
-    { key:"availability", label:"Availability" },
-  ];
-
-  const TAB_META = {
-    details:      { title:"Session Details",    subtitle:"Set the title, description and instructor info." },
-    curriculum:   { title:"Lessons",            subtitle:"Build your curriculum with sections and videos." },
-    availability: { title:"Availability",       subtitle:"Control when learners can access this session." },
-  };
-
-  const [mobileDrilled, setMobileDrilled] = useState(false);
-  const TAB_ICON = { details:"info", curriculum:"play-circle", availability:"calendar" };
-
-  return (
-    <div style={{ background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
-      <style>{`
-        .acs-desktop { max-width:960px; width:100%; margin:0 auto; display:flex; align-items:stretch; flex:1; box-sizing:border-box; }
-        .acs-mobile-hub    { display:none; }
-        .acs-mobile-detail { display:none; }
-        @media(max-width:640px){
-          .acs-desktop       { display:none !important; }
-          .acs-mobile-hub    { display:block; }
-          .acs-mobile-detail { display:block; }
-          .aes-card          { padding:16px !important; border-radius:12px !important; }
-          .aes-avail-grid    { grid-template-columns:1fr !important; }
-          .acs-actions       { flex-direction:column-reverse; gap:8px !important; }
-          .acs-actions > *   { width:100%; justify-content:center; }
-        }
-      `}</style>
-
-      {/* ── MOBILE: Hub ── */}
-      {!mobileDrilled && (
-        <div className="acs-mobile-hub" style={{ flex:1 }}>
-          <div style={{ padding:"16px 16px 12px" }}>
-            <button onClick={tryBack} style={{ display:"inline-flex", alignItems:"center", gap:6, background:"none", border:"none", padding:"0 0 12px", cursor:"pointer", color:C.gray500, fontSize:13, fontWeight:600, fontFamily:"inherit" }}>
-              <Icon name="arrow-left" size={16} color={C.gray500}/>
-              Back
-            </button>
-            <div style={{ fontSize:22, fontWeight:900, color:C.gray900, letterSpacing:-0.5 }}>Create Session</div>
-            <div style={{ fontSize:13, color:C.gray500, marginTop:3 }}>Fill in the details, build your lessons, then publish.</div>
-          </div>
-          <div style={{ margin:"0 16px", border:`1px solid ${C.gray200}`, borderRadius:16, overflow:"hidden", background:C.white }}>
-            {TABS.map((t, i, arr) => (
-              <button key={t.key} onClick={() => { setTab(t.key); setMobileDrilled(true); }}
-                style={{ display:"flex", alignItems:"center", gap:16, width:"100%", padding:"14px 18px", background:"none", border:"none", borderBottom: i < arr.length-1 ? `1px solid ${C.gray200}` : "none", cursor:"pointer", textAlign:"left", fontFamily:"inherit" }}>
-                <Icon name={TAB_ICON[t.key]} size={22} color={C.gray700}/>
-                <div style={{ flex:1 }}>
-                  <div style={{ fontSize:15, fontWeight:500, color:C.gray900 }}>{t.label}</div>
-                  <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{TAB_META[t.key].subtitle}</div>
-                </div>
-                <Icon name="caret-right" size={16} color={C.gray400}/>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── MOBILE: Drilled-in ── */}
-      {mobileDrilled && (
-        <div className="acs-mobile-detail" style={{ flex:1 }}>
-          <div style={{ padding:"16px 16px 0" }}>
-            <button onClick={tryBack}
-              style={{ display:"inline-flex", alignItems:"center", gap:6, background:"none", border:"none", padding:"0 0 12px", cursor:"pointer", color:C.gray500, fontSize:13, fontWeight:600, fontFamily:"inherit" }}>
-              <Icon name="arrow-left" size={16} color={C.gray500}/>
-              Back
-            </button>
-            <h2 style={{ margin:"0 0 4px", fontSize:18, fontWeight:900, color:C.gray900 }}>{TAB_META[tab].title}</h2>
-            <p style={{ margin:"0 0 16px", fontSize:13, color:C.gray500 }}>{TAB_META[tab].subtitle}</p>
-          </div>
-          <div style={{ padding:"0 16px 24px" }}>
-            {renderTabContent()}
-            <div className="acs-actions" style={{ display:"flex", justifyContent:"flex-end", gap:8, paddingTop:24, borderTop:`1px solid ${C.gray200}`, marginTop:24 }}>
-              <Btn variant="outline" onClick={tryBack}>Close</Btn>
-              {tab === "availability"
-                ? <Btn onClick={()=>save(true)}>Publish</Btn>
-                : <Btn onClick={() => { setTab(tab==="details"?"curriculum":"availability"); }}>Continue</Btn>
-              }
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── DESKTOP layout ── */}
-      <div className="acs-desktop">
-
-        {/* ── Sidebar ── */}
-        <div style={{ width:240, flexShrink:0, padding:"32px 24px", boxSizing:"border-box" }}>
-          <h2 style={{ margin:"0 0 6px", fontSize:18, fontWeight:900, color:C.gray900 }}>Create Session</h2>
-          <p style={{ margin:"0 0 28px", fontSize:13, color:C.gray500, lineHeight:1.5 }}>Fill in the details, build your lessons, then publish.</p>
-          <nav style={{ display:"flex", flexDirection:"column", gap:2 }}>
-            {TABS.map(t => {
-              const active = tab === t.key;
-              return (
-                <button key={t.key} onClick={()=>setTab(t.key)}
-                  style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", borderRadius:10, border:"none", background: active ? C.primaryLight : "transparent", color: active ? C.primary : C.gray600, fontSize:14, fontWeight: active ? 700 : 500, cursor:"pointer", textAlign:"left", fontFamily:"inherit", transition:"background .15s" }}>
-                  <Icon name={TAB_ICON[t.key]} size={15} color={active ? C.primary : C.gray500}/>
-                  {t.label}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-
-        {/* ── Divider ── */}
-        <div style={{ width:1, background:C.gray200, flexShrink:0, alignSelf:"stretch" }}/>
-
-        {/* ── Content ── */}
-        <div style={{ flex:1, minWidth:0, padding:"32px 28px", boxSizing:"border-box", display:"flex", flexDirection:"column" }}>
-          <div style={{ marginBottom:24 }}>
-            <h2 style={{ margin:"0 0 4px", fontSize:18, fontWeight:900, color:C.gray900 }}>{TAB_META[tab].title}</h2>
-            <p style={{ margin:0, fontSize:13, color:C.gray500 }}>{TAB_META[tab].subtitle}</p>
-          </div>
-
-          <div style={{ flex:1 }}>
-            {renderTabContent()}
-          </div>
-
-          {/* Actions */}
-          <div style={{ display:"flex", justifyContent:"flex-end", gap:8, paddingTop:24, borderTop:`1px solid ${C.gray200}`, marginTop:24 }}>
-            <Btn variant="outline" onClick={tryBack}>Close</Btn>
-            {tab === "availability"
-              ? <Btn onClick={()=>save(true)}>Publish</Btn>
-              : <Btn onClick={()=>setTab(tab==="details"?"curriculum":"availability")}>Continue</Btn>
-            }
-          </div>
-        </div>
-
-      </div>
-
-    {showDiscard && <DiscardModal onDiscard={onBack} onKeep={() => setShowDiscard(false)}/>}
-    </div>
-  );
-
-  function renderTabContent() { return (<>
-            {/* CurriculumBuilder always rendered (never unmounts) — hidden via display when not active */}
-            <div style={{ display: tab === "curriculum" ? "block" : "none" }}>
-              <CurriculumBuilder toast={toast} initialSections={null} onSectionsChange={handleSectionsChange}/>
-            </div>
-            {/* ── SESSION DETAILS tab ── */}
-            {tab === "details" && <>
-              {/* Session Info card */}
-              <div style={{ marginBottom:16 }}>
-                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>Session Info</div>
-                <div className="aes-card" style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:24 }}>
-                  <Label>COURSE TITLE<span style={{ color:C.error }}> *</span></Label>
-                  <input value={form.title} onChange={e=>upd("title",e.target.value)} placeholder="e.g. Advanced Figma Auto-Layout Masterclass" style={{...inputSt, marginBottom:16}}/>
-                  <Label>DESCRIPTION</Label>
-                  <textarea value={form.desc} onChange={e=>upd("desc",e.target.value)} placeholder="Describe what learners will gain from this session…" rows={3} style={{...inputSt,resize:"vertical"}}/>
-                </div>
-              </div>
-
-              {/* Instructor card */}
-              <div style={{ marginBottom:16 }}>
-                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>Instructor</div>
-                <div className="aes-card" style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:24 }}>
-                <Label>INSTRUCTOR NAME<span style={{ color:C.error }}> *</span></Label>
-                <input value={form.instructorName} onChange={e=>upd("instructorName",e.target.value)} placeholder="e.g. Jane Doe" style={{...inputSt, marginBottom:16}}/>
-                <Label>PROFESSIONAL BIO</Label>
-                <textarea value={form.bio} onChange={e=>upd("bio",e.target.value)} placeholder="Short bio about your career and achievements…" rows={2} style={{...inputSt,resize:"vertical", marginBottom:16}}/>
-                <Label>LINKEDIN</Label>
-                <input placeholder="LinkedIn username" style={{...inputSt, marginBottom:16}}/>
-                <Label>X (TWITTER)</Label>
-                <input placeholder="X handle" style={inputSt}/>
-                </div>
-              </div>
-
-              {/* Engagement */}
-              <div style={{ marginTop:24 }}>
-                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>Engagement</div>
-                <div style={{ border:`1px solid ${C.gray200}`, borderRadius:14, overflow:"hidden" }}>
-                  {[
-                    { key:"certificate", label:"Certificate",    desc:"Send a certificate on completion." },
-                    { key:"spinWheel",   label:"Spin the Wheel", desc:"Enable reward spin activity." },
-                  ].map((item, i, arr) => (
-                    <div key={item.key} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, padding:"16px 20px", borderBottom: i < arr.length-1 ? `1px solid ${C.gray200}` : "none", background:C.white }}>
-                      <div>
-                        <div style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{item.label}</div>
-                        <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{item.desc}</div>
-                      </div>
-                      <Toggle fieldKey={item.key}/>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Community */}
-              <div style={{ marginTop:20 }}>
-                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>Community</div>
-                <div style={{ border:`1px solid ${C.gray200}`, borderRadius:14, overflow:"hidden" }}>
-                  {[
-                    { val:"visible", label:"Visible", desc:"Comments shown, new ones allowed." },
-                    { val:"hidden",  label:"Hidden",  desc:"No comments shown or accepted." },
-                    { val:"locked",  label:"Locked",  desc:"Existing shown, no new comments." },
-                  ].map((opt, i, arr) => (
-                    <div key={opt.val} onClick={()=>upd("commentVisibility", opt.val)}
-                      style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, padding:"16px 20px", borderBottom: i < arr.length-1 ? `1px solid ${C.gray200}` : "none", background:C.white, cursor:"pointer" }}>
-                      <div>
-                        <div style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{opt.label}</div>
-                        <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{opt.desc}</div>
-                      </div>
-                      <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${form.commentVisibility===opt.val ? C.primary : C.gray300}`, background: form.commentVisibility===opt.val ? C.primary : C.white, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                        {form.commentVisibility===opt.val && <div style={{ width:6, height:6, borderRadius:"50%", background:"#fff" }}/>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </>}
-
-            {/* ── AVAILABILITY tab ── */}
-            {tab === "availability" && <>
-              <div style={{ marginBottom:16 }}>
-                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>Availability</div>
-                <div className="aes-card" style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:24 }}>
-                  <div className="aes-avail-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
-                    <div>
-                      <Label>AVAILABLE FROM</Label>
-                      <input type="datetime-local" value={form.availableFrom} onChange={e=>upd("availableFrom",e.target.value)} style={{...inputSt, width:"100%", boxSizing:"border-box"}}/>
-                    </div>
-                    <div>
-                      <Label>AVAILABLE TO</Label>
-                      <input type="datetime-local" value={form.availableTo} onChange={e=>upd("availableTo",e.target.value)} style={{...inputSt, width:"100%", boxSizing:"border-box"}}/>
-                    </div>
-                  </div>
-                  <div style={{ display:"flex", alignItems:"flex-start", gap:8, padding:"12px 14px", background:C.primaryLight, borderRadius:8, border:`1px solid ${C.primaryBorder}` }}>
-                    <Icon name="info" size={14} color={C.primary} style={{ marginTop:1, flexShrink:0 }}/>
-                    <span style={{ fontSize:12, color:C.primary, lineHeight:1.5 }}>When the <strong>Available To</strong> date passes, this session auto-archives and is hidden from students. Leave blank for no expiry.</span>
-                  </div>
-                </div>
-              </div>
-            </>}
-
-  </>); }
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   ADMIN EDIT SESSION
-───────────────────────────────────────────────────────────────────────────── */
-function AdminEditSession({ session, onBack, toast, onSave }) {
-  const [tab,  setTab]  = useState("details");
-  const [mobileDrilled, setMobileDrilled] = useState(false);
-  const [form, setForm] = useState({
-    title:          session.title          || "",
-    category:       session.category       || "UI Design",
-    lang:           session.lang           || "English",
-    desc:           session.desc           || "",
-    availableFrom:  session.availableFrom  || "",
-    availableTo:    session.availableTo    || "",
-    instructorName: session.instructor     || "",
-    bio:            session.bio            || "",
-    vimeoUrl:       session.vimeoUrl       || "",
-    discussion:     session.discussion !== undefined ? session.discussion : true,
-    qa:             session.qa         !== undefined ? session.qa         : true,
-    spinWheel:      session.spinWheel  !== undefined ? session.spinWheel  : false,
-    certificate:    session.certificate !== undefined ? session.certificate : false,
-    commentVisibility: session.commentVisibility || "visible",
-  });
-  const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
-
-  // Capture curriculum sections so vimeoUrls on lessons are saved
-  const sectionsRef = useRef(null);
-  function handleSectionsChange(secs) { sectionsRef.current = secs; }
-
-  // Build initialSections from session.lessons (flat list → one section)
-  const initialSections = session.lessons && session.lessons.length ? [{
-    id: 1, title: "Session", collapsed: false, resources: [],
-    lessons: session.lessons.map(l => ({
-      id: l.id, title: l.title, type: l.type || "video",
-      duration: l.duration || "", status: l.status || "draft",
-      vimeoUrl: l.vimeoUrl || "", questions: Array.isArray(l.questions) ? l.questions : [], quizExpanded: false,
-    })),
-  }] : null;
-
-  const [questions, setQuestions] = useState(session.questions || []);
-
-  const [typeMenuId, setTypeMenuId] = useState(null);
-
-  const Q_TYPES = [
-    { key:"short-answer",    label:"Short answer",    icon:"minus",             group:1 },
-    { key:"paragraph",       label:"Paragraph",       icon:"text-align-left",   group:1 },
-    { key:"multiple-choice", label:"Multiple choice", icon:"radio-button",      group:2 },
-    { key:"checkboxes",      label:"Checkboxes",      icon:"check-square",      group:2 },
-    { key:"dropdown",        label:"Dropdown",        icon:"caret-circle-down", group:2 },
-  ];
-
-  function addQuestion() {
-    setQuestions(qs => [...qs, {
-      id: Date.now(), type:"multiple-choice",
-      text:"", options:["","","",""], correct:0, correctArr:[],
-    }]);
-  }
-  function updateQuestion(id, text) {
-    setQuestions(qs => qs.map(q => q.id===id ? {...q, text} : q));
-  }
-  function updateOption(id, oi, value) {
-    setQuestions(qs => qs.map(q => {
-      if (q.id !== id) return q;
-      const opts = [...q.options]; opts[oi] = value; return {...q, options:opts};
-    }));
-  }
-  function setCorrect(id, oi) {
-    setQuestions(qs => qs.map(q => q.id===id ? {...q, correct:oi} : q));
-  }
-  function duplicateQuestion(id) {
-    setQuestions(qs => {
-      const idx = qs.findIndex(q => q.id===id);
-      const copy = {...qs[idx], id: Date.now()};
-      const next = [...qs]; next.splice(idx+1, 0, copy); return next;
-    });
-  }
-  function setQuestionType(id, type) {
-    setQuestions(qs => qs.map(q => q.id===id ? {...q, type, correct:0, correctArr:[]} : q));
-    setTypeMenuId(null);
-  }
-  function toggleCheckbox(id, oi) {
-    setQuestions(qs => qs.map(q => {
-      if (q.id !== id) return q;
-      const arr = q.correctArr.includes(oi)
-        ? q.correctArr.filter(i => i!==oi)
-        : [...q.correctArr, oi];
-      return {...q, correctArr: arr};
-    }));
-  }
-  function deleteQuestion(id) {
-    setQuestions(qs => qs.filter(q => q.id!==id));
-  }
-
-  const [showDiscard, setShowDiscard] = useState(false);
-  function tryBack() { setShowDiscard(true); }
-
-  function save() {
-    if (!form.title.trim()) { toast({ type:"error", title:"Title required", message:"Please add a session title before saving." }); return; }
-    if (onSave) onSave(session.id, form, sectionsRef.current);
-    toast({ type:"success", title:"Changes saved", message:`"${form.title}" has been updated.` });
-    setTimeout(onBack, 1200);
-  }
-
-  function discard() {
-    toast({ type:"info", message:"Changes discarded." });
-    onBack();
-  }
-
-  // Warn on browser refresh/close
-  useEffect(() => {
-    function handleBeforeUnload(e) { e.preventDefault(); e.returnValue = ""; }
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, []);
-
-
-  const TABS = [
-    { key:"details",      label:"Details"      },
-    { key:"curriculum",   label:"Lessons"      },
-    { key:"availability", label:"Availability" },
-  ];
-
-  const Toggle = ({ fieldKey }) => (
-    <div onClick={()=>upd(fieldKey,!form[fieldKey])}
-      style={{ width:42,height:23,borderRadius:99,background:form[fieldKey]?C.primary:C.gray300,
-        position:"relative",cursor:"pointer",transition:"background .2s",flexShrink:0 }}>
-      <div style={{ width:17,height:17,borderRadius:"50%",background:"#fff",position:"absolute",
-        top:3,left:form[fieldKey]?22:3,transition:"left .2s" }}/>
-    </div>
-  );
-
-  const TAB_META = {
-    details:      { title:"Session Details",    subtitle:"Edit the title, description and instructor info." },
-    curriculum:   { title:"Lessons",            subtitle:"Manage your curriculum sections and videos." },
-    availability: { title:"Availability",       subtitle:"Control when learners can access this session." },
-  };
-
-  const TAB_ICON = { details:"info", curriculum:"play-circle", availability:"calendar" };
-
-  return (
-    <div style={{ background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
-      <style>{`
-        .aes-desktop { max-width:960px; width:100%; margin:0 auto; display:flex; align-items:stretch; flex:1; box-sizing:border-box; }
-        .aes-mobile-hub    { display:none; }
-        .aes-mobile-detail { display:none; }
-        @media(max-width:640px){
-          .aes-desktop       { display:none !important; }
-          .aes-mobile-hub    { display:block; }
-          .aes-mobile-detail { display:block; }
-          .aes-card          { padding:16px !important; border-radius:12px !important; }
-          .aes-avail-grid    { grid-template-columns:1fr !important; }
-          .aes-actions       { flex-direction:column-reverse; gap:8px !important; }
-          .aes-actions > *   { width:100%; justify-content:center; }
-        }
-      `}</style>
-
-      {/* ── MOBILE: Hub (tab list) ── */}
-      {!mobileDrilled && (
-        <div className="aes-mobile-hub" style={{ flex:1 }}>
-          <div style={{ padding:"16px 16px 12px" }}>
-            <button onClick={tryBack} style={{ display:"inline-flex", alignItems:"center", gap:6, background:"none", border:"none", padding:"0 0 12px", cursor:"pointer", color:C.gray500, fontSize:13, fontWeight:600, fontFamily:"inherit" }}>
-              <Icon name="arrow-left" size={16} color={C.gray500}/>
-              Back
-            </button>
-            <div style={{ fontSize:22, fontWeight:900, color:C.gray900, letterSpacing:-0.5 }}>Edit Session</div>
-            <div style={{ fontSize:13, color:C.gray500, marginTop:3, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{session.title}</div>
-          </div>
-          <div style={{ margin:"0 16px", border:`1px solid ${C.gray200}`, borderRadius:16, overflow:"hidden", background:C.white }}>
-            {TABS.map((t, i, arr) => (
-              <button key={t.key} onClick={() => { setTab(t.key); setMobileDrilled(true); }}
-                style={{ display:"flex", alignItems:"center", gap:16, width:"100%", padding:"14px 18px", background:"none", border:"none", borderBottom: i < arr.length-1 ? `1px solid ${C.gray200}` : "none", cursor:"pointer", textAlign:"left", fontFamily:"inherit" }}>
-                <Icon name={TAB_ICON[t.key]} size={22} color={C.gray700}/>
-                <div style={{ flex:1 }}>
-                  <div style={{ fontSize:15, fontWeight:500, color:C.gray900 }}>{t.label}</div>
-                  <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{TAB_META[t.key].subtitle}</div>
-                </div>
-                <Icon name="caret-right" size={16} color={C.gray400}/>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── MOBILE: Drilled-in tab content ── */}
-      {mobileDrilled && (
-        <div className="aes-mobile-detail" style={{ flex:1 }}>
-          <div style={{ padding:"16px 16px 0" }}>
-            <button onClick={tryBack}
-              style={{ display:"inline-flex", alignItems:"center", gap:6, background:"none", border:"none", padding:"0 0 12px", cursor:"pointer", color:C.gray500, fontSize:13, fontWeight:600, fontFamily:"inherit" }}>
-              <Icon name="arrow-left" size={16} color={C.gray500}/>
-              Back
-            </button>
-            <h2 style={{ margin:"0 0 4px", fontSize:18, fontWeight:900, color:C.gray900 }}>{TAB_META[tab].title}</h2>
-            <p style={{ margin:"0 0 16px", fontSize:13, color:C.gray500 }}>{TAB_META[tab].subtitle}</p>
-          </div>
-          <div style={{ padding:"0 16px 24px" }}>
-            {renderTabContent()}
-            <div className="aes-actions" style={{ display:"flex", justifyContent:"flex-end", gap:8, paddingTop:24, borderTop:`1px solid ${C.gray200}`, marginTop:24 }}>
-              <Btn variant="outline" onClick={tryBack}>Close</Btn>
-              {tab === "availability"
-                ? <Btn onClick={save}>Save Changes</Btn>
-                : <Btn onClick={() => { setTab(tab==="details"?"curriculum":"availability"); }}>Continue</Btn>
-              }
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── DESKTOP layout ── */}
-      <div className="aes-desktop">
-
-        {/* ── Sidebar ── */}
-        <div style={{ width:240, flexShrink:0, padding:"32px 24px", boxSizing:"border-box" }}>
-          <h2 style={{ margin:"0 0 4px", fontSize:18, fontWeight:900, color:C.gray900 }}>Edit Session</h2>
-          <p style={{ margin:"0 0 4px", fontSize:12, color:C.gray500, lineHeight:1.4, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{session.title}</p>
-          <p style={{ margin:"0 0 28px", fontSize:13, color:C.gray500 }}></p>
-          <nav style={{ display:"flex", flexDirection:"column", gap:2 }}>
-            {TABS.map(t => {
-              const active = tab === t.key;
-              return (
-                <button key={t.key} onClick={()=>setTab(t.key)}
-                  style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", borderRadius:10, border:"none", background: active ? C.primaryLight : "transparent", color: active ? C.primary : C.gray600, fontSize:14, fontWeight: active ? 700 : 500, cursor:"pointer", textAlign:"left", fontFamily:"inherit", transition:"background .15s" }}>
-                  <Icon name={TAB_ICON[t.key]} size={15} color={active ? C.primary : C.gray500}/>
-                  {t.label}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-
-        {/* ── Divider ── */}
-        <div style={{ width:1, background:C.gray200, flexShrink:0, alignSelf:"stretch" }}/>
-
-        {/* ── Content ── */}
-        <div style={{ flex:1, minWidth:0, padding:"32px 28px", boxSizing:"border-box", display:"flex", flexDirection:"column" }}>
-          <div style={{ marginBottom:24 }}>
-            <h2 style={{ margin:"0 0 4px", fontSize:18, fontWeight:900, color:C.gray900 }}>{TAB_META[tab].title}</h2>
-            <p style={{ margin:0, fontSize:13, color:C.gray500 }}>{TAB_META[tab].subtitle}</p>
-          </div>
-
-          <div style={{ flex:1 }}>
-            {renderTabContent()}
-          </div>
-
-          {/* Actions */}
-          <div style={{ display:"flex", justifyContent:"flex-end", gap:8, paddingTop:24, borderTop:`1px solid ${C.gray200}`, marginTop:24 }}>
-            <Btn variant="outline" onClick={tryBack}>Close</Btn>
-            {tab === "availability"
-              ? <Btn onClick={save}>Save Changes</Btn>
-              : <Btn onClick={()=>setTab(tab==="details"?"curriculum":"availability")}>Continue</Btn>
-            }
-          </div>
-        </div>
-
-      </div>
-    {showDiscard && <DiscardModal onDiscard={discard} onKeep={() => setShowDiscard(false)}/>}
-    </div>
-  );
-
-  function renderTabContent() { return (<>
-            {/* CurriculumBuilder always rendered (never unmounts) — hidden via display when not active */}
-            <div style={{ display: tab === "curriculum" ? "block" : "none" }}>
-              <CurriculumBuilder toast={toast} initialSections={initialSections} onSectionsChange={handleSectionsChange}/>
-            </div>
-            {/* ── DETAILS tab ── */}
-            {tab === "details" && <>
-              {/* Session Info card */}
-              <div style={{ marginBottom:16 }}>
-                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>Session Info</div>
-                <div className="aes-card" style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:24 }}>
-                  <Label>SESSION TITLE<span style={{ color:C.error }}> *</span></Label>
-                  <input value={form.title} onChange={e=>upd("title",e.target.value)} placeholder="e.g. Advanced Figma Auto-Layout Masterclass" style={{...inputSt, marginBottom:16}}/>
-                  <Label>DESCRIPTION</Label>
-                  <textarea value={form.desc} onChange={e=>upd("desc",e.target.value)} placeholder="Describe what students will learn…" rows={3} style={{...inputSt,resize:"vertical"}}/>
-                </div>
-              </div>
-
-              {/* Instructor card */}
-              <div style={{ marginBottom:16 }}>
-                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>Instructor</div>
-                <div className="aes-card" style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:24 }}>
-                  <Label>INSTRUCTOR NAME<span style={{ color:C.error }}> *</span></Label>
-                  <input value={form.instructorName} onChange={e=>upd("instructorName",e.target.value)} placeholder="e.g. Jane Doe" style={{...inputSt, marginBottom:16}}/>
-                  <Label>PROFESSIONAL BIO</Label>
-                  <textarea value={form.bio} onChange={e=>upd("bio",e.target.value)} placeholder="Short bio about your career and achievements…" rows={2} style={{...inputSt,resize:"vertical", marginBottom:16}}/>
-                  <Label>LINKEDIN</Label>
-                  <input placeholder="LinkedIn username" style={{...inputSt, marginBottom:16}}/>
-                  <Label>X (TWITTER)</Label>
-                  <input placeholder="X handle" style={inputSt}/>
-                </div>
-              </div>
-
-              {/* Engagement */}
-              <div style={{ marginTop:24 }}>
-                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>Engagement</div>
-                <div style={{ border:`1px solid ${C.gray200}`, borderRadius:14, overflow:"hidden" }}>
-                  {[
-                    { key:"certificate", label:"Certificate",      desc:"Send a certificate on completion." },
-                    { key:"discussion",  label:"Discussion Forum",  desc:"Allow students to discuss with peers." },
-                    { key:"qa",          label:"Q&A Section",       desc:"Moderate and answer student questions." },
-                  ].map((item, i, arr) => (
-                    <div key={item.key} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, padding:"16px 20px", borderBottom: i < arr.length-1 ? `1px solid ${C.gray200}` : "none", background:C.white }}>
-                      <div>
-                        <div style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{item.label}</div>
-                        <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{item.desc}</div>
-                      </div>
-                      <Toggle fieldKey={item.key}/>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Community */}
-              <div style={{ marginTop:20 }}>
-                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>Community</div>
-                <div style={{ border:`1px solid ${C.gray200}`, borderRadius:14, overflow:"hidden" }}>
-                  {[
-                    { val:"visible", label:"Visible", desc:"Comments shown, new ones allowed." },
-                    { val:"hidden",  label:"Hidden",  desc:"No comments shown or accepted." },
-                    { val:"locked",  label:"Locked",  desc:"Existing shown, no new comments." },
-                  ].map((opt, i, arr) => (
-                    <div key={opt.val} onClick={()=>upd("commentVisibility", opt.val)}
-                      style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, padding:"16px 20px", borderBottom: i < arr.length-1 ? `1px solid ${C.gray200}` : "none", background:C.white, cursor:"pointer" }}>
-                      <div>
-                        <div style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{opt.label}</div>
-                        <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{opt.desc}</div>
-                      </div>
-                      <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${form.commentVisibility===opt.val ? C.primary : C.gray300}`, background: form.commentVisibility===opt.val ? C.primary : C.white, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                        {form.commentVisibility===opt.val && <div style={{ width:6, height:6, borderRadius:"50%", background:"#fff" }}/>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </>}
-
-            {/* ── AVAILABILITY tab ── */}
-            {tab === "availability" && <>
-              <div style={{ marginBottom:16 }}>
-                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>Availability</div>
-                <div className="aes-card" style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:24 }}>
-                  <div className="aes-avail-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
-                    <div>
-                      <Label>AVAILABLE FROM</Label>
-                      <input type="datetime-local" value={form.availableFrom} onChange={e=>upd("availableFrom",e.target.value)} style={{...inputSt, width:"100%", boxSizing:"border-box"}}/>
-                    </div>
-                    <div>
-                      <Label>AVAILABLE TO</Label>
-                      <input type="datetime-local" value={form.availableTo} onChange={e=>upd("availableTo",e.target.value)} style={{...inputSt, width:"100%", boxSizing:"border-box"}}/>
-                    </div>
-                  </div>
-                  <div style={{ display:"flex", alignItems:"flex-start", gap:8, padding:"12px 14px", background:C.primaryLight, borderRadius:8, border:`1px solid ${C.primaryBorder}` }}>
-                    <Icon name="info" size={14} color={C.primary} style={{ marginTop:1, flexShrink:0 }}/>
-                    <span style={{ fontSize:12, color:C.primary, lineHeight:1.5 }}>When the <strong>Available To</strong> date passes, this session auto-archives and is hidden from students. Leave blank for no expiry.</span>
-                  </div>
-                </div>
-              </div>
-            </>}
-
-  </>); }
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   ROOT APP
-───────────────────────────────────────────────────────────────────────────── */
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   QUIZ DATA
-───────────────────────────────────────────────────────────────────────────── */
-const QUIZ_DATA = [
-  { id:1, title:"AI in Design Foundations",        description:"Mastering the prompting landscape for creative tools.",                           category:"TECHNOLOGY",   icon:"lightning",    status:"in-progress",  questions:15, minutes:20, score:null, progress:40,  currentQ:6  },
-  { id:2, title:"Sustainable Architectures",        description:"Building long-term digital systems with scale in mind.",                         category:"LEADERSHIP",   icon:"check-circle", status:"completed",    questions:15, minutes:20, score:92,   progress:100 },
-  { id:3, title:"Product Strategy 101",             description:"Defining the value proposition in a crowded market.",                            category:"MANAGEMENT",   icon:"student",      status:"not-started",  questions:12, minutes:15, score:null, progress:0   },
-  { id:4, title:"High-Performance Culture",         description:"Creating environments where top talent thrives.",                                category:"TEAMWORK",     icon:"users",        status:"not-started",  questions:20, minutes:30, score:null, progress:0   },
-  { id:5, title:"Leadership in Hybrid Teams",       description:"Session 4: Managing cross-functional collaboration in remote environments.",     category:"LEADERSHIP",   icon:"users",        status:"in-progress",  questions:25, minutes:30, score:null, progress:40,  currentQ:10 },
-  { id:6, title:"Mental Health & Wellness",         description:"Mindfulness-based strategies to support emotional regulation and wellness.",     category:"MANAGEMENT",   icon:"heart",        status:"completed",    questions:10, minutes:12, score:88,   progress:100 },
-];
-
-const QUIZ_QUESTIONS = [
-  {
-    id:1,
-    question:"What is the primary benefit of AI-assisted design tools in special education?",
-    options:["Speed of content creation","Personalization of learning materials","Reduced teacher workload","Lower technology costs"],
-    correct:1
-  },
-  {
-    id:2,
-    question:"Which communication approach is most effective for DHH students in mainstream classrooms?",
-    options:["Oral only","Sign language only","Total Communication","Written only"],
-    correct:2
-  },
-  {
-    id:3,
-    question:"What does AAC stand for?",
-    options:["Adapted Assistance Communication","Augmentative and Alternative Communication","Assisted Academic Communication","Advanced Accessibility Communication"],
-    correct:1
-  },
-  {
-    id:4,
-    question:"Which strategy best supports paraeducator effectiveness?",
-    options:["Minimal supervision","Clear role definition and ongoing training","Rotating assignments weekly","Limiting direct student interaction"],
-    correct:1
-  },
-  {
-    id:5,
-    question:"What is a key principle of Universal Design for Learning (UDL)?",
-    options:["Separate curriculum by ability","Multiple means of representation and engagement","Standardised one-size-fits-all testing","Remedial instruction only"],
-    correct:1
-  },
-];
-
-const LEADERBOARD_DATA = [
-  { rank:1,  name:"Sarah Jenkins",   xp:3120, isMe:false },
-  { rank:2,  name:"Marcus Chen",     xp:2980, isMe:false },
-  { rank:3,  name:"Elena Rodriguez", xp:2840, isMe:false },
-  { rank:14, name:"You (Alex)",      xp:2450, isMe:true  },
-];
-
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   SESSION QUIZZES  (5 questions per session, keyed by session id)
-───────────────────────────────────────────────────────────────────────────── */
-function getSessionQuestions(session) {
-  if (SESSION_QUIZZES[session?.id]) return SESSION_QUIZZES[session.id];
-  if (session?.quiz_questions?.length) return session.quiz_questions;
-  return (session?.lessons || []).flatMap(l =>
-    (l.questions || [])
-      .filter(q => q.text && q.options?.some(o => o))
-      .map(q => ({ q: q.text, opts: q.options, a: q.correct ?? 0 }))
-  );
-}
-
-const SESSION_QUIZZES = {
-  1: [
-    { q:"What does a 'window of tolerance' refer to in trauma-informed teaching?", opts:["The classroom noise level","The zone of optimal arousal for learning","Break time between lessons","Window ventilation policy"], a:1 },
-    { q:"Which mindfulness strategy is most suitable for in-classroom use?", opts:["30-minute meditation","Box breathing exercises","Silent retreats","Yoga sessions"], a:1 },
-    { q:"Teacher burnout is BEST prevented by:", opts:["Working longer hours","Ignoring student behaviour","Proactive self-care routines","Reducing lesson planning"], a:2 },
-    { q:"Somatic awareness in the classroom primarily helps students:", opts:["Memorise content faster","Recognise physical signs of stress","Improve handwriting","Complete homework faster"], a:1 },
-    { q:"Which approach reflects a trauma-informed classroom practice?", opts:["Zero-tolerance discipline","Predictable routines and co-regulation","Frequent surprise tests","Competitive grading"], a:1 },
-  ],
-  2: [
-    { q:"The term 'least restrictive environment' (LRE) means:", opts:["Fewest rules in the classroom","Students learn in settings as close to general ed as appropriate","No assistive technology","Unlimited accommodation"], a:1 },
-    { q:"Which accommodation is most commonly used for students with dyslexia?", opts:["Reduced recess","Extended time on tests","Smaller font size","Fewer subjects"], a:1 },
-    { q:"Co-teaching models BEST support inclusive classrooms by:", opts:["Separating students by ability","Having two teachers share instruction for all students","Giving IEP students a separate room","Using only visual materials"], a:1 },
-    { q:"Universal Design for Learning (UDL) primarily focuses on:", opts:["One-size-fits-all curriculum","Multiple means of engagement, representation, and action","Physical classroom layout","Standardised test scores"], a:1 },
-    { q:"An IEP is a legally binding document that:", opts:["Replaces the general curriculum","Outlines individualised goals and services for a student","Restricts a student's participation","Is optional for public schools"], a:1 },
-  ],
-  3: [
-    { q:"DHH stands for:", opts:["Differently Hearing Humans","Deaf and Hard of Hearing","Dual Hearing Hierarchy","Dynamic Hearing Help"], a:1 },
-    { q:"Total Communication in DHH education combines:", opts:["Only sign language","Multiple modes including speech, sign, and visual aids","Only oral speech","Written language only"], a:1 },
-    { q:"Phonological awareness is important for DHH learners primarily because:", opts:["It replaces sign language","It supports literacy and reading development","It improves hearing","It eliminates the need for captioning"], a:1 },
-    { q:"Which tool BEST supports DHH students in a mainstream classroom?", opts:["Louder teacher voice","FM system or sound field amplification","Removing all distractions","Sending notes home"], a:1 },
-    { q:"Language deprivation in early childhood can result in:", opts:["Faster language acquisition later","Lifelong gaps in language development","No impact on learning","Better visual skills"], a:1 },
-  ],
-  4: [
-    { q:"Effective paraeducator supervision starts with:", opts:["Trial and error","Clear role definitions and expectations","Daily observation reports","Reducing their responsibilities"], a:1 },
-    { q:"Which delegation model works BEST in special education settings?", opts:["Delegating everything to paraeducators","Task-specific delegation with clear guidance and feedback","Allowing paraeducators to set their own goals","Avoiding delegation entirely"], a:1 },
-    { q:"Communication between teachers and paraeducators should be:", opts:["Only during IEP meetings","Ongoing, structured, and collaborative","Handled entirely by administration","Limited to written notes"], a:1 },
-    { q:"Which practice MOST supports student independence in the classroom?", opts:["Constant one-on-one paraeducator support","Fading prompts systematically over time","Paraeducator completing tasks for the student","Removing all support immediately"], a:1 },
-    { q:"Paraeducators should primarily be trained in:", opts:["Curriculum design","Behaviour management and instructional strategies","Administrative tasks","Parent communication only"], a:1 },
-  ],
-  5: [
-    { q:"Which AI tool is MOST commonly used for personalised learning in SPED?", opts:["Social media platforms","Adaptive learning software","Generic search engines","Word processors"], a:1 },
-    { q:"Text-to-speech technology MOST benefits students with:", opts:["High reading ability","Reading disabilities and visual impairments","No accommodations needed","Advanced math skills"], a:1 },
-    { q:"When implementing AI tools in SPED, educators should prioritise:", opts:["Speed of implementation","Student data privacy and ethical use","Using the most expensive tools","Replacing human instruction entirely"], a:1 },
-    { q:"Predictive text and word banks primarily support students with:", opts:["Hearing impairments","Motor difficulties and expressive language challenges","Vision impairments","Behavioural challenges"], a:1 },
-    { q:"The BEST approach when evaluating an AI tool for classroom use is:", opts:["Adopt immediately if popular","Pilot with a small group and assess impact on student outcomes","Rely solely on vendor claims","Avoid all AI tools"], a:1 },
-  ],
-  6: [
-    { q:"AAC stands for:", opts:["Adapted Academic Curriculum","Augmentative and Alternative Communication","Accessible Audio Content","Applied Assistive Concepts"], a:1 },
-    { q:"Which students MOST benefit from AAC devices?", opts:["Students with advanced reading skills","Students with complex communication needs","Students who prefer writing","Students learning a second language"], a:1 },
-    { q:"The principle of 'presumed competence' in AAC means:", opts:["Assuming students cannot learn","Assuming all students have the potential to communicate and learn","Waiting until a student proves ability before providing AAC","Only using AAC after all other options fail"], a:1 },
-    { q:"Modelling language on an AAC device is BEST described as:", opts:["Telling students what to say","The teacher using the device to demonstrate language naturally","Restricting device use to break times","Letting students explore without guidance"], a:1 },
-    { q:"Which is a key barrier to successful AAC implementation?", opts:["Having too many vocabulary options","Lack of training and consistent use across environments","Using high-tech devices","Involving families in the process"], a:1 },
-  ],
-};
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   SESSION QUIZ MODAL
-   • Loads session-specific questions
-   • Saves progress on close (in-progress)
-   • 80% threshold for pass
-───────────────────────────────────────────────────────────────────────────── */
-function SessionQuizModal({ session, quizState = {}, onClose, onSaveProgress, onFinish }) {
-  const questions = getSessionQuestions(session);
-  const resumeQ   = quizState.currentQ || 0;
-  const resumeAns = quizState.answers  || {};
-
-  const [currentQ,  setCurrentQ]  = useState(resumeQ);
-  const [answers,   setAnswers]    = useState(resumeAns);
-  const [selected,  setSelected]   = useState(null);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-
-  const q      = questions[currentQ];
-  const isLast = currentQ === questions.length - 1;
-  const pct    = Math.round((currentQ / questions.length) * 100);
-  const answered = answers[currentQ] !== undefined;
-
-  function choose(idx) {
-    if (answered) return;
-    setSelected(idx);
-  }
-
-  function next() {
-    const choice = selected !== null ? selected : answers[currentQ];
-    if (choice === undefined) return;
-    const newAns = { ...answers, [currentQ]: choice };
-    setAnswers(newAns);
-    setSelected(null);
-
-    if (isLast) {
-      const correct = Object.entries(newAns).filter(
-        ([qi, a]) => questions[Number(qi)].a === a
-      ).length;
-      const score = Math.round((correct / questions.length) * 100);
-      setFinalScore(score);
-      setShowResult(true);
-    } else {
-      setCurrentQ(q => q + 1);
-    }
-  }
-
-  /* Save progress and close (mid-quiz) */
-  function handleClose() {
-    if (!showResult && currentQ < questions.length) {
-      onSaveProgress(session.id, { status:"in-progress", currentQ, answers });
-    }
-    onClose();
-  }
-
-  /* Final save */
-  function handleFinish() {
-    const passed = finalScore >= 80;
-    onFinish(session.id, finalScore, passed);
-    onClose();
-  }
-
-  /* Option visual state */
-  function optStyle(i) {
-    const isCorrect = q && q.a === i;
-    if (answered) {
-      const wasChosen = answers[currentQ] === i;
-      if (wasChosen && isCorrect) return { bg: C.successLight, border: C.successBorder, color: C.success };
-      if (wasChosen)              return { bg: C.errorLight,   border: C.errorBorder,   color: C.error   };
-      if (isCorrect)              return { bg: C.successLight, border: C.successBorder, color: C.success };
-    }
-    if (selected === i)           return { bg: C.primaryLight, border: C.primary,       color: C.primary  };
-    return { bg: C.white, border: C.gray200, color: C.gray700 };
-  }
-
-  if (!questions.length) return null;
-
-  return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", zIndex:600,
-                  display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
-      <div style={{ background:C.white, borderRadius:20, width:"100%", maxWidth:560,
-                    maxHeight:"90vh", overflowY:"auto",
-                    boxShadow:"0 28px 72px rgba(0,0,0,0.22)", animation:"fadeIn .2s ease" }}>
-
-        {/* ── Header ── */}
-        <div style={{ padding:"18px 22px 14px", borderBottom:`1px solid ${C.gray100}`,
-                      display:"flex", justifyContent:"space-between", alignItems:"flex-start",
-                      position:"sticky", top:0, background:C.white, zIndex:1, borderRadius:"20px 20px 0 0" }}>
-          <div>
-            <div style={{ fontSize:12, fontWeight:700, letterSpacing:1.5, color:C.primary, marginBottom:3 }}>
-              SESSION ASSESSMENT
-            </div>
-            <div style={{ fontWeight:700, fontSize:14, color:C.gray900, lineHeight:1.3, maxWidth:380 }}>
-              {session.title}
-            </div>
-          </div>
-          <button onClick={handleClose}
-            style={{ width:32, height:32, borderRadius:8, border:`1px solid ${C.gray200}`,
-                     background:C.white, cursor:"pointer", display:"flex",
-                     alignItems:"center", justifyContent:"center", flexShrink:0, marginLeft:12 }}
-            onMouseEnter={e=>e.currentTarget.style.background=C.gray50}
-            onMouseLeave={e=>e.currentTarget.style.background=C.white}>
-            <Icon name="x" size={16} color={C.gray500}/>
-          </button>
-        </div>
-
-        {/* ── Pass threshold notice ── */}
-        {!showResult && (
-          <div style={{ margin:"14px 22px 0",
-                        background:C.warningLight, border:`1px solid ${C.warningBorder}`,
-                        borderRadius:10, padding:"9px 14px",
-                        display:"flex", alignItems:"center", gap:8 }}>
-            <Icon name="info" size={14} color={C.warning}/>
-            <span style={{ fontSize:12, color:C.gray700, fontWeight:500 }}>
-              You need <strong>75%</strong> or more to unlock your certificate for this session.
-            </span>
-          </div>
-        )}
-
-        {!showResult ? (
-          <div style={{ padding:"18px 22px 24px" }}>
-            {/* Progress */}
-            <div style={{ display:"flex", justifyContent:"space-between",
-                          fontSize:12, color:C.gray400, marginBottom:7 }}>
-              <span>Question {currentQ + 1} of {questions.length}</span>
-              <span>{pct}% complete</span>
-            </div>
-            <ProgressBar value={pct} height={5}/>
-
-            {/* Question */}
-            <div style={{ margin:"22px 0 18px", fontSize:16, fontWeight:700,
-                          color:C.gray900, lineHeight:1.55 }}>
-              {q.q}
-            </div>
-
-            {/* Options */}
-            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-              {q.opts.map((opt, i) => {
-                const { bg, border, color } = optStyle(i);
-                return (
-                  <button key={i} onClick={() => choose(i)}
-                    style={{ padding:"13px 16px", borderRadius:12, border:`2px solid ${border}`,
-                             background:bg, color, fontSize:14, fontWeight:500,
-                             textAlign:"left", cursor:answered?"default":"pointer",
-                             transition:"border-color .15s, background .15s",
-                             display:"flex", alignItems:"center", gap:12 }}>
-                    <span style={{ width:28, height:28, borderRadius:"50%", border:`2px solid ${border}`,
-                                   display:"flex", alignItems:"center", justifyContent:"center",
-                                   fontSize:12, fontWeight:700, flexShrink:0, color }}>
-                      {String.fromCharCode(65 + i)}
-                    </span>
-                    {opt}
-                    {answered && q.a === i && (
-                      <Icon name="check-circle" size={16} color={C.success} style={{ marginLeft:"auto" }}/>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Feedback + Next */}
-            <div style={{ marginTop:20, display:"flex",
-                          justifyContent:"space-between", alignItems:"center" }}>
-              <span style={{ fontSize:12,
-                             color: answered
-                               ? (q.a === (answers[currentQ] ?? selected) ? C.success : C.error)
-                               : C.gray400,
-                             fontWeight: answered ? 600 : 400 }}>
-                {answered
-                  ? (q.a === answers[currentQ] ? "✓ Correct!" : "✗ Incorrect — see highlighted answer")
-                  : selected !== null ? "Ready to confirm" : "Select an answer"}
-              </span>
-              <Btn onClick={next}
-                disabled={selected === null && !answered}>
-                {isLast ? "Finish" : "Next"} <Icon name="caret-right" size={14} color="#fff"/>
-              </Btn>
-            </div>
-          </div>
-        ) : (
-          /* ── Result screen ── */
-          <div style={{ padding:"40px 28px 36px", textAlign:"left" }}>
-            <div style={{ fontSize:56, marginBottom:14, lineHeight:1 }}>
-              {finalScore >= 80 ? "🏆" : finalScore >= 50 ? "🎯" : "📚"}
-            </div>
-            <h2 style={{ margin:"0 0 6px", fontSize:22, fontWeight:900, color:C.gray900 }}>
-              {finalScore >= 80 ? "Assessment Passed!" : "Not Quite There Yet"}
-            </h2>
-            <p style={{ color:C.gray500, fontSize:14, margin:"0 0 10px" }}>
-              {finalScore >= 80
-                ? "Congratulations! You've unlocked your certificate."
-                : "Review the material and give it another shot."}
-            </p>
-            <div style={{ fontSize:52, fontWeight:900, marginBottom:6,
-                          color: finalScore >= 80 ? C.success : finalScore >= 50 ? C.warning : C.error }}>
-              {finalScore}%
-            </div>
-            <div style={{ fontSize:12, color:C.gray400, marginBottom:28 }}>
-              Pass threshold: 75%
-            </div>
-            <div style={{ display:"flex", gap:12, justifyContent:"center" }}>
-              <Btn variant="outline" onClick={onClose}>Close</Btn>
-              {finalScore >= 80
-                ? <Btn onClick={handleFinish}><Icon name="star" size={14} color="#fff"/> Save &amp; Get Certificate</Btn>
-                : <Btn variant="danger" onClick={handleFinish}><Icon name="arrow-left" size={14} color={C.error}/> Save &amp; Try Again Later</Btn>
-              }
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
    REVIEW MODAL
 ───────────────────────────────────────────────────────────────────────────── */
 function ReviewModal({ session, passed, score, onClose, onSubmit }) {
@@ -8717,9 +6566,9 @@ function LegalModal({ type, onClose }) {
 }
 
 function AuthModal({ onClose, onLogin, defaultStep = "user-auth", noOverlay = false }) {
-  // step: "role-select" | "user-auth" | "admin-auth" | "forgot-password"
+  // step: "role-select" | "user-auth" | "forgot-password"
   const [step,       setStep]      = useState(defaultStep);
-  const [mode,       setMode]      = useState(defaultStep === "admin-auth" ? "signin" : "signup");
+  const [mode,       setMode]      = useState("signup");
   const [email,      setEmail]     = useState("");
   const [password,   setPassword]  = useState("");
   const [firstName,  setFirstName] = useState("");
@@ -8727,13 +6576,10 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", noOverlay = fa
   const [keepSigned, setKeepSigned]= useState(true);
   const [legalModal, setLegalModal]= useState(null);
   const [resetSent,  setResetSent] = useState(false);
-  const [forgotFromAdmin, setForgotFromAdmin] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
-
-  const isAdmin = step === "admin-auth";
 
   async function handleGoogleLogin() {
     setGoogleLoading(true);
@@ -8760,17 +6606,13 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", noOverlay = fa
           options: { data: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: `${firstName.trim()} ${lastName.trim()}`.trim() } },
         });
         if (error) { setAuthError(error.message); return; }
-        if (isAdmin) {
-          setAuthError("✓ Account created! Check your email to confirm, then sign in.");
-        } else {
-          setAuthError("✓ Check your email to confirm your account, then sign in.");
-        }
+        setAuthError("✓ Check your email to confirm your account, then sign in.");
         setMode("signin");
         setPassword("");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) { setAuthError(error.message); return; }
-        onLogin(isAdmin ? "admin" : "user");
+        onLogin("user");
       }
     } finally {
       setAuthLoading(false);
@@ -8847,7 +6689,7 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", noOverlay = fa
                     onMouseLeave={e=>e.currentTarget.style.background="#6490E8"}>
                     Send Reset Link
                   </button>
-                  <button type="button" onClick={()=>{ setStep(forgotFromAdmin ? "admin-auth" : "user-auth"); setForgotFromAdmin(false); }}
+                  <button type="button" onClick={()=>{ setStep("user-auth"); }}
                     style={{ width:"100%", padding:"12px", borderRadius:8, border:"1px solid #e2e8f0", background:"#fff", color:"#64748b", fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}
                     onMouseEnter={e=>e.currentTarget.style.background="#f8fafc"}
                     onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
@@ -8863,7 +6705,7 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", noOverlay = fa
                   </div>
                   <h2 style={{ margin:"0 0 8px", fontSize:18, fontWeight:800, color:"#0f172a" }}>Check your email</h2>
                   <p style={{ margin:"0 0 24px", fontSize:13, color:"#94a3b8", lineHeight:1.6 }}>We sent a password reset link to <strong style={{ color:"#0f172a" }}>{email}</strong>. Check your inbox and follow the instructions.</p>
-                  <button onClick={()=>{ setStep(forgotFromAdmin ? "admin-auth" : "user-auth"); setMode("signin"); setResetSent(false); setForgotFromAdmin(false); }}
+                  <button onClick={()=>{ setStep("user-auth"); setMode("signin"); setResetSent(false); }}
                     style={{ width:"100%", padding:"12px", borderRadius:8, border:"1px solid #e2e8f0", background:"#fff", color:"#64748b", fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}
                     onMouseEnter={e=>e.currentTarget.style.background="#f8fafc"}
                     onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
@@ -8879,21 +6721,19 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", noOverlay = fa
         {step !== "role-select" && step !== "forgot-password" && (
           <>
 
-            <div style={{ padding: isAdmin ? "28px 32px 28px" : "24px 32px 28px" }}>
+            <div style={{ padding: "24px 32px 28px" }}>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
                 <img src="/Container.png" alt="SPED Summit" style={{ height:20, display:"block" }}/>
-                {!isAdmin && <button onClick={onClose} style={{ width:28, height:28, borderRadius:7, border:"1px solid #e2e8f0", background:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <button onClick={onClose} style={{ width:28, height:28, borderRadius:7, border:"1px solid #e2e8f0", background:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                   <Icon name="x" size={13} color="#64748b"/>
-                </button>}
+                </button>
               </div>
 
               <h2 style={{ margin:"0 0 6px", fontSize:18, fontWeight:800, color:"#0f172a" }}>
-                {isAdmin ? (mode === "signup" ? "Create Admin Account" : "Admin Sign In") : mode === "signup" ? "Create your account" : "Welcome back"}
+                {mode === "signup" ? "Create your account" : "Welcome back"}
               </h2>
               <p style={{ margin:"0 0 20px", fontSize:13, color:"#94a3b8" }}>
-                {isAdmin
-                  ? (mode === "signup" ? "Create a new admin account for the SPED Summit platform." : "Sign in to manage the SPED Summit platform.")
-                  : (mode === "signup" ? "Join thousands of SPED educators today." : "Sign in to access your account.")}
+                {mode === "signup" ? "Join thousands of SPED educators today." : "Sign in to access your account."}
               </p>
 
               {/* Sign in / Sign up toggle */}
@@ -8910,23 +6750,21 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", noOverlay = fa
                 ))}
               </div>
 
-              {/* Google (user only) */}
-              {!isAdmin && (
-                <>
-                  <button onClick={handleGoogleLogin} disabled={googleLoading}
-                    style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"11px 16px", border:"1px solid #e2e8f0", borderRadius:8, background:"#fff", fontSize:14, fontWeight:500, color:"#0f172a", cursor:googleLoading?"not-allowed":"pointer", marginBottom:16, fontFamily:"inherit", transition:"border-color .15s", opacity:googleLoading?0.7:1 }}
-                    onMouseEnter={e=>e.currentTarget.style.borderColor="#6490E8"}
-                    onMouseLeave={e=>e.currentTarget.style.borderColor="#e2e8f0"}>
-                    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-3.59-13.46-8.71l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
-                    {googleLoading ? "Redirecting to Google…" : mode === "signup" ? "Sign up with Google" : "Continue with Google"}
-                  </button>
-                  <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:16 }}>
-                    <div style={{ flex:1, height:1, background:"#f1f5f9" }}/>
-                    <span style={{ fontSize:12, color:"#94a3b8", fontWeight:500 }}>or</span>
-                    <div style={{ flex:1, height:1, background:"#f1f5f9" }}/>
-                  </div>
-                </>
-              )}
+              {/* Google login */}
+              <>
+                <button onClick={handleGoogleLogin} disabled={googleLoading}
+                  style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"11px 16px", border:"1px solid #e2e8f0", borderRadius:8, background:"#fff", fontSize:14, fontWeight:500, color:"#0f172a", cursor:googleLoading?"not-allowed":"pointer", marginBottom:16, fontFamily:"inherit", transition:"border-color .15s", opacity:googleLoading?0.7:1 }}
+                  onMouseEnter={e=>e.currentTarget.style.borderColor="#6490E8"}
+                  onMouseLeave={e=>e.currentTarget.style.borderColor="#e2e8f0"}>
+                  <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-3.59-13.46-8.71l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+                  {googleLoading ? "Redirecting to Google…" : mode === "signup" ? "Sign up with Google" : "Continue with Google"}
+                </button>
+                <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:16 }}>
+                  <div style={{ flex:1, height:1, background:"#f1f5f9" }}/>
+                  <span style={{ fontSize:12, color:"#94a3b8", fontWeight:500 }}>or</span>
+                  <div style={{ flex:1, height:1, background:"#f1f5f9" }}/>
+                </div>
+              </>
 
               <form onSubmit={handleSubmit}>
                 {/* Name fields — sign up only */}
@@ -8949,7 +6787,7 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", noOverlay = fa
                   <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Work Email" type="email" required style={inp}
                     onFocus={e=>e.target.style.borderColor="#6490E8"} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
                 </div>
-                <div style={{ marginBottom: isAdmin ? 8 : 16 }}>
+                <div style={{ marginBottom: 16 }}>
                   <label style={{ display:"block", fontSize:12, fontWeight:600, color:"#2B2E33", marginBottom:5 }}>Password</label>
                   <div style={{ position:"relative" }}>
                     <input value={password} onChange={e=>setPassword(e.target.value)} placeholder={mode === "signup" ? "Create a password" : "Enter your password"} type={showPassword ? "text" : "password"} required style={{ ...inp, paddingRight:40 }}
@@ -8963,14 +6801,6 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", noOverlay = fa
                     </button>
                   </div>
                 </div>
-                {isAdmin && mode === "signin" && (
-                  <div style={{ display:"flex", justifyContent:"flex-end", marginBottom:16 }}>
-                    <button type="button" onClick={()=>{ setForgotFromAdmin(true); setStep("forgot-password"); }}
-                      style={{ background:"none", border:"none", color:"#6490E8", fontSize:13, fontWeight:500, cursor:"pointer", textDecoration:"underline", padding:0, fontFamily:"inherit" }}>
-                      Forgot password?
-                    </button>
-                  </div>
-                )}
                 {authError && (
                   <div style={{ marginBottom:12, padding:"10px 12px", borderRadius:8, background: authError.startsWith("✓") ? "#f0fdf4" : "#fef2f2", border:`1px solid ${authError.startsWith("✓") ? "#bbf7d0" : "#fecaca"}`, fontSize:13, color: authError.startsWith("✓") ? "#16a34a" : "#dc2626", lineHeight:1.5 }}>
                     {authError}
@@ -8982,15 +6812,13 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", noOverlay = fa
                   onMouseLeave={e=>{ if (!authLoading) e.currentTarget.style.background="#6490E8"; }}>
                   {authLoading ? "Please wait…" : mode === "signup" ? "Create Account" : "Sign In"}
                 </button>
-                {!isAdmin && (
-                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:12 }}>
-                    <label style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
-                      <input type="checkbox" checked={keepSigned} onChange={e=>setKeepSigned(e.target.checked)} style={{ width:14, height:14, accentColor:"#6490E8", cursor:"pointer" }}/>
-                      <span style={{ fontSize:13, color:"#2B2E33" }}>Keep me signed in</span>
-                    </label>
-                    {mode === "signin" && <span onClick={()=>{ setForgotFromAdmin(false); setStep("forgot-password"); }} style={{ fontSize:13, color:"#6490E8", cursor:"pointer", fontWeight:500, textDecoration:"underline" }}>Forgot password?</span>}
-                  </div>
-                )}
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:12 }}>
+                  <label style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}>
+                    <input type="checkbox" checked={keepSigned} onChange={e=>setKeepSigned(e.target.checked)} style={{ width:14, height:14, accentColor:"#6490E8", cursor:"pointer" }}/>
+                    <span style={{ fontSize:13, color:"#2B2E33" }}>Keep me signed in</span>
+                  </label>
+                  {mode === "signin" && <span onClick={()=>setStep("forgot-password")} style={{ fontSize:13, color:"#6490E8", cursor:"pointer", fontWeight:500, textDecoration:"underline" }}>Forgot password?</span>}
+                </div>
               </form>
 
               <p style={{ textAlign:"center", fontSize:12, color:"#94a3b8", margin:"20px 0 0", lineHeight:1.6 }}>
@@ -11951,22 +9779,18 @@ function LandingPageV2({ onGetStarted }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    APP
 ───────────────────────────────────────────────────────────────────────────── */
-const IS_ADMIN_DOMAIN = typeof window !== "undefined" && window.location.hostname.includes("admin");
-
 export default function App() {
   // ── ALL useState declarations MUST come before any useCallback/useEffect ──
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showLanding, setShowLanding] = useState(() => IS_ADMIN_DOMAIN ? false : sessionStorage.getItem("showLanding") !== "0");
+  const [showLanding, setShowLanding] = useState(() => sessionStorage.getItem("showLanding") !== "0");
   const [openInstructorName, setOpenInstructorName] = useState(null);
-  const [page, setPage] = useState(() => IS_ADMIN_DOMAIN ? (sessionStorage.getItem("page") || "admin-overview") : (sessionStorage.getItem("page") || "dashboard"));
+  const [page, setPage] = useState(() => sessionStorage.getItem("page") || "dashboard");
   const navHistoryRef = useRef(["dashboard"]);
-  const [isAdmin, setIsAdmin] = useState(() => IS_ADMIN_DOMAIN ? sessionStorage.getItem("isAdmin") === "1" : sessionStorage.getItem("isAdmin") === "1");
   const [isDark, setIsDark] = useState(() => { const h = new Date().getHours(); return h >= 19 || h < 6; });
   const [landingV, setLandingV] = useState(1);
   const [activeSession,   setActiveSession]   = useState(null);
   const [sessionSource,   setSessionSource]   = useState("sessions");
   const [sessionBackLabel, setSessionBackLabel] = useState(null);
-  const [editingSession,  setEditingSession]  = useState(null);
   const { toasts, toast, remove } = useToast();
   const [quizStates, setQuizStates] = useState({});
   const [enrolledIds, setEnrolledIds] = useState(new Set());
@@ -11979,7 +9803,6 @@ export default function App() {
   const [pastSeasonOrigin, setPastSeasonOrigin] = useState("browse");
   const [showPricingOverlay, setShowPricingOverlay] = useState(false);
   const [dashFilter, setDashFilter] = useState({ season:"all", year:"all" });
-  const [adminSessions, setAdminSessions] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [sessionsLoading, setSessionsLoading] = useState(true);
   const [spring2026Ids, setSpring2026Ids] = useState([]);
@@ -12018,16 +9841,6 @@ export default function App() {
 
       setSessionsLoading(false);
 
-      // Derive adminSessions from Supabase rows
-      setAdminSessions(rows.map(s => {
-        const state = getSessionState({ available_from: s.available_from, available_to: s.available_to });
-        const statusLabel = state === "live" ? "LIVE" : state === "past" ? "ARCHIVED" : "DRAFT";
-        const dateLabel = s.available_from
-          ? new Date(s.available_from).toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" })
-          : "";
-        return { id: s.id, title: s.title, category: s.category || "SPED", status: statusLabel, date: dateLabel, enrolled: 0, availableFrom: s.available_from || "", availableTo: s.available_to || "" };
-      }));
-
       setSpring2026Ids(prev => {
         const supabaseIds = new Set(rows.map(s => s.id));
         const surviving = prev.filter(id => supabaseIds.has(id));
@@ -12048,7 +9861,7 @@ export default function App() {
         setUserEmail(session.user.email || "");
         setUserAvatar(meta.avatar_url || meta.picture || null);
         setIsLoggedIn(true);
-        if (event === "SIGNED_IN") { setPage(IS_ADMIN_DOMAIN ? "admin-overview" : "dashboard"); sessionStorage.removeItem("loggedOut"); }
+        if (event === "SIGNED_IN") { setPage("dashboard"); sessionStorage.removeItem("loggedOut"); }
         sessionStorage.setItem("loggedIn", "1");
         fetchSessions();
         fetchUserProgress();
@@ -12057,11 +9870,10 @@ export default function App() {
         setIsLoggedIn(false);
         setShowLanding(true);
         setPage("dashboard");
-        setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false);
+        setUserName(""); setUserEmail(""); setUserAvatar(null);
         setEnrolledIds(new Set()); setScheduleRegistrations({}); setQuizStates({});
         setSessions(prev => prev.map(s => ({ ...s, progress: 0, status: "not-started" })));
         sessionStorage.removeItem("loggedIn");
-        sessionStorage.removeItem("isAdmin");
         sessionStorage.setItem("showLanding", "1");
         sessionStorage.setItem("loggedOut", "1");
       }
@@ -12170,60 +9982,6 @@ export default function App() {
     };
   }, [fetchSessions]);
 
-  async function addAdminSession(form, publish, sections) {
-    const newId = Math.floor(100000000 + Math.random() * 900000000);
-    const dateLabel = form.availableFrom
-      ? new Date(form.availableFrom).toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" })
-      : new Date().toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
-
-    const adminEntry = {
-      id: newId,
-      title: form.title,
-      category: form.category || "SPED",
-      status: publish ? "LIVE" : "DRAFT",
-      date: dateLabel,
-      enrolled: 0,
-      availableFrom: form.availableFrom || "",
-      availableTo: form.availableTo || "",
-      instructor: form.instructorName || "",
-      vimeoUrl: form.vimeoUrl || "",
-      desc: form.desc || "",
-    };
-    setAdminSessions(prev => [adminEntry, ...prev]);
-
-    if (publish) {
-      const lessons = sections && sections.length
-        ? sections.flatMap(sec => sec.lessons.map(l => ({
-            id: l.id, sectionTitle: sec.title, title: l.title,
-            duration: l.duration || "60:00", status: "available", type: l.type || "video",
-            vimeoUrl: l.vimeoUrl || form.vimeoUrl || "",
-          })))
-        : [{ id:1, sectionTitle:"Session", title:"Full Session", duration:"60:00", status:"available", type:"video", vimeoUrl: form.vimeoUrl || "" }];
-
-      const supabaseEntry = {
-        id: newId, title: form.title, category: form.category || "SPED",
-        instructor: form.instructorName || "", instructor_bio: form.bio || "",
-        duration: "60 mins",
-        description: form.desc || "", vimeo_url: form.vimeoUrl || "",
-        available_from: form.availableFrom || null, available_to: form.availableTo || null,
-        lessons,
-        resources: sections.flatMap(sec => sec.resources.map(r => ({
-          title: r.title, type: r.type, size: r.size, icon: r.icon, url: r.url,
-        }))),
-      };
-
-      const { error } = await supabase.from("sessions").insert([supabaseEntry]);
-      if (error) {
-        toast({ type:"error", title:"Publish failed", message:"Could not save to server: " + error.message });
-        return;
-      }
-
-      // Re-fetch from Supabase so all devices see the new session immediately
-      fetchSessions();
-      if (!form.availableFrom) setSpring2026Ids(prev => [...prev, newId]);
-    }
-  }
-
   function enroll(sessionId) {
     setEnrolledIds(prev => new Set([...prev, sessionId]));
     saveUserProgress(sessionId, { enrolled: true });
@@ -12273,7 +10031,7 @@ export default function App() {
 
   function _applyPage(p, keepSession = false) {
     setPage(p); sessionStorage.setItem("page", p);
-    if (!keepSession) { setActiveSession(null); setEditingSession(null); }
+    if (!keepSession) { setActiveSession(null); }
     if (p === "sessions") setSessionsDeepLink(null);
     if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0;
   }
@@ -12309,14 +10067,6 @@ export default function App() {
   }, []);
   function navToSeason(seasonId) { setSessionsDeepLink(seasonId); setPage("sessions"); setActiveSession(null); }
 
-  function openEdit(s) {
-    const full = sessions.find(sess => sess.id === s.id);
-    setEditingSession(full ? { ...s, lessons: full.lessons, vimeoUrl: full.vimeoUrl || s.vimeoUrl } : s);
-    setPage("admin-edit");
-    sessionStorage.setItem("page", "admin-edit");
-    if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0;
-  }
-
   function updateProgress(sessionId, pct, activeLessonIdx) {
     const newStatus = pct >= 100 ? "completed" : "in-progress";
     setSessions(prev => prev.map(s => {
@@ -12335,36 +10085,6 @@ export default function App() {
     saveUserProgress(sessionId, { progress: pct, status: newStatus, enrolled: true });
   }
 
-  async function updateSession(id, form, sections) {
-    const updatedLessons = sections
-      ? sections.flatMap(sec => sec.lessons.map(l => ({
-          id: l.id, sectionTitle: sec.title, title: l.title,
-          duration: l.duration || "60:00", status: l.status === "draft" ? "available" : l.status,
-          type: l.type || "video", vimeoUrl: l.vimeoUrl || "",
-          questions: l.questions || [],
-        })))
-      : undefined;
-
-    const supabaseUpdate = {
-      title: form.title, category: form.category,
-      instructor: form.instructorName, instructor_bio: form.bio,
-      description: form.desc, vimeo_url: form.vimeoUrl,
-      available_from: form.availableFrom || null, available_to: form.availableTo || null,
-      ...(updatedLessons ? { lessons: updatedLessons } : {}),
-      ...(form.quiz_questions ? { quiz_questions: form.quiz_questions } : {}),
-    };
-    const { error } = await supabase.from("sessions").update(supabaseUpdate).eq("id", id);
-    if (error) { toast({ type:"error", title:"Update failed", message: error.message }); return; }
-
-    setSessions(prev => prev.map(s => s.id === id ? {
-      ...s, title: form.title, category: form.category, instructor: form.instructorName,
-      instructorBio: form.bio, description: form.desc, vimeoUrl: form.vimeoUrl,
-      availableFrom: form.availableFrom, availableTo: form.availableTo,
-      ...(updatedLessons ? { lessons: updatedLessons } : {}),
-    } : s));
-    setAdminSessions(prev => prev.map(s => s.id === id ? { ...s, title: form.title, category: form.category, instructor: form.instructorName, vimeoUrl: form.vimeoUrl, availableFrom: form.availableFrom, availableTo: form.availableTo } : s));
-  }
-
   function openSession(s, source) {
     const src = (source === "landing" ? "dashboard" : source) || page;
     setActiveSession(s);
@@ -12378,8 +10098,6 @@ export default function App() {
     if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0;
   }
 
-  function toggleAdmin() { /* user-only app — no toggle */ }
-
   const quizProps = {
     quizStates,
     onAssessmentClick: handleAssessmentClick,
@@ -12389,14 +10107,7 @@ export default function App() {
   function renderPage() {
     if (page==="session-detail" && activeSession) {
       const liveSession = sessions.find(s => s.id === activeSession.id) || activeSession;
-      return <SessionDetail session={liveSession} onBack={()=>nav(isAdmin?"admin-sessions":sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress} adminName={userName} adminAvatar={userAvatar} isDark={isDark}/>;
-    }
-    if (isAdmin && isLoggedIn) {
-      if (page==="admin-overview") return <AdminOverview onNavigate={nav} onEditSession={openEdit} toast={toast} adminSessions={adminSessions}/>;
-      if (page==="admin-sessions") return <AdminSessionsPage onNavigate={nav} onEditSession={openEdit} toast={toast} adminSessions={adminSessions} setAdminSessions={setAdminSessions}/>;
-      if (page==="admin-create") return <AdminCreateSession onBack={()=>nav("admin-sessions")} toast={toast} onSave={addAdminSession}/>;
-      if (page==="admin-edit" && editingSession) return <AdminEditSession session={editingSession} onBack={()=>nav("admin-sessions")} toast={toast} onSave={updateSession}/>;
-      if (page==="admin-analytics") return <AnalyticsPage onEditSession={openEdit} sessions={sessions}/>;
+      return <SessionDetail session={liveSession} onBack={()=>nav(sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress} adminName={userName} adminAvatar={userAvatar} isDark={isDark}/>;
     }
     if (page==="past-season" && pastSeasonPageId) {
       const season = seasons.find(s => s.id === pastSeasonPageId);
@@ -12509,7 +10220,7 @@ export default function App() {
         </div>
       );
     }
-    if (page==="dashboard") { if (isAdmin) { nav("admin-overview"); return null; } return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenPastSeason={(id)=>{ setPastSeasonPageId(id); nav("past-season"); }} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} seasons={seasons} schedule={scheduleData.length > 0 ? scheduleData : SCHEDULE} externalFilter={dashFilter} onFilterChange={setDashFilter} isAdmin={isAdmin} sessionsLoading={sessionsLoading}/>; }
+    if (page==="dashboard") { return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenPastSeason={(id)=>{ setPastSeasonPageId(id); nav("past-season"); }} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} seasons={seasons} schedule={scheduleData.length > 0 ? scheduleData : SCHEDULE} externalFilter={dashFilter} onFilterChange={setDashFilter} sessionsLoading={sessionsLoading}/>; }
     if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} seasons={seasons} sessionsLoading={sessionsLoading}/>;
     if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} schedule={scheduleData.length > 0 ? scheduleData : SCHEDULE}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
@@ -12521,50 +10232,28 @@ export default function App() {
     return null;
   }
 
-  const activePage = page==="session-detail" ? (isAdmin?"admin-sessions":"sessions") : page;
-
-  // Admin domain: show admin login gate until authenticated
-  if (IS_ADMIN_DOMAIN && !isLoggedIn) {
-    return (
-      <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"#faf5f0", flexDirection:"column", gap:24 }}>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-        <AuthModal noOverlay onClose={()=>{}} onLogin={(role) => {
-          if (role === "admin") {
-            setIsAdmin(true);
-            setIsLoggedIn(true);
-            sessionStorage.setItem("isAdmin", "1");
-            sessionStorage.removeItem("loggedOut");
-            setPage("admin-overview");
-          }
-        }} defaultStep="admin-auth"/>
-      </div>
-    );
-  }
+  const activePage = page==="session-detail" ? "sessions" : page;
 
   if (showLanding) {
-    const handleGetStarted = (sessionId, role = "user") => {
+    const handleGetStarted = (sessionId) => {
       setIsLoggedIn(true);
       // Only leave the landing page if the user explicitly clicked a session
       // or the "Go to Dashboard" button — not just because auth completed.
-      if (role === "admin") { setIsAdmin(true); sessionStorage.setItem("isAdmin", "1"); }
       if (sessionId) {
         setShowLanding(false);
-        setPage(role === "admin" ? "admin-overview" : "dashboard");
+        setPage("dashboard");
         enroll(sessionId);
-      } else if (role === "admin") {
-        setShowLanding(false);
-        setPage("admin-overview");
       }
-      // role === "user" with no sessionId → stay on landing, page updates to logged-in state
+      // no sessionId → stay on landing, page updates to logged-in state
     };
     const handleGoToPage = (p) => {
-      setPage(p || (isAdmin ? "admin-overview" : "dashboard"));
+      setPage(p || "dashboard");
       setShowLanding(false);
     };
     return (
       <>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} isAdmin={isAdmin} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToPage} onWatchSession={(s)=>{ setShowLanding(false); openSession(s, "landing"); }} onLogout={async ()=>{ sessionStorage.setItem("loggedOut","1"); sessionStorage.removeItem("isAdmin"); sessionStorage.removeItem("loggedIn"); sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("page","dashboard"); await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); setEnrolledIds(new Set()); setQuizStates({}); }} openInstructorName={openInstructorName} onInstructorOpened={()=>setOpenInstructorName(null)} sessions={sessions} sessionsLoading={sessionsLoading}/>
+        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToPage} onWatchSession={(s)=>{ setShowLanding(false); openSession(s, "landing"); }} onLogout={async ()=>{ sessionStorage.setItem("loggedOut","1"); sessionStorage.removeItem("loggedIn"); sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("page","dashboard"); await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setEnrolledIds(new Set()); setQuizStates({}); }} openInstructorName={openInstructorName} onInstructorOpened={()=>setOpenInstructorName(null)} sessions={sessions} sessionsLoading={sessionsLoading}/>
       </>
     );
   }
@@ -12574,21 +10263,18 @@ export default function App() {
     <div data-theme={isDark ? "dark" : "light"} style={{ height:"100vh", display:"flex", flexDirection:"column", fontFamily:"'Inter', -apple-system, BlinkMacSystemFont, sans-serif", background:C.gray50 }}>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
       <TopBar
-        onToggleAdmin={toggleAdmin}
-        isAdmin={isAdmin}
         toast={toast}
         isDark={isDark}
         onToggleDarkMode={() => setIsDark(v => !v)}
         onLogout={async () => {
           sessionStorage.setItem("loggedOut", "1");
-          sessionStorage.removeItem("isAdmin");
           sessionStorage.removeItem("loggedIn");
           sessionStorage.setItem("showLanding", "1");
           sessionStorage.setItem("page", "dashboard");
           await supabase.auth.signOut();
           setIsLoggedIn(false); setShowLanding(true); setPage("dashboard");
           setUserName(""); setUserEmail(""); setUserAvatar(null);
-          setIsAdmin(false); setEnrolledIds(new Set()); setQuizStates({});
+          setEnrolledIds(new Set()); setQuizStates({});
         }}
         onNavigateProfile={() => nav("profile")}
         onOpenSession={openSession}
@@ -12630,33 +10316,22 @@ export default function App() {
         `}</style>
 
         <div className="app-tabbar-wrap">
-          {activePage !== "profile" && page !== "session-detail" && page !== "admin-create" && page !== "admin-edit" && page !== "past-season" && <TabBar
+          {activePage !== "profile" && page !== "session-detail" && page !== "past-season" && <TabBar
             active={activePage}
             onChange={nav}
-            isAdmin={isAdmin}
           />}
           {page === "past-season" && pastSeasonPageId && <TabBar
             active={activePage}
             onChange={nav}
-            isAdmin={isAdmin}
             breadcrumbs={[
-              { label: isAdmin ? "Overview" : "My Learnings", onClick:() => { setPastSeasonPageId(null); nav(isAdmin ? "admin-overview" : "dashboard"); } },
+              { label: "My Learnings", onClick:() => { setPastSeasonPageId(null); nav("dashboard"); } },
               { label: "Past Sessions", onClick:() => { setPastSeasonPageId(null); nav("past-sessions"); } },
               { label: seasons.find(s => s.id === pastSeasonPageId)?.name || "Past Season" },
             ]}
           />}
-          {(page === "admin-create" || page === "admin-edit") && <TabBar
-            active={activePage}
-            onChange={nav}
-            isAdmin={isAdmin}
-            breadcrumbs={[
-              { label:"My Sessions", onClick:() => nav("admin-sessions") },
-              { label: page === "admin-edit" ? (editingSession?.title || "Edit Session") : "Create New Session" },
-            ]}
-          />}
         </div>
 
-        <div ref={scrollContainerRef} className={`app-scroll-area${(page==="profile"||page==="session-detail"||page==="past-season"||activeSession||sessionsDeepLink)?" no-bottom-nav":""}`} style={{ flex:1, overflowY:"auto", overflowX:"clip", background:C.gray50 }}>{renderPage()}{!isAdmin && page !== "profile" && <Footer onNavigate={nav}/>}</div>
+        <div ref={scrollContainerRef} className={`app-scroll-area${(page==="profile"||page==="session-detail"||page==="past-season"||activeSession||sessionsDeepLink)?" no-bottom-nav":""}`} style={{ flex:1, overflowY:"auto", overflowX:"clip", background:C.gray50 }}>{renderPage()}{page !== "profile" && <Footer onNavigate={nav}/>}</div>
       </div>
 
       {/* Mobile bottom nav — hidden when drilling into sub-pages */}
@@ -12665,7 +10340,6 @@ export default function App() {
           <LimelightBottomNav
             active={page === "notifications" ? "__notif__" : page === "past-season" ? "past-sessions" : activePage}
             onChange={nav}
-            isAdmin={isAdmin}
             notifCount={NOTIF_DATA.filter(n => !n.read).length}
             onNotif={() => nav("notifications")}
           />
@@ -12688,12 +10362,10 @@ export default function App() {
           ? /* Mobile: full-screen page */
             <div style={{ position:"fixed", inset:0, zIndex:1000, background:"#fff", display:"flex", flexDirection:"column" }}>
               <TopBar
-                onToggleAdmin={toggleAdmin}
-                isAdmin={isAdmin}
                 toast={toast}
                 isDark={isDark}
                 onToggleDarkMode={() => setIsDark(v => !v)}
-                onLogout={async () => { sessionStorage.setItem("loggedOut","1"); sessionStorage.removeItem("isAdmin"); sessionStorage.removeItem("loggedIn"); sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("page","dashboard"); await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setIsAdmin(false); setEnrolledIds(new Set()); setQuizStates({}); setShowPricingOverlay(false); }}
+                onLogout={async () => { sessionStorage.setItem("loggedOut","1"); sessionStorage.removeItem("loggedIn"); sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("page","dashboard"); await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setEnrolledIds(new Set()); setQuizStates({}); setShowPricingOverlay(false); }}
                 onNavigateProfile={() => { setShowPricingOverlay(false); nav("profile"); }}
                 onOpenSession={openSession}
                 onNavigate={nav}
