@@ -4109,26 +4109,30 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                     currentSection = { title: l.sectionTitle, lessons: [] };
                     sections.push(currentSection);
                   } else if (!currentSection) {
-                    currentSection = { title: "Introduction", lessons: [] };
+                    currentSection = { title: null, lessons: [] }; // no header for unsectioned lessons
                     sections.push(currentSection);
                   }
                   currentSection.lessons.push({ ...l, _index: i });
                 });
+                let namedSectionCount = 0;
                 return sections.map((sec, si) => {
                   const secKey = `sec-${si}`;
                   const isCollapsed = collapsedSections[secKey];
                   const completedCount = sec.lessons.filter(l => l.status === "completed").length;
+                  if (sec.title) namedSectionCount++;
                   return (
                     <div key={secKey} style={{ borderBottom:`1px solid ${C.gray100}` }}>
+                      {sec.title && (
                       <button onClick={() => setCollapsedSections(s => ({ ...s, [secKey]: !s[secKey] }))}
                         style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 16px", background:C.gray50, border:"none", cursor:"pointer", textAlign:"left", gap:8 }}>
                         <div style={{ flex:1, minWidth:0 }}>
-                          <div style={{ fontSize:12, fontWeight:700, color:C.gray900 }}>{si === 0 ? "" : `${si}. `}{sec.title}</div>
+                          <div style={{ fontSize:12, fontWeight:700, color:C.gray900 }}>{namedSectionCount === 1 ? "" : `${namedSectionCount}. `}{sec.title}</div>
                           <div style={{ fontSize:12, color:C.gray400, marginTop:1 }}>{sec.lessons.length} lesson{sec.lessons.length!==1?"s":""}{completedCount>0 ? ` · ${completedCount} done` : ""}</div>
                         </div>
                         <Icon name={isCollapsed ? "caret-down" : "caret-up"} size={13} color={C.gray400}/>
                       </button>
-                      {!isCollapsed && (
+                      )}
+                      {(!sec.title || !isCollapsed) && (
                         <div style={{ padding:"4px 0 8px" }}>
                           {sec.lessons.map(l => {
                             const i = l._index;
