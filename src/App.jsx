@@ -1936,7 +1936,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
   const qs = quizState.status; // "not-taken" | "in-progress" | "passed" | "failed" | undefined
   const hasAssessment = getSessionQuestions(session).length > 0;
   const watchedEnough = (session.progress || 0) >= 75;
-  const showAssessmentCTA = hasAssessment && (watchedEnough || session.status === "completed");
+  const showAssessmentCTA = hasAssessment && watchedEnough;
 
   let assessBtn = null;
   if (showAssessmentCTA) {
@@ -3939,6 +3939,10 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
       return;
     }
     if (l.type==="quiz") {
+      if (progress < 75) {
+        toast({ type:"warning", title:"Assessment locked", message:`Watch ${75 - Math.round(progress)}% more of the video to unlock the assessment.` });
+        return;
+      }
       onAssessmentClick && onAssessmentClick(session); return;
     }
     setActiveLesson(idx);
