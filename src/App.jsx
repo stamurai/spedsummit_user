@@ -3811,6 +3811,9 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress }) {
   const [embedError, setEmbedError] = useState(null);
   useEffect(() => { onProgressRef.current = onProgress; }, [onProgress]);
 
+  // Reset max when the video changes (lesson switch) so the new video starts from 0
+  useEffect(() => { maxPctRef.current = 0; }, [videoId]);
+
   useEffect(() => {
     if (!videoId) return;
     setEmbedError(null);
@@ -3930,6 +3933,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const lesson = session.lessons[activeLesson] || session.lessons[0];
   const lastSavedPctRef = useRef(-1);
   const saveThrottleRef = useRef(null);
+  const latestPctRef = useRef(0); // always holds the most recent pct for the throttle callback
 
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
@@ -4047,6 +4051,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               {(session.vimeoUrl || lesson?.vimeoUrl) ? (
                 <VimeoPlayer url={session.vimeoUrl || lesson?.vimeoUrl} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onProgress={pct => {
                   setProgress(pct);
+                  latestPctRef.current = pct;
                   if (pct >= 80) { setUnlockedIndices(prev => { const next = new Set(prev); next.add(activeLesson + 1); return next; }); }
                   // Throttle Supabase saves to once every 5s; always save on milestone crossings
                   const isMilestone = (pct >= 75 && lastSavedPctRef.current < 75) || (pct >= 100 && lastSavedPctRef.current < 100);
@@ -4056,8 +4061,9 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                   } else if (!saveThrottleRef.current) {
                     saveThrottleRef.current = setTimeout(() => {
                       saveThrottleRef.current = null;
-                      lastSavedPctRef.current = pct;
-                      onUpdateProgress?.(session.id, pct, activeLesson);
+                      const cur = latestPctRef.current; // read latest, not stale closure value
+                      lastSavedPctRef.current = cur;
+                      onUpdateProgress?.(session.id, cur, activeLesson);
                     }, 5000);
                   }
                 }}/>
