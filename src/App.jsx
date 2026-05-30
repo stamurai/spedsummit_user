@@ -3801,13 +3801,13 @@ const SESSION_RESOURCES = {
 /* ─────────────────────────────────────────────────────────────────────────────
    SESSION DETAIL (VIDEO EXPERIENCE)
 ───────────────────────────────────────────────────────────────────────────── */
-function VimeoPlayer({ url, onPlay, onPause, onProgress }) {
+function VimeoPlayer({ url, onPlay, onPause, onProgress, initialProgress = 0 }) {
   const videoId = extractVimeoId(url);
   const iframeRef = useRef(null);
   const storageKey = videoId ? `vimeo_pos_${videoId}` : null;
   const savedTime = storageKey ? (parseFloat(localStorage.getItem(storageKey)) || 0) : 0;
   const onProgressRef = useRef(onProgress);
-  const maxPctRef = useRef(0); // highest % actually played through — seeking forward doesn't count
+  const maxPctRef = useRef(initialProgress); // seed from restored progress so rewatching doesn't re-lock
   const [embedError, setEmbedError] = useState(null);
   useEffect(() => { onProgressRef.current = onProgress; }, [onProgress]);
 
@@ -3931,9 +3931,9 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const [narrow, setNarrow] = useState(false);
   const [videoHeight, setVideoHeight] = useState(0);
   const lesson = session.lessons[activeLesson] || session.lessons[0];
-  const lastSavedPctRef = useRef(-1);
+  const lastSavedPctRef = useRef(session.progress || 0);
   const saveThrottleRef = useRef(null);
-  const latestPctRef = useRef(0); // always holds the most recent pct for the throttle callback
+  const latestPctRef = useRef(session.progress || 0);
 
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
@@ -4049,7 +4049,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           <div ref={videoRef} style={{ position:"relative", background:"#0f172a", paddingBottom:"56.25%", height:0 }}>
             <div style={{ position:"absolute", inset:0 }}>
               {(session.vimeoUrl || lesson?.vimeoUrl) ? (
-                <VimeoPlayer url={session.vimeoUrl || lesson?.vimeoUrl} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onProgress={pct => {
+                <VimeoPlayer url={session.vimeoUrl || lesson?.vimeoUrl} initialProgress={session.progress || 0} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onProgress={pct => {
                   setProgress(pct);
                   latestPctRef.current = pct;
                   if (pct >= 80) { setUnlockedIndices(prev => { const next = new Set(prev); next.add(activeLesson + 1); return next; }); }
