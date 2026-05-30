@@ -3811,8 +3811,14 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress, initialProgress = 0 }) 
   const [embedError, setEmbedError] = useState(null);
   useEffect(() => { onProgressRef.current = onProgress; }, [onProgress]);
 
-  // Reset max when the video changes (lesson switch) so the new video starts from 0
-  useEffect(() => { maxPctRef.current = 0; }, [videoId]);
+  // Reset max when the video changes (lesson switch), but not on initial mount
+  const prevVideoIdRef = useRef(videoId);
+  useEffect(() => {
+    if (prevVideoIdRef.current !== videoId) {
+      prevVideoIdRef.current = videoId;
+      maxPctRef.current = 0;
+    }
+  }, [videoId]);
 
   useEffect(() => {
     if (!videoId) return;
