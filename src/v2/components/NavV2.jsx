@@ -81,9 +81,9 @@ function MenuToggleIcon({ open, size = 18, duration = 300 }) {
 
 /* ── Nav links ──────────────────────────────────────────────────────────────── */
 const LINKS = [
-  { label: 'Sessions',    href: '#features-v2'    },
-  { label: 'Instructors', href: '#instructors-v2' },
-  { label: 'FAQ',         href: '#faq-v2'         },
+  { label: 'Sessions', href: '#features-v2'    },
+  { label: 'Speakers', href: '#instructors-v2' },
+  { label: 'FAQ',      href: '#faq-v2'         },
 ];
 
 /* ── NavV2 ──────────────────────────────────────────────────────────────────── */
@@ -136,7 +136,11 @@ export default function NavV2({ onGetStarted, isLoggedIn, isAdmin, userName, onG
               >{label}</a>
             ))}
             {isLoggedIn
-              ? <div style={{ marginLeft: 8 }}><ProfileMenu isAdmin={isAdmin} userName={userName} onGoToDashboard={onGoToDashboard}/></div>
+              ? <button onClick={onGoToDashboard}
+                  style={{ marginLeft: 8, padding: '7px 18px', fontSize: 14, fontWeight: 700, background: '#f59e0b', color: '#000', border: 'none', borderRadius: 10, cursor: 'pointer', transition: 'background 0.15s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#d97706'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#f59e0b'}
+                >My Dashboard</button>
               : <button onClick={onGetStarted}
                   style={{ marginLeft: 8, padding: '7px 18px', fontSize: 14, fontWeight: 700, background: '#f59e0b', color: '#000', border: 'none', borderRadius: 10, cursor: 'pointer', transition: 'background 0.15s' }}
                   onMouseEnter={e => e.currentTarget.style.background = '#d97706'}
@@ -173,7 +177,7 @@ export default function NavV2({ onGetStarted, isLoggedIn, isAdmin, userName, onG
           {isLoggedIn
             ? <button onClick={() => { setOpen(false); onGoToDashboard?.(); }}
                 style={{ width: '100%', padding: '14px', fontSize: 15, fontWeight: 800, background: '#f59e0b', color: '#000', border: 'none', borderRadius: 12, cursor: 'pointer' }}>
-                {isAdmin ? 'Admin Dashboard' : 'My Learning'} →
+                My Dashboard →
               </button>
             : <button onClick={() => { setOpen(false); onGetStarted?.(); }}
                 style={{ width: '100%', padding: '14px', fontSize: 15, fontWeight: 800, background: '#f59e0b', color: '#000', border: 'none', borderRadius: 12, cursor: 'pointer' }}>
