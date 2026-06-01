@@ -8451,53 +8451,19 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           </div>
           {/* Desktop links */}
           <div style={{ display:"flex", alignItems:"center", gap:4 }} className="v1-nav-desktop">
-            {[["Sessions","sessions"],["Instructors","instructors"],["FAQ","help"]].map(([l,id])=>(
+            {[["Sessions","sessions"],["Speakers","instructors"],["FAQ","help"]].map(([l,id])=>(
               <button key={l} onClick={()=>document.getElementById(id)?.scrollIntoView({ behavior:"smooth" })}
                 style={{ background:"none", border:"none", fontSize:14, color:T.muted, fontWeight:500, cursor:"pointer", padding:"6px 14px", borderRadius:8, height:36, transition:"background .12s, color .12s" }}
                 onMouseEnter={e=>{ e.currentTarget.style.background="rgba(245,158,11,0.1)"; e.currentTarget.style.color=T.text; }}
                 onMouseLeave={e=>{ e.currentTarget.style.background="none"; e.currentTarget.style.color=T.muted; }}>{l}</button>
             ))}
             {isLoggedIn ? (
-              <div ref={profileMenuRef} style={{ position:"relative", marginLeft:8 }}>
-                <button onClick={()=>setProfileMenuOpen(o=>!o)}
-                  style={{ display:"flex", alignItems:"center", gap:8, padding:"4px 12px 4px 4px", height:40, background:"none", border:`1px solid ${T.border}`, borderRadius:99, cursor:"pointer", transition:"border-color .12s, background .12s" }}
-                  onMouseEnter={e=>{ e.currentTarget.style.borderColor="#d1c4ae"; e.currentTarget.style.background="rgba(0,0,0,0.03)"; }}
-                  onMouseLeave={e=>{ e.currentTarget.style.borderColor=T.border; e.currentTarget.style.background="none"; }}>
-                  {userAvatar
-                    ? <img src={userAvatar} alt={userName} style={{ width:30, height:30, borderRadius:"50%", objectFit:"cover", flexShrink:0 }}/>
-                    : <div style={{ width:30, height:30, borderRadius:"50%", background:T.blue, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:"#fff", flexShrink:0 }}>{(userName||"U")[0].toUpperCase()}</div>
-                  }
-                  <span style={{ fontSize:13, fontWeight:600, color:T.text, maxWidth:100, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{userName || "Account"}</span>
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ flexShrink:0, opacity:.5, transform: profileMenuOpen?"rotate(180deg)":"rotate(0deg)", transition:"transform .2s" }}><path d="M2 4l4 4 4-4" stroke={T.text} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </button>
-                {profileMenuOpen && (
-                  <div style={{ position:"absolute", top:"calc(100% + 8px)", right:0, minWidth:200, background:T.bg, border:`1px solid ${T.border}`, borderRadius:14, boxShadow:"0 8px 32px rgba(0,0,0,0.12)", overflow:"hidden", zIndex:200 }}>
-                    <div style={{ padding:"14px 16px 10px", borderBottom:`1px solid ${T.border}` }}>
-                      <div style={{ fontSize:13, fontWeight:700, color:T.text }}>{userName || "Account"}</div>
-                      <div style={{ fontSize:11, color:T.muted, marginTop:2 }}>SPED Summit learner</div>
-                    </div>
-                    {[
-                      { icon:"squares-four", label:"My Dashboard", action:()=>{ setProfileMenuOpen(false); onGoToDashboard?.("dashboard"); } },
-                      { icon:"gear", label:"Account Settings", action:()=>{ setProfileMenuOpen(false); onGoToDashboard?.("profile"); } },
-                    ].map(({ icon, label, action })=>(
-                      <button key={label} onClick={action}
-                        style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"11px 16px", background:"none", border:"none", fontSize:13, color:T.text, cursor:"pointer", textAlign:"left", transition:"background .1s" }}
-                        onMouseEnter={e=>e.currentTarget.style.background="rgba(0,0,0,0.04)"}
-                        onMouseLeave={e=>e.currentTarget.style.background="none"}>
-                        <Icon name={icon} size={15} color={T.muted}/>{label}
-                      </button>
-                    ))}
-                    <div style={{ borderTop:`1px solid ${T.border}`, padding:"6px 0" }}>
-                      <button onClick={()=>{ setProfileMenuOpen(false); onLogout?.(); }}
-                        style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"11px 16px", background:"none", border:"none", fontSize:13, color:"#e53e3e", cursor:"pointer", textAlign:"left", transition:"background .1s" }}
-                        onMouseEnter={e=>e.currentTarget.style.background="rgba(229,62,62,0.06)"}
-                        onMouseLeave={e=>e.currentTarget.style.background="none"}>
-                        <Icon name="sign-out" size={15} color="#e53e3e"/>Log out
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <button onClick={()=>onGoToDashboard?.("dashboard")}
+                style={{ marginLeft:8, padding:"0 16px", height:36, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
+                onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
+                onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
+                My Dashboard
+              </button>
             ) : (
               <button onClick={()=>setShowAuth(true)}
                 style={{ marginLeft:8, padding:"0 16px", height:36, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
@@ -8526,7 +8492,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       {navOpen && createPortal(
         <div style={{ position:"fixed", top:56, left:0, right:0, bottom:0, zIndex:99, background:"rgba(254,245,236,0.97)", backdropFilter:"blur(12px)", borderTop:`1px solid ${T.border}`, display:"flex", flexDirection:"column", padding:"16px 24px 32px" }}>
           <div style={{ display:"flex", flexDirection:"column", gap:4, flex:1 }}>
-            {[["Sessions","sessions"],["Instructors","instructors"],["FAQ","help"]].map(([l,id])=>(
+            {[["Sessions","sessions"],["Speakers","instructors"],["FAQ","help"]].map(([l,id])=>(
               <button key={l} onClick={()=>{ document.getElementById(id)?.scrollIntoView({ behavior:"smooth" }); setNavOpen(false); }}
                 style={{ background:"none", border:"none", fontSize:16, color:T.text, fontWeight:600, cursor:"pointer", padding:"12px 16px", borderRadius:10, textAlign:"left", transition:"background .15s" }}
                 onMouseEnter={e=>e.currentTarget.style.background="rgba(245,158,11,0.1)"}
@@ -9603,7 +9569,7 @@ function LandingPageV2({ onGetStarted }) {
           <div style={{ marginRight:"auto", cursor:"pointer" }} onClick={()=>window.scrollTo({top:0,behavior:"smooth"})}>
             <img src="/Container.png" alt="SPED Summit" style={{ height:28, display:"block" }}/>
           </div>
-          {[["Sessions","sessions"],["Instructors","instructors-v2"],["FAQ","faq-v2"]].map(([l,id])=>(
+          {[["Sessions","sessions"],["Speakers","instructors-v2"],["FAQ","faq-v2"]].map(([l,id])=>(
             <button key={l} onClick={()=>document.getElementById(id)?.scrollIntoView({behavior:"smooth"})}
               style={{ background:"none", border:"none", fontSize:14, color:T2.muted, cursor:"pointer", padding:"4px 12px", borderRadius:7, height:32, transition:"all .12s" }}
               onMouseEnter={e=>{ e.currentTarget.style.background=T2.hover; e.currentTarget.style.color=T2.text; }}
