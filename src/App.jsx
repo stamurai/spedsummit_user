@@ -6690,10 +6690,10 @@ function LegalModal({ type, onClose }) {
   );
 }
 
-function AuthModal({ onClose, onLogin, defaultStep = "user-auth", noOverlay = false }) {
+function AuthModal({ onClose, onLogin, defaultStep = "user-auth", defaultMode = "signin", noOverlay = false }) {
   // step: "role-select" | "user-auth" | "forgot-password"
   const [step,       setStep]      = useState(defaultStep);
-  const [mode,       setMode]      = useState("signup");
+  const [mode,       setMode]      = useState(defaultMode);
   const [email,      setEmail]     = useState("");
   const [password,   setPassword]  = useState("");
   const [firstName,  setFirstName] = useState("");
@@ -8470,7 +8470,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                 style={{ marginLeft:8, padding:"0 16px", height:36, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
                 onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
                 onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-                Start for free
+                Sign in
               </button>
             )}
           </div>
@@ -8516,7 +8516,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               style={{ width:"100%", padding:"14px", fontSize:15, fontWeight:700, background:T.blue, color:"#fff", border:"none", borderRadius:12, cursor:"pointer", transition:"background .15s" }}
               onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
               onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-              Start for free
+              Sign in
             </button>
           )}
         </div>,
@@ -8563,7 +8563,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               style={{ padding:"0 26px", height:44, minWidth:200, background:T.blue, color:"#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
               onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
               onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-              {isLoggedIn ? "Go to Dashboard" : "Start for free"}
+              {isLoggedIn ? "Go to Dashboard" : "Sign in"}
             </button>
             <button onClick={()=>document.getElementById("sessions")?.scrollIntoView({ behavior:"smooth" })}
               style={{ padding:"0 26px", height:44, minWidth:200, background:"transparent", color:T.text, border:`1.5px solid ${T.border}`, borderRadius:10, fontSize:15, fontWeight:500, cursor:"pointer", transition:"background .15s, border-color .15s" }}
@@ -9181,7 +9181,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                   style={{ padding:"12px 32px", background:T.blue, color:"#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:700, cursor:"pointer", transition:"background .12s" }}
                   onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
                   onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-                  Start for free
+                  Sign in
                 </button>
               </div>}
             </div>
@@ -9422,7 +9422,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                 style={{ padding:"0 24px", height:42, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
                 onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
                 onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-                {isLoggedIn ? "Go to Dashboard" : "Start for free"}
+                {isLoggedIn ? "Go to Dashboard" : "Sign in"}
               </button>
               <button onClick={()=>document.getElementById("sessions")?.scrollIntoView({ behavior:"smooth" })}
                 style={{ padding:"0 24px", height:42, background:"transparent", color:T.text, border:`1px solid ${T.border}`, borderRadius:8, fontSize:14, fontWeight:500, cursor:"pointer", transition:"background .15s, border-color .15s" }}
@@ -9580,7 +9580,7 @@ function LandingPageV2({ onGetStarted }) {
             style={{ marginLeft:8, padding:"0 18px", height:38, background:T2.accent, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:700, cursor:"pointer", transition:"all .15s", boxShadow:`0 2px 0 0 #5b21b6` }}
             onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 4px 0 0 #5b21b6"; }}
             onMouseLeave={e=>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="0 2px 0 0 #5b21b6"; }}>
-            Start for free
+            Sign in
           </button>
         </div>
       </nav>
@@ -9794,7 +9794,7 @@ function LandingPageV2({ onGetStarted }) {
             style={{ padding:"0 40px", height:56, background:"#fff", color:T2.dark, border:"none", borderRadius:12, fontSize:16, fontWeight:800, cursor:"pointer", transition:"all .15s" }}
             onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.boxShadow="0 12px 32px rgba(0,0,0,0.3)"; }}
             onMouseLeave={e=>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="none"; }}>
-            Start for free — it only takes 30 seconds
+            Sign in
           </button>
         </div>
       </section>
@@ -9860,7 +9860,7 @@ function LandingPageV2({ onGetStarted }) {
             style={{ padding:"0 40px", height:54, background:T2.accent, color:"#fff", border:"none", borderRadius:12, fontSize:16, fontWeight:700, cursor:"pointer", transition:"all .15s", boxShadow:"0 4px 0 0 #5b21b6" }}
             onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.boxShadow="0 6px 0 0 #5b21b6"; }}
             onMouseLeave={e=>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="0 4px 0 0 #5b21b6"; }}>
-            Start for free →
+            Sign in
           </button>
         </div>
       </section>
