@@ -3456,10 +3456,6 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
         if (!loose.length) return null;
         return (
           <div style={{ marginBottom:28 }}>
-            <div style={{ fontSize:14, fontWeight:800, color:C.gray900, marginBottom:14, display:"flex", alignItems:"center", gap:8 }}>
-              New Sessions
-              <span style={{ fontSize:11, fontWeight:700, color:"#fff", background:"#10b981", padding:"2px 8px", borderRadius:99 }}>● LIVE</span>
-            </div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16 }}>
               {loose.map(s => <SessionCard key={s.id} session={s} onClick={onOpenSession} quizState={quizStates?.[s.id]||{}} onAssessmentClick={onAssessmentClick} onCertificateClick={onCertificateClick}/>)}
             </div>
