@@ -4076,9 +4076,13 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
         </div>
 
         {/* ── Video Player + Content (RIGHT) ── */}
-        <div style={{ flex:1, minWidth:0, padding:"16px 16px 0 12px", display:"flex", flexDirection:"column", gap:12, height:"100%", overflow:"hidden" }}>
-          {/* Surface 1 — Video (fixed) */}
-          <div style={{ background:"#000", borderRadius:20, overflow:"hidden", boxShadow:"0 4px 24px rgba(0,0,0,0.18)", flexShrink:0 }}>
+        <div style={{ flex:1, minWidth:0, padding:"16px 16px 16px 12px", display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
+          {/* Unified Card */}
+          <div style={{ background:C.white, borderRadius:20, boxShadow:"0 2px 16px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.05)", flex:1, display:"flex", flexDirection:"column", minHeight:0, overflow:"hidden" }}>
+
+            {/* Video with padding so card corners show */}
+            <div style={{ padding:"16px 16px 0", flexShrink:0 }}>
+              <div style={{ borderRadius:12, overflow:"hidden", background:"#000" }}>
         <div ref={videoRef} style={{ position:"relative", background:"#0f172a", paddingBottom:"56.25%", height:0 }}>
             <div style={{ position:"absolute", inset:0 }}>
               {(session.vimeoUrl || lesson?.vimeoUrl) ? (
@@ -4135,12 +4139,16 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               )}
             </div>
           </div>
-          </div>{/* end video card */}
+              </div>{/* end video inner rounded */}
+            </div>{/* end video padding wrapper */}
 
-        {/* Surface 2 — Info Card (scrollable) */}
-        <div style={{ background:C.white, borderRadius:20, boxShadow:"0 2px 16px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.05)", flex:1, display:"flex", flexDirection:"column", minHeight:0, marginBottom:16, overflow:"hidden" }}>
-          {/* Tab bar — sticky */}
-          <div className="sd-tabs-bar" style={{ display:"flex", padding:"4px 20px 0", borderBottom:"1px solid rgba(0,0,0,0.07)", background:"#f8f8f8", gap:4, flexShrink:0 }}>
+            {/* Title row */}
+            <div style={{ padding:"16px 24px 0", flexShrink:0 }}>
+              <h2 style={{ margin:0, fontSize:18, fontWeight:700, color:C.gray900, lineHeight:1.4, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>{session.title}</h2>
+            </div>
+
+            {/* Tab bar — sticky */}
+          <div className="sd-tabs-bar" style={{ display:"flex", padding:"4px 20px 0", borderBottom:"1px solid rgba(0,0,0,0.07)", background:C.white, gap:4, flexShrink:0, marginTop:12 }}>
           {[
             { key:"overview",   label:"Overview"   },
             { key:"instructor", label:"Instructor" },
@@ -4160,8 +4168,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
 
         {/* Overview */}
         {bottomTab === "overview" && (
-          <div className="sd-tab-content" style={{ padding:"28px 32px 32px" }}>
-            <h2 style={{ margin:"0 0 12px", fontSize:19, fontWeight:700, color:C.gray900, lineHeight:1.45, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>{session.title}</h2>
+          <div className="sd-tab-content" style={{ padding:"20px 24px 24px" }}>
             {(session.duration || session.category) && (
               <div className="sd-overview-stats" style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
                 {session.duration && (
@@ -4478,8 +4485,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           </div>
         )}
           </div>{/* end scrollable content */}
-        </div>{/* end info card */}
-
+          </div>{/* end unified card */}
         </div>{/* end right column */}
       </div>{/* end top row */}
 
