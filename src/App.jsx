@@ -1982,13 +1982,10 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
   return (
     <div
       onClick={handleCardClick}
-      onMouseEnter={()=>setCardHov(true)}
-      onMouseLeave={()=>setCardHov(false)}
       style={{ background:"#fff", borderRadius:18, overflow:"hidden",
-               boxShadow: cardHov ? "0 8px 28px rgba(0,0,0,0.13)" : "0 2px 10px rgba(0,0,0,0.07)",
+               boxShadow:"0 2px 10px rgba(0,0,0,0.07)",
                cursor: (isLocked || cta.disabled) && !isUpcoming ? "default" : "pointer",
-               border:"none", display:"flex", flexDirection:"column",
-               transition:"box-shadow 0.2s" }}>
+               border:"none", display:"flex", flexDirection:"column" }}>
 
       {/* Thumbnail — tall instructor photo with name/title overlay */}
       <div style={{ position:"relative", flexShrink:0, height:180, background:"#1f2937", overflow:"hidden" }}>
@@ -2001,14 +1998,6 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
           <div style={{ fontSize:15, fontWeight:800, color:"#fff", lineHeight:1.2 }}>{session.instructor}</div>
           {session.instructorTitle && <div style={{ fontSize:12, color:"rgba(255,255,255,0.7)", marginTop:2 }}>{session.instructorTitle}</div>}
         </div>
-        {/* Play overlay on hover — live and upcoming both get it */}
-        {!isLocked && cardHov && (
-          <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.15)", pointerEvents:"none" }}>
-            <div style={{ width:44, height:44, borderRadius:"50%", background:"rgba(255,255,255,0.22)", backdropFilter:"blur(4px)", border:"2px solid rgba(255,255,255,0.5)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
-            </div>
-          </div>
-        )}
         {/* Locked overlay (past — requires subscription) */}
         {isLocked && (
           <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.45)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:6 }}>
