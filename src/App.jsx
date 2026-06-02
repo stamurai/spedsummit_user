@@ -8321,12 +8321,25 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                 onMouseLeave={e=>{ e.currentTarget.style.background="none"; e.currentTarget.style.color=T.muted; }}>{l}</button>
             ))}
             {isLoggedIn ? (
-              <button onClick={()=>onGoToDashboard?.("dashboard")}
-                style={{ marginLeft:8, padding:"0 16px", height:36, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
-                onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
-                onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-                My Dashboard
-              </button>
+              <div style={{ position:"relative", marginLeft:8 }} ref={profileMenuRef}>
+                <button onClick={()=>setProfileMenuOpen(v=>!v)}
+                  style={{ border:`1px solid ${T.border}`, background:"transparent", padding:"4px 10px 4px 4px", cursor:"pointer", borderRadius:99, display:"flex", alignItems:"center", gap:8, transition:"background .12s" }}
+                  onMouseEnter={e=>e.currentTarget.style.background="rgba(0,0,0,0.05)"}
+                  onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                  <Avatar name={userName} src={userAvatar} size={28}/>
+                  {userName && <span style={{ fontSize:13, fontWeight:600, color:T.text, maxWidth:80, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{userName.split(" ")[0]}</span>}
+                  <Icon name="caret-down" size={12} color={T.muted}/>
+                </button>
+                {profileMenuOpen && (
+                  <DropdownMenu anchorRef={profileMenuRef}
+                    items={[
+                      { icon:"house", label:"My Dashboard", action:()=>{ setProfileMenuOpen(false); onGoToDashboard?.("dashboard"); } },
+                      { icon:"sign-out", label:"Log out", danger:true, action:()=>{ setProfileMenuOpen(false); onLogout?.(); } },
+                    ]}
+                    onClose={()=>setProfileMenuOpen(false)}
+                  />
+                )}
+              </div>
             ) : (
               <button onClick={()=>setShowAuth(true)}
                 style={{ marginLeft:8, padding:"0 16px", height:36, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
