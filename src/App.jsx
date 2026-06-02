@@ -3943,13 +3943,15 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
       </div>
 
       {/* ── Top row: Sidebar + Video ── */}
-      <div style={{ display:"flex", alignItems:"stretch", gap:0, height:"calc(100vh - 101px)", overflow:"hidden" }}>
+      <div style={{ display:"flex", alignItems:"flex-start", gap:0 }}>
 
         {/* ── Sidebar: Course Content (LEFT) ── */}
         <div style={{
           width: 300,
           flexShrink: 0,
-          height: "100%",
+          position: "sticky",
+          top: 0,
+          height: "100vh",
           overflowY: "hidden",
           background: "#f5f5f5",
           padding: "16px 12px",
@@ -4076,9 +4078,9 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
         </div>
 
         {/* ── Video Player + Content (RIGHT) ── */}
-        <div style={{ flex:1, minWidth:0, padding:"16px 16px 16px 12px", display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
+        <div style={{ flex:1, minWidth:0, padding:"16px 16px 24px 12px" }}>
           {/* Unified Card */}
-          <div style={{ background:C.white, borderRadius:20, boxShadow:"0 2px 16px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.05)", flex:1, display:"flex", flexDirection:"column", minHeight:0, overflow:"hidden" }}>
+          <div style={{ background:C.white, borderRadius:20, boxShadow:"0 2px 16px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.05)", overflow:"hidden" }}>
 
             {/* Video with padding so card corners show */}
             <div style={{ padding:"16px 16px 0", flexShrink:0 }}>
@@ -4163,8 +4165,6 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
             );
           })}
         </div>
-          {/* Scrollable content */}
-          <div style={{ flex:1, overflowY:"auto" }}>
 
         {/* Overview */}
         {bottomTab === "overview" && (
@@ -4484,7 +4484,6 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
             </div>
           </div>
         )}
-          </div>{/* end scrollable content */}
           </div>{/* end unified card */}
         </div>{/* end right column */}
       </div>{/* end top row */}
