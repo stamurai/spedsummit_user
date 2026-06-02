@@ -3367,23 +3367,19 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
             </div>
           ))}
         </div>
-      ) : (() => {
-        const filledSeasons = seasons.filter(s => sessions.some(sess => s.sessionIds.includes(sess.id)));
-        if (filledSeasons.length === 0 && sessions.length === 0) return (
-          <Empty fullPage>
-            <EmptyMedia variant="icon" color="#6490E8"><Icon name="video" size={22} color="#6490E8"/></EmptyMedia>
-            <EmptyHeader>
-              <EmptyTitle>No sessions published yet</EmptyTitle>
-              <EmptyDescription>Sessions will show up here once the admin publishes them.</EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        );
-        return (
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px, 1fr))", gap:20 }}>
-            {filledSeasons.map(season => <SeasonFolderCard key={season.id} season={season} sessions={sessions} onOpen={()=>changeSeason(season.id)}/>)}
-          </div>
-        );
-      })()}
+      ) : sessions.length === 0 ? (
+        <Empty fullPage>
+          <EmptyMedia variant="icon" color="#6490E8"><Icon name="video" size={22} color="#6490E8"/></EmptyMedia>
+          <EmptyHeader>
+            <EmptyTitle>No sessions published yet</EmptyTitle>
+            <EmptyDescription>Sessions will show up here once the admin publishes them.</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      ) : (
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16 }}>
+          {sessions.map(s => <SessionCard key={s.id} session={s} onClick={onOpenSession} quizState={quizStates?.[s.id]||{}} onAssessmentClick={onAssessmentClick} onCertificateClick={onCertificateClick}/>)}
+        </div>
+      )}
     </div>
   );
 }
