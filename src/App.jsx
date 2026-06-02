@@ -6965,14 +6965,12 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", defaultMode = 
 /* ─────────────────────────────────────────────────────────────────────────────
    LANDING PAGE
 ───────────────────────────────────────────────────────────────────────────── */
-function SessionPublicPage({ session, onBack, onRegister, registerLabel }) {
+function SessionPublicPage({ session, onBack, onRegister, registerLabel, registered = false }) {
   const [collapsedSections, setCollapsedSections] = useState({});
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [registered, setRegistered] = useState(false);
 
   function handleRegister() {
     onRegister && onRegister();
-    setRegistered(true);
   }
 
   // Countdown from session.availableFrom if set
@@ -8388,6 +8386,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           onBack={() => { setSelectedSession(null); requestAnimationFrame(()=>window.scrollTo(0, savedScrollY.current)); }}
           onRegister={() => setShowAuth(true)}
           registerLabel={_isPastSession ? "View Recording" : "Register"}
+          registered={false}
         />
         {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={(role)=>onGetStarted(selectedSession?.id,role)}/>}
       </>
