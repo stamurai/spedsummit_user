@@ -4079,8 +4079,9 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
         </div>
 
         {/* ── Video Player + Content (RIGHT) ── */}
-        <div style={{ flex:1, minWidth:0, padding:"20px 24px 0" }}>
-          <div style={{ background:C.white, borderRadius:12, overflow:"hidden", boxShadow:"0 1px 4px rgba(0,0,0,0.08)", marginBottom:16 }}>
+        <div style={{ flex:1, minWidth:0, padding:"16px 16px 0 12px" }}>
+          {/* Surface 1 — Video */}
+          <div style={{ background:"#000", borderRadius:14, overflow:"hidden", boxShadow:"0 2px 16px rgba(0,0,0,0.14)", marginBottom:12 }}>
         <div ref={videoRef} style={{ position:"relative", background:"#0f172a", paddingBottom:"56.25%", height:0 }}>
             <div style={{ position:"absolute", inset:0 }}>
               {(session.vimeoUrl || lesson?.vimeoUrl) ? (
@@ -4139,9 +4140,10 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           </div>
           </div>{/* end video card */}
 
-        {/* ── Full-width Tabs + Content ── */}
-        <div style={{ background:C.white, borderRadius:12, overflow:"hidden", boxShadow:"0 1px 4px rgba(0,0,0,0.08)", marginBottom:24 }}>
-        <div className="sd-tabs-bar" style={{ display:"flex", padding:"0 24px", borderBottom:`1px solid ${C.gray200}` }}>
+        {/* Surface 2 — Info Card */}
+        <div style={{ background:C.white, borderRadius:16, overflow:"hidden", boxShadow:"0 2px 12px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)", marginBottom:20 }}>
+          {/* Tab bar */}
+          <div className="sd-tabs-bar" style={{ display:"flex", padding:"0 8px", borderBottom:`1px solid rgba(0,0,0,0.07)`, background:"#fafafa" }}>
           {[
             { key:"overview",   label:"Overview"   },
             { key:"instructor", label:"Instructor" },
@@ -4150,7 +4152,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
             const isActive = bottomTab === tab.key;
             return (
               <button key={tab.key} onClick={() => setBottomTab(tab.key)}
-                style={{ padding:"14px 16px", border:"none", background:"none", cursor:"pointer", fontSize:14, fontWeight: isActive ? 600 : 400, color: isActive ? C.gray900 : C.gray500, borderBottom: isActive ? `2px solid ${C.gray900}` : "2px solid transparent", marginBottom:-1, whiteSpace:"nowrap", transition:"color .15s" }}>
+                style={{ padding:"14px 18px", border:"none", background:"none", cursor:"pointer", fontSize:13, fontWeight: isActive ? 700 : 500, color: isActive ? C.gray900 : C.gray500, borderBottom: isActive ? `2px solid ${C.primary}` : "2px solid transparent", marginBottom:-1, whiteSpace:"nowrap", transition:"color .15s, border-color .15s", letterSpacing:.1 }}>
                 {tab.label}
               </button>
             );
@@ -4159,26 +4161,26 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
 
         {/* Overview */}
         {bottomTab === "overview" && (
-          <div className="sd-tab-content" style={{ padding:"22px 24px" }}>
-            <h2 style={{ margin:"0 0 14px", fontSize:20, fontWeight:700, color:C.gray900, lineHeight:1.4, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>{session.title}</h2>
-            <div className="sd-overview-stats" style={{ display:"flex", gap:28, marginBottom:18 }}>
-              {session.duration && (
-                <div>
-                  <div style={{ fontSize:22, fontWeight:800, color:C.gray900 }}>{session.duration}</div>
-                  <div style={{ fontSize:12, color:C.gray400 }}>Duration</div>
-                </div>
-              )}
-              {session.category && (
-                <div>
-                  <div style={{ fontSize:22, fontWeight:800, color:C.gray900 }}>{session.category}</div>
-                  <div style={{ fontSize:12, color:C.gray400 }}>Category</div>
-                </div>
-              )}
-            </div>
+          <div className="sd-tab-content" style={{ padding:"28px 28px 24px" }}>
+            <h2 style={{ margin:"0 0 16px", fontSize:20, fontWeight:700, color:C.gray900, lineHeight:1.4, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>{session.title}</h2>
+            {(session.duration || session.category) && (
+              <div className="sd-overview-stats" style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
+                {session.duration && (
+                  <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:12, fontWeight:600, color:C.gray600, background:C.gray100, borderRadius:99, padding:"5px 12px" }}>
+                    <Icon name="clock" size={12} color={C.gray500}/>{session.duration}
+                  </span>
+                )}
+                {session.category && (
+                  <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:12, fontWeight:600, color:C.primary, background:C.primaryLight, borderRadius:99, padding:"5px 12px" }}>
+                    {session.category}
+                  </span>
+                )}
+              </div>
+            )}
             {session.description ? (
-              <p style={{ margin:"0 0 16px", fontSize:14, color:C.gray600, lineHeight:1.75 }}>{session.description}</p>
+              <p style={{ margin:0, fontSize:14, color:C.gray600, lineHeight:1.8 }}>{session.description}</p>
             ) : (
-              <p style={{ margin:"0 0 16px", fontSize:14, color:C.gray400, lineHeight:1.75, fontStyle:"italic" }}>No description provided for this session.</p>
+              <p style={{ margin:0, fontSize:14, color:C.gray400, lineHeight:1.8, fontStyle:"italic" }}>No description provided for this session.</p>
             )}
           </div>
         )}
