@@ -3931,12 +3931,140 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
         }
       `}</style>
 
-      {/* ── Top row: Video + Sidebar ── */}
+      {/* ── Top row: Sidebar + Video ── */}
       <div style={{ display:"flex", alignItems:"flex-start" }}>
 
-        {/* ── Video Player ── */}
+        {/* ── Sidebar: Course Content (LEFT) ── */}
+        <div style={{
+          width: 280,
+          borderRight: `1px solid ${C.gray200}`,
+          background: C.white,
+          flexShrink: 0,
+          position: "sticky",
+          top: 0,
+          height: "100vh",
+          overflowY: "auto",
+          alignSelf: "flex-start",
+        }}>
+          {/* Sidebar Header */}
+          <div style={{ padding:"16px", borderBottom:`1px solid ${C.gray100}`, display:"flex", alignItems:"flex-start", gap:8 }}>
+            <div style={{ flex:1, fontSize:14, fontWeight:700, color:C.gray900, lineHeight:1.4, overflow:"hidden", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{session.title}</div>
+            <button onClick={onBack} style={{ flexShrink:0, width:28, height:28, borderRadius:6, border:`1px solid ${C.gray200}`, background:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <Icon name="x" size={13} color={C.gray500}/>
+            </button>
+          </div>
+          <div>
+            {(() => {
+              const sections = [];
+              let currentSection = null;
+              session.lessons.forEach((l, i) => {
+                if (l.sectionTitle) {
+                  currentSection = { title: l.sectionTitle, lessons: [] };
+                  sections.push(currentSection);
+                } else if (!currentSection) {
+                  currentSection = { title: null, lessons: [] };
+                  sections.push(currentSection);
+                }
+                currentSection.lessons.push({ ...l, _index: i });
+              });
+              // Only show section headers when there are 2+ distinct named sections
+              const distinctTitles = new Set(sections.map(s => s.title).filter(Boolean));
+              const showHeaders = distinctTitles.size >= 2;
+              let namedSectionCount = 0;
+              return sections.map((sec, si) => {
+                const secKey = `sec-${si}`;
+                const isCollapsed = collapsedSections[secKey];
+                const completedCount = sec.lessons.filter(l => l.status === "completed").length;
+                if (sec.title) namedSectionCount++;
+                const showHeader = showHeaders && !!sec.title;
+                return (
+                  <div key={secKey} style={{ borderBottom:`1px solid ${C.gray100}` }}>
+                    {showHeader && (
+                    <button onClick={() => setCollapsedSections(s => ({ ...s, [secKey]: !s[secKey] }))}
+                      style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 16px", background:C.gray50, border:"none", cursor:"pointer", textAlign:"left", gap:8 }}>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontSize:12, fontWeight:700, color:C.gray900 }}>{namedSectionCount === 1 ? "" : `${namedSectionCount}. `}{sec.title}</div>
+                        <div style={{ fontSize:12, color:C.gray400, marginTop:1 }}>{sec.lessons.length} lesson{sec.lessons.length!==1?"s":""}{completedCount>0 ? ` · ${completedCount} done` : ""}</div>
+                      </div>
+                      <Icon name={isCollapsed ? "caret-down" : "caret-up"} size={13} color={C.gray400}/>
+                    </button>
+                    )}
+                    {(!showHeader || !isCollapsed) && (
+                      <div style={{ padding:"4px 0 8px" }}>
+                        {sec.lessons.map(l => {
+                          const i = l._index;
+                          const isActive = i === activeLesson && l.type !== "quiz";
+                          const locked = !unlockedIndices.has(i) && l.type !== "material";
+                          const isQuiz = l.type === "quiz";
+                          const quizDone = isQuiz && l.status === "completed";
+                          const isPreview = i === 0 || l.status === "available";
+                          const done = l.status === "completed" || quizDone;
+                          return (
+                            <div key={String(l.id)} onClick={() => switchLesson(i)}
+                              style={{ padding:"6px 10px", cursor: locked ? "default" : "pointer" }}>
+                              <div style={{
+                                display:"flex", alignItems:"center", gap:12, padding:"10px 12px",
+                                background: isActive || done ? "#eef2ff" : "transparent",
+                                borderRadius:10,
+                                transition:"background .15s"
+                              }}
+                                onMouseEnter={e => { if (!locked && !isActive && !done) e.currentTarget.style.background = C.gray50; }}
+                                onMouseLeave={e => { if (!isActive && !done) e.currentTarget.style.background = "transparent"; }}>
+                                <div style={{ flexShrink:0 }}>
+                                  {done
+                                    ? <div style={{ width:18, height:18, borderRadius:"50%", background:"#16a34a", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="check" size={11} color="#fff"/></div>
+                                    : <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${locked ? C.gray200 : isActive ? C.primary : C.gray300}`, background:"transparent" }}/>
+                                  }
+                                </div>
+                                <div style={{ flex:1, minWidth:0 }}>
+                                  <div style={{ fontSize:13, fontWeight: isActive || done ? 600 : 400, color: locked ? C.gray400 : isQuiz ? "#7c3aed" : C.gray900, lineHeight:1.4 }}>{isQuiz ? "Assessment" : session.title}</div>
+                                  <div style={{ fontSize:12, color: isQuiz ? "#a855f7" : C.gray400, marginTop:2 }}>
+                                    {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
+                                  </div>
+                                </div>
+                                {locked && <Icon name="lock" size={13} color={C.gray300}/>}
+                              </div>
+                            </div>
+                          );
+                        })}
+                        {(SESSION_RESOURCES[session.id] || {})[sec.title]?.map(r => {
+                          const isDone = !!downloaded[r.id];
+                          const typeColor = r.type==="PDF" ? { bg:"#fef2f2", color:"#dc2626" } : r.type==="PPTX" ? { bg:"#fff7ed", color:"#ea580c" } : r.type==="ZIP" ? { bg:"#f5f3ff", color:"#7c3aed" } : { bg:C.primaryLight, color:C.primary };
+                          return (
+                            <div key={r.id} style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"10px 16px", background:"transparent", borderLeft:"3px solid transparent", transition:"background .1s" }}
+                              onMouseEnter={e => e.currentTarget.style.background = C.gray50}
+                              onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                              <div style={{ marginTop:1, width:18, height:18, borderRadius:4, background:typeColor.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                                <Icon name="paperclip" size={12} color={typeColor.color}/>
+                              </div>
+                              <div style={{ flex:1, minWidth:0 }}>
+                                <div style={{ fontSize:12, fontWeight:400, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{r.title}</div>
+                                <div style={{ display:"flex", gap:5, alignItems:"center", marginTop:2 }}>
+                                  <span style={{ fontSize:12, fontWeight:700, color:typeColor.color, background:typeColor.bg, borderRadius:4, padding:"1px 5px" }}>{r.type}</span>
+                                  <span style={{ fontSize:12, color:C.gray400 }}>{r.size}</span>
+                                </div>
+                              </div>
+                              <button onClick={() => { setDownloaded(d=>({...d,[r.id]:true})); toast({ type:"success", message:`Downloading ${r.title}` }); }}
+                                style={{ width:26, height:26, borderRadius:"50%", border:"none", cursor: isDone?"default":"pointer", display:"flex", alignItems:"center", justifyContent:"center", background: isDone ? C.successLight : C.gray100, flexShrink:0, marginTop:1 }}
+                                onMouseEnter={e => { if (!isDone) e.currentTarget.style.background = C.primaryLight; }}
+                                onMouseLeave={e => { if (!isDone) e.currentTarget.style.background = C.gray100; }}>
+                                <Icon name={isDone?"check":"download"} size={12} color={isDone ? C.success : C.gray500}/>
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              });
+            })()}
+          </div>
+        </div>
+
+        {/* ── Video Player + Content (RIGHT) ── */}
         <div style={{ flex:1, minWidth:0 }}>
-          <div ref={videoRef} style={{ position:"relative", background:"#0f172a", paddingBottom:"56.25%", height:0 }}>
+        <div ref={videoRef} style={{ position:"relative", background:"#0f172a", paddingBottom:"56.25%", height:0 }}>
             <div style={{ position:"absolute", inset:0 }}>
               {(session.vimeoUrl || lesson?.vimeoUrl) ? (
                 <VimeoPlayer url={session.vimeoUrl || lesson?.vimeoUrl} initialProgress={session.progress || 0} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onProgress={pct => {
@@ -3992,132 +4120,9 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               )}
             </div>
           </div>
-        </div>
 
-        {/* ── Sidebar: Course Content ── */}
-        {!narrow && (
-          <div style={{
-            width: 272,
-            borderLeft: `1px solid ${C.gray200}`,
-            background: C.white,
-            flexShrink: 0,
-            height: videoHeight || `calc((100vw - 272px) * 0.5625)`,
-            overflowY: "auto",
-          }}>
-            <div>
-              {(() => {
-                const sections = [];
-                let currentSection = null;
-                session.lessons.forEach((l, i) => {
-                  if (l.sectionTitle) {
-                    currentSection = { title: l.sectionTitle, lessons: [] };
-                    sections.push(currentSection);
-                  } else if (!currentSection) {
-                    currentSection = { title: null, lessons: [] };
-                    sections.push(currentSection);
-                  }
-                  currentSection.lessons.push({ ...l, _index: i });
-                });
-                // Only show section headers when there are 2+ distinct named sections
-                const distinctTitles = new Set(sections.map(s => s.title).filter(Boolean));
-                const showHeaders = distinctTitles.size >= 2;
-                let namedSectionCount = 0;
-                return sections.map((sec, si) => {
-                  const secKey = `sec-${si}`;
-                  const isCollapsed = collapsedSections[secKey];
-                  const completedCount = sec.lessons.filter(l => l.status === "completed").length;
-                  if (sec.title) namedSectionCount++;
-                  const showHeader = showHeaders && !!sec.title;
-                  return (
-                    <div key={secKey} style={{ borderBottom:`1px solid ${C.gray100}` }}>
-                      {showHeader && (
-                      <button onClick={() => setCollapsedSections(s => ({ ...s, [secKey]: !s[secKey] }))}
-                        style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 16px", background:C.gray50, border:"none", cursor:"pointer", textAlign:"left", gap:8 }}>
-                        <div style={{ flex:1, minWidth:0 }}>
-                          <div style={{ fontSize:12, fontWeight:700, color:C.gray900 }}>{namedSectionCount === 1 ? "" : `${namedSectionCount}. `}{sec.title}</div>
-                          <div style={{ fontSize:12, color:C.gray400, marginTop:1 }}>{sec.lessons.length} lesson{sec.lessons.length!==1?"s":""}{completedCount>0 ? ` · ${completedCount} done` : ""}</div>
-                        </div>
-                        <Icon name={isCollapsed ? "caret-down" : "caret-up"} size={13} color={C.gray400}/>
-                      </button>
-                      )}
-                      {(!showHeader || !isCollapsed) && (
-                        <div style={{ padding:"4px 0 8px" }}>
-                          {sec.lessons.map(l => {
-                            const i = l._index;
-                            const isActive = i === activeLesson && l.type !== "quiz";
-                            const locked = !unlockedIndices.has(i) && l.type !== "material";
-                            const isQuiz = l.type === "quiz";
-                            const quizDone = isQuiz && l.status === "completed";
-                            const isPreview = i === 0 || l.status === "available";
-                            const done = l.status === "completed" || quizDone;
-                            return (
-                              <div key={String(l.id)} onClick={() => switchLesson(i)}
-                                style={{ padding:"6px 10px", cursor: locked ? "default" : "pointer" }}>
-                                <div style={{
-                                  display:"flex", alignItems:"center", gap:12, padding:"10px 12px",
-                                  background: isActive || done ? "#eef2ff" : "transparent",
-                                  borderRadius:10,
-                                  transition:"background .15s"
-                                }}
-                                  onMouseEnter={e => { if (!locked && !isActive && !done) e.currentTarget.style.background = C.gray50; }}
-                                  onMouseLeave={e => { if (!isActive && !done) e.currentTarget.style.background = "transparent"; }}>
-                                  <div style={{ flexShrink:0 }}>
-                                    {done
-                                      ? <div style={{ width:18, height:18, borderRadius:"50%", background:"#16a34a", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="check" size={11} color="#fff"/></div>
-                                      : <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${locked ? C.gray200 : isActive ? C.primary : C.gray300}`, background:"transparent" }}/>
-                                    }
-                                  </div>
-                                  <div style={{ flex:1, minWidth:0 }}>
-                                    <div style={{ fontSize:13, fontWeight: isActive || done ? 600 : 400, color: locked ? C.gray400 : isQuiz ? "#7c3aed" : C.gray900, lineHeight:1.4 }}>{isQuiz ? "Assessment" : session.title}</div>
-                                    <div style={{ fontSize:12, color: isQuiz ? "#a855f7" : C.gray400, marginTop:2 }}>
-                                      {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
-                                    </div>
-                                  </div>
-                                  {locked && <Icon name="lock" size={13} color={C.gray300}/>}
-                                </div>
-                              </div>
-                            );
-                          })}
-                          {(SESSION_RESOURCES[session.id] || {})[sec.title]?.map(r => {
-                            const isDone = !!downloaded[r.id];
-                            const typeColor = r.type==="PDF" ? { bg:"#fef2f2", color:"#dc2626" } : r.type==="PPTX" ? { bg:"#fff7ed", color:"#ea580c" } : r.type==="ZIP" ? { bg:"#f5f3ff", color:"#7c3aed" } : { bg:C.primaryLight, color:C.primary };
-                            return (
-                              <div key={r.id} style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"10px 16px", background:"transparent", borderLeft:"3px solid transparent", transition:"background .1s" }}
-                                onMouseEnter={e => e.currentTarget.style.background = C.gray50}
-                                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                                <div style={{ marginTop:1, width:18, height:18, borderRadius:4, background:typeColor.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                                  <Icon name="paperclip" size={12} color={typeColor.color}/>
-                                </div>
-                                <div style={{ flex:1, minWidth:0 }}>
-                                  <div style={{ fontSize:12, fontWeight:400, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{r.title}</div>
-                                  <div style={{ display:"flex", gap:5, alignItems:"center", marginTop:2 }}>
-                                    <span style={{ fontSize:12, fontWeight:700, color:typeColor.color, background:typeColor.bg, borderRadius:4, padding:"1px 5px" }}>{r.type}</span>
-                                    <span style={{ fontSize:12, color:C.gray400 }}>{r.size}</span>
-                                  </div>
-                                </div>
-                                <button onClick={() => { setDownloaded(d=>({...d,[r.id]:true})); toast({ type:"success", message:`Downloading ${r.title}` }); }}
-                                  style={{ width:26, height:26, borderRadius:"50%", border:"none", cursor: isDone?"default":"pointer", display:"flex", alignItems:"center", justifyContent:"center", background: isDone ? C.successLight : C.gray100, flexShrink:0, marginTop:1 }}
-                                  onMouseEnter={e => { if (!isDone) e.currentTarget.style.background = C.primaryLight; }}
-                                  onMouseLeave={e => { if (!isDone) e.currentTarget.style.background = C.gray100; }}>
-                                  <Icon name={isDone?"check":"download"} size={12} color={isDone ? C.success : C.gray500}/>
-                                </button>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                });
-              })()}
-            </div>
-          </div>
-        )}
-
-      </div>{/* end top row */}
-
-      {/* ── Full-width Tabs + Content ── */}
-      <div style={{ background:C.white }}>
+        {/* ── Full-width Tabs + Content ── */}
+        <div style={{ background:C.white }}>
         <div className="sd-tabs-bar" style={{ display:"flex", padding:"0 24px", borderBottom:`1px solid ${C.gray200}` }}>
           {[
             { key:"overview",   label:"Overview"   },
@@ -4453,7 +4458,21 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
             </div>
           </div>
         )}
-      </div>
+        </div>{/* end tabs+content */}
+
+        {/* ── Go to next item ── */}
+        <div style={{ display:"flex", justifyContent:"flex-end", padding:"16px 24px", borderTop:`1px solid ${C.gray200}` }}>
+          <button onClick={() => {
+            const next = activeLesson + 1;
+            if (next < session.lessons.length) switchLesson(next);
+          }} style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 20px", background:C.primary, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer" }}>
+            Go to next item
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+
+        </div>{/* end right column */}
+      </div>{/* end top row */}
 
     </div>
   );
