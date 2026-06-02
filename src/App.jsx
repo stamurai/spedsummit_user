@@ -6737,6 +6737,7 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", noOverlay = fa
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) { setAuthError(error.message); return; }
+        onClose();
         onLogin("user");
       }
     } finally {
@@ -10140,7 +10141,7 @@ export default function App() {
         setUserEmail(session.user.email || "");
         setUserAvatar(meta.avatar_url || meta.picture || null);
         setIsLoggedIn(true);
-        if (event === "SIGNED_IN") { setPage("dashboard"); sessionStorage.removeItem("loggedOut"); }
+        if (event === "SIGNED_IN") { setPage("dashboard"); setShowLanding(false); sessionStorage.removeItem("loggedOut"); }
         sessionStorage.setItem("loggedIn", "1");
         fetchSessions();
         fetchUserProgress();
@@ -10522,14 +10523,9 @@ export default function App() {
   if (showLanding) {
     const handleGetStarted = (sessionId) => {
       setIsLoggedIn(true);
-      // Only leave the landing page if the user explicitly clicked a session
-      // or the "Go to Dashboard" button — not just because auth completed.
-      if (sessionId) {
-        setShowLanding(false);
-        setPage("dashboard");
-        enroll(sessionId);
-      }
-      // no sessionId → stay on landing, page updates to logged-in state
+      setShowLanding(false);
+      setPage("dashboard");
+      if (sessionId) enroll(sessionId);
     };
     const handleGoToPage = (p) => {
       setPage(p || "dashboard");
