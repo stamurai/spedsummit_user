@@ -8320,6 +8320,14 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                 onMouseEnter={e=>{ e.currentTarget.style.background="rgba(245,158,11,0.1)"; e.currentTarget.style.color=T.text; }}
                 onMouseLeave={e=>{ e.currentTarget.style.background="none"; e.currentTarget.style.color=T.muted; }}>{l}</button>
             ))}
+            {isLoggedIn && (
+              <button onClick={()=>onGoToDashboard?.("dashboard")}
+                style={{ background:"none", border:"none", fontSize:14, color:T.muted, fontWeight:500, cursor:"pointer", padding:"6px 14px", borderRadius:8, height:36, transition:"background .12s, color .12s" }}
+                onMouseEnter={e=>{ e.currentTarget.style.background="rgba(245,158,11,0.1)"; e.currentTarget.style.color=T.text; }}
+                onMouseLeave={e=>{ e.currentTarget.style.background="none"; e.currentTarget.style.color=T.muted; }}>
+                My Dashboard
+              </button>
+            )}
             {isLoggedIn ? (
               <div style={{ position:"relative", marginLeft:8 }} ref={profileMenuRef}>
                 <button onClick={()=>setProfileMenuOpen(v=>!v)}
