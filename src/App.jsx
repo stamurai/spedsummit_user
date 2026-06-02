@@ -3958,10 +3958,6 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           alignSelf: "flex-start",
           boxShadow: "2px 0 8px rgba(0,0,0,0.04)",
         }}>
-          {/* Sidebar Header */}
-          <div style={{ padding:"16px", borderBottom:`1px solid ${C.gray100}` }}>
-            <div style={{ fontSize:14, fontWeight:700, color:C.gray900, lineHeight:1.4, overflow:"hidden", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{session.title}</div>
-          </div>
           <div>
             {(() => {
               const sections = [];
