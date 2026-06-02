@@ -5210,7 +5210,9 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
   const [shareCert, setShareCert] = useState(null); // { certUrl, sessionTitle }
   const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
 
-  const totalEarned = seasons.reduce((acc, season) => {
+  const allSeasonIds = new Set(seasons.flatMap(s => s.sessionIds));
+  const looseSessionsPassed = sessions.filter(s => !allSeasonIds.has(s.id) && quizStates[s.id]?.status === "passed").length;
+  const totalEarned = looseSessionsPassed + seasons.reduce((acc, season) => {
     return acc + season.sessionIds.filter(id => quizStates[id]?.status === "passed" && sessions.some(s => s.id === id)).length;
   }, 0);
 
@@ -5514,6 +5516,37 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
             </div>
           );
         })}
+        {/* Loose sessions (not in any season) that have passed */}
+        {(() => {
+          const loose = sessions.filter(s => !allSeasonIds.has(s.id) && quizStates[s.id]?.status === "passed");
+          if (!loose.length) return null;
+          return loose.map(s => {
+            const qs = quizStates[s.id];
+            return (
+              <div key={s.id} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, overflow:"hidden" }}>
+                <div className="cert-row" style={{ display:"flex", alignItems:"center", gap:16, padding:"16px 20px" }}>
+                  <div style={{ width:40, height:40, borderRadius:10, background:"rgba(245,158,11,0.12)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    <Icon name="medal" size={20} color="#f59e0b"/>
+                  </div>
+                  <div className="cert-row-text" style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontWeight:700, fontSize:14, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
+                    {qs?.score != null && <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>Score: {qs.score}%</div>}
+                  </div>
+                  <div className="cert-row-actions" style={{ display:"flex", gap:8, flexShrink:0 }}>
+                    <button onClick={()=>onCertificateClick && onCertificateClick(s)}
+                      style={{ padding:"6px 12px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, fontFamily:"inherit" }}>
+                      <Icon name="eye" size={13} color={C.gray600}/> View
+                    </button>
+                    <button onClick={()=>downloadCertificate({ recipientName:userName, sessionTitle:s.title, instructor:s.instructor, duration:s.duration, score:qs?.score, description:s.description })}
+                      style={{ padding:"6px 12px", borderRadius:8, border:"none", background:C.primary, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, fontFamily:"inherit" }}>
+                      <Icon name="download" size={13} color="#fff"/> Download
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          });
+        })()}
       </div>}
       {shareCert && (
         <ShareCertificateModal
