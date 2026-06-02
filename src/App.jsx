@@ -4049,29 +4049,33 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                             const isQuiz = l.type === "quiz";
                             const quizDone = isQuiz && l.status === "completed";
                             const isPreview = i === 0 || l.status === "available";
+                            const done = l.status === "completed" || quizDone;
                             return (
                               <div key={String(l.id)} onClick={() => switchLesson(i)}
-                                style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 16px", background: isActive ? C.primaryLight : "transparent", borderLeft: isActive ? `3px solid ${C.primary}` : "3px solid transparent", cursor: locked ? "default" : "pointer", transition:"background .1s" }}
-                                onMouseEnter={e => { if (!locked && !isActive) e.currentTarget.style.background = C.gray50; }}
-                                onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}>
-                                <div style={{ flexShrink:0 }}>
-                                  {l.status === "completed" || quizDone
-                                    ? <div style={{ width:18, height:18, borderRadius:"50%", background:C.success, display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="check" size={12} color="#fff"/></div>
-                                    : isActive ? <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${C.primary}` }}/>
-
-                                    : <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${locked ? C.gray200 : C.gray300}` }}/>}
-                                </div>
-                                <div style={{ flex:1, minWidth:0 }}>
-                                  <div style={{ fontSize:12, fontWeight: isActive ? 700 : 400, color: locked ? C.gray400 : isQuiz ? "#7c3aed" : C.gray900, lineHeight:1.4 }}>{isQuiz ? "Assessment" : session.title}</div>
-                                  <div style={{ fontSize:12, color: isQuiz ? "#a855f7" : C.gray400, marginTop:2 }}>
-                                    {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
+                                style={{ padding:"6px 10px", cursor: locked ? "default" : "pointer" }}>
+                                <div style={{
+                                  display:"flex", alignItems:"center", gap:12, padding:"10px 12px",
+                                  background: isActive ? "#fff" : "transparent",
+                                  borderRadius:10,
+                                  boxShadow: isActive ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
+                                  transition:"background .15s, box-shadow .15s"
+                                }}
+                                  onMouseEnter={e => { if (!locked && !isActive) e.currentTarget.style.background = C.gray50; }}
+                                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}>
+                                  <div style={{ flexShrink:0 }}>
+                                    {done
+                                      ? <div style={{ width:24, height:24, borderRadius:"50%", background:"#16a34a", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="check" size={13} color="#fff"/></div>
+                                      : <div style={{ width:24, height:24, borderRadius:"50%", border:`2px solid ${locked ? C.gray200 : isActive ? C.primary : C.gray300}`, background: isActive ? C.primaryLight : "transparent" }}/>
+                                    }
                                   </div>
-                                </div>
-                                {locked && (
-                                  <div style={{ flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                                    <Icon name="lock" size={14} color={C.gray300}/>
+                                  <div style={{ flex:1, minWidth:0 }}>
+                                    <div style={{ fontSize:13, fontWeight: isActive || done ? 600 : 400, color: locked ? C.gray400 : isQuiz ? "#7c3aed" : C.gray900, lineHeight:1.4 }}>{isQuiz ? "Assessment" : session.title}</div>
+                                    <div style={{ fontSize:12, color: isQuiz ? "#a855f7" : C.gray400, marginTop:2 }}>
+                                      {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
+                                    </div>
                                   </div>
-                                )}
+                                  {locked && <Icon name="lock" size={13} color={C.gray300}/>}
+                                </div>
                               </div>
                             );
                           })}
