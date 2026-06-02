@@ -4055,17 +4055,16 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                                 style={{ padding:"6px 10px", cursor: locked ? "default" : "pointer" }}>
                                 <div style={{
                                   display:"flex", alignItems:"center", gap:12, padding:"10px 12px",
-                                  background: isActive ? "#fff" : "transparent",
+                                  background: isActive || done ? "#eef2ff" : "transparent",
                                   borderRadius:10,
-                                  boxShadow: isActive ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
-                                  transition:"background .15s, box-shadow .15s"
+                                  transition:"background .15s"
                                 }}
-                                  onMouseEnter={e => { if (!locked && !isActive) e.currentTarget.style.background = C.gray50; }}
-                                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}>
+                                  onMouseEnter={e => { if (!locked && !isActive && !done) e.currentTarget.style.background = C.gray50; }}
+                                  onMouseLeave={e => { if (!isActive && !done) e.currentTarget.style.background = "transparent"; }}>
                                   <div style={{ flexShrink:0 }}>
                                     {done
-                                      ? <div style={{ width:24, height:24, borderRadius:"50%", background:"#16a34a", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="check" size={13} color="#fff"/></div>
-                                      : <div style={{ width:24, height:24, borderRadius:"50%", border:`2px solid ${locked ? C.gray200 : isActive ? C.primary : C.gray300}`, background: isActive ? C.primaryLight : "transparent" }}/>
+                                      ? <div style={{ width:18, height:18, borderRadius:"50%", background:"#16a34a", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="check" size={11} color="#fff"/></div>
+                                      : <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${locked ? C.gray200 : isActive ? C.primary : C.gray300}`, background:"transparent" }}/>
                                     }
                                   </div>
                                   <div style={{ flex:1, minWidth:0 }}>
