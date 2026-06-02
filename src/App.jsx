@@ -1980,11 +1980,11 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 
         <div style={{ marginTop:"auto" }}>
           {/* Duration meta */}
-          <div style={{ fontSize:12, color:C.gray500, marginBottom:12 }}>
-            {session.progress > 0
-              ? `${session.progress}% complete${session.duration ? ` · ${session.duration}` : ""}`
-              : session.duration ? session.duration : ""}
-          </div>
+          {session.progress > 0 && (
+            <div style={{ fontSize:12, color:C.gray500, marginBottom:12 }}>
+              {session.progress}% complete
+            </div>
+          )}
 
           {/* Assessment locked hint */}
           {session.status === "completed" && hasAssessment && !watchedEnough && (
