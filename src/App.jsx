@@ -2012,15 +2012,6 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
               onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
               Preview Session
             </button>
-          ) : assessBtn ? (
-            <button onClick={assessBtn.action}
-              style={{ width:"100%", padding:"11px", borderRadius:10, border:assessBtn.border,
-                       background:assessBtn.bg, color:assessBtn.color,
-                       fontSize:14, fontWeight:700, cursor:"pointer", transition:"opacity .15s" }}
-              onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
-              onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-              {assessBtn.label}
-            </button>
           ) : (
             <button onClick={e=>{ e.stopPropagation(); if(!cta.disabled) onClick(session); }}
               style={{ width:"100%", padding:"11px", borderRadius:10,
