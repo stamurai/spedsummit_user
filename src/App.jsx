@@ -2729,7 +2729,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                       {catBadge.label}
                     </span>
                   </div>
-                  <div style={{ fontSize:18, fontWeight:700, color:C.gray900, lineHeight:1.35, marginBottom:10 }}>{s.title}</div>
+                  <div style={{ fontSize:18, fontWeight:800, color:C.gray900, lineHeight:1.35, marginBottom:10 }}>{s.title}</div>
                   <div style={{ fontSize:13, color:C.gray600, lineHeight:1.6, marginBottom:s.progress > 0 && s.status!=="completed" ? 14 : 10, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
                     {s.description}
                   </div>
@@ -2867,7 +2867,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                                 {catBadge.label}
                               </span>
                             </div>
-                            <div className="db-upcoming-title" style={{ fontSize:18, fontWeight:700, color:C.gray900, lineHeight:1.35, marginBottom:10 }}>{item.title}</div>
+                            <div className="db-upcoming-title" style={{ fontSize:18, fontWeight:800, color:C.gray900, lineHeight:1.35, marginBottom:10 }}>{item.title}</div>
                             <div className="db-upcoming-desc" style={{ fontSize:13, color:C.gray600, lineHeight:1.6, marginBottom:10, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
                               {session?.description || ""}
                             </div>
