@@ -4065,7 +4065,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                                     : <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${locked ? C.gray200 : C.gray300}` }}/>}
                                 </div>
                                 <div style={{ flex:1, minWidth:0 }}>
-                                  <div style={{ fontSize:12, fontWeight: isActive ? 700 : 400, color: locked ? C.gray400 : isQuiz ? "#7c3aed" : C.gray900, lineHeight:1.4 }}>{isQuiz ? "Assessment" : session.title}</div>
+                                  {isQuiz && <div style={{ fontSize:12, fontWeight: isActive ? 700 : 400, color: "#7c3aed", lineHeight:1.4 }}>Assessment</div>}
                                   <div style={{ fontSize:12, color: isQuiz ? "#a855f7" : C.gray400, marginTop:2 }}>
                                     {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
                                   </div>
