@@ -4079,9 +4079,9 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
         </div>
 
         {/* ── Video Player + Content (RIGHT) ── */}
-        <div style={{ flex:1, minWidth:0, padding:"16px 16px 0 12px" }}>
+        <div style={{ flex:1, minWidth:0, padding:"16px 16px 20px 12px", display:"flex", flexDirection:"column", gap:12 }}>
           {/* Surface 1 — Video */}
-          <div style={{ background:"#000", borderRadius:14, overflow:"hidden", boxShadow:"0 2px 16px rgba(0,0,0,0.14)", marginBottom:12 }}>
+          <div style={{ background:"#000", borderRadius:20, overflow:"hidden", boxShadow:"0 4px 24px rgba(0,0,0,0.18)", flexShrink:0 }}>
         <div ref={videoRef} style={{ position:"relative", background:"#0f172a", paddingBottom:"56.25%", height:0 }}>
             <div style={{ position:"absolute", inset:0 }}>
               {(session.vimeoUrl || lesson?.vimeoUrl) ? (
@@ -4141,9 +4141,9 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           </div>{/* end video card */}
 
         {/* Surface 2 — Info Card */}
-        <div style={{ background:C.white, borderRadius:16, overflow:"hidden", boxShadow:"0 2px 12px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)", marginBottom:20 }}>
+        <div style={{ background:C.white, borderRadius:20, overflow:"hidden", boxShadow:"0 2px 16px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.05)", marginBottom:0, flex:1 }}>
           {/* Tab bar */}
-          <div className="sd-tabs-bar" style={{ display:"flex", padding:"0 8px", borderBottom:`1px solid rgba(0,0,0,0.07)`, background:"#fafafa" }}>
+          <div className="sd-tabs-bar" style={{ display:"flex", padding:"4px 20px 0", borderBottom:"1px solid rgba(0,0,0,0.07)", background:"#f8f8f8", gap:4 }}>
           {[
             { key:"overview",   label:"Overview"   },
             { key:"instructor", label:"Instructor" },
@@ -4152,7 +4152,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
             const isActive = bottomTab === tab.key;
             return (
               <button key={tab.key} onClick={() => setBottomTab(tab.key)}
-                style={{ padding:"14px 18px", border:"none", background:"none", cursor:"pointer", fontSize:13, fontWeight: isActive ? 700 : 500, color: isActive ? C.gray900 : C.gray500, borderBottom: isActive ? `2px solid ${C.primary}` : "2px solid transparent", marginBottom:-1, whiteSpace:"nowrap", transition:"color .15s, border-color .15s", letterSpacing:.1 }}>
+                style={{ padding:"12px 16px", border:"none", background: isActive ? C.white : "transparent", cursor:"pointer", fontSize:13, fontWeight: isActive ? 700 : 500, color: isActive ? C.gray900 : C.gray500, borderBottom: isActive ? `2px solid ${C.primary}` : "2px solid transparent", marginBottom:-1, whiteSpace:"nowrap", transition:"color .15s", borderRadius:"8px 8px 0 0" }}>
                 {tab.label}
               </button>
             );
@@ -4161,8 +4161,8 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
 
         {/* Overview */}
         {bottomTab === "overview" && (
-          <div className="sd-tab-content" style={{ padding:"28px 28px 24px" }}>
-            <h2 style={{ margin:"0 0 16px", fontSize:20, fontWeight:700, color:C.gray900, lineHeight:1.4, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>{session.title}</h2>
+          <div className="sd-tab-content" style={{ padding:"28px 32px 32px" }}>
+            <h2 style={{ margin:"0 0 12px", fontSize:19, fontWeight:700, color:C.gray900, lineHeight:1.45, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>{session.title}</h2>
             {(session.duration || session.category) && (
               <div className="sd-overview-stats" style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
                 {session.duration && (
@@ -4178,9 +4178,9 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               </div>
             )}
             {session.description ? (
-              <p style={{ margin:0, fontSize:14, color:C.gray600, lineHeight:1.8 }}>{session.description}</p>
+              <p style={{ margin:0, fontSize:14, color:C.gray600, lineHeight:1.85 }}>{session.description}</p>
             ) : (
-              <p style={{ margin:0, fontSize:14, color:C.gray400, lineHeight:1.8, fontStyle:"italic" }}>No description provided for this session.</p>
+              <p style={{ margin:0, fontSize:14, color:C.gray400, lineHeight:1.85, fontStyle:"italic" }}>No description provided for this session.</p>
             )}
           </div>
         )}
