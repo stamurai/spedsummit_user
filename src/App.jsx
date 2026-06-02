@@ -3958,11 +3958,8 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           alignSelf: "flex-start",
         }}>
           {/* Sidebar Header */}
-          <div style={{ padding:"16px", borderBottom:`1px solid ${C.gray100}`, display:"flex", alignItems:"flex-start", gap:8 }}>
-            <div style={{ flex:1, fontSize:14, fontWeight:700, color:C.gray900, lineHeight:1.4, overflow:"hidden", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{session.title}</div>
-            <button onClick={onBack} style={{ flexShrink:0, width:28, height:28, borderRadius:6, border:`1px solid ${C.gray200}`, background:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <Icon name="x" size={13} color={C.gray500}/>
-            </button>
+          <div style={{ padding:"16px", borderBottom:`1px solid ${C.gray100}` }}>
+            <div style={{ fontSize:14, fontWeight:700, color:C.gray900, lineHeight:1.4, overflow:"hidden", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{session.title}</div>
           </div>
           <div>
             {(() => {
