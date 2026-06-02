@@ -4147,41 +4147,6 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
         {/* Overview */}
         {bottomTab === "overview" && (
           <div className="sd-tab-content" style={{ padding:"22px 24px" }}>
-            {/* Assessment banner — always unlocked */}
-            {(() => {
-              const qs = getSessionQuestions(session);
-              if (!qs.length) return null;
-              return (
-                  <div style={{ marginBottom:20, padding:"16px 18px", borderRadius:14, background:"linear-gradient(135deg,#f0f7ff 0%,#e8f4fd 100%)", border:`1px solid ${C.primary}22`, display:"flex", alignItems:"center", gap:14 }}>
-                    <div style={{ width:42, height:42, borderRadius:12, background:C.primary, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                      <Icon name="article" size={22} color="#fff"/>
-                    </div>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontSize:14, fontWeight:700, color:C.gray900, marginBottom:3 }}>Assessment Available</div>
-                      <div style={{ fontSize:12, color:C.gray500 }}>{qs.length} questions · 80% to pass · Earn your certificate</div>
-                    </div>
-                    <Btn size="sm" onClick={() => onAssessmentClick && onAssessmentClick(session)}>
-                      <Icon name="play" size={13} color="#fff"/>Take Assessment
-                    </Btn>
-                  </div>
-                );
-              /* dead code below kept to fix JSX structure */
-              const pctNeeded = 0;
-              return (
-                <div style={{ marginBottom:20, padding:"14px 18px", borderRadius:14, background:C.gray50, border:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", gap:14 }}>
-                  <div style={{ width:42, height:42, borderRadius:12, background:C.gray100, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                    <Icon name="lock" size={20} color={C.gray400}/>
-                  </div>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontSize:14, fontWeight:700, color:C.gray700, marginBottom:3 }}>Assessment Locked</div>
-                    <div style={{ fontSize:12, color:C.gray400 }}>Watch {pctNeeded}% more to unlock · {qs.length} questions</div>
-                    <div style={{ marginTop:7, height:5, borderRadius:3, background:C.gray200, overflow:"hidden" }}>
-                      <div style={{ height:"100%", width:`${Math.round(progress)}%`, background:C.primary, borderRadius:3, transition:"width .3s" }}/>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
             <h2 style={{ margin:"0 0 14px", fontSize:20, fontWeight:700, color:C.gray900, lineHeight:1.4, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>{session.title}</h2>
             <div className="sd-overview-stats" style={{ display:"flex", gap:28, marginBottom:18 }}>
               {session.duration && (
