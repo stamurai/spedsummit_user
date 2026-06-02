@@ -10032,7 +10032,13 @@ export default function App() {
         quiz_questions: s.quiz_questions || null,
       });
 
-      const rows = data || [];
+      // Deduplicate by title to avoid showing duplicate sessions
+      const seen = new Set();
+      const rows = (data || []).filter(s => {
+        if (seen.has(s.title)) return false;
+        seen.add(s.title);
+        return true;
+      });
 
       setSessions(prev => {
         return rows.map(s => {
