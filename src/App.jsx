@@ -1505,17 +1505,8 @@ function TopBar({ toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, 
         <img src="/Container.png" alt="SPED Summit" style={{ height:28, width:"auto", display:"block" }}/>
       </div>
 
-      {/* Search removed, flex spacer */}
+      {/* Flex spacer */}
       <div style={{ flex:1 }}/>
-      </div>
-
-      {/* Mobile search icon */}
-      <button className="topbar-search-icon" onClick={() => setShowMobileSearch(true)}
-        style={{ display:"none", width:36, height:36, borderRadius:"50%", border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", alignItems:"center", justifyContent:"center", flexShrink:0, marginLeft:"auto", marginRight:8 }}>
-        <Icon name="magnifying-glass" size={17} color={C.gray700}/>
-      </button>
-
-      {showMobileSearch && <MobileSearchPage onOpenSession={onOpenSession} onNavigate={onNavigate} onClose={() => setShowMobileSearch(false)} sessions={sessions}/>}
 
       {/* Right actions */}
       <div style={{ flexShrink:0, display:"flex", alignItems:"center", gap:12 }}>
