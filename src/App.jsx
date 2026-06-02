@@ -4004,9 +4004,6 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
             height: videoHeight || `calc((100vw - 272px) * 0.5625)`,
             overflowY: "auto",
           }}>
-            <div style={{ padding:"14px 16px 12px", borderBottom:`1px solid ${C.gray100}`, position:"sticky", top:0, background:C.white, zIndex:1 }}>
-              <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{session.title}</div>
-            </div>
             <div>
               {(() => {
                 const sections = [];
