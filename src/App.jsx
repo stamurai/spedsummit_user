@@ -3445,9 +3445,6 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
   /* ── Seasons Overview ── */
   return (
     <div style={{ padding:24, background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
-      <div style={{ marginBottom:28 }}>
-<h1 style={{ margin:"0 0 4px", fontSize:24, fontWeight:900, color:C.gray900 }}>Summit Sessions</h1>
-      </div>
 
       {/* Newly published sessions not in any season */}
       {(() => {
