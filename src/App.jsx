@@ -10113,7 +10113,15 @@ export default function App() {
     setQuizStates(prev => {
       const next = { ...prev };
       data.forEach(row => {
-        if (row.quiz_state && Object.keys(row.quiz_state).length > 0) next[row.session_id] = row.quiz_state;
+        if (row.quiz_state && Object.keys(row.quiz_state).length > 0) {
+          next[row.session_id] = row.quiz_state;
+        } else {
+          // Fallback: check localStorage
+          try {
+            const local = localStorage.getItem(`qs_${row.session_id}`);
+            if (local) { const parsed = JSON.parse(local); if (parsed?.status) next[row.session_id] = parsed; }
+          } catch(_) {}
+        }
       });
       return next;
     });
@@ -10122,10 +10130,11 @@ export default function App() {
   async function saveUserProgress(sessionId, fields) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    await supabase.from("user_progress").upsert(
+    const { error } = await supabase.from("user_progress").upsert(
       { user_id: user.id, session_id: sessionId, updated_at: new Date().toISOString(), ...fields },
       { onConflict: "user_id,session_id" }
     );
+    if (error) console.error("[Supabase] saveUserProgress error:", error.message);
   }
 
 
@@ -10211,6 +10220,8 @@ export default function App() {
     setQuizStates(prev => {
       const next = { ...prev, [sessionId]: { ...(prev[sessionId] || { status:"not-taken" }), ...updates } };
       saveUserProgress(sessionId, { quiz_state: next[sessionId] });
+      // Persist to localStorage as fallback
+      try { localStorage.setItem(`qs_${sessionId}`, JSON.stringify(next[sessionId])); } catch(_) {}
       return next;
     });
   }
@@ -10228,6 +10239,8 @@ export default function App() {
     if (session) setReviewSession({ session, score, passed });
     if (passed) {
       toast({ type:"success", title:"🏆 Assessment Passed!", message:`You scored ${score}% — your certificate is ready!` });
+      // Re-fetch to ensure certificates page is in sync
+      setTimeout(() => fetchUserProgress(), 1000);
     } else {
       toast({ type:"warning", title:"Assessment not passed", message:`You scored ${score}%. You need 80% to pass. Try again!` });
     }
