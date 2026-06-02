@@ -1499,79 +1499,14 @@ function TopBar({ toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, 
 
   return (
     <div style={{ height:60, background:C.white, borderBottom:`1px solid ${C.gray200}`, display:"flex", alignItems:"center", paddingLeft:24, paddingRight:24, position:"sticky", top:0, zIndex:100, flexShrink:0 }}>
-      {/* Logo */}
+      {/* Logo — clicking goes to landing page */}
       <div style={{ flexShrink:0, display:"flex", alignItems:"center", cursor:"pointer" }}
-        onClick={()=>onNavigate("dashboard")}>
+        onClick={onGoHome}>
         <img src="/Container.png" alt="SPED Summit" style={{ height:28, width:"auto", display:"block" }}/>
       </div>
 
-      {/* Home button — hidden on mobile */}
-      <button className="topbar-browse"
-        onClick={onGoHome}
-        style={{ marginLeft:16, flexShrink:0, display:"inline-flex", alignItems:"center", gap:5, background:"none", border:"none", cursor:"pointer", fontSize:14, fontWeight:600, color:C.gray700, padding:"6px 10px", borderRadius:8, fontFamily:"inherit", transition:"color .15s" }}
-        onMouseEnter={e => e.currentTarget.style.color = C.gray900}
-        onMouseLeave={e => e.currentTarget.style.color = C.gray700}>
-        Home
-      </button>
-
-      {/* Browse button — hidden on mobile (bottom nav handles it) */}
-      <div className="topbar-browse" style={{ position:"relative", marginLeft:4, flexShrink:0 }} ref={browseRef}>
-        <button
-          onClick={() => setShowBrowse(v => !v)}
-          style={{ display:"inline-flex", alignItems:"center", gap:5, background:"none", border:"none", cursor:"pointer", fontSize:14, fontWeight:600, color: showBrowse ? C.primary : C.gray700, padding:"6px 10px", borderRadius:8, fontFamily:"inherit", transition:"color .15s" }}
-          onMouseEnter={e => { if (!showBrowse) e.currentTarget.style.color = C.gray900; }}
-          onMouseLeave={e => { if (!showBrowse) e.currentTarget.style.color = C.gray700; }}>
-          Browse
-          <Icon name="caret-down" size={13} color={showBrowse ? C.primary : C.gray500}
-            style={{ transition:"transform .2s", transform: showBrowse ? "rotate(180deg)" : "rotate(0deg)" }}/>
-        </button>
-
-        {showBrowse && (
-          <div style={{ position:"absolute", top:"calc(100% + 8px)", left:0, background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, boxShadow:"0 12px 40px rgba(0,0,0,0.12)", minWidth:400, zIndex:200, display:"flex", overflow:"hidden" }}>
-            {/* Sessions column */}
-            <div style={{ flex:1, padding:"12px 12px 10px" }}>
-              <div style={{ fontSize:11, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:4, paddingLeft:4 }}>Sessions</div>
-              <div style={{ display:"flex", flexDirection:"column" }}>
-                {browseSeasons.length === 0 ? (
-                  <div style={{ padding:"12px 8px", fontSize:13, color:C.gray400 }}>No sessions available yet.</div>
-                ) : browseSeasons.map(s => (
-                  <button key={s.id}
-                    onClick={() => { setShowBrowse(false); const [sn, sy] = s.name.split(" "); onBrowseSelect?.(sn, sy); }}
-                    style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", background:"none", border:"none", cursor:"pointer", padding:"6px 8px", borderRadius:8, textAlign:"left", fontFamily:"inherit", transition:"background .12s" }}
-                    onMouseEnter={e => e.currentTarget.style.background = C.gray100}
-                    onMouseLeave={e => e.currentTarget.style.background = "none"}>
-                    <span style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{s.name}</span>
-                    <span style={{ fontSize:12, color:C.gray400, marginTop:1 }}>{s.tagline}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div style={{ width:1, background:C.gray200, flexShrink:0 }}/>
-
-            {/* Year column */}
-            <div style={{ minWidth:100, padding:"12px 12px 10px" }}>
-              <div style={{ fontSize:11, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:4, paddingLeft:4 }}>Year</div>
-              <div style={{ display:"flex", flexDirection:"column" }}>
-                {browseYears.map(y => (
-                  <button key={y}
-                    onClick={() => { setShowBrowse(false); onBrowseSelect?.("all", y); }}
-                    style={{ background:"none", border:"none", cursor:"pointer", padding:"6px 8px", borderRadius:8, fontSize:14, fontWeight:600, color:C.gray900, textAlign:"left", fontFamily:"inherit", transition:"background .12s" }}
-                    onMouseEnter={e => e.currentTarget.style.background = C.gray100}
-                    onMouseLeave={e => e.currentTarget.style.background = "none"}>
-                    {y}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Search — centered, hidden on mobile */}
-      <div className="topbar-search" style={{ flex:1, display:"flex", justifyContent:"center", padding:"0 16px" }}>
-        <SearchBar onOpenSession={onOpenSession} onNavigate={onNavigate} sessions={sessions}/>
+      {/* Search removed, flex spacer */}
+      <div style={{ flex:1 }}/>
       </div>
 
       {/* Mobile search icon */}
