@@ -3798,7 +3798,7 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress, initialProgress = 0 }) 
 
 function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress, adminName = "", adminAvatar = null, isDark = false }) {
   const [playing, setPlaying] = useState(false);
-  const [activeLesson, setActiveLesson] = useState(() => session.lessons.findIndex(l=>l.status==="active" && l.type!=="quiz")||0);
+  const [activeLesson, setActiveLesson] = useState(() => { const idx = session.lessons.findIndex(l=>l.status==="active" && l.type!=="quiz"); return idx >= 0 ? idx : 0; });
   const [progress, setProgress] = useState(session.progress || 0);
   const [unlockedIndices, setUnlockedIndices] = useState(() =>
     new Set(session.lessons.map((l, i) => (l.status !== "locked" || l.type === "material") ? i : null).filter(x => x !== null))
@@ -4026,8 +4026,8 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                                   }
                                 </div>
                                 <div style={{ flex:1, minWidth:0 }}>
-                                  <div style={{ fontSize:13, fontWeight: isActive || done ? 600 : 400, color: locked ? C.gray400 : isQuiz ? "#7c3aed" : C.gray900, lineHeight:1.4 }}>{isQuiz ? "Assessment" : session.title}</div>
-                                  <div style={{ fontSize:12, color: isQuiz ? "#a855f7" : C.gray400, marginTop:2 }}>
+                                  <div style={{ fontSize:13, fontWeight: isActive || done ? 600 : 400, color: locked ? C.gray400 : C.gray900, lineHeight:1.4 }}>{isQuiz ? "Assessment" : session.title}</div>
+                                  <div style={{ fontSize:12, color: C.gray400, marginTop:2 }}>
                                     {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
                                   </div>
                                 </div>
