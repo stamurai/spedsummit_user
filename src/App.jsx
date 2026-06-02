@@ -8446,12 +8446,12 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       )}
 
       {/* ── Hero ── */}
-      <section style={{ paddingTop:48, paddingBottom:64, background:T.bg, position:"relative", overflow:"hidden", minHeight:"calc(100vh + 200px)", marginTop:56 }} className="lp-hero-section">
+      <section style={{ paddingTop:48, paddingBottom:64, background:T.bg, position:"relative", overflow:"hidden", minHeight:"calc(100vh - 56px)", marginTop:56 }} className="lp-hero-section">
         <style>{`@media(max-width:767px){ .lp-hero-section{ min-height:unset !important; padding-top:32px !important; padding-bottom:48px !important; } .lp-hero-content{ position:relative !important; top:auto !important; left:auto !important; right:auto !important; bottom:auto !important; padding:48px 20px 0 !important; } }`}</style>
 
 
         {/* ── Centered content wrapper ── */}
-        <div className="lp-hero-content" style={{ position:"absolute", top:0, left:0, right:0, bottom:520, zIndex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"flex-start", padding:"32px 32px 48px" }}>
+        <div className="lp-hero-content" style={{ position:"absolute", top:0, left:0, right:0, bottom:340, zIndex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"flex-start", padding:"32px 32px 48px" }}>
 
         {/* ── Text block ── */}
         <div className="lp-hero-text" style={{ maxWidth:780, width:"100%", padding:"0 8px", textAlign:"center" }}>
@@ -8517,7 +8517,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           const CARD_W = 150, CARD_H = 190;
           const n = experts.length;
           return (
-            <div className="lp-hero-collage" style={{ position:"absolute", bottom:-120, left:0, right:0, height:500, overflow:"hidden", zIndex:2 }}>
+            <div className="lp-hero-collage" style={{ position:"absolute", bottom:-60, left:0, right:0, height:400, overflow:"hidden", zIndex:2 }}>
               <div className="lp-hero-collage-inner" style={{ display:"flex", justifyContent:"center", gap:10 }}>
                 {[...cols, ...cols].map((col, ci) => {
                   const top = experts[ci % n];
