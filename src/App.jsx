@@ -1783,6 +1783,7 @@ function LimelightBottomNav({ active, onChange, onNotif, notifCount = 0 }) {
 function TabBar({ active, onChange, breadcrumbs }) {
   const nav = [
     { id:"dashboard",      label:"My Learnings"    },
+    { id:"sessions",       label:"All Sessions"    },
     { id:"certifications", label:"My Certificates" },
   ];
 
