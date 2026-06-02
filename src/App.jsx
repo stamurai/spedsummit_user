@@ -4471,16 +4471,6 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
         )}
         </div>{/* end tabs+content */}
 
-        {/* ── Go to next item ── */}
-        <div style={{ display:"flex", justifyContent:"flex-end", padding:"16px 24px", borderTop:`1px solid ${C.gray200}` }}>
-          <button onClick={() => {
-            const next = activeLesson + 1;
-            if (next < session.lessons.length) switchLesson(next);
-          }} style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 20px", background:C.primary, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer" }}>
-            Go to next item
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </button>
-        </div>
 
         </div>{/* end right column */}
       </div>{/* end top row */}
