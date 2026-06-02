@@ -8452,7 +8452,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           </div>
           {/* Desktop links */}
           <div style={{ display:"flex", alignItems:"center", gap:4 }} className="v1-nav-desktop">
-            {[["Sessions","sessions"],["Speakers","instructors"],["FAQ","help"]].map(([l,id])=>(
+            {[["Sessions","sessions"],["Speakers","instructors"]].map(([l,id])=>(
               <button key={l} onClick={()=>document.getElementById(id)?.scrollIntoView({ behavior:"smooth" })}
                 style={{ background:"none", border:"none", fontSize:14, color:T.muted, fontWeight:500, cursor:"pointer", padding:"6px 14px", borderRadius:8, height:36, transition:"background .12s, color .12s" }}
                 onMouseEnter={e=>{ e.currentTarget.style.background="rgba(245,158,11,0.1)"; e.currentTarget.style.color=T.text; }}
@@ -8493,7 +8493,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       {navOpen && createPortal(
         <div style={{ position:"fixed", top:56, left:0, right:0, bottom:0, zIndex:99, background:"rgba(254,245,236,0.97)", backdropFilter:"blur(12px)", borderTop:`1px solid ${T.border}`, display:"flex", flexDirection:"column", padding:"16px 24px 32px" }}>
           <div style={{ display:"flex", flexDirection:"column", gap:4, flex:1 }}>
-            {[["Sessions","sessions"],["Speakers","instructors"],["FAQ","help"]].map(([l,id])=>(
+            {[["Sessions","sessions"],["Speakers","instructors"]].map(([l,id])=>(
               <button key={l} onClick={()=>{ document.getElementById(id)?.scrollIntoView({ behavior:"smooth" }); setNavOpen(false); }}
                 style={{ background:"none", border:"none", fontSize:16, color:T.text, fontWeight:600, cursor:"pointer", padding:"12px 16px", borderRadius:10, textAlign:"left", transition:"background .15s" }}
                 onMouseEnter={e=>e.currentTarget.style.background="rgba(245,158,11,0.1)"}
