@@ -2026,6 +2026,11 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
         )}
       </div>
 
+      {/* Progress bar — directly below thumbnail */}
+      {!isLocked && !isUpcoming && (
+        <ProgressBar value={session.progress || 0} height={4} color={session.status==="completed" ? C.success : "#6490E8"}/>
+      )}
+
       {/* Card body */}
       <div style={{ padding:"16px 16px 18px", flex:1, display:"flex", flexDirection:"column" }}>
         {/* Category tag */}
@@ -2048,22 +2053,12 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
         )}
 
         <div style={{ marginTop:"auto" }}>
-          {/* Progress bar + meta */}
-          {qs === "in-progress" ? (
-            <div style={{ display:"flex", flexDirection:"column", gap:5, marginBottom:12 }}>
-              <ProgressBar value={Math.round(((quizState.currentQ||0) / (getSessionQuestions(session).length||5)) * 100)} color="#6490E8" height={5}/>
-              <span style={{ fontSize:12, color:C.gray500 }}>Assessment in progress · Q{(quizState.currentQ||0)+1}/{getSessionQuestions(session).length||5}</span>
-            </div>
-          ) : (
-            <div style={{ marginBottom:12 }}>
-              <ProgressBar value={session.progress} height={5} color={session.status==="completed" ? C.success : "#6490E8"}/>
-              <div style={{ fontSize:12, color:C.gray500, marginTop:5 }}>
-                {session.progress > 0
-                  ? `${session.progress}% complete${session.duration ? ` · ${session.duration}` : ""}`
-                  : session.duration ? session.duration : ""}
-              </div>
-            </div>
-          )}
+          {/* Duration meta */}
+          <div style={{ fontSize:12, color:C.gray500, marginBottom:12 }}>
+            {session.progress > 0
+              ? `${session.progress}% complete${session.duration ? ` · ${session.duration}` : ""}`
+              : session.duration ? session.duration : ""}
+          </div>
 
           {/* Assessment locked hint */}
           {session.status === "completed" && hasAssessment && !watchedEnough && (
@@ -2076,47 +2071,41 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
           {/* CTA button */}
           {isLocked ? (
             <button onClick={e=>{ e.stopPropagation(); onSubscribeClick?.(); }}
-              style={{ padding:"10px 20px", borderRadius:10, border:"none", background:"#6490E8",
-                       color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer",
-                       display:"inline-flex", alignItems:"center", gap:6, transition:"opacity .15s" }}
+              style={{ width:"100%", padding:"11px", borderRadius:10, border:"none", background:"#6490E8",
+                       color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", transition:"opacity .15s" }}
               onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
               onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-              <Icon name="lock" size={14} color="#fff"/> Subscribe to Watch
+              Subscribe to Watch
             </button>
           ) : isUpcoming ? (
             <button onClick={e=>{ e.stopPropagation(); onClick(session); }}
-              style={{ padding:"10px 20px", borderRadius:10, border:`1px solid ${C.primaryBorder}`,
+              style={{ width:"100%", padding:"11px", borderRadius:10, border:`1px solid ${C.primaryBorder}`,
                        background:C.primaryLight, color:C.primary, fontSize:14, fontWeight:700,
-                       cursor:"pointer", display:"inline-flex", alignItems:"center", gap:6, transition:"opacity .15s" }}
+                       cursor:"pointer", transition:"opacity .15s" }}
               onMouseEnter={e=>e.currentTarget.style.opacity=".8"}
               onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-              <Icon name="clock" size={14} color={C.primary}/> Preview Session
+              Preview Session
             </button>
           ) : assessBtn ? (
             <button onClick={assessBtn.action}
-              style={{ padding:"10px 20px", borderRadius:10, border:assessBtn.border,
+              style={{ width:"100%", padding:"11px", borderRadius:10, border:assessBtn.border,
                        background:assessBtn.bg, color:assessBtn.color,
-                       fontSize:14, fontWeight:700, cursor:"pointer",
-                       display:"inline-flex", alignItems:"center", gap:7, transition:"opacity .15s" }}
+                       fontSize:14, fontWeight:700, cursor:"pointer", transition:"opacity .15s" }}
               onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
               onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-              <Icon name={assessBtn.icon} size={14} color={assessBtn.color}/>
               {assessBtn.label}
             </button>
           ) : (
             <button onClick={e=>{ e.stopPropagation(); if(!cta.disabled) onClick(session); }}
-              style={{ padding:"10px 20px", borderRadius:10,
+              style={{ width:"100%", padding:"11px", borderRadius:10,
                        border: cta.disabled ? `1px solid ${C.gray200}` : "none",
                        background: cta.disabled ? C.gray100 : "#6490E8",
                        color: cta.disabled ? C.gray400 : "#fff",
                        fontSize:14, fontWeight:700, cursor: cta.disabled ? "not-allowed" : "pointer",
-                       display:"inline-flex", alignItems:"center", gap:6, transition:"opacity .15s" }}
+                       transition:"opacity .15s" }}
               onMouseEnter={e=>{ if(!cta.disabled) e.currentTarget.style.opacity=".85"; }}
               onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-              {cta.disabled
-                ? <><Icon name="lock" size={14} color={C.gray400}/> Locked</>
-                : <><Icon name="play" size={14} color="#fff"/> {cta.label}</>
-              }
+              {cta.disabled ? "Locked" : "Watch Now"}
             </button>
           )}
         </div>
