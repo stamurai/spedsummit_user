@@ -1550,11 +1550,6 @@ function TopBar({ toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, 
                   action: () => { setShowProfileMenu(false); onNavigateProfile?.(); },
                 },
                 {
-                  icon: isDark ? "sun" : "moon",
-                  label: isDark ? "Light Mode" : "Dark Mode",
-                  action: () => onToggleDarkMode?.(),
-                },
-                {
                   icon: "gift",
                   label: "Refer Friends",
                   action: () => { setShowProfileMenu(false); setShowReferModal(true); },
@@ -9996,7 +9991,7 @@ export default function App() {
   const [openInstructorName, setOpenInstructorName] = useState(null);
   const [page, setPage] = useState(() => sessionStorage.getItem("page") || "dashboard");
   const navHistoryRef = useRef(["dashboard"]);
-  const [isDark, setIsDark] = useState(() => { const h = new Date().getHours(); return h >= 19 || h < 6; });
+  const isDark = false;
   const [landingV, setLandingV] = useState(1);
   const [activeSession,   setActiveSession]   = useState(null);
   const [sessionSource,   setSessionSource]   = useState("sessions");
