@@ -3943,21 +3943,31 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
       </div>
 
       {/* ── Top row: Sidebar + Video ── */}
-      <div style={{ display:"flex", alignItems:"flex-start" }}>
+      <div style={{ display:"flex", alignItems:"flex-start", gap:0 }}>
 
         {/* ── Sidebar: Course Content (LEFT) ── */}
         <div style={{
           width: 300,
-          borderRight: `1px solid ${C.gray200}`,
-          background: C.white,
           flexShrink: 0,
           position: "sticky",
           top: 0,
           height: "100vh",
-          overflowY: "auto",
+          overflowY: "hidden",
           alignSelf: "flex-start",
-          boxShadow: "2px 0 8px rgba(0,0,0,0.04)",
+          background: "#f5f5f5",
+          padding: "16px 12px",
+          boxSizing: "border-box",
         }}>
+          {/* Floating panel */}
+          <div style={{
+            background: C.white,
+            borderRadius: 16,
+            boxShadow: "0 2px 12px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.05)",
+            height: "100%",
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
+          }}>
           <div>
             {(() => {
               const sections = [];
@@ -3983,7 +3993,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                 if (sec.title) namedSectionCount++;
                 const showHeader = showHeaders && !!sec.title;
                 return (
-                  <div key={secKey} style={{ borderBottom:`1px solid ${C.gray100}` }}>
+                  <div key={secKey} style={{ borderBottom:`1px solid rgba(0,0,0,0.05)` }}>
                     {showHeader && (
                     <button onClick={() => setCollapsedSections(s => ({ ...s, [secKey]: !s[secKey] }))}
                       style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 16px", background:C.gray50, border:"none", cursor:"pointer", textAlign:"left", gap:8 }}>
@@ -4065,6 +4075,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               });
             })()}
           </div>
+          </div>{/* end floating panel */}
         </div>
 
         {/* ── Video Player + Content (RIGHT) ── */}
