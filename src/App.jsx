@@ -3915,7 +3915,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   );
 
   return (
-    <div ref={containerRef} style={{ background:C.white, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+    <div ref={containerRef} style={{ background:"#f5f5f5", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       <style>{`
         @media(max-width:640px){
           .sd-tabs-bar { padding:0 12px !important; overflow-x:auto; -webkit-overflow-scrolling:touch; }
@@ -3947,7 +3947,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
 
         {/* ── Sidebar: Course Content (LEFT) ── */}
         <div style={{
-          width: 280,
+          width: 300,
           borderRight: `1px solid ${C.gray200}`,
           background: C.white,
           flexShrink: 0,
@@ -3956,6 +3956,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           height: "100vh",
           overflowY: "auto",
           alignSelf: "flex-start",
+          boxShadow: "2px 0 8px rgba(0,0,0,0.04)",
         }}>
           {/* Sidebar Header */}
           <div style={{ padding:"16px", borderBottom:`1px solid ${C.gray100}` }}>
@@ -4071,7 +4072,8 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
         </div>
 
         {/* ── Video Player + Content (RIGHT) ── */}
-        <div style={{ flex:1, minWidth:0 }}>
+        <div style={{ flex:1, minWidth:0, padding:"20px 24px 0" }}>
+          <div style={{ background:C.white, borderRadius:12, overflow:"hidden", boxShadow:"0 1px 4px rgba(0,0,0,0.08)", marginBottom:16 }}>
         <div ref={videoRef} style={{ position:"relative", background:"#0f172a", paddingBottom:"56.25%", height:0 }}>
             <div style={{ position:"absolute", inset:0 }}>
               {(session.vimeoUrl || lesson?.vimeoUrl) ? (
@@ -4128,9 +4130,10 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               )}
             </div>
           </div>
+          </div>{/* end video card */}
 
         {/* ── Full-width Tabs + Content ── */}
-        <div style={{ background:C.white }}>
+        <div style={{ background:C.white, borderRadius:12, overflow:"hidden", boxShadow:"0 1px 4px rgba(0,0,0,0.08)", marginBottom:24 }}>
         <div className="sd-tabs-bar" style={{ display:"flex", padding:"0 24px", borderBottom:`1px solid ${C.gray200}` }}>
           {[
             { key:"overview",   label:"Overview"   },
