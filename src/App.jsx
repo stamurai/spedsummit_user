@@ -3931,6 +3931,17 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
         }
       `}</style>
 
+      {/* ── Breadcrumb bar ── */}
+      <div style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 20px", borderBottom:`1px solid ${C.gray200}`, background:C.white, fontSize:13, color:C.gray500 }}>
+        <button onClick={onBack} style={{ background:"none", border:"none", cursor:"pointer", padding:0, fontSize:13, color:C.gray500, fontFamily:"inherit", fontWeight:500 }}
+          onMouseEnter={e=>e.currentTarget.style.color=C.gray900}
+          onMouseLeave={e=>e.currentTarget.style.color=C.gray500}>
+          My Learnings
+        </button>
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="m8 5 5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        <span style={{ color:C.gray900, fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:400 }}>{session.title}</span>
+      </div>
+
       {/* ── Top row: Sidebar + Video ── */}
       <div style={{ display:"flex", alignItems:"flex-start" }}>
 
