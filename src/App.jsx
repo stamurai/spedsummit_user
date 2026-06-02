@@ -3943,15 +3943,13 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
       </div>
 
       {/* ── Top row: Sidebar + Video ── */}
-      <div style={{ display:"flex", alignItems:"flex-start", gap:0 }}>
+      <div style={{ display:"flex", alignItems:"flex-start", gap:0, height:"calc(100vh - 101px)", overflow:"hidden" }}>
 
         {/* ── Sidebar: Course Content (LEFT) ── */}
         <div style={{
           width: 300,
           flexShrink: 0,
-          position: "sticky",
-          top: 0,
-          height: "100vh",
+          height: "100%",
           overflowY: "hidden",
           background: "#f5f5f5",
           padding: "16px 12px",
@@ -4078,9 +4076,9 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
         </div>
 
         {/* ── Video Player + Content (RIGHT) ── */}
-        <div style={{ flex:1, minWidth:0, padding:"16px 16px 24px 12px" }}>
-          {/* Unified Card */}
-          <div style={{ background:C.white, borderRadius:20, boxShadow:"0 2px 16px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.05)", overflow:"hidden" }}>
+        <div style={{ flex:1, minWidth:0, padding:"16px 16px 16px 12px", height:"100%", overflow:"hidden", boxSizing:"border-box" }}>
+          {/* Unified Card — scrolls as one unit */}
+          <div style={{ background:C.white, borderRadius:20, boxShadow:"0 2px 16px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.05)", height:"100%", overflowY:"auto", overflowX:"hidden" }}>
 
             {/* Video with padding so card corners show */}
             <div style={{ padding:"16px 16px 0", flexShrink:0 }}>
@@ -4149,8 +4147,8 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               <h2 style={{ margin:0, fontSize:18, fontWeight:700, color:C.gray900, lineHeight:1.4, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>{session.title}</h2>
             </div>
 
-            {/* Tab bar — sticky */}
-          <div className="sd-tabs-bar" style={{ display:"flex", padding:"4px 20px 0", borderBottom:"1px solid rgba(0,0,0,0.07)", background:C.white, gap:4, flexShrink:0, marginTop:12 }}>
+            {/* Tab bar — sticky within card */}
+          <div className="sd-tabs-bar" style={{ display:"flex", padding:"4px 20px 0", borderBottom:"1px solid rgba(0,0,0,0.07)", background:C.white, gap:4, marginTop:12, position:"sticky", top:0, zIndex:10 }}>
           {[
             { key:"overview",   label:"Overview"   },
             { key:"instructor", label:"Instructor" },
