@@ -10134,14 +10134,16 @@ export default function App() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") && session) {
-        if (sessionStorage.getItem("loggedOut") === "1") return;
+        // Only block silent session restoration after explicit logout — never block a real sign-in
+        if (event !== "SIGNED_IN" && sessionStorage.getItem("loggedOut") === "1") return;
+        sessionStorage.removeItem("loggedOut");
         const meta = session.user.user_metadata || {};
         const name = meta.full_name || meta.name || session.user.email || "User";
         setUserName(name.split(" ")[0] || name);
         setUserEmail(session.user.email || "");
         setUserAvatar(meta.avatar_url || meta.picture || null);
         setIsLoggedIn(true);
-        if (event === "SIGNED_IN") { setPage("dashboard"); setShowLanding(false); sessionStorage.removeItem("loggedOut"); }
+        if (event === "SIGNED_IN" || event === "INITIAL_SESSION") { setPage("dashboard"); setShowLanding(false); }
         sessionStorage.setItem("loggedIn", "1");
         fetchSessions();
         fetchUserProgress();
