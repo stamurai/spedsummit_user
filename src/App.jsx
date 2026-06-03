@@ -9081,7 +9081,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
         `}</style>
 
         {/* CSS vars for theme */}
-        <div style={{ "--spk-border": T.border, "--spk-bg": T.bg, "--spk-bg-fade": T.bg }}>
+        <div style={{ "--spk-border": T.border, "--spk-bg": T.bg, "--spk-bg-fade": T.bg, maxWidth:1200, margin:"0 auto", padding:"0 32px" }}>
 
           {/* Header */}
           <div style={{ maxWidth:1200, margin:"0 auto 56px", padding:"0 24px", display:"flex", flexDirection:"column", alignItems:"center", textAlign:"center", gap:12 }}>
@@ -9095,7 +9095,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           </div>
 
           {/* 4-column speaker grid */}
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:16, padding:"8px 0 16px" }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:20, padding:"8px 0 16px" }}>
             {experts.map((e, i) => (
               <div key={i} className="spk-card"
                 onClick={() => { savedScrollY.current = window.scrollY; setSelectedInstructor(e); window.scrollTo(0, 0); }}
