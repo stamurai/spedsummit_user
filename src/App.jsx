@@ -8566,21 +8566,21 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               <div style={{ width:22, height:22, border:`1px solid ${T.border}`, borderRadius:5, display:"flex", alignItems:"center", justifyContent:"center" }}>
                 <Icon name="calendar" size={12} color="#f59e0b"/>
               </div>
-              <span style={{ fontSize:13, fontWeight:500, color:T.text }}>13th Jul – 12th Aug 2026</span>
+              <span style={{ fontSize:13, fontWeight:600, color:T.text }}>13th Jul – 12th Aug 2026</span>
             </div>
           </div>
 
           {/* Main heading */}
-          <h1 className="animate-fade-in-up lp-hero-h1" style={{ opacity:0, animationDelay:"0.3s", margin:"0 0 20px", fontSize:72, fontWeight:800, color:T.text, lineHeight:1.08, letterSpacing:-3 }}>
+          <h1 className="animate-fade-in-up lp-hero-h1" style={{ opacity:0, animationDelay:"0.3s", margin:"0 0 20px", paddingTop:0, paddingBottom:0, fontSize:72, fontWeight:800, color:T.text, lineHeight:1.08, letterSpacing:-3 }}>
             Watch. Learn. Earn.<br/>
-            <span style={{ background:"linear-gradient(90deg,#2563EB 0%,#8B5CF6 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>
+            <span style={{ background:"linear-gradient(90deg,#2563EB 0%,#8B5CF6 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", fontSize:83, fontWeight:800, lineHeight:"75px", paddingTop:0, paddingBottom:0 }}>
               Get Certified.
             </span>
           </h1>
 
           {/* Sub heading */}
           <p className="animate-fade-in-up" style={{ opacity:0, animationDelay:"0.4s", margin:"0 0 32px", fontSize:18, color:T.muted, lineHeight:1.65, maxWidth:560, marginLeft:"auto", marginRight:"auto" }}>
-            Expert-led SPED sessions, interactive quizzes, and real downloadable certificates.
+            Learn from leading SPED experts, complete interactive quizzes, and earn real professional development certificates.
           </p>
 
           {/* CTAs */}
