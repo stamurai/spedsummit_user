@@ -8621,7 +8621,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           const CARD_W = 150, CARD_H = 190;
           const n = experts.length;
           return (
-            <div className="lp-hero-collage" style={{ position:"absolute", bottom:-60, left:0, right:0, height:400, overflow:"hidden", zIndex:2 }}>
+            <div className="lp-hero-collage" style={{ position:"absolute", bottom:-140, left:0, right:0, height:400, overflow:"hidden", zIndex:2 }}>
               <div className="lp-hero-collage-inner" style={{ display:"flex", justifyContent:"center", gap:10 }}>
                 {[...cols, ...cols].map((col, ci) => {
                   const top = experts[ci % n];
