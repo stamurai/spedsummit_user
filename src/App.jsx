@@ -3376,7 +3376,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
           </EmptyHeader>
         </Empty>
       ) : (
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:16 }}>
           {sessions.map(s => <SessionCard key={s.id} session={s} onClick={onOpenSession} quizState={quizStates?.[s.id]||{}} onAssessmentClick={onAssessmentClick} onCertificateClick={onCertificateClick}/>)}
         </div>
       )}
@@ -10136,11 +10136,13 @@ export default function App() {
         quiz_questions: s.quiz_questions || null,
       });
 
-      // Deduplicate by title to avoid showing duplicate sessions
-      const seen = new Set();
+      // Deduplicate by title and id
+      const seenTitles = new Set();
+      const seenIds = new Set();
       const rows = (data || []).filter(s => {
-        if (seen.has(s.title)) return false;
-        seen.add(s.title);
+        if (seenTitles.has(s.title) || seenIds.has(s.id)) return false;
+        seenTitles.add(s.title);
+        seenIds.add(s.id);
         return true;
       });
 
