@@ -4081,7 +4081,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                       <div style={{ padding:"4px 0 8px" }}>
                         {sec.lessons.map(l => {
                           const i = l._index;
-                          const isActive = i === activeLesson && l.type !== "quiz";
+                          const isActive = (i === activeLesson && l.type !== "quiz") || (l.type === "quiz" && panelMode === "assessment");
                           const locked = !unlockedIndices.has(i) && l.type !== "material";
                           const isQuiz = l.type === "quiz";
                           const quizDone = isQuiz && l.status === "completed";
