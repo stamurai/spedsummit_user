@@ -8977,43 +8977,20 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                 whileInView="visible"
                 viewport={{ once: true, margin: "-60px" }}
                 className="lp-bento-grid"
-              style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gridTemplateRows:"repeat(2, 1fr)", gap:20 }}
+              style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20 }}
               >
-                {/* Slot 1 — Learners Connected (col 1, row 1) */}
-                <motion.div variants={itemVariants} style={{ gridColumn:"1", gridRow:"1" }}>
-                  <div className="lp-bento-card" style={{ ...cardBase, padding:"28px 28px 24px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
-                    <div>
-                      <div style={{ fontSize:15, fontWeight:700, color:T.text, marginBottom:3 }}>Learners Connected</div>
-                      <div style={{ fontSize:13, color:T.muted }}>4,200+ Active Educators</div>
-                    </div>
-                    <div style={{ display:"flex", marginTop:16 }}>
-                      {[
-                        "photo-1573497491208-6b1acb260507",
-                        "photo-1531746020798-e6953c6e8e04",
-                        "photo-1580489944761-15a19d654956",
-                        "photo-1560250097-0b93528c311a",
-                        "photo-1494790108377-be9c29b29330",
-                      ].map((id, i) => (
-                        <img key={i} src={`https://images.unsplash.com/${id}?w=80&h=80&fit=crop&auto=format`}
-                          style={{ width:34, height:34, borderRadius:"50%", objectFit:"cover", marginLeft: i === 0 ? 0 : -10, border:"2px solid #fff", flexShrink:0 }}/>
-                      ))}
-                      <div style={{ width:34, height:34, borderRadius:"50%", background:"#eef3fd", border:"2px solid #fff", marginLeft:-10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"#4a77d4" }}>+4k</div>
-                    </div>
-                  </div>
-                </motion.div>
-
-                {/* Slot 2 — Big stat (col 2, row 1) */}
-                <motion.div variants={itemVariants} style={{ gridColumn:"2", gridRow:"1" }}>
+                {/* Card 1 — 100% Free */}
+                <motion.div variants={itemVariants}>
                   <div className="lp-bento-card" style={{ ...cardBase, position:"relative", display:"flex", flexDirection:"column", justifyContent:"flex-end", padding:"28px 28px 24px" }}>
                     <div style={{ position:"relative" }}>
-                      <div style={{ fontSize:"clamp(36px,10vw,64px)", fontWeight:900, color:T.text, letterSpacing:-3, lineHeight:1 }}>100%</div>
+                      <div style={{ fontSize:"clamp(36px,6vw,64px)", fontWeight:900, color:T.text, letterSpacing:-3, lineHeight:1 }}>100%</div>
                       <div style={{ fontSize:13, color:T.muted, marginTop:4, fontWeight:500 }}>Free to attend</div>
                     </div>
                   </div>
                 </motion.div>
 
-                {/* Slot 3 — Completion Rate (col 1, row 2) */}
-                <motion.div variants={itemVariants} style={{ gridColumn:"1", gridRow:"2" }}>
+                {/* Card 2 — Completion Rate */}
+                <motion.div variants={itemVariants}>
                   <div className="lp-bento-card" style={{ ...cardBase, padding:"28px 28px 24px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
                     <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
                       <div>
@@ -9023,7 +9000,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                       <span style={{ fontSize:11, fontWeight:700, color:"#2563eb", background:"rgba(37,99,235,0.1)", padding:"3px 9px", borderRadius:99 }}>Live</span>
                     </div>
                     <div>
-                      <div style={{ fontSize:"clamp(32px,9vw,52px)", fontWeight:900, color:T.text, lineHeight:1, letterSpacing:-2 }}>78%</div>
+                      <div style={{ fontSize:"clamp(32px,6vw,52px)", fontWeight:900, color:T.text, lineHeight:1, letterSpacing:-2 }}>78%</div>
                       <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, color:T.muted, marginTop:6 }}>
                         <span>Sessions finished</span><span>This quarter</span>
                       </div>
@@ -9031,8 +9008,8 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                   </div>
                 </motion.div>
 
-                {/* Slot 4 — Self-paced (col 2, row 2) */}
-                <motion.div variants={itemVariants} style={{ gridColumn:"2", gridRow:"2" }}>
+                {/* Card 3 — Learn at Your Pace */}
+                <motion.div variants={itemVariants}>
                   <div className="lp-bento-card" style={{ ...cardBase, padding:"28px 28px 24px", display:"flex", flexDirection:"column", justifyContent:"flex-end" }}>
                     <div style={{ width:40, height:40, borderRadius:10, background:"rgba(16,185,129,0.1)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:14 }}>
                       <Icon name="play-circle" size={20} color="#10b981"/>
