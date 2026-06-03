@@ -6772,6 +6772,7 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", defaultMode = 
 
   async function handleGoogleLogin() {
     setGoogleLoading(true);
+    sessionStorage.removeItem("loggedOut"); // clear before OAuth redirect
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: window.location.origin },
@@ -6799,6 +6800,7 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", defaultMode = 
         setMode("signin");
         setPassword("");
       } else {
+        sessionStorage.removeItem("loggedOut"); // clear before sign-in so SIGNED_IN event isn't blocked
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) { setAuthError(error.message); return; }
         onClose();
@@ -10228,8 +10230,8 @@ export default function App() {
         return;
       }
       if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") && session) {
-        // Only block silent session restoration after explicit logout — never block a real sign-in
-        if (event !== "SIGNED_IN" && sessionStorage.getItem("loggedOut") === "1") return;
+        // Block ALL session restoration after explicit logout (including SIGNED_IN from storage restore)
+        if (sessionStorage.getItem("loggedOut") === "1") return;
         sessionStorage.removeItem("loggedOut");
         const meta = session.user.user_metadata || {};
         const name = meta.full_name || meta.name || session.user.email || "User";
