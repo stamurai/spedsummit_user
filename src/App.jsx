@@ -8561,13 +8561,25 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
         <div className="lp-hero-text" style={{ maxWidth:780, width:"100%", padding:"0 8px", textAlign:"center" }}>
 
           {/* Rating badge */}
-          <div className="animate-fade-in-up" style={{ opacity:0, animationDelay:"0.2s", marginBottom:24 }}>
+          <div className="animate-fade-in-up" style={{ opacity:0, animationDelay:"0.2s", marginBottom:16 }}>
             <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"#FEF5EC", border:`1px solid ${T.border}`, borderRadius:8, padding:"5px 14px" }}>
               <div style={{ width:22, height:22, border:`1px solid ${T.border}`, borderRadius:5, display:"flex", alignItems:"center", justifyContent:"center" }}>
                 <Icon name="calendar" size={12} color="#f59e0b"/>
               </div>
               <span style={{ fontSize:13, fontWeight:600, color:T.text }}>13th Jul – 12th Aug 2026</span>
             </div>
+          </div>
+
+          {/* Welcome to SPED Summit — inline below date */}
+          <div style={{ marginBottom:20 }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:16, marginBottom:4 }}>
+              <div style={{ flex:1, maxWidth:80, height:1.5, background:"linear-gradient(to right, transparent, #e8a030)" }}/>
+              <p style={{ margin:0, fontSize:10, fontWeight:700, letterSpacing:2, color:"#c8872a", textTransform:"uppercase" }}>Welcome to</p>
+              <div style={{ flex:1, maxWidth:80, height:1.5, background:"linear-gradient(to left, transparent, #e8a030)" }}/>
+            </div>
+            <h2 style={{ margin:0, fontSize:"clamp(28px,4vw,52px)", fontWeight:900, color:T.blue, letterSpacing:-1, lineHeight:1.1, fontFamily:"'Inter',-apple-system,sans-serif" }}>
+              SPED SUMMIT
+            </h2>
           </div>
 
           {/* Main heading */}
@@ -8655,18 +8667,6 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           );
         })()}
 
-      </section>
-
-      {/* ── Welcome to SPED Summit ── */}
-      <section style={{ padding:"56px 24px 48px", background:T.bg, textAlign:"center" }}>
-        <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:24, marginBottom:12 }}>
-          <div style={{ flex:1, maxWidth:120, height:1.5, background:"linear-gradient(to right, transparent, #e8a030)" }}/>
-          <p style={{ margin:0, fontSize:11, fontWeight:700, letterSpacing:2, color:"#c8872a", textTransform:"uppercase" }}>Welcome to</p>
-          <div style={{ flex:1, maxWidth:120, height:1.5, background:"linear-gradient(to left, transparent, #e8a030)" }}/>
-        </div>
-        <h2 style={{ margin:0, fontSize:"clamp(36px,5vw,64px)", fontWeight:900, color:T.blue, letterSpacing:-1, lineHeight:1.1, fontFamily:"'Inter',-apple-system,sans-serif" }}>
-          SPED SUMMIT
-        </h2>
       </section>
 
       {/* ── Social proof strip ── */}
