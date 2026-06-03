@@ -6696,6 +6696,64 @@ function LegalModal({ type, onClose }) {
   );
 }
 
+function PasswordResetModal({ onClose, toast }) {
+  const [password, setPassword] = useState("");
+  const [confirm,  setConfirm]  = useState("");
+  const [loading,  setLoading]  = useState(false);
+  const [done,     setDone]     = useState(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (password.length < 8) { toast({ type:"error", message:"Password must be at least 8 characters." }); return; }
+    if (password !== confirm) { toast({ type:"error", message:"Passwords do not match." }); return; }
+    setLoading(true);
+    const { error } = await supabase.auth.updateUser({ password });
+    setLoading(false);
+    if (error) { toast({ type:"error", message: error.message }); return; }
+    setDone(true);
+    toast({ type:"success", title:"Password updated!", message:"You can now sign in with your new password." });
+    setTimeout(() => onClose(), 2000);
+  }
+
+  const inp = { width:"100%", padding:"10px 14px", border:"1px solid #e2e8f0", borderRadius:8, fontSize:14, color:"#0f172a", outline:"none", boxSizing:"border-box", background:"#fff", fontFamily:"inherit" };
+
+  return (
+    <div style={{ position:"fixed", inset:0, zIndex:2000, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(15,23,42,0.55)", padding:20 }}>
+      <div style={{ background:"#fff", borderRadius:16, width:"100%", maxWidth:400, padding:"32px", boxShadow:"0 20px 60px rgba(0,0,0,0.15)" }}>
+        <img src="/Container.png" alt="SPED Summit" style={{ height:20, display:"block", marginBottom:24 }}/>
+        {done ? (
+          <div style={{ textAlign:"center", padding:"16px 0" }}>
+            <div style={{ fontSize:40, marginBottom:12 }}>✓</div>
+            <div style={{ fontSize:18, fontWeight:800, color:"#0f172a" }}>Password updated!</div>
+            <div style={{ fontSize:14, color:"#64748b", marginTop:6 }}>Redirecting…</div>
+          </div>
+        ) : (
+          <>
+            <h2 style={{ margin:"0 0 6px", fontSize:20, fontWeight:800, color:"#0f172a" }}>Set new password</h2>
+            <p style={{ margin:"0 0 20px", fontSize:13, color:"#64748b" }}>Choose a new password for your account.</p>
+            <form onSubmit={handleSubmit}>
+              <div style={{ marginBottom:14 }}>
+                <label style={{ display:"block", fontSize:12, fontWeight:600, color:"#2B2E33", marginBottom:5 }}>New Password</label>
+                <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Min. 8 characters" required style={inp}
+                  onFocus={e=>e.target.style.borderColor="#6490E8"} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
+              </div>
+              <div style={{ marginBottom:20 }}>
+                <label style={{ display:"block", fontSize:12, fontWeight:600, color:"#2B2E33", marginBottom:5 }}>Confirm Password</label>
+                <input type="password" value={confirm} onChange={e=>setConfirm(e.target.value)} placeholder="Repeat new password" required style={inp}
+                  onFocus={e=>e.target.style.borderColor="#6490E8"} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
+              </div>
+              <button type="submit" disabled={loading}
+                style={{ width:"100%", padding:"12px", borderRadius:8, border:"none", background:"#6490E8", color:"#fff", fontSize:14, fontWeight:700, cursor: loading?"not-allowed":"pointer", opacity: loading?0.7:1 }}>
+                {loading ? "Updating…" : "Update Password"}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function AuthModal({ onClose, onLogin, defaultStep = "user-auth", defaultMode = "signin", noOverlay = false }) {
   // step: "role-select" | "user-auth" | "forgot-password"
   const [step,       setStep]      = useState(defaultStep);
@@ -8550,7 +8608,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       )}
 
       {/* ── Hero ── */}
-      <section style={{ paddingTop:48, paddingBottom:64, background:T.bg, position:"relative", overflow:"hidden", minHeight:"calc(100vh - 56px)", marginTop:56 }} className="lp-hero-section">
+      <section style={{ paddingTop:48, paddingBottom:64, background:T.bg, position:"relative", overflow:"hidden", height:900, marginTop:56 }} className="lp-hero-section">
         <style>{`@media(max-width:767px){ .lp-hero-section{ min-height:unset !important; padding-top:32px !important; padding-bottom:48px !important; } .lp-hero-content{ position:relative !important; top:auto !important; left:auto !important; right:auto !important; bottom:auto !important; padding:48px 20px 0 !important; } }`}</style>
 
 
@@ -8577,7 +8635,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               <p style={{ margin:0, fontSize:10, fontWeight:700, letterSpacing:2, color:"#c8872a", textTransform:"uppercase" }}>Welcome to</p>
               <div style={{ flex:1, maxWidth:80, height:1.5, background:"linear-gradient(to left, transparent, #e8a030)" }}/>
             </div>
-            <h2 style={{ margin:0, fontSize:"clamp(28px,4vw,52px)", fontWeight:900, color:T.blue, letterSpacing:-1, lineHeight:1.1, fontFamily:"'Inter',-apple-system,sans-serif" }}>
+            <h2 style={{ margin:0, fontSize:24, fontWeight:900, color:T.blue, letterSpacing:-1, lineHeight:1.1, fontFamily:"'Inter',-apple-system,sans-serif" }}>
               SPED SUMMIT
             </h2>
           </div>
@@ -10101,6 +10159,7 @@ export default function App() {
   // ── ALL useState declarations MUST come before any useCallback/useEffect ──
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLanding, setShowLanding] = useState(() => sessionStorage.getItem("showLanding") !== "0");
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [openInstructorName, setOpenInstructorName] = useState(null);
   const [page, setPage] = useState(() => sessionStorage.getItem("page") || "dashboard");
   const navHistoryRef = useRef(["dashboard"]);
@@ -10180,6 +10239,11 @@ export default function App() {
   // Handle Google OAuth redirect — fires when user returns from Google sign-in
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") {
+        // User clicked password reset link — show reset form, don't log them in
+        setShowPasswordReset(true);
+        return;
+      }
       if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") && session) {
         // Only block silent session restoration after explicit logout — never block a real sign-in
         if (event !== "SIGNED_IN" && sessionStorage.getItem("loggedOut") === "1") return;
@@ -10699,6 +10763,9 @@ export default function App() {
           onFinish={handleAssessmentFinish}
         />
       )}
+      {/* Password Reset Modal */}
+      {showPasswordReset && <PasswordResetModal onClose={()=>setShowPasswordReset(false)} toast={toast}/>}
+
       {/* Pricing Overlay / Page */}
       {showPricingOverlay && (
         window.innerWidth <= 767
