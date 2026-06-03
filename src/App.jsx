@@ -8682,10 +8682,10 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
             { mt:50  },
             { mt:30  },
           ];
-          const CARD_W = 150, CARD_H = 190;
+          const CARD_W = 150, CARD_H = 230;
           const n = experts.length;
           return (
-            <div className="lp-hero-collage" style={{ position:"absolute", bottom:-80, left:0, right:0, height:360, overflow:"hidden", zIndex:2 }}>
+            <div className="lp-hero-collage" style={{ position:"absolute", bottom:-80, left:0, right:0, height:420, overflow:"hidden", zIndex:2 }}>
               <div className="lp-hero-collage-inner" style={{ display:"flex", justifyContent:"center", gap:10 }}>
                 {[...cols, ...cols].map((col, ci) => {
                   const top = experts[ci % n];
