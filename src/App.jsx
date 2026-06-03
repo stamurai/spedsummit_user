@@ -8440,22 +8440,6 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
     );
   }
 
-  if (selectedSession) {
-    const _pastIds = new Set([1,2,3,4]); // sessions in the "past" schedule tab
-    const _isPastSession = _pastIds.has(selectedSession.id);
-    return (
-      <>
-        <SessionPublicPage
-          session={selectedSession}
-          onBack={() => { setSelectedSession(null); requestAnimationFrame(()=>window.scrollTo(0, savedScrollY.current)); }}
-          onRegister={() => setShowAuth(true)}
-          registerLabel={_isPastSession ? "View Recording" : "Register"}
-          registered={false}
-        />
-        {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={(role)=>onGetStarted(selectedSession?.id,role)}/>}
-      </>
-    );
-  }
 
   const sessionImgs = [
     "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=480&h=260&fit=crop&auto=format",
@@ -8471,9 +8455,10 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         * { box-sizing: border-box; }
         a { text-decoration: none; color: inherit; }
+        .lp-hero-text { padding-top: 0; padding-bottom: 0; }
         @media(max-width:767px){
           .lp-hero-h1 { font-size:42px !important; letter-spacing:-1.5px !important; }
-          .lp-hero-text { padding:0 0 !important; }
+          .lp-hero-text { padding-top:0 !important; padding-bottom:0 !important; }
           .lp-stats-strip { gap:24px !important; }
           .lp-bento-grid { grid-template-columns:1fr !important; grid-template-rows:auto !important; }
           .lp-bento-grid > * { grid-column:1 !important; grid-row:auto !important; }
@@ -8616,7 +8601,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
         <div className="lp-hero-content" style={{ position:"absolute", top:0, left:0, right:0, bottom:340, zIndex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"flex-start", padding:"32px 32px 48px" }}>
 
         {/* ── Text block ── */}
-        <div className="lp-hero-text" style={{ maxWidth:780, width:"100%", padding:"0 8px", textAlign:"center" }}>
+        <div className="lp-hero-text" style={{ maxWidth:780, width:"100%", paddingTop:0, paddingBottom:0, paddingLeft:8, paddingRight:8, textAlign:"center" }}>
 
           {/* Rating badge */}
           <div className="animate-fade-in-up" style={{ opacity:0, animationDelay:"0.2s", marginBottom:16 }}>
@@ -8641,7 +8626,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           {/* Main heading */}
           <h1 className="animate-fade-in-up lp-hero-h1" style={{ opacity:0, animationDelay:"0.3s", margin:"0 0 20px", paddingTop:0, paddingBottom:0, fontSize:72, fontWeight:800, color:T.text, lineHeight:1.08, letterSpacing:-3 }}>
             Watch. Learn. Earn.<br/>
-            <span style={{ background:"linear-gradient(90deg,#2563EB 0%,#8B5CF6 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", fontSize:83, fontWeight:800, lineHeight:"75px", paddingTop:0, paddingBottom:0 }}>
+            <span style={{ backgroundImage:"linear-gradient(90deg, rgba(74, 119, 212, 1) 0%, rgba(74, 119, 212, 1) 100%)", WebkitBackgroundClip:"text", backgroundClip:"text", WebkitTextFillColor:"transparent", color:"transparent", fontSize:83, fontWeight:800, lineHeight:"75px", paddingTop:0, paddingBottom:0 }}>
               Get Certified.
             </span>
           </h1>
@@ -9341,7 +9326,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                   const cardClickable = !isLoggedIn || isAvailable;
                   const handleCardClick = () => {
                     if (isLoggedIn && isAvailable) { onWatchSession ? onWatchSession(s) : onGetStarted(s.id); }
-                    else if (!isLoggedIn) { savedScrollY.current = window.scrollY; setSelectedSession(s); window.scrollTo(0,0); }
+                    else if (!isLoggedIn) { setShowAuth(true); }
                   };
                   return (
                     <div key={s.id} className="lp-session-card"
