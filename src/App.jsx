@@ -3882,6 +3882,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const [followed, setFollowed] = useState(false);
   const [downloaded, setDownloaded] = useState({});
   const [bottomTab, setBottomTab] = useState("overview");
+  const [panelMode, setPanelMode] = useState("video"); // "video" | "assessment"
   const [collapsedSections, setCollapsedSections] = useState({});
   const [communityPosts, setCommunityPosts] = useState(COMMUNITY_POSTS_DATA.map(p=>({...p,liked:false,saved:false,comments:[]})));
   const [communityNewPost, setCommunityNewPost] = useState("");
@@ -3925,8 +3926,9 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
       return;
     }
     if (l.type==="quiz") {
-      setBottomTab("assessment"); return;
+      setPanelMode("assessment"); return;
     }
+    setPanelMode("video");
     setActiveLesson(idx);
     setProgress(l.status==="completed"?100:0);
     setPlaying(false);
@@ -4154,6 +4156,24 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           {/* Unified Card — scrolls as one unit */}
           <div style={{ background:C.white, borderRadius:20, boxShadow:"0 2px 16px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.05)", height:"100%", overflowY:"auto", overflowX:"hidden" }}>
 
+          {panelMode === "assessment" ? (
+            /* ── Assessment Panel ── */
+            <div style={{ padding:"32px 28px" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:28 }}>
+                <button onClick={()=>setPanelMode("video")}
+                  style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", cursor:"pointer", fontSize:13, color:C.gray500, fontWeight:500, padding:0, fontFamily:"inherit" }}
+                  onMouseEnter={e=>e.currentTarget.style.color=C.gray900}
+                  onMouseLeave={e=>e.currentTarget.style.color=C.gray500}>
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="m12 5-5 5 5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  Back to video
+                </button>
+                <span style={{ fontSize:13, color:C.gray300 }}>·</span>
+                <span style={{ fontSize:13, fontWeight:700, color:C.gray900 }}>Assessment</span>
+              </div>
+              <InlineAssessment session={session} quizState={quizState} onFinish={onFinishAssessment} toast={toast}/>
+            </div>
+          ) : (<>
+
             {/* Video with padding so card corners show */}
             <div style={{ padding:"16px 16px 0", flexShrink:0 }}>
               <div style={{ borderRadius:12, overflow:"hidden", background:"#000" }}>
@@ -4227,7 +4247,6 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
             { key:"overview",    label:"Overview"    },
             { key:"instructor",  label:"Instructor"  },
             { key:"community",   label:"Community"   },
-            ...(getSessionQuestions(session).length > 0 ? [{ key:"assessment", label:"Assessment" }] : []),
           ].map(tab => {
             const isActive = bottomTab === tab.key;
             return (
@@ -4558,12 +4577,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           </div>
         )}
 
-        {/* Assessment tab — inline quiz */}
-        {bottomTab === "assessment" && (
-          <div className="sd-tab-content" style={{ padding:"24px" }}>
-            <InlineAssessment session={session} quizState={quizState} onFinish={onFinishAssessment} toast={toast}/>
-          </div>
-        )}
+          </>)}
           </div>{/* end unified card */}
         </div>{/* end right column */}
       </div>{/* end top row */}
