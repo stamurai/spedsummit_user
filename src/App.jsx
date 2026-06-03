@@ -3787,7 +3787,7 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress, initialProgress = 0 }) 
   );
 }
 
-function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFooter = false }) {
+function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFooter = false, onNext, canNext }) {
   const questions = getSessionQuestions(session);
   const [currentQ, setCurrentQ] = useState(quizState.currentQ || 0);
   const [answers, setAnswers] = useState(quizState.answers || {});
@@ -3835,7 +3835,7 @@ function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFoot
     onFinish?.(session.id, finalScore, didPass);
   }
 
-  return (
+  const questionBody = (
     <div style={{ maxWidth:560, margin:"0 auto" }}>
       {/* Progress */}
       <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20 }}>
@@ -3849,7 +3849,7 @@ function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFoot
       <div style={{ fontSize:16, fontWeight:700, color:C.gray900, lineHeight:1.55, marginBottom:20 }}>{q.q}</div>
 
       {/* Options */}
-      <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:28 }}>
+      <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
         {(q.opts || []).map((opt, i) => {
           const selected = answers[currentQ] === i;
           return (
@@ -3860,9 +3860,17 @@ function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFoot
           );
         })}
       </div>
+    </div>
+  );
 
-      {/* Next / Submit — sticky at bottom when stickyFooter */}
-      <div style={stickyFooter ? { position:"sticky", bottom:0, background:C.white, paddingBottom:24, paddingTop:12 } : { marginTop:0 }}>
+  return (
+    <div style={{ display:"flex", flexDirection:"column", height:"100%" }}>
+      {/* Scrollable content */}
+      <div style={{ flex:1, overflowY:"auto", padding:"32px 28px 16px" }}>
+        {questionBody}
+      </div>
+      {/* Fixed CTA footer */}
+      <div style={{ flexShrink:0, borderTop:"1px solid #e5e7eb", padding:"16px 28px", background:C.white }}>
         <button onClick={handleNext} disabled={answers[currentQ] === undefined}
           style={{ width:"100%", padding:"13px", background: answers[currentQ] === undefined ? C.gray200 : C.primary, color: answers[currentQ] === undefined ? C.gray400 : "#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:700, cursor: answers[currentQ] === undefined ? "not-allowed" : "pointer", transition:"background .15s" }}>
           {currentQ < total - 1 ? "Next Question" : "Submit Assessment"}
@@ -4156,15 +4164,11 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
         {/* ── Video Player + Content (RIGHT) ── */}
         <div style={{ flex:1, minWidth:0, padding:"16px 16px 16px 12px", height:"100%", overflow:"hidden", boxSizing:"border-box" }}>
           {/* Unified Card — scrolls as one unit */}
-          <div style={{ background:C.white, borderRadius:20, boxShadow:"0 2px 16px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.05)", height:"100%", overflowY:"auto", overflowX:"hidden" }}>
+          <div style={{ background:C.white, borderRadius:20, boxShadow:"0 2px 16px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.05)", height:"100%", overflowY: panelMode === "assessment" ? "hidden" : "auto", overflowX:"hidden", display:"flex", flexDirection:"column" }}>
 
           {panelMode === "assessment" ? (
             /* ── Assessment Panel ── */
-            <div style={{ display:"flex", flexDirection:"column", height:"100%" }}>
-              <div style={{ flex:1, overflowY:"auto", padding:"32px 28px 0" }}>
-                <InlineAssessment session={session} quizState={quizState} onFinish={onFinishAssessment} toast={toast} stickyFooter/>
-              </div>
-            </div>
+            <InlineAssessment session={session} quizState={quizState} onFinish={onFinishAssessment} toast={toast}/>
           ) : (<>
 
             {/* Video with padding so card corners show */}
