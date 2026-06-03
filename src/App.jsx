@@ -3870,7 +3870,7 @@ function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFoot
         {questionBody}
       </div>
       {/* Fixed CTA footer */}
-      <div style={{ flexShrink:0, borderTop:"1px solid #e5e7eb", padding:"16px 28px", background:C.white }}>
+      <div style={{ flexShrink:0, borderTop:"1px solid #e5e7eb", padding:"16px 32px 24px", background:C.white }}>
         <button onClick={handleNext} disabled={answers[currentQ] === undefined}
           style={{ width:"100%", padding:"13px", background: answers[currentQ] === undefined ? C.gray200 : C.primary, color: answers[currentQ] === undefined ? C.gray400 : "#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:700, cursor: answers[currentQ] === undefined ? "not-allowed" : "pointer", transition:"background .15s" }}>
           {currentQ < total - 1 ? "Next Question" : "Submit Assessment"}
