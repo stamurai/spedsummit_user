@@ -8580,7 +8580,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
 
           {/* Sub heading */}
           <p className="animate-fade-in-up" style={{ opacity:0, animationDelay:"0.4s", margin:"0 0 32px", fontSize:18, color:T.muted, lineHeight:1.65, maxWidth:560, marginLeft:"auto", marginRight:"auto" }}>
-            Expert-led SPED sessions, interactive quizzes, and real downloadable certificates — plus a chance to win an Ablespace Pro subscription.
+            Expert-led SPED sessions, interactive quizzes, and real downloadable certificates.
           </p>
 
           {/* CTAs */}
@@ -8598,7 +8598,16 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               View sessions
             </button>
           </div>
-          <p style={{ margin:"16px 0 0", fontSize:13, color:T.muted }}>No signup required to preview sessions</p>
+
+          {/* Trusted badge */}
+          <div style={{ marginTop:20, display:"flex", alignItems:"center", justifyContent:"center", gap:10 }}>
+            <div style={{ display:"flex" }}>
+              {["https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=60&h=60&fit=crop&auto=format","https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=60&h=60&fit=crop&auto=format","https://images.unsplash.com/photo-1580489944761-15a19d654956?w=60&h=60&fit=crop&auto=format","https://images.unsplash.com/photo-1560250097-0b93528c311a?w=60&h=60&fit=crop&auto=format"].map((src,i) => (
+                <img key={i} src={src} alt="" style={{ width:32, height:32, borderRadius:"50%", border:"2px solid #fff", marginLeft: i===0?0:-10, objectFit:"cover" }}/>
+              ))}
+            </div>
+            <span style={{ fontSize:14, color:T.muted }}>Trusted by <strong style={{ color:T.blue }}>30,000+</strong> educators worldwide</span>
+          </div>
         </div>
 
 
@@ -8646,6 +8655,18 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           );
         })()}
 
+      </section>
+
+      {/* ── Welcome to SPED Summit ── */}
+      <section style={{ padding:"56px 24px 48px", background:T.bg, textAlign:"center" }}>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:24, marginBottom:12 }}>
+          <div style={{ flex:1, maxWidth:120, height:1.5, background:"linear-gradient(to right, transparent, #e8a030)" }}/>
+          <p style={{ margin:0, fontSize:11, fontWeight:700, letterSpacing:2, color:"#c8872a", textTransform:"uppercase" }}>Welcome to</p>
+          <div style={{ flex:1, maxWidth:120, height:1.5, background:"linear-gradient(to left, transparent, #e8a030)" }}/>
+        </div>
+        <h2 style={{ margin:0, fontSize:"clamp(36px,5vw,64px)", fontWeight:900, color:T.blue, letterSpacing:-1, lineHeight:1.1, fontFamily:"'Inter',-apple-system,sans-serif" }}>
+          SPED SUMMIT
+        </h2>
       </section>
 
       {/* ── Social proof strip ── */}
