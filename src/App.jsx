@@ -9094,29 +9094,21 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
             </p>
           </div>
 
-          {/* Marquee track */}
-          <div style={{ position:"relative" }}>
-            <div className="spk-fade-l"/>
-            <div className="spk-fade-r"/>
-            <div style={{ overflow:"hidden", padding:"8px 0 16px" }}>
-              <div className="spk-track">
-                {/* Duplicate cards for seamless loop */}
-                {[...experts, ...experts].map((e, i) => (
-                  <div key={i} className="spk-card"
-                    onClick={() => { savedScrollY.current = window.scrollY; setSelectedInstructor(e); window.scrollTo(0, 0); }}>
-                    {/* Full-height portrait image */}
-                    <div style={{ height:"368px", overflow:"hidden" }}>
-                      <img className="spk-img" src={e.img} alt={e.name}/>
-                    </div>
-                    {/* Name/role as overlay at bottom of image */}
-                    <div className="spk-overlay">
-                      <div className="spk-overlay-name">{e.name}</div>
-                      <div className="spk-overlay-role">{e.role}</div>
-                    </div>
-                  </div>
-                ))}
+          {/* 4-column speaker grid */}
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:16, padding:"8px 0 16px" }}>
+            {experts.map((e, i) => (
+              <div key={i} className="spk-card"
+                onClick={() => { savedScrollY.current = window.scrollY; setSelectedInstructor(e); window.scrollTo(0, 0); }}
+                style={{ position:"relative", borderRadius:16, overflow:"hidden", cursor:"pointer" }}>
+                <div style={{ height:"368px", overflow:"hidden" }}>
+                  <img className="spk-img" src={e.img} alt={e.name}/>
+                </div>
+                <div className="spk-overlay">
+                  <div className="spk-overlay-name">{e.name}</div>
+                  <div className="spk-overlay-role">{e.role}</div>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
 
           {/* Apply banner */}
