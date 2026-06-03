@@ -3787,7 +3787,90 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress, initialProgress = 0 }) 
   );
 }
 
-function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress, adminName = "", adminAvatar = null, isDark = false }) {
+function InlineAssessment({ session, quizState = {}, onFinish, toast }) {
+  const questions = getSessionQuestions(session);
+  const [currentQ, setCurrentQ] = useState(quizState.currentQ || 0);
+  const [answers, setAnswers] = useState(quizState.answers || {});
+  const [submitted, setSubmitted] = useState(quizState.status === "passed" || quizState.status === "failed");
+  const [score, setScore] = useState(quizState.score ?? null);
+  const passed = quizState.status === "passed";
+
+  if (!questions.length) return (
+    <div style={{ textAlign:"center", padding:"40px 0", color:C.gray400, fontSize:14 }}>No assessment available for this session.</div>
+  );
+
+  if (submitted) {
+    return (
+      <div style={{ maxWidth:480, margin:"0 auto", textAlign:"center", padding:"32px 0" }}>
+        <div style={{ width:64, height:64, borderRadius:"50%", background: passed ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.1)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
+          <Icon name={passed ? "medal" : "x"} size={28} color={passed ? C.success : "#ef4444"}/>
+        </div>
+        <div style={{ fontSize:20, fontWeight:800, color:C.gray900, marginBottom:8 }}>{passed ? "🎉 You passed!" : "Not quite there"}</div>
+        <div style={{ fontSize:14, color:C.gray500, marginBottom:24 }}>You scored <strong>{score}%</strong> — {passed ? "your certificate is ready!" : "you need 80% to pass."}</div>
+        {!passed && (
+          <button onClick={()=>{ setAnswers({}); setCurrentQ(0); setSubmitted(false); setScore(null); }}
+            style={{ padding:"10px 28px", background:C.primary, color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer" }}>
+            Try Again
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  const q = questions[currentQ];
+  const total = questions.length;
+
+  function handleSelect(optIdx) {
+    setAnswers(a => ({ ...a, [currentQ]: optIdx }));
+  }
+
+  function handleNext() {
+    if (currentQ < total - 1) { setCurrentQ(q => q + 1); return; }
+    // Submit
+    const correct = Object.entries(answers).filter(([qi, ans]) => questions[Number(qi)]?.a === ans).length;
+    const finalScore = Math.round((correct / total) * 100);
+    const didPass = finalScore >= 80;
+    setScore(finalScore);
+    setSubmitted(true);
+    onFinish?.(session.id, finalScore, didPass);
+  }
+
+  return (
+    <div style={{ maxWidth:560, margin:"0 auto" }}>
+      {/* Progress */}
+      <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20 }}>
+        <div style={{ flex:1, height:4, background:C.gray100, borderRadius:2, overflow:"hidden" }}>
+          <div style={{ height:"100%", width:`${((currentQ) / total) * 100}%`, background:C.primary, borderRadius:2, transition:"width .3s" }}/>
+        </div>
+        <span style={{ fontSize:12, fontWeight:600, color:C.gray500, flexShrink:0 }}>Q{currentQ+1} / {total}</span>
+      </div>
+
+      {/* Question */}
+      <div style={{ fontSize:16, fontWeight:700, color:C.gray900, lineHeight:1.55, marginBottom:20 }}>{q.q}</div>
+
+      {/* Options */}
+      <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:28 }}>
+        {(q.opts || []).map((opt, i) => {
+          const selected = answers[currentQ] === i;
+          return (
+            <button key={i} onClick={() => handleSelect(i)}
+              style={{ padding:"12px 16px", borderRadius:10, border:`2px solid ${selected ? C.primary : C.gray200}`, background: selected ? C.primaryLight : C.white, fontSize:14, fontWeight: selected ? 600 : 400, color: selected ? C.primary : C.gray800, cursor:"pointer", textAlign:"left", transition:"all .12s" }}>
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Next / Submit */}
+      <button onClick={handleNext} disabled={answers[currentQ] === undefined}
+        style={{ width:"100%", padding:"13px", background: answers[currentQ] === undefined ? C.gray200 : C.primary, color: answers[currentQ] === undefined ? C.gray400 : "#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:700, cursor: answers[currentQ] === undefined ? "not-allowed" : "pointer", transition:"background .15s" }}>
+        {currentQ < total - 1 ? "Next Question" : "Submit Assessment"}
+      </button>
+    </div>
+  );
+}
+
+function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress, adminName = "", adminAvatar = null, isDark = false, quizState = {}, onFinishAssessment }) {
   const [playing, setPlaying] = useState(false);
   const [activeLesson, setActiveLesson] = useState(() => { const idx = session.lessons.findIndex(l=>l.status==="active" && l.type!=="quiz"); return idx >= 0 ? idx : 0; });
   const [progress, setProgress] = useState(session.progress || 0);
@@ -4141,9 +4224,10 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
             {/* Tab bar — sticky within card */}
           <div className="sd-tabs-bar" style={{ display:"flex", padding:"4px 20px 0", borderBottom:"1px solid rgba(0,0,0,0.07)", background:C.white, gap:4, marginTop:12, position:"sticky", top:0, zIndex:10 }}>
           {[
-            { key:"overview",   label:"Overview"   },
-            { key:"instructor", label:"Instructor" },
-            { key:"community",  label:"Community"  },
+            { key:"overview",    label:"Overview"    },
+            { key:"instructor",  label:"Instructor"  },
+            { key:"community",   label:"Community"   },
+            ...(getSessionQuestions(session).length > 0 ? [{ key:"assessment", label:"Assessment" }] : []),
           ].map(tab => {
             const isActive = bottomTab === tab.key;
             return (
@@ -4471,6 +4555,13 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                 )}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Assessment tab — inline quiz */}
+        {bottomTab === "assessment" && (
+          <div className="sd-tab-content" style={{ padding:"24px" }}>
+            <InlineAssessment session={session} quizState={quizState} onFinish={onFinishAssessment} toast={toast}/>
           </div>
         )}
           </div>{/* end unified card */}
@@ -10336,7 +10427,7 @@ export default function App() {
   function renderPage() {
     if (page==="session-detail" && activeSession) {
       const liveSession = sessions.find(s => s.id === activeSession.id) || activeSession;
-      return <SessionDetail session={liveSession} onBack={()=>nav(sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress} adminName={userName} adminAvatar={userAvatar} isDark={isDark}/>;
+      return <SessionDetail session={liveSession} onBack={()=>nav(sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress} adminName={userName} adminAvatar={userAvatar} isDark={isDark} quizState={quizStates[liveSession.id]||{}} onFinishAssessment={handleAssessmentFinish}/>;
     }
     if (page==="past-season" && pastSeasonPageId) {
       const season = seasons.find(s => s.id === pastSeasonPageId);
