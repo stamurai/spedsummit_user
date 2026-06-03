@@ -8635,9 +8635,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               <p style={{ margin:0, fontSize:10, fontWeight:700, letterSpacing:2, color:"#c8872a", textTransform:"uppercase" }}>Welcome to</p>
               <div style={{ flex:1, maxWidth:80, height:1.5, background:"linear-gradient(to left, transparent, #e8a030)" }}/>
             </div>
-            <h2 style={{ margin:0, fontSize:24, fontWeight:900, color:T.blue, letterSpacing:-1, lineHeight:1.1, fontFamily:"'Inter',-apple-system,sans-serif" }}>
-              SPED SUMMIT
-            </h2>
+            <img src="/Logo SPED Summit.png" alt="SPED Summit" style={{ height:64, width:"auto", display:"block", margin:"0 auto" }}/>
           </div>
 
           {/* Main heading */}
