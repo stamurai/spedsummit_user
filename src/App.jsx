@@ -3787,7 +3787,7 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress, initialProgress = 0 }) 
   );
 }
 
-function InlineAssessment({ session, quizState = {}, onFinish, toast }) {
+function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFooter = false }) {
   const questions = getSessionQuestions(session);
   const [currentQ, setCurrentQ] = useState(quizState.currentQ || 0);
   const [answers, setAnswers] = useState(quizState.answers || {});
@@ -3861,11 +3861,13 @@ function InlineAssessment({ session, quizState = {}, onFinish, toast }) {
         })}
       </div>
 
-      {/* Next / Submit */}
-      <button onClick={handleNext} disabled={answers[currentQ] === undefined}
-        style={{ width:"100%", padding:"13px", background: answers[currentQ] === undefined ? C.gray200 : C.primary, color: answers[currentQ] === undefined ? C.gray400 : "#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:700, cursor: answers[currentQ] === undefined ? "not-allowed" : "pointer", transition:"background .15s" }}>
-        {currentQ < total - 1 ? "Next Question" : "Submit Assessment"}
-      </button>
+      {/* Next / Submit — sticky at bottom when stickyFooter */}
+      <div style={stickyFooter ? { position:"sticky", bottom:0, background:C.white, paddingBottom:24, paddingTop:12 } : { marginTop:0 }}>
+        <button onClick={handleNext} disabled={answers[currentQ] === undefined}
+          style={{ width:"100%", padding:"13px", background: answers[currentQ] === undefined ? C.gray200 : C.primary, color: answers[currentQ] === undefined ? C.gray400 : "#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:700, cursor: answers[currentQ] === undefined ? "not-allowed" : "pointer", transition:"background .15s" }}>
+          {currentQ < total - 1 ? "Next Question" : "Submit Assessment"}
+        </button>
+      </div>
     </div>
   );
 }
@@ -4081,7 +4083,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                       <div style={{ padding:"4px 0 8px" }}>
                         {sec.lessons.map(l => {
                           const i = l._index;
-                          const isActive = (i === activeLesson && l.type !== "quiz") || (l.type === "quiz" && panelMode === "assessment");
+                          const isActive = (i === activeLesson && l.type !== "quiz" && panelMode === "video") || (l.type === "quiz" && panelMode === "assessment");
                           const locked = !unlockedIndices.has(i) && l.type !== "material";
                           const isQuiz = l.type === "quiz";
                           const quizDone = isQuiz && l.status === "completed";
@@ -4158,19 +4160,10 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
 
           {panelMode === "assessment" ? (
             /* ── Assessment Panel ── */
-            <div style={{ padding:"32px 28px" }}>
-              <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:28 }}>
-                <button onClick={()=>setPanelMode("video")}
-                  style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", cursor:"pointer", fontSize:13, color:C.gray500, fontWeight:500, padding:0, fontFamily:"inherit" }}
-                  onMouseEnter={e=>e.currentTarget.style.color=C.gray900}
-                  onMouseLeave={e=>e.currentTarget.style.color=C.gray500}>
-                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="m12 5-5 5 5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  Back to video
-                </button>
-                <span style={{ fontSize:13, color:C.gray300 }}>·</span>
-                <span style={{ fontSize:13, fontWeight:700, color:C.gray900 }}>Assessment</span>
+            <div style={{ display:"flex", flexDirection:"column", height:"100%" }}>
+              <div style={{ flex:1, overflowY:"auto", padding:"32px 28px 0" }}>
+                <InlineAssessment session={session} quizState={quizState} onFinish={onFinishAssessment} toast={toast} stickyFooter/>
               </div>
-              <InlineAssessment session={session} quizState={quizState} onFinish={onFinishAssessment} toast={toast}/>
             </div>
           ) : (<>
 
