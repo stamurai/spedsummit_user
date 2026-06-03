@@ -3801,7 +3801,8 @@ function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFoot
 
   if (submitted) {
     return (
-      <div style={{ maxWidth:480, margin:"0 auto", textAlign:"center", padding:"32px 0" }}>
+      <div style={{ height:"100%", display:"flex", alignItems:"center", justifyContent:"center" }}>
+      <div style={{ maxWidth:480, width:"100%", textAlign:"center", padding:"32px 28px" }}>
         <div style={{ width:64, height:64, borderRadius:"50%", background: passed ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.1)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
           <Icon name={passed ? "medal" : "x"} size={28} color={passed ? C.success : "#ef4444"}/>
         </div>
@@ -3813,6 +3814,7 @@ function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFoot
             Try Again
           </button>
         )}
+      </div>
       </div>
     );
   }
@@ -3870,7 +3872,7 @@ function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFoot
         {questionBody}
       </div>
       {/* Fixed CTA footer */}
-      <div style={{ flexShrink:0, borderTop:"1px solid #e5e7eb", padding:"16px 32px 24px", background:C.white }}>
+      <div style={{ flexShrink:0, borderTop:"1px solid #e5e7eb", padding:16, background:C.white }}>
         <button onClick={handleNext} disabled={answers[currentQ] === undefined}
           style={{ width:"100%", padding:"13px", background: answers[currentQ] === undefined ? C.gray200 : C.primary, color: answers[currentQ] === undefined ? C.gray400 : "#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:700, cursor: answers[currentQ] === undefined ? "not-allowed" : "pointer", transition:"background .15s" }}>
           {currentQ < total - 1 ? "Next Question" : "Submit Assessment"}
