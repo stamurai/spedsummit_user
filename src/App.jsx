@@ -3925,7 +3925,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
       return;
     }
     if (l.type==="quiz") {
-      onAssessmentClick && onAssessmentClick(session); return;
+      setBottomTab("assessment"); return;
     }
     setActiveLesson(idx);
     setProgress(l.status==="completed"?100:0);
