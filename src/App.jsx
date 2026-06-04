@@ -4129,9 +4129,11 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                       <div style={{ padding:"4px 0 8px" }}>
                         {sec.lessons.map(l => {
                           const i = l._index;
+                          const isQuiz = l.type === "quiz";
+                          // Hide assessment row if no real questions exist for this session
+                          if (isQuiz && getSessionQuestions(session).length === 0) return null;
                           const isActive = (i === activeLesson && l.type !== "quiz" && panelMode === "video") || (l.type === "quiz" && panelMode === "assessment");
                           const locked = !unlockedIndices.has(i) && l.type !== "material";
-                          const isQuiz = l.type === "quiz";
                           const quizDone = isQuiz && l.status === "completed";
                           const isPreview = i === 0 || l.status === "available";
                           const done = l.status === "completed" || quizDone;
