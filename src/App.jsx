@@ -2702,7 +2702,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                 style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, ...(isMobile ? { flexDirection:"column", minHeight:"unset", minWidth:"calc(100% - 24px)", maxWidth:"calc(100% - 24px)", flexShrink:0, scrollSnapAlign:"start" } : {}) }}
                 onClick={() => onOpenSession(s)}>
                 <div className="db-session-card-thumb" style={isMobile ? { width:"100%", height:160, flexShrink:0 } : {}}>
-                  <img src={INSTRUCTOR_AVATARS[s.instructor]} alt={s.instructor}/>
+                  <img src={s.instructorImage || INSTRUCTOR_AVATARS[s.instructor] || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=400&fit=crop"} alt={s.instructor}/>
                   <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.25) 45%, transparent 75%)" }}/>
                   <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"0 10px 10px" }}>
                     <div style={{ fontSize:15, fontWeight:700, color:"#fff", lineHeight:1.25 }}>{s.instructor}</div>
@@ -2840,7 +2840,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                         <div key={item.id} className="db-session-card-row db-upcoming-session-card"
                           style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, cursor:"default", overflow:"hidden", width:"100%", boxSizing:"border-box", ...(isMobile ? { flexDirection:"column", minHeight:"unset" } : {}) }}>
                           <div className="db-session-card-thumb" style={isMobile ? { width:"100%", height:160, flexShrink:0 } : {}}>
-                            <img src={session?.instructorImage || INSTRUCTOR_AVATARS[item.instructor]} alt={item.instructor}/>
+                            <img src={item.instructorImage || session?.instructorImage || INSTRUCTOR_AVATARS[item.instructor] || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=400&fit=crop"} alt={item.instructor}/>
                             <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.25) 45%, transparent 75%)" }}/>
                             <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"0 10px 10px" }}>
                               <div className="instr-name" style={{ fontSize:15, fontWeight:700, color:"#fff", lineHeight:1.25 }}>{item.instructor}</div>
@@ -10597,7 +10597,7 @@ export default function App() {
                   style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, overflow:"hidden", cursor:"pointer" }}
                   onClick={()=>setShowPricingOverlay(true)}>
                   <div className="ps-session-thumb">
-                    <img src={INSTRUCTOR_AVATARS[s.instructor]} alt={s.instructor}/>
+                    <img src={s.instructorImage || INSTRUCTOR_AVATARS[s.instructor] || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=400&fit=crop"} alt={s.instructor}/>
                     <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.25) 45%,transparent 75%)" }}/>
                     <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"0 10px 10px" }}>
                       <div style={{ fontSize:15, fontWeight:700, color:"#fff", lineHeight:1.25 }}>{s.instructor}</div>
