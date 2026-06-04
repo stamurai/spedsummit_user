@@ -1910,8 +1910,8 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 
       {/* Thumbnail — tall instructor photo with name/title overlay */}
       <div style={{ position:"relative", flexShrink:0, height:180, background:"#1f2937", overflow:"hidden" }}>
-        <img src={session.instructorImage || INSTRUCTOR_AVATARS[session.instructor] || "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&h=400&fit=crop"} alt={session.instructor}
-          style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%" }}/>
+        {session.instructorImage && <img src={session.instructorImage} alt={session.instructor}
+          style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%" }}/>}
         {/* Dark gradient for text legibility */}
         <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top,rgba(0,0,0,0.72) 0%,rgba(0,0,0,0.1) 50%,transparent 100%)", pointerEvents:"none" }}/>
         {/* Instructor name + title at bottom */}
