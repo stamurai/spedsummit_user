@@ -1890,7 +1890,8 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 
   function handleCardClick() {
     if (isLocked) { onSubscribeClick?.(); return; }
-    if (cardClickable || showAssessmentCTA || isUpcoming) onClick(session);
+    if (isUpcoming) return;
+    if (cardClickable || showAssessmentCTA) onClick(session);
   }
 
   return (
@@ -1898,7 +1899,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
       onClick={handleCardClick}
       style={{ background:"#fff", borderRadius:18, overflow:"hidden",
                boxShadow:"0 2px 10px rgba(0,0,0,0.07)",
-               cursor: (isLocked || cta.disabled) && !isUpcoming ? "default" : "pointer",
+               cursor: isUpcoming || (isLocked || cta.disabled) ? "default" : "pointer",
                border:"none", display:"flex", flexDirection:"column" }}>
 
       {/* Thumbnail — tall instructor photo with name/title overlay */}
@@ -1992,14 +1993,19 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
               Subscribe to Watch
             </button>
           ) : isUpcoming ? (
-            <button onClick={e=>{ e.stopPropagation(); onClick(session); }}
-              style={{ width:"100%", padding:"11px", borderRadius:10, border:`1px solid ${C.primaryBorder}`,
-                       background:C.primaryLight, color:C.primary, fontSize:14, fontWeight:700,
-                       cursor:"pointer", transition:"opacity .15s" }}
-              onMouseEnter={e=>e.currentTarget.style.opacity=".8"}
-              onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-              Preview Session
-            </button>
+            (() => {
+              const af = session.availableFrom || session.available_from;
+              const dateLabel = af
+                ? new Date(af).toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit" })
+                : null;
+              return (
+                <div style={{ width:"100%", padding:"11px", borderRadius:10, border:`1px solid ${C.gray200}`,
+                              background:C.gray50, color:C.gray500, fontSize:13, fontWeight:600,
+                              textAlign:"center", boxSizing:"border-box" }}>
+                  {dateLabel ? `Available ${dateLabel}` : "Coming Soon"}
+                </div>
+              );
+            })()
           ) : (
             <button onClick={e=>{ e.stopPropagation(); if(!cta.disabled) onClick(session); }}
               style={{ width:"100%", padding:"11px", borderRadius:10,
@@ -8284,7 +8290,30 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
     return () => { document.body.style.overflow = ''; };
   }, [navOpen]);
 
-  const experts = [
+  // Build experts list dynamically from Supabase sessions data
+  const experts = (() => {
+    const seen = new Set();
+    return sessions
+      .filter(s => s.instructor && s.instructorImage)
+      .filter(s => { const key = s.instructor; if (seen.has(key)) return false; seen.add(key); return true; })
+      .map(s => {
+        const parts = s.instructor.split("|").map(p => p.trim());
+        const name = parts[0] || s.instructor;
+        const role = parts[1] || "";
+        return {
+          name,
+          role,
+          org: "",
+          img: s.instructorImage,
+          bio: s.instructorBio || "",
+          session: s.title,
+          sessionDesc: s.description || "",
+          highlights: [],
+        };
+      });
+  })();
+
+  const _expertsHardcoded = [
     { name:"Tara Roehl",         role:"Mindfulness & Wellness Specialist",   org:"SPED Wellness Institute",         img:"https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=300&fit=crop&auto=format",
       bio:"Tara Roehl is a certified mindfulness instructor and special education advocate with over 15 years of classroom experience. She has helped thousands of educators integrate evidence-based wellness practices into their daily routines to reduce burnout and improve student outcomes.\n\nTara holds a Master's degree in Special Education and a certification in Mindfulness-Based Stress Reduction (MBSR). She is the founder of the SPED Wellness Institute, where she trains educators across the country.",
       session:"Mindfulness for SPED Educators", sessionDesc:"Practical mindfulness techniques you can use before, during, and after school to stay regulated and present for your students.",
@@ -8324,14 +8353,19 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
   ];
   function resolveInstructor(name) {
     if (!name) return null;
-    let match = experts.find(e => e.name === name);
+    // Check dynamic experts first, then hardcoded fallback
+    let match = experts.find(e => e.name === name) || _expertsHardcoded.find(e => e.name === name);
     if (!match) {
-      const s = sessions.find(s => s.instructor === name) || SESSIONS.find(s => s.instructor === name);
+      // Try matching against full "Name | Role" instructor field
+      const s = sessions.find(s => {
+        const n = s.instructor?.split("|")[0]?.trim();
+        return n === name || s.instructor === name;
+      }) || SESSIONS.find(s => s.instructor === name);
       if (s) match = {
-        name: s.instructor,
-        role: s.instructorBio ? s.instructorBio.split(" ").slice(0,6).join(" ") : "Instructor",
+        name,
+        role: s.instructor?.split("|")[1]?.trim() || "",
         org: "",
-        img: INSTRUCTOR_AVATARS[s.instructor] || "",
+        img: s.instructorImage || INSTRUCTOR_AVATARS[s.instructor] || "",
         bio: s.instructorBio || "No bio available.",
         session: s.title,
         sessionDesc: s.description || "",
@@ -8696,8 +8730,8 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               <path d="M10 26 C8 22 4 20 3 16 C2 12 4 8 6 6 C5 10 6 13 8 15 C7 11 8 7 10 4 C9 8 10 12 12 14 C11 10 12 7 14 5 C13 9 13 13 11 17 C13 15 15 14 17 12 C16 16 14 20 10 26Z" fill="#c8922a"/>
             </svg>
             <div style={{ display:"flex" }}>
-              {["https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=60&h=60&fit=crop&auto=format","https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=60&h=60&fit=crop&auto=format","https://images.unsplash.com/photo-1580489944761-15a19d654956?w=60&h=60&fit=crop&auto=format","https://images.unsplash.com/photo-1560250097-0b93528c311a?w=60&h=60&fit=crop&auto=format"].map((src,i) => (
-                <img key={i} src={src} alt="" style={{ width:32, height:32, borderRadius:"50%", border:"2px solid #fff", marginLeft: i===0?0:-10, objectFit:"cover" }}/>
+              {experts.slice(0,4).map((e,i) => (
+                <img key={i} src={e.img} alt={e.name} style={{ width:32, height:32, borderRadius:"50%", border:"2px solid #fff", marginLeft:i===0?0:-10, objectFit:"cover" }}/>
               ))}
             </div>
             <span style={{ fontSize:14, color:T.muted }}>Trusted by <strong style={{ color:T.blue }}>30,000+</strong> educators worldwide</span>
@@ -9171,7 +9205,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           <div style={{ maxWidth:1200, margin:"0 auto 56px", padding:"0 24px", display:"flex", flexDirection:"column", alignItems:"center", textAlign:"center", gap:12 }}>
             <p style={{ margin:0, fontSize:13, fontWeight:700, color:T.muted, letterSpacing:1, textTransform:"uppercase" }}>Speakers</p>
             <h2 style={{ margin:0, fontSize:"clamp(32px,4vw,48px)", fontWeight:900, color:T.text, letterSpacing:-1, lineHeight:1.15 }}>
-              9 experts. Real strategies.
+              {experts.length > 0 ? `${experts.length} experts.` : "Our experts."} Real strategies.
             </h2>
             <p style={{ margin:0, fontSize:16, color:T.muted, maxWidth:520, lineHeight:1.65 }}>
               People who have been there and done that — sharing practical tips you can use from the comfort of your home.
@@ -9342,7 +9376,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               <div className="lp-sessions-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4, minmax(0, 1fr))", gap:16 }}>
                 {gridSessions.map(s => {
                   const catBadge = CAT_BADGE[s.category] || { label:s.category || "Session", bg:C.gray100, color:C.gray700 };
-                  const avatarSrc = INSTRUCTOR_AVATARS[s.instructor];
+                  const avatarSrc = s.instructorImage || INSTRUCTOR_AVATARS[s.instructor];
                   const sessionState = getSessionState(s);
                   const isAvailable = sessionState === "live";
                   const { date, time } = fmtDateTime(s.availableFrom || s.available_from);
@@ -9598,7 +9632,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
 /* ─────────────────────────────────────────────────────────────────────────────
    LANDING PAGE V2  ·  Bold + Animated  (askape.com-inspired for education)
 ───────────────────────────────────────────────────────────────────────────── */
-function LandingPageV2({ onGetStarted }) {
+function LandingPageV2({ onGetStarted, sessions = [] }) {
   const [showAuth, setShowAuth] = useState(false);
 
   const T2 = {
@@ -9614,17 +9648,16 @@ function LandingPageV2({ onGetStarted }) {
     blue:    T.blue,
   };
 
-  const experts = [
-    { name:"Tara Roehl",       role:"Mindfulness & Wellness", img:"https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&auto=format" },
-    { name:"Casey Harrison",   role:"Inclusion Specialist",   img:"https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=400&fit=crop&auto=format" },
-    { name:"Sydney Bassard",   role:"Dyslexia & Literacy",    img:"https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop&auto=format" },
-    { name:"Diana Williams",   role:"SPED Leadership Coach",  img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop&auto=format" },
-    { name:"Farwa Husain",     role:"IEP Designer",           img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&auto=format" },
-    { name:"Jordan Smith",     role:"Speech-Language Path.",  img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&auto=format" },
-    { name:"Sam Parmelee",     role:"AAC Specialist",         img:"https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=400&h=400&fit=crop&auto=format" },
-    { name:"Natasha Schaumburg",role:"BCBA",                  img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&auto=format" },
-    { name:"Rose Karentina",   role:"Data & Assessment",      img:"https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=400&h=400&fit=crop&auto=format" },
-  ];
+  // Derive experts from sessions — deduplicated by instructor name, only those with images
+  const seen_e = new Set();
+  const experts = sessions
+    .filter(s => s.instructor && s.instructorImage)
+    .filter(s => { if (seen_e.has(s.instructor)) return false; seen_e.add(s.instructor); return true; })
+    .map(s => {
+      const parts = s.instructor.split("|").map(p => p.trim());
+      return { name: parts[0] || s.instructor, role: parts[1] || "", img: s.instructorImage,
+               bio: s.instructorBio || "", session: s.title, sessionDesc: s.description || "", highlights: [] };
+    });
 
   const BUBBLES = [
     { icon:"student",      size:70, bg:"linear-gradient(135deg,#8a46ff,#a855f7)", top:"14%", left:"7%",   dur:4.5, del:0    },
