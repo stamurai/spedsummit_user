@@ -10269,8 +10269,8 @@ export default function App() {
         setUserEmail(session.user.email || "");
         setUserAvatar(meta.avatar_url || meta.picture || null);
         setIsLoggedIn(true);
-        // Only redirect to dashboard on actual sign-in, not session restoration (INITIAL_SESSION respects persisted state)
-        if (event === "SIGNED_IN") { setPage("dashboard"); setShowLanding(false); }
+        // Only redirect to dashboard on fresh sign-in (not token refresh on tab focus)
+        if (event === "SIGNED_IN" && sessionStorage.getItem("loggedIn") !== "1") { setPage("dashboard"); setShowLanding(false); }
         sessionStorage.setItem("loggedIn", "1");
         fetchSessions();
         fetchUserProgress();
