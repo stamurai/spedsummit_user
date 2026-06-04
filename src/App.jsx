@@ -3377,7 +3377,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
         </Empty>
       ) : (
         <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:16 }}>
-          {sessions.map(s => <SessionCard key={s.id} session={s} onClick={onOpenSession} quizState={quizStates?.[s.id]||{}} onAssessmentClick={onAssessmentClick} onCertificateClick={onCertificateClick}/>)}
+          {[...new Map(sessions.map(s => [s.id, s])).values()].map(s => <SessionCard key={s.id} session={s} onClick={onOpenSession} quizState={quizStates?.[s.id]||{}} onAssessmentClick={onAssessmentClick} onCertificateClick={onCertificateClick}/>)}
         </div>
       )}
     </div>
@@ -9339,7 +9339,9 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
             const now = new Date();
             // Show all admin-uploaded sessions. The availableFrom date controls button
             // state (Watch Now vs locked), not whether the card appears here.
-            const gridSessions = sessions;
+            // Deduplicate at render to guard against any state timing issues
+            const _seenIds = new Set();
+            const gridSessions = sessions.filter(s => { if (_seenIds.has(s.id)) return false; _seenIds.add(s.id); return true; });
 
             if (sessionsLoading || gridSessions.length === 0) {
               return (
@@ -9350,7 +9352,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
             }
 
             return (
-              <div className="lp-sessions-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4, minmax(0, 1fr))", gridTemplateRows:"repeat(2, auto)", gap:16 }}>
+              <div className="lp-sessions-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4, minmax(0, 1fr))", gap:16 }}>
                 {gridSessions.map(s => {
                   const catBadge = CAT_BADGE[s.category] || { label:s.category || "Session", bg:C.gray100, color:C.gray700 };
                   const avatarSrc = INSTRUCTOR_AVATARS[s.instructor];
