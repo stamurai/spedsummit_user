@@ -4323,7 +4323,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           <div className="sd-tab-content" style={{ padding:"22px 24px" }}>
             {session.instructor ? (
               <div className="sd-instructor-header" style={{ display:"flex", gap:16, alignItems:"flex-start" }}>
-                <Avatar name={session.instructor} src={session.instructorImage || INSTRUCTOR_AVATARS[session.instructor]} size={68}/>
+                <Avatar name={session.instructor} src={session.instructorImage || undefined} size={68}/>
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontWeight:800, fontSize:18, color:C.gray900, marginBottom:session.instructorBio ? 8 : 0 }}>{session.instructor}</div>
                   {session.instructorBio && (
