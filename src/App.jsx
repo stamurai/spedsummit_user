@@ -4114,7 +4114,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                 if (sec.title) namedSectionCount++;
                 const showHeader = showHeaders && !!sec.title;
                 return (
-                  <div key={secKey} style={{ borderBottom:`1px solid rgba(0,0,0,0.05)` }}>
+                  <div key={secKey}>
                     {showHeader && (
                     <button onClick={() => setCollapsedSections(s => ({ ...s, [secKey]: !s[secKey] }))}
                       style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 16px", background:C.gray50, border:"none", cursor:"pointer", textAlign:"left", gap:8 }}>
