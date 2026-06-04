@@ -8699,12 +8699,20 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
 
           {/* Trusted badge */}
           <div style={{ marginTop:20, display:"flex", alignItems:"center", justifyContent:"center", gap:10 }}>
+            {/* Left laurel */}
+            <svg width="20" height="28" viewBox="0 0 20 28" fill="none" style={{ opacity:0.7 }}>
+              <path d="M10 26 C8 22 4 20 3 16 C2 12 4 8 6 6 C5 10 6 13 8 15 C7 11 8 7 10 4 C9 8 10 12 12 14 C11 10 12 7 14 5 C13 9 13 13 11 17 C13 15 15 14 17 12 C16 16 14 20 10 26Z" fill="#c8922a"/>
+            </svg>
             <div style={{ display:"flex" }}>
               {["https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=60&h=60&fit=crop&auto=format","https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=60&h=60&fit=crop&auto=format","https://images.unsplash.com/photo-1580489944761-15a19d654956?w=60&h=60&fit=crop&auto=format","https://images.unsplash.com/photo-1560250097-0b93528c311a?w=60&h=60&fit=crop&auto=format"].map((src,i) => (
                 <img key={i} src={src} alt="" style={{ width:32, height:32, borderRadius:"50%", border:"2px solid #fff", marginLeft: i===0?0:-10, objectFit:"cover" }}/>
               ))}
             </div>
             <span style={{ fontSize:14, color:T.muted }}>Trusted by <strong style={{ color:T.blue }}>30,000+</strong> educators worldwide</span>
+            {/* Right laurel (mirrored) */}
+            <svg width="20" height="28" viewBox="0 0 20 28" fill="none" style={{ opacity:0.7, transform:"scaleX(-1)" }}>
+              <path d="M10 26 C8 22 4 20 3 16 C2 12 4 8 6 6 C5 10 6 13 8 15 C7 11 8 7 10 4 C9 8 10 12 12 14 C11 10 12 7 14 5 C13 9 13 13 11 17 C13 15 15 14 17 12 C16 16 14 20 10 26Z" fill="#c8922a"/>
+            </svg>
           </div>
         </div>
 
