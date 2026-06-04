@@ -8686,7 +8686,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           const n = experts.length;
           return (
             <div className="lp-hero-collage" style={{ position:"absolute", bottom:-80, left:0, right:0, height:420, overflow:"hidden", zIndex:2 }}>
-              <div className="lp-hero-collage-inner" style={{ display:"flex", justifyContent:"center", gap:10 }}>
+              <div className="lp-hero-collage-inner" style={{ display:"flex", justifyContent:"center", gap:10, height:400 }}>
                 {[...cols, ...cols].map((col, ci) => {
                   const top = experts[ci % n];
                   const bot = experts[(ci + 5) % n];
@@ -10216,7 +10216,8 @@ export default function App() {
         setUserEmail(session.user.email || "");
         setUserAvatar(meta.avatar_url || meta.picture || null);
         setIsLoggedIn(true);
-        if (event === "SIGNED_IN" || event === "INITIAL_SESSION") { setPage("dashboard"); setShowLanding(false); }
+        // Only redirect to dashboard on actual sign-in, not session restoration (INITIAL_SESSION respects persisted state)
+        if (event === "SIGNED_IN") { setPage("dashboard"); setShowLanding(false); }
         sessionStorage.setItem("loggedIn", "1");
         fetchSessions();
         fetchUserProgress();
