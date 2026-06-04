@@ -3680,24 +3680,59 @@ const SESSION_RESOURCES = {
 /* ─────────────────────────────────────────────────────────────────────────────
    SESSION DETAIL (VIDEO EXPERIENCE)
 ───────────────────────────────────────────────────────────────────────────── */
-function VimeoPlayer({ url, onPlay, onPause, onProgress, initialProgress = 0 }) {
+function VimeoPlayer({ url, onPlay, onPause, onProgress, initialProgress = 0, sessionId, userId }) {
   const videoId = extractVimeoId(url);
   const iframeRef = useRef(null);
   const storageKey = videoId ? `vimeo_pos_${videoId}` : null;
   const savedTime = storageKey ? (parseFloat(localStorage.getItem(storageKey)) || 0) : 0;
   const onProgressRef = useRef(onProgress);
-  const maxPctRef = useRef(initialProgress); // seed from restored progress so rewatching doesn't re-lock
+  const maxPctRef = useRef(initialProgress);
   const [embedError, setEmbedError] = useState(null);
+
+  // Analytics state
+  const viewRowId = useRef(null);
+  const watchedSeconds = useRef(0);
+  const totalSeconds = useRef(0);
+  const lastTime = useRef(0);
+  const saveThrottle = useRef(null);
+
   useEffect(() => { onProgressRef.current = onProgress; }, [onProgress]);
 
-  // Reset max when the video changes (lesson switch), but not on initial mount
   const prevVideoIdRef = useRef(videoId);
   useEffect(() => {
     if (prevVideoIdRef.current !== videoId) {
       prevVideoIdRef.current = videoId;
       maxPctRef.current = 0;
+      viewRowId.current = null;
+      watchedSeconds.current = 0;
     }
   }, [videoId]);
+
+  async function insertView() {
+    if (!videoId || !userId || viewRowId.current) return;
+    try {
+      const { data } = await supabase.from("video_views").insert({
+        session_id: sessionId || null,
+        vimeo_id: videoId,
+        user_id: userId,
+        watched_seconds: 0,
+        total_seconds: totalSeconds.current,
+        completed: false,
+      }).select("id").single();
+      if (data?.id) viewRowId.current = data.id;
+    } catch(_) {}
+  }
+
+  async function updateView(completed = false) {
+    if (!viewRowId.current) return;
+    try {
+      await supabase.from("video_views").update({
+        watched_seconds: Math.round(watchedSeconds.current),
+        total_seconds: totalSeconds.current,
+        completed,
+      }).eq("id", viewRowId.current);
+    } catch(_) {}
+  }
 
   useEffect(() => {
     if (!videoId) return;
@@ -3712,33 +3747,54 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress, initialProgress = 0 }) 
         }
         if (d.event === "ready" && iframeRef.current) {
           const sub = v => iframeRef.current.contentWindow.postMessage(JSON.stringify({ method:"addEventListener", value:v }), "https://player.vimeo.com");
-          sub("timeupdate"); sub("play"); sub("pause"); sub("seeked");
+          sub("timeupdate"); sub("play"); sub("pause"); sub("seeked"); sub("ended");
+          // Get duration
+          iframeRef.current.contentWindow.postMessage(JSON.stringify({ method:"getDuration" }), "https://player.vimeo.com");
           if (savedTime > 0) {
             iframeRef.current.contentWindow.postMessage(JSON.stringify({ method:"setCurrentTime", value: savedTime }), "https://player.vimeo.com");
           }
         }
-        if (d.event === "play")  { onPlay?.();  }
-        if (d.event === "pause") { onPause?.(); }
+        if (d.method === "getDuration" && d.value) {
+          totalSeconds.current = Math.round(d.value);
+        }
+        if (d.event === "play") {
+          onPlay?.();
+          insertView();
+        }
+        if (d.event === "pause") { onPause?.(); updateView(false); }
+        if (d.event === "ended") { watchedSeconds.current = totalSeconds.current; updateView(true); }
         if (d.event === "timeupdate" && d.data?.seconds != null) {
           localStorage.setItem(storageKey, d.data.seconds);
+          // Accumulate only forward progress (ignore seeks back)
+          const cur = d.data.seconds;
+          if (cur > lastTime.current) watchedSeconds.current += (cur - lastTime.current);
+          lastTime.current = cur;
+          if (d.data.duration) totalSeconds.current = Math.round(d.data.duration);
+
+          // Throttle save every 10s
+          if (!saveThrottle.current) {
+            saveThrottle.current = setTimeout(() => { saveThrottle.current = null; updateView(false); }, 10000);
+          }
+
           if (d.data.percent != null) {
             const pct = Math.round(d.data.percent * 100);
-            // Only advance max — seeking forward doesn't unlock; rewinding doesn't penalise
             if (pct > maxPctRef.current) {
               maxPctRef.current = pct;
               onProgressRef.current?.(pct);
             }
           }
         }
-        // seeked fires after the user drags the scrubber (even while paused).
-        // Report the stored max so UI reflects actual watched progress, not seek destination.
         if (d.event === "seeked") {
+          lastTime.current = d.data?.seconds ?? lastTime.current;
           onProgressRef.current?.(maxPctRef.current);
         }
       } catch {}
     }
     window.addEventListener("message", onMsg);
-    return () => window.removeEventListener("message", onMsg);
+    return () => {
+      window.removeEventListener("message", onMsg);
+      if (saveThrottle.current) clearTimeout(saveThrottle.current);
+    };
   }, [videoId]);
 
   if (!videoId) {
@@ -3882,7 +3938,7 @@ function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFoot
   );
 }
 
-function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress, adminName = "", adminAvatar = null, isDark = false, quizState = {}, onFinishAssessment }) {
+function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress, adminName = "", adminAvatar = null, isDark = false, quizState = {}, onFinishAssessment, userEmail = "" }) {
   const [playing, setPlaying] = useState(false);
   const [activeLesson, setActiveLesson] = useState(() => { const idx = session.lessons.findIndex(l=>l.status==="active" && l.type!=="quiz"); return idx >= 0 ? idx : 0; });
   const [progress, setProgress] = useState(session.progress || 0);
@@ -4179,7 +4235,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
         <div ref={videoRef} style={{ position:"relative", background:"#0f172a", paddingBottom:"56.25%", height:0 }}>
             <div style={{ position:"absolute", inset:0 }}>
               {(session.vimeoUrl || lesson?.vimeoUrl) ? (
-                <VimeoPlayer url={session.vimeoUrl || lesson?.vimeoUrl} initialProgress={session.progress || 0} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onProgress={pct => {
+                <VimeoPlayer url={session.vimeoUrl || lesson?.vimeoUrl} initialProgress={session.progress || 0} sessionId={session.id} userId={userEmail || adminName || undefined} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onProgress={pct => {
                   setProgress(pct);
                   latestPctRef.current = pct;
                   if (pct >= 80) { setUnlockedIndices(prev => { const next = new Set(prev); next.add(activeLesson + 1); return next; }); }
@@ -10482,7 +10538,7 @@ export default function App() {
   function renderPage() {
     if (page==="session-detail" && activeSession) {
       const liveSession = sessions.find(s => s.id === activeSession.id) || activeSession;
-      return <SessionDetail session={liveSession} onBack={()=>nav(sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress} adminName={userName} adminAvatar={userAvatar} isDark={isDark} quizState={quizStates[liveSession.id]||{}} onFinishAssessment={handleAssessmentFinish}/>;
+      return <SessionDetail session={liveSession} onBack={()=>nav(sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress} adminName={userName} adminAvatar={userAvatar} isDark={isDark} quizState={quizStates[liveSession.id]||{}} onFinishAssessment={handleAssessmentFinish} userEmail={userEmail}/>;
     }
     if (page==="past-season" && pastSeasonPageId) {
       const season = seasons.find(s => s.id === pastSeasonPageId);
