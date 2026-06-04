@@ -8240,6 +8240,19 @@ function SpBentoChart({ T }) {
 }
 
 function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvatar = null, onGoToDashboard, onLogout, onWatchSession, openInstructorName = null, onInstructorOpened, sessions = [], sessionsLoading = false }) {
+  // Build experts from sessions FIRST — used in resolveInstructor which is called in useState init below
+  const _expertsFromSessions = (() => {
+    const seen = new Set();
+    return sessions
+      .filter(s => s.instructor && s.instructorImage)
+      .filter(s => { if (seen.has(s.instructor)) return false; seen.add(s.instructor); return true; })
+      .map(s => {
+        const parts = s.instructor.split("|").map(p => p.trim());
+        return { name: parts[0] || s.instructor, role: parts[1] || "", org: "", img: s.instructorImage,
+                 bio: s.instructorBio || "", session: s.title, sessionDesc: s.description || "", highlights: [] };
+      });
+  })();
+
   const [showAuth, setShowAuth] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
@@ -8290,28 +8303,8 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
     return () => { document.body.style.overflow = ''; };
   }, [navOpen]);
 
-  // Build experts list dynamically from Supabase sessions data
-  const experts = (() => {
-    const seen = new Set();
-    return sessions
-      .filter(s => s.instructor && s.instructorImage)
-      .filter(s => { const key = s.instructor; if (seen.has(key)) return false; seen.add(key); return true; })
-      .map(s => {
-        const parts = s.instructor.split("|").map(p => p.trim());
-        const name = parts[0] || s.instructor;
-        const role = parts[1] || "";
-        return {
-          name,
-          role,
-          org: "",
-          img: s.instructorImage,
-          bio: s.instructorBio || "",
-          session: s.title,
-          sessionDesc: s.description || "",
-          highlights: [],
-        };
-      });
-  })();
+  // experts is already computed above as _expertsFromSessions (needed before useState init)
+  const experts = _expertsFromSessions;
 
   const _expertsHardcoded = [
     { name:"Tara Roehl",         role:"Mindfulness & Wellness Specialist",   org:"SPED Wellness Institute",         img:"https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=300&fit=crop&auto=format",
@@ -8354,7 +8347,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
   function resolveInstructor(name) {
     if (!name) return null;
     // Check dynamic experts first, then hardcoded fallback
-    let match = experts.find(e => e.name === name) || _expertsHardcoded.find(e => e.name === name);
+    let match = _expertsFromSessions.find(e => e.name === name) || _expertsHardcoded.find(e => e.name === name);
     if (!match) {
       // Try matching against full "Name | Role" instructor field
       const s = sessions.find(s => {
