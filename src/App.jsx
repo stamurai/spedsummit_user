@@ -3337,20 +3337,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
     <div style={{ padding:24, background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
 
       {/* Newly published sessions not in any season */}
-      {(() => {
-        const allSeasonIds = new Set(seasons.flatMap(s => s.sessionIds));
-        const loose = sessions.filter(s => !allSeasonIds.has(s.id));
-        if (!loose.length) return null;
-        return (
-          <div style={{ marginBottom:28 }}>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16 }}>
-              {loose.map(s => <SessionCard key={s.id} session={s} onClick={onOpenSession} quizState={quizStates?.[s.id]||{}} onAssessmentClick={onAssessmentClick} onCertificateClick={onCertificateClick}/>)}
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* ── Season folder cards — only show seasons with real sessions ── */}
+      {/* ── All sessions grid ── */}
       {sessionsLoading ? (
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px, 1fr))", gap:20 }}>
           {Array(4).fill(0).map((_,i) => (
