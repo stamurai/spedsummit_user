@@ -395,78 +395,71 @@ async function loadSealAsPng(url, size = 220) {
 }
 
 async function downloadCertificate({ recipientName = "", sessionTitle, instructor, duration = "", score = null, quizTitle = null, description = "" }) {
-  const today  = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
-  const certId = `SS-${Date.now().toString(36).toUpperCase()}`;
-  const title  = quizTitle || sessionTitle;
-  const pdHours = duration ? parseFloat(duration) || 1 : 1;
-  const sealDataUrl = await loadSealAsPng(`${window.location.origin}/seal.svg`, 220);
+  const today = new Date().toLocaleDateString("en-US", { month:"numeric", day:"numeric", year:"numeric" });
+  const certId = `${Math.random().toString(36).slice(2,8).toUpperCase()}-CE${String(Date.now()).slice(-6)}`;
+  const sessionTime = duration || "1 Hour";
+
+  // Decorative blobs matching the PDF style
+  const blobs = `
+    <div style="position:absolute;top:-60px;left:-60px;width:260px;height:260px;border-radius:50%;background:rgba(255,180,180,0.35);"></div>
+    <div style="position:absolute;top:60px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(180,230,180,0.35);"></div>
+    <div style="position:absolute;bottom:-40px;left:180px;width:140px;height:140px;border-radius:50%;background:rgba(255,220,150,0.30);"></div>
+    <div style="position:absolute;bottom:-50px;right:120px;width:200px;height:200px;border-radius:50%;background:rgba(255,180,130,0.28);"></div>
+    <div style="position:absolute;top:200px;left:-30px;width:100px;height:100px;border-radius:50%;background:rgba(200,200,255,0.25);"></div>
+  `;
 
   const W = 1122, H = 794;
   const el = document.createElement("div");
   el.style.cssText = `position:fixed;left:-9999px;top:-9999px;width:${W}px;height:${H}px;overflow:hidden;`;
   el.innerHTML = `
-    <div style="position:relative;width:${W}px;height:${H}px;background:#ffffff;font-family:'Inter',-apple-system,sans-serif;box-sizing:border-box;padding:56px 80px 48px;display:flex;flex-direction:column;">
+    <div style="position:relative;width:${W}px;height:${H}px;background:#fffdf9;font-family:'Georgia',serif;box-sizing:border-box;overflow:hidden;">
+      ${blobs}
 
-        <!-- Header row -->
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px;">
-          <img src="${window.location.origin}/Container.png" style="height:42px;width:auto;" crossorigin="anonymous"/>
-          <div style="text-align:right;font-size:11px;color:#707685;line-height:2;">
-            <div>Certificate ID: ${certId}</div>
-            <div>spedsummit.com/cert/${certId.toLowerCase()}</div>
-            <div>Date Issued: ${today}</div>
-          </div>
+      <!-- Content -->
+      <div style="position:relative;z-index:1;padding:60px 80px;display:flex;flex-direction:column;height:100%;box-sizing:border-box;">
+
+        <!-- Stars -->
+        <div style="text-align:center;margin-bottom:10px;font-size:28px;">&#9733; &#9733; &#9733;</div>
+
+        <!-- Title -->
+        <div style="text-align:center;margin-bottom:6px;">
+          <div style="font-size:26px;font-weight:900;color:#1a1a1a;font-family:'Arial',sans-serif;line-height:1.2;">Certificate of Professional</div>
+          <div style="font-size:26px;font-weight:900;color:#1a1a1a;font-family:'Arial',sans-serif;line-height:1.2;">Development Hours</div>
         </div>
 
-        <!-- Certificate label -->
-        <div style="font-size:11px;font-weight:700;color:#6490E8;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:20px;">Certificate of Completion</div>
+        <!-- is presented to -->
+        <div style="text-align:center;font-size:14px;color:#444;margin:10px 0 4px;font-family:'Arial',sans-serif;">is presented to</div>
 
-        <!-- This certifies -->
-        <div style="font-size:15px;color:#5D636F;margin-bottom:8px;">This certifies that</div>
-        <div style="font-size:42px;font-weight:900;color:#2B2E33;letter-spacing:-0.5px;margin-bottom:8px;line-height:1.1;">${recipientName}</div>
-        <div style="font-size:15px;color:#5D636F;margin-bottom:22px;">has successfully completed</div>
-
-        <!-- Session title -->
-        <div style="font-size:34px;font-weight:800;color:#2B2E33;line-height:1.2;margin-bottom:28px;max-width:800px;">${title}</div>
-
-        <!-- Meta grid -->
-        <div style="display:flex;gap:48px;margin-bottom:22px;">
-          <div>
-            <div style="font-size:10px;font-weight:700;color:#707685;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Date</div>
-            <div style="font-size:14px;font-weight:700;color:#2B2E33;">${today}</div>
-          </div>
-          <div>
-            <div style="font-size:10px;font-weight:700;color:#707685;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Duration</div>
-            <div style="font-size:14px;font-weight:700;color:#2B2E33;">${duration || "1 Hour"}</div>
-          </div>
-          <div>
-            <div style="font-size:10px;font-weight:700;color:#707685;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">PD Hours Earned</div>
-            <div style="font-size:14px;font-weight:700;color:#2B2E33;">${pdHours}</div>
-          </div>
-          <div>
-            <div style="font-size:10px;font-weight:700;color:#707685;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Provider</div>
-            <div style="font-size:14px;font-weight:700;color:#2B2E33;">AbleSpace (SPED Summit)</div>
-          </div>
-          ${score !== null ? `<div>
-            <div style="font-size:10px;font-weight:700;color:#707685;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Score</div>
-            <div style="font-size:14px;font-weight:700;color:#2B2E33;">${score}%</div>
-          </div>` : ""}
-        </div>
-
-        ${description ? `<div style="font-size:13px;color:#5D636F;line-height:1.7;max-width:740px;margin-bottom:0;">${description}</div>` : ""}
+        <!-- Recipient name -->
+        <div style="text-align:center;font-size:52px;font-weight:900;color:#1a1a1a;font-family:'Arial Black',sans-serif;letter-spacing:-1px;margin-bottom:12px;line-height:1.1;">${recipientName}</div>
 
         <!-- Divider -->
-        <div style="height:1px;background:#eceded;margin-top:auto;margin-bottom:22px;"></div>
+        <div style="height:1px;background:#ccc;margin:0 0 14px;"></div>
 
-        <!-- Footer -->
-        <div style="display:flex;justify-content:space-between;align-items:flex-end;">
-          <div>
-            <div style="font-size:12px;color:#707685;margin-bottom:3px;">Authorized by</div>
-            <div style="font-size:16px;font-weight:800;color:#2B2E33;">${instructor}</div>
-            <div style="font-size:11px;color:#707685;margin-top:10px;">Certificate ID: ${certId}</div>
-          </div>
-          <img src="${sealDataUrl}" style="width:100px;height:100px;display:block;mix-blend-mode:multiply;"/>
+        <!-- Session participation line -->
+        <div style="text-align:center;font-size:14px;color:#333;font-family:'Arial',sans-serif;margin-bottom:20px;">
+          For their participation in the session titled: <span style="font-weight:700;color:#b8860b;">${sessionTitle}</span>
         </div>
 
+        <!-- Session time + date row -->
+        <div style="display:flex;justify-content:space-between;font-size:18px;font-family:'Arial',sans-serif;color:#222;margin-bottom:18px;padding:0 20px;">
+          <div>Session time: ${sessionTime}</div>
+          <div>${today}</div>
+        </div>
+
+        <!-- Description -->
+        <div style="font-size:12px;color:#333;line-height:1.75;text-align:center;font-family:'Arial',sans-serif;max-width:900px;margin:0 auto 0;">
+          ${description || `This session was presented by ${instructor}. Participants completed this session and the subsequent assessments.`}
+          ${instructor ? ` Participants receiving this certificate completed this session, including the subsequent assessments.` : ""}
+        </div>
+
+        <!-- Footer -->
+        <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;font-family:'Arial',sans-serif;">
+          <div style="font-size:12px;color:#444;">Contact at <strong>support@spedsummit.com</strong> with any questions.</div>
+          <div style="font-size:12px;color:#444;">Certificate ID: &nbsp;<strong>${certId}</strong></div>
+        </div>
+
+      </div>
     </div>`;
 
   document.body.appendChild(el);
