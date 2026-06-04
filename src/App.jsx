@@ -4332,10 +4332,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                 </div>
               </div>
             ) : (
-              <div style={{ display:"flex", gap:14, alignItems:"center" }}>
-                <Avatar name={adminName} src={adminAvatar} size={52}/>
-                <div style={{ fontSize:14, color:C.gray500 }}>No instructor has been added for this session.</div>
-              </div>
+              <div style={{ fontSize:14, color:C.gray500 }}>No instructor has been added for this session.</div>
             )}
           </div>
         )}
