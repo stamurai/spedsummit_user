@@ -5006,8 +5006,7 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
           </div>
           <div style={{ border:`1px solid ${C.gray200}`, borderRadius:14, overflow:"hidden" }}>
             {[
-              { label:"Change password",           sub:"Last updated 3 months ago",          action:()=>setChangingPassword(true), toggle:null },
-              { label:"Two-factor authentication", sub:"Enhanced security for your account", action:null, toggle:<ProfileToggle on={twoFA} onToggle={()=>setTwoFA(v=>!v)}/> },
+              { label:"Change password", sub:"Last updated 3 months ago", action:()=>setChangingPassword(true), toggle:null },
             ].map((row,i,arr) => (
               <div key={row.label}
                 style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"16px 20px", borderBottom:i<arr.length-1?`1px solid ${C.gray200}`:"none", gap:12, cursor:row.action?"pointer":"default", background:C.white, transition:"background .12s" }}
