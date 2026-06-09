@@ -404,7 +404,7 @@ async function saveCertToSupabase(certData) {
 }
 
 async function downloadCertificate({ recipientName = "", sessionTitle, instructor, duration = "", score = null, quizTitle = null, description = "" }) {
-  const today = new Date().toLocaleDateString("en-US", { month:"2-digit", day:"2-digit", year:"numeric" });
+  const today = new Date().toLocaleDateString("en-US", { month:"long", day:"numeric", year:"numeric" });
   const certId = `${Math.random().toString(36).slice(2,8).toUpperCase()}-CE${String(Date.now()).slice(-6)}`;
   const sessionTime = duration || "1 Hour";
   const instructorName = instructor ? instructor.split("|")[0].trim() : "";
