@@ -4908,11 +4908,11 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
                 )}
               </div>
               <input type={f.type}
-                style={{ ...inputSt, ...(f.key==="name" && nameAlreadyChanged ? { background:"#f9fafb", color:C.gray400, cursor:"not-allowed" } : {}) }}
+                style={{ ...inputSt, ...((f.key==="name" && nameAlreadyChanged) || f.key==="email" ? { background:"#f9fafb", color:C.gray400, cursor:"not-allowed" } : {}) }}
                 value={form[f.key]}
-                readOnly={f.key==="name" && nameAlreadyChanged}
-                onChange={e => { if(f.key==="name" && nameAlreadyChanged) return; setForm(v=>({...v,[f.key]:e.target.value})); }}
-                onFocus={e=>{ if(f.key==="name" && nameAlreadyChanged) return; e.target.style.borderColor=C.primary; }}
+                readOnly={(f.key==="name" && nameAlreadyChanged) || f.key==="email"}
+                onChange={e => { if((f.key==="name" && nameAlreadyChanged) || f.key==="email") return; setForm(v=>({...v,[f.key]:e.target.value})); }}
+                onFocus={e=>{ if((f.key==="name" && nameAlreadyChanged) || f.key==="email") return; e.target.style.borderColor=C.primary; }}
                 onBlur={e=>e.target.style.borderColor=C.gray200}/>
               {f.key==="name" && nameAlreadyChanged && (
                 <p style={{ fontSize:12, color:"#9ca3af", margin:"4px 0 0" }}>Your name can only be changed once and has already been updated.</p>
