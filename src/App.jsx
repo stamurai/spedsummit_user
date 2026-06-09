@@ -5903,8 +5903,18 @@ const COMMON_TIMEZONES = [
 ];
 
 function TimezoneModal({ detectedTz, onConfirm }) {
-  const detected = COMMON_TIMEZONES.find(t => t.value === detectedTz) ? detectedTz : "UTC";
-  const [selected, setSelected] = useState(detected);
+  // Always read directly from browser so aliases (e.g. Asia/Calcutta → Asia/Kolkata) resolve correctly
+  const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  function resolveToListValue(tz) {
+    if (!tz) return "UTC";
+    // exact match first
+    if (COMMON_TIMEZONES.find(t => t.value === tz)) return tz;
+    // try case-insensitive / alias match by region
+    const lower = tz.toLowerCase();
+    const found = COMMON_TIMEZONES.find(t => lower.includes(t.value.split("/")[1]?.toLowerCase() || ""));
+    return found ? found.value : "UTC";
+  }
+  const [selected, setSelected] = useState(() => resolveToListValue(browserTz) || resolveToListValue(detectedTz));
 
   function fmtNow(tz) {
     try {
