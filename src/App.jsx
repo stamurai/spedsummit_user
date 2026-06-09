@@ -4798,9 +4798,9 @@ function DeactivateModal({ onClose, onConfirm }) {
   );
 }
 
-function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, onNameChange, onBack }) {
+function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, onNameChange, onBack, userTimezone = "", onTimezoneChange }) {
   const [activeSection, setActiveSection] = useState("personal");
-  const [form, setForm] = useState({ name:userName, title:"", email:userEmail, phone:"", language:"English (US)" });
+  const [form, setForm] = useState({ name:userName, title:"", email:userEmail, phone:"" });
   const [notifEmail,   setNotifEmail]   = useState(true);
   const [notifMentor,  setNotifMentor]  = useState(true);
   const [publicProfile,setPublicProfile]= useState(false);
@@ -4920,6 +4920,16 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
             </div>
           ))}
         </div>
+        {/* Timezone */}
+        <div style={{ marginBottom:20 }}>
+          <div style={{ fontSize:13, fontWeight:600, color:C.gray600, marginBottom:6 }}>Timezone</div>
+          <select value={userTimezone} onChange={async e=>{ const tz=e.target.value; onTimezoneChange && onTimezoneChange(tz); await supabase.auth.updateUser({ data:{ timezone:tz } }); toast({type:"success",message:"Timezone updated."}); }}
+            style={{ ...inputSt, appearance:"none", cursor:"pointer" }}>
+            {COMMON_TIMEZONES.map(t=><option key={t.value} value={t.value}>{t.label}</option>)}
+          </select>
+          <p style={{ fontSize:12, color:C.gray400, margin:"4px 0 0" }}>All session times are shown in your selected timezone. Sessions run on Pacific Time (PST/PDT).</p>
+        </div>
+
         <div style={{ paddingTop:20, display:"flex", justifyContent:"flex-end" }}>
           <Btn onClick={save}>Save</Btn>
         </div>
@@ -5856,6 +5866,79 @@ function AddToCalendarModal({ item, onClose, onConfirm }) {
               </button>
             </div>
           </>
+      </div>
+    </div>
+  );
+}
+
+const COMMON_TIMEZONES = [
+  { label:"Pacific Time (PST/PDT)",       value:"America/Los_Angeles" },
+  { label:"Mountain Time (MST/MDT)",      value:"America/Denver" },
+  { label:"Central Time (CST/CDT)",       value:"America/Chicago" },
+  { label:"Eastern Time (EST/EDT)",       value:"America/New_York" },
+  { label:"Alaska Time",                  value:"America/Anchorage" },
+  { label:"Hawaii Time",                  value:"Pacific/Honolulu" },
+  { label:"Atlantic Time",                value:"America/Halifax" },
+  { label:"Newfoundland Time",            value:"America/St_Johns" },
+  { label:"Philippines (PHT)",            value:"Asia/Manila" },
+  { label:"Singapore (SGT)",              value:"Asia/Singapore" },
+  { label:"India (IST)",                  value:"Asia/Kolkata" },
+  { label:"UAE / Gulf (GST)",             value:"Asia/Dubai" },
+  { label:"Central Europe (CET/CEST)",    value:"Europe/Berlin" },
+  { label:"UK / Ireland (GMT/BST)",       value:"Europe/London" },
+  { label:"Australia Eastern (AEST)",     value:"Australia/Sydney" },
+  { label:"Australia Central (ACST)",     value:"Australia/Adelaide" },
+  { label:"Australia Western (AWST)",     value:"Australia/Perth" },
+  { label:"New Zealand (NZST)",           value:"Pacific/Auckland" },
+  { label:"Japan / Korea (JST/KST)",      value:"Asia/Tokyo" },
+  { label:"China (CST)",                  value:"Asia/Shanghai" },
+  { label:"Brazil (BRT)",                 value:"America/Sao_Paulo" },
+  { label:"Argentina (ART)",              value:"America/Argentina/Buenos_Aires" },
+  { label:"Colombia / Peru (COT/PET)",    value:"America/Bogota" },
+  { label:"Mexico City (CST/CDT)",        value:"America/Mexico_City" },
+  { label:"South Africa (SAST)",          value:"Africa/Johannesburg" },
+  { label:"Nigeria (WAT)",                value:"Africa/Lagos" },
+  { label:"Kenya / Ethiopia (EAT)",       value:"Africa/Nairobi" },
+  { label:"UTC / GMT",                    value:"UTC" },
+];
+
+function TimezoneModal({ detectedTz, onConfirm }) {
+  const detected = COMMON_TIMEZONES.find(t => t.value === detectedTz) ? detectedTz : "UTC";
+  const [selected, setSelected] = useState(detected);
+
+  function fmtNow(tz) {
+    try {
+      return new Date().toLocaleTimeString("en-US", { timeZone:tz, hour:"numeric", minute:"2-digit", hour12:true, timeZoneName:"short" });
+    } catch { return ""; }
+  }
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
+      <div style={{ background:"#fff", borderRadius:20, padding:"36px 32px 28px", width:"100%", maxWidth:460, boxShadow:"0 20px 60px rgba(0,0,0,0.18)", fontFamily:"'Inter',-apple-system,sans-serif" }}>
+        {/* Icon */}
+        <div style={{ width:48, height:48, borderRadius:14, background:"#eff6ff", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:20 }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6490E8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+          </svg>
+        </div>
+        <h2 style={{ margin:"0 0 8px", fontSize:20, fontWeight:800, color:"#111827", letterSpacing:-0.5 }}>Set your timezone</h2>
+        <p style={{ margin:"0 0 24px", fontSize:14, color:"#6b7280", lineHeight:1.6 }}>
+          All sessions are scheduled in <strong>Pacific Time (PST/PDT)</strong>. Select your timezone so we can show you the correct local times.
+        </p>
+
+        <label style={{ fontSize:13, fontWeight:600, color:"#374151", display:"block", marginBottom:6 }}>Your timezone</label>
+        <select value={selected} onChange={e=>setSelected(e.target.value)}
+          style={{ width:"100%", padding:"10px 12px", border:"1px solid #e5e7eb", borderRadius:10, fontSize:14, color:"#111827", background:"#fff", outline:"none", marginBottom:8, cursor:"pointer", boxSizing:"border-box" }}>
+          {COMMON_TIMEZONES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+        </select>
+        <div style={{ fontSize:12, color:"#9ca3af", marginBottom:24 }}>Current time in selected zone: <strong style={{ color:"#374151" }}>{fmtNow(selected)}</strong></div>
+
+        <button onClick={()=>onConfirm(selected)}
+          style={{ width:"100%", padding:"0 0", height:44, background:"#6490E8", color:"#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:700, cursor:"pointer", transition:"background .12s" }}
+          onMouseEnter={e=>e.currentTarget.style.background="#4f7de0"}
+          onMouseLeave={e=>e.currentTarget.style.background="#6490E8"}>
+          Confirm timezone
+        </button>
       </div>
     </div>
   );
@@ -10644,6 +10727,8 @@ export default function App() {
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [userAvatar, setUserAvatar] = useState(null);
+  const [userTimezone, setUserTimezone] = useState(() => Intl.DateTimeFormat().resolvedOptions().timeZone);
+  const [showTimezoneModal, setShowTimezoneModal] = useState(false);
   const [scheduleRegistrations, setScheduleRegistrations] = useState({});
   const [sessionsDeepLink, setSessionsDeepLink] = useState(null);
   const [pastSeasonPageId, setPastSeasonPageId] = useState(null);
@@ -10743,6 +10828,7 @@ export default function App() {
         setUserName(name);
         setUserEmail(session.user.email || "");
         setUserAvatar(meta.avatar_url || meta.picture || null);
+        if (meta.timezone) { setUserTimezone(meta.timezone); } else if (event === "SIGNED_IN") { setShowTimezoneModal(true); }
         setIsLoggedIn(true);
         // Only redirect to dashboard on fresh sign-in (not token refresh on tab focus)
         if (event === "SIGNED_IN" && sessionStorage.getItem("loggedIn") !== "1") { setPage("dashboard"); setShowLanding(false); }
@@ -10831,6 +10917,7 @@ export default function App() {
         setUserName(name);
         setUserEmail(session.user.email || "");
         setUserAvatar(meta.avatar_url || meta.picture || null);
+        if (meta.timezone) setUserTimezone(meta.timezone);
         setIsLoggedIn(true);
         sessionStorage.setItem("loggedIn", "1");
         fetchUserProgress();
@@ -11144,7 +11231,7 @@ export default function App() {
     if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick} userName={userName} sessions={sessions} seasons={seasons}/>;
     if (page==="past-sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} seasons={seasons} sessionsLoading={sessionsLoading}/>;
     if (page==="notifications")  return <NotificationsPage />;
-    if (page==="profile")   return <ProfilePage toast={toast} userName={userName} userEmail={userEmail} userAvatar={userAvatar} onNameChange={setUserName} onBack={() => nav("dashboard")}/>;
+    if (page==="profile")   return <ProfilePage toast={toast} userName={userName} userEmail={userEmail} userAvatar={userAvatar} onNameChange={setUserName} onBack={() => nav("dashboard")} userTimezone={userTimezone} onTimezoneChange={setUserTimezone}/>;
     if (page==="contact")   return <ContactPage/>;
     if (page==="privacy-policy") return <PrivacyPolicyPage onBack={()=>{ const from=sessionStorage.getItem("legalReturnTo")||"landing"; sessionStorage.removeItem("legalReturnTo"); if(from==="dashboard"){ sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("page","dashboard"); setShowLanding(false); setPage("dashboard"); } else { sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("page","dashboard"); setShowLanding(true); setPage("dashboard"); } }}/>;
     if (page==="terms-of-service") return <TermsOfServicePage onBack={()=>{ const from=sessionStorage.getItem("legalReturnTo")||"landing"; sessionStorage.removeItem("legalReturnTo"); if(from==="dashboard"){ sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("page","dashboard"); setShowLanding(false); setPage("dashboard"); } else { sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("page","dashboard"); setShowLanding(true); setPage("dashboard"); } }}/>;
@@ -11370,6 +11457,16 @@ export default function App() {
         [data-theme="dark"] #spedLogoSvg { filter: brightness(0) invert(1); }
       `}</style>
     </div>
+    {showTimezoneModal && (
+      <TimezoneModal
+        detectedTz={userTimezone}
+        onConfirm={async (tz) => {
+          setUserTimezone(tz);
+          setShowTimezoneModal(false);
+          await supabase.auth.updateUser({ data: { timezone: tz } });
+        }}
+      />
+    )}
     <AgentationMount />
   </>
   );
