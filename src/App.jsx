@@ -6053,7 +6053,8 @@ function PublicCertificatePage({ data }) {
 
       {/* Nav — matches landing page */}
       <header style={{ background:"#fff", borderBottom:"1px solid rgba(0,0,0,0.08)", padding:"0 32px", height:56, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:100 }}>
-        <img src="/Container.png" alt="SPED Summit" style={{ height:26 }}/>
+        <img src="/Container.png" alt="SPED Summit" style={{ height:26, cursor:"pointer" }}
+          onClick={()=>{ sessionStorage.setItem("showLanding","1"); window.location.href=window.location.origin; }}/>
         {isLoggedIn ? (
           <button onClick={()=>{ sessionStorage.setItem("page","dashboard"); sessionStorage.setItem("showLanding","0"); window.location.href=window.location.origin; }}
             style={{ padding:"0 18px", height:36, background:"#6490E8", color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer" }}>
