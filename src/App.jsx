@@ -4976,7 +4976,13 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
           </div>
 
           {/* Save */}
-          <div style={{ display:"flex", justifyContent:"flex-end" }}>
+          <div style={{ display:"flex", justifyContent:"flex-end", gap:10 }}>
+            <button onClick={()=>{ setChangingPassword(false); setPwForm({current:"",newPw:"",confirm:""}); }}
+              style={{ padding:"0 20px", height:38, background:"transparent", color:C.gray600, border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:14, fontWeight:500, cursor:"pointer", transition:"background .12s, border-color .12s" }}
+              onMouseEnter={e=>{ e.currentTarget.style.background=C.gray100; e.currentTarget.style.borderColor=C.gray300; }}
+              onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor=C.gray200; }}>
+              Cancel
+            </button>
             <Btn onClick={()=>{
               if (!pwForm.current) { toast({type:"error",message:"Please enter your current password."}); return; }
               if (pwForm.newPw.length < 8) { toast({type:"error",message:"New password must be at least 8 characters."}); return; }
