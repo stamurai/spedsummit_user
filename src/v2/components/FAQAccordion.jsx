@@ -11,36 +11,24 @@ const C = {
 
 const FAQS = [
   {
-    q: 'Is SPED Summit really free?',
-    a: 'Yes, 100% free. No credit card, no trial period, no hidden fees. We partnered with Ablespace to make high-quality SPED professional development accessible to every educator.',
+    q: 'Is SPED Summit completely free?',
+    a: 'Yes! SPED Summit is completely free to attend. Registered attendees can access all summit sessions during the event and earn free PD certificates by completing the required assessments.\n\nA Plus Plan also includes access to PD certificates from previous years\' SPED Summit sessions, along with premium content, extended access to recordings, and additional resources.',
   },
   {
-    q: 'How do I earn my certificate?',
-    a: 'Complete all 9 sessions and pass the knowledge check at the end of each one. Your personalized PDF certificate is automatically generated and ready to download — no manual requests needed.',
+    q: 'Can I rewatch if I am unable to attend live?',
+    a: 'Absolutely! All summit sessions remain available to watch on-demand throughout the event period, so you can learn at a time that works best for you.\n\nIf you\'d like extended access beyond the summit dates, a Plus Plan includes access to session recordings after the event concludes.',
   },
   {
-    q: 'Can I watch the sessions at my own pace?',
-    a: 'Absolutely. All sessions are available on-demand and you can replay them as many times as you like throughout January 2026. There are no deadlines within that window.',
+    q: 'How will I get the Completion Certificate?',
+    a: 'After completing a session and successfully passing the accompanying assessment, your PD certificate will be available directly within your SPED Summit account.\n\nPlus Plan members can also access certificates from eligible sessions in previous years\' SPED Summit libraries.',
   },
   {
-    q: 'What topics do the sessions cover?',
-    a: 'The 9 sessions cover: mindfulness for SPED educators, AAC (Augmentative and Alternative Communication), IEP writing, behavior intervention, inclusive classroom strategies, sensory processing, parent collaboration, transition planning, and self-care for educators.',
+    q: 'Can I retake quizzes if I don\'t pass?',
+    a: 'Yes! If you don\'t pass an assessment on your first attempt, you can retake it. Our goal is to support your learning and help you successfully earn your PD certificate.',
   },
   {
-    q: 'Who are the instructors?',
-    a: 'All sessions are led by certified SPED specialists with real classroom experience — not just academics. Each instructor was selected for their practical, actionable teaching style.',
-  },
-  {
-    q: 'How does the Ablespace Pro giveaway work?',
-    a: 'Participants who complete all sessions and assessments are automatically entered into the giveaway for an Ablespace Pro subscription. Winners are selected and notified at the end of January 2026.',
-  },
-  {
-    q: 'Can I share my certificate?',
-    a: "Yes! Your certificate is a downloadable PDF with your name, the date, and the session details. It's designed to look great on LinkedIn, in email signatures, or printed for display.",
-  },
-  {
-    q: 'What if I fail a quiz?',
-    a: 'No stress — you can retake each knowledge check as many times as you need. The quizzes are designed to help you learn, not to gate your certificate behind arbitrary scores.',
+    q: 'What topics are covered at SPED Summit?',
+    a: 'SPED Summit features expert-led sessions on a wide range of special education topics, including autism support, AAC and communication, IEP development, data collection, literacy and dyslexia, executive functioning, emotional regulation, inclusion, behavior support, student independence, family collaboration, transition planning, and much more.',
   },
 ];
 
@@ -93,7 +81,7 @@ function FAQItem({ item, isOpen, onToggle }) {
             transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             style={{ overflow: 'hidden' }}
           >
-            <div style={{ padding: '0 24px 22px', fontSize: 15, color: '#5D636F', lineHeight: 1.7 }}>
+            <div style={{ padding: '0 24px 22px', fontSize: 15, color: '#5D636F', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
               {item.a}
             </div>
           </motion.div>

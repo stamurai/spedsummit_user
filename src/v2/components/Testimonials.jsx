@@ -13,58 +13,49 @@ const CARD_WIDTH = 320;
 
 const TESTIMONIALS = [
   {
-    text: "The IEP session alone was worth it. I walked away with three new strategies I used that same week. The certificate was ready instantly — no chasing required.",
-    image: "https://randomuser.me/api/portraits/women/1.jpg",
-    name: "Sarah M.",
-    role: "Resource Room Teacher, TX",
+    text: "This is, by far, the best presentation of the summit. It kept my attention the whole time.",
+    name: "April Moss",
+    role: "SPED Educator",
   },
   {
-    text: "I've paid hundreds for PD that wasn't as good as this. The AAC module was incredibly practical and the quizzes really locked in the learning.",
-    image: "https://randomuser.me/api/portraits/men/2.jpg",
-    name: "James K.",
-    role: "Inclusion Specialist, NY",
+    text: "The session was highly informative and practical. The speaker presented evidence-based, neurodiversity-affirming strategies that were clearly explained and directly applicable to educational and therapeutic settings.",
+    name: "Auhen Cleo Faith Cezar",
+    role: "SPED Educator",
   },
   {
-    text: "Recommended it to my entire department. Free, self-paced, and the quality rivals anything I've seen on paid platforms.",
-    image: "https://randomuser.me/api/portraits/women/3.jpg",
-    name: "Priya D.",
-    role: "Special Ed Coordinator, CA",
+    text: "The discussion reminded us that we cannot give our best to our students if we do not take care of ourselves first. It highlighted the value of setting healthy boundaries and preventing burnout.",
+    name: "Erwin G. Bajao",
+    role: "SPED Educator",
   },
   {
-    text: "The mindfulness session shifted how I approach dysregulation in the classroom. Really well-presented, even after a long day.",
-    image: "https://randomuser.me/api/portraits/men/4.jpg",
-    name: "Tom R.",
-    role: "Behavior Interventionist, FL",
+    text: "Thank you for clarifying the meaning and function of echolalia. The discussion deepened my understanding of echolalia as a communicative behavior rather than merely repetitive speech. I intend to apply the strategies presented in my own teaching practice.",
+    name: "Jea Cyrill Cabigao",
+    role: "SPED Educator",
   },
   {
-    text: "I was nervous about the quiz format but they're fair — multiple attempts allowed and instant feedback. I felt genuinely proud of my scores.",
-    image: "https://randomuser.me/api/portraits/women/5.jpg",
-    name: "Lisa H.",
-    role: "SPED Paraprofessional, OH",
+    text: "The mindfulness-based strategies and real classroom applications were especially helpful. Thank you for prioritizing both student and teacher wellness.",
+    name: "Auhen Cleo Faith Cezar",
+    role: "SPED Educator",
   },
   {
-    text: "The Ablespace giveaway was a bonus, but honestly the content itself kept me coming back. Nine sessions was the perfect amount.",
-    image: "https://randomuser.me/api/portraits/women/6.jpg",
-    name: "Deb A.",
-    role: "Elementary SPED Teacher, WA",
+    text: "The session was valuable and inspiring, and it effectively supported professional growth in SPED practices.",
+    name: "Jonal P. Panes",
+    role: "SPED Educator",
   },
   {
-    text: "Every instructor had real classroom experience — not just theory. The behavior intervention session was immediately applicable.",
-    image: "https://randomuser.me/api/portraits/men/7.jpg",
-    name: "Marcus T.",
-    role: "Behavioral Support Specialist, IL",
+    text: "The speaker was engaging, knowledgeable, and provided practical strategies that can be applied directly in SPED settings.",
+    name: "Rizza S. Ceballo",
+    role: "SPED Educator",
   },
   {
-    text: "Sharing my certificate on LinkedIn got more engagement than anything I've posted. Colleagues started asking where to sign up.",
-    image: "https://randomuser.me/api/portraits/women/8.jpg",
-    name: "Aisha N.",
-    role: "Special Ed Department Head, GA",
+    text: "AbleSpace is a very useful tool to help me with IEP goals and assessments. It will be very helpful for creating and modifying plans according to the needs and skills of my students.",
+    name: "Samantha Jane S. Zumel",
+    role: "SPED Educator",
   },
   {
-    text: "Finally, PD that doesn't feel like a checkbox. I replayed two sessions because the content was that good. Completely free is wild.",
-    image: "https://randomuser.me/api/portraits/men/9.jpg",
-    name: "Carlos B.",
-    role: "Transition Planning Specialist, AZ",
+    text: "The session was highly informative and practical. The speaker presented evidence-based, neurodiversity-affirming strategies that were clearly explained and directly applicable to educational and therapeutic settings.",
+    name: "Auhen Cleo Faith Cezar",
+    role: "SPED Educator",
   },
 ];
 
@@ -104,16 +95,8 @@ function TestimonialsColumn({ testimonials, duration = 10 }) {
                 <p style={{ margin: 0, fontSize: 14, color: "#5D636F", lineHeight: 1.7 }}>
                   "{text}"
                 </p>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 18 }}>
-                  <img
-                    src={image}
-                    alt={name}
-                    style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
-                  />
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: C.text, lineHeight: 1.3 }}>{name}</div>
-                    <div style={{ fontSize: 12, color: C.muted, marginTop: 2, lineHeight: 1.3 }}>{role}</div>
-                  </div>
+                <div style={{ marginTop: 18 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: C.text, lineHeight: 1.3 }}>— {name}</div>
                 </div>
               </div>
             ))}
