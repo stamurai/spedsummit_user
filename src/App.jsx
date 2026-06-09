@@ -4871,7 +4871,6 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
   const sidebarNav = [
     { id:"personal",       icon:"user-circle", label:"Personal details" },
     { id:"security",       icon:"lock",        label:"Password and security" },
-    { id:"notifications",  icon:"bell",        label:"Notifications" },
     { id:"danger",         icon:"trash",       label:"Deactivate account" },
   ];
 
@@ -5031,30 +5030,6 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
       );
     }
 
-    if (activeSection === "notifications") return (
-      <div>
-        <div style={{ marginBottom:24 }}>
-          <h2 style={{ margin:"0 0 4px", fontSize:20, fontWeight:800, color:C.gray900 }}>Notifications</h2>
-          <p style={{ margin:0, fontSize:14, color:C.gray500 }}>Choose how and when you want to be notified.</p>
-        </div>
-        <div style={{ border:`1px solid ${C.gray200}`, borderRadius:14, overflow:"hidden" }}>
-          {[
-            { label:"Email Notifications", sub:"Updates on course progress and activity",         on:notifEmail,    toggle:()=>setNotifEmail(v=>!v) },
-            { label:"Mentor Messages",     sub:"Real-time chat alerts and mentorship pings",      on:notifMentor,   toggle:()=>setNotifMentor(v=>!v) },
-            { label:"Public Profile",      sub:"Make your profile visible to other students",     on:publicProfile, toggle:()=>setPublicProfile(v=>!v) },
-          ].map((row,i,arr) => (
-            <div key={row.label} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"16px 20px", borderBottom:i<arr.length-1?`1px solid ${C.gray200}`:"none", gap:16, background:C.white }}>
-              <div>
-                <div style={{ fontSize:14, fontWeight:600, color:C.gray900 }}>{row.label}</div>
-                <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>{row.sub}</div>
-              </div>
-              <ProfileToggle on={row.on} onToggle={row.toggle}/>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-
     if (activeSection === "danger") return (
       <div>
         <div style={{ marginBottom:24 }}>
@@ -5082,7 +5057,7 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
     setMobileDrilled(true);
   }
 
-  const sectionLabels = { personal:"Personal details", security:"Password and security", notifications:"Notifications", danger:"Deactivate account" };
+  const sectionLabels = { personal:"Personal details", security:"Password and security", danger:"Deactivate account" };
 
   return (
     <>
