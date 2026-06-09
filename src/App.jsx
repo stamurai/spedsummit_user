@@ -6,7 +6,9 @@ import { createPortal } from "react-dom";
 import * as PhosphorIcons from "@phosphor-icons/react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import LandingV2 from "./v2/LandingV2";
+import * as XLSX from "xlsx";
 import { GradientWave } from "./components/GradientWave";
 import { motion, useMotionValue, useMotionTemplate, useAnimationFrame, useInView, AnimatePresence } from "framer-motion";
 
@@ -14,6 +16,7 @@ import { motion, useMotionValue, useMotionTemplate, useAnimationFrame, useInView
    PHOSPHOR ICONS  (inline SVG, consistent 20px/24px strokes)
 ───────────────────────────────────────────────────────────────────────────── */
 const ICON_MAP = {
+  envelope: PhosphorIcons.Envelope,
   house: PhosphorIcons.House,
   "play-circle": PhosphorIcons.PlayCircle,
   calendar: PhosphorIcons.CalendarBlank,
@@ -121,13 +124,13 @@ const ICON_MAP = {
   "instagram-logo":     PhosphorIcons.InstagramLogo,
 };
 
-const Icon = ({ name, size = 20, color = "currentColor", style: s = {} }) => {
+const Icon = ({ name, size = 20, color = "currentColor", weight, style: s = {} }) => {
   const IconCmp = ICON_MAP[name] || PhosphorIcons.Circle;
   return (
     <IconCmp
       size={size}
       color={color}
-      weight="bold"
+      weight={weight || "bold"}
       style={{
         display: "block",
         flexShrink: 0,
@@ -394,91 +397,110 @@ async function loadSealAsPng(url, size = 220) {
   });
 }
 
+async function saveCertToSupabase(certData) {
+  const { data, error } = await supabase.from("certificates").insert({ cert_data: certData }).select("id").single();
+  if (error) throw error;
+  return data.id;
+}
+
 async function downloadCertificate({ recipientName = "", sessionTitle, instructor, duration = "", score = null, quizTitle = null, description = "" }) {
-  const today = new Date().toLocaleDateString("en-US", { month:"numeric", day:"numeric", year:"numeric" });
+  const today = new Date().toLocaleDateString("en-US", { month:"2-digit", day:"2-digit", year:"numeric" });
   const certId = `${Math.random().toString(36).slice(2,8).toUpperCase()}-CE${String(Date.now()).slice(-6)}`;
   const sessionTime = duration || "1 Hour";
   const instructorName = instructor ? instructor.split("|")[0].trim() : "";
-
   const descText = description
     ? `This session was presented by ${instructorName}. ${description} Participants receiving this certificate completed this session, including the subsequent assessments.`
     : `This session was presented by ${instructorName}. Participants receiving this certificate completed this session, including the subsequent assessments.`;
 
-  const blobs = `
-    <div style="position:absolute;top:-80px;left:-80px;width:300px;height:300px;border-radius:50%;background:rgba(255,160,160,0.32);"></div>
-    <div style="position:absolute;top:-40px;right:-60px;width:220px;height:220px;border-radius:50%;background:rgba(160,220,160,0.30);"></div>
-    <div style="position:absolute;bottom:-60px;left:100px;width:180px;height:180px;border-radius:50%;background:rgba(255,210,120,0.28);"></div>
-    <div style="position:absolute;bottom:-50px;right:80px;width:240px;height:240px;border-radius:50%;background:rgba(255,160,100,0.25);"></div>
-    <div style="position:absolute;top:180px;left:-40px;width:120px;height:120px;border-radius:50%;background:rgba(180,180,255,0.22);"></div>
-  `;
+  // Save to Supabase and get a short UUID-based verify URL
+  let verifyUrl = window.location.origin;
+  try {
+    const certData = { recipientName, sessionTitle, instructor, duration, score, description, certId, date: today };
+    const certDbId = await saveCertToSupabase(certData);
+    verifyUrl = `${window.location.origin}/?cert_id=${certDbId}`;
+  } catch(e) { /* fallback to homepage */ }
 
-  const W = 1122, H = 794;
+  // Industry standard: Letter landscape 11" × 8.5" at 96dpi
+  const W = 1056, H = 816;
   const el = document.createElement("div");
   el.style.cssText = `position:fixed;left:-9999px;top:-9999px;width:${W}px;height:${H}px;overflow:hidden;`;
   el.innerHTML = `
-    <div style="position:relative;width:${W}px;height:${H}px;background:#ffffff;font-family:'Arial',sans-serif;box-sizing:border-box;overflow:hidden;">
-      ${blobs}
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <div style="position:relative;width:${W}px;height:${H}px;font-family:'Poppins','Arial',sans-serif;box-sizing:border-box;overflow:hidden;">
+      <img src="${window.location.origin}/Certificate Background.png" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;"/>
 
-      <div style="position:relative;z-index:1;padding:52px 90px;display:flex;flex-direction:column;height:100%;box-sizing:border-box;">
+      <!-- Content -->
+      <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:960px;padding:40px 48px 36px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;">
 
-        <!-- Blue stars -->
-        <div style="text-align:center;margin-bottom:12px;">
-          <span style="font-size:30px;color:#3b82f6;">&#9733;</span>
-          <span style="font-size:30px;color:#3b82f6;margin:0 8px;">&#9733;</span>
-          <span style="font-size:30px;color:#3b82f6;">&#9733;</span>
+        <!-- Stars -->
+        <div style="display:flex;gap:12px;justify-content:center;margin-bottom:20px;">
+          <span style="font-size:28px;color:#3b82f6;line-height:1;">★</span>
+          <span style="font-size:28px;color:#3b82f6;line-height:1;">★</span>
+          <span style="font-size:28px;color:#3b82f6;line-height:1;">★</span>
         </div>
 
-        <!-- Title -->
-        <div style="text-align:center;margin-bottom:8px;">
-          <div style="font-size:28px;font-weight:900;color:#1a1a1a;line-height:1.25;">Certificate of Professional</div>
-          <div style="font-size:28px;font-weight:900;color:#1a1a1a;line-height:1.25;">Development Hours</div>
-        </div>
+        <!-- Certificate title -->
+        <div style="text-align:center;font-size:32px;font-weight:700;color:#1a1a1a;line-height:1.2;margin-bottom:6px;font-family:'Poppins',sans-serif;letter-spacing:-0.3px;">Certificate of Professional Development Hours</div>
 
         <!-- is presented to -->
-        <div style="text-align:center;font-size:15px;color:#555;margin:12px 0 6px;">is presented to</div>
+        <div style="font-size:15px;font-weight:400;color:#6b7280;margin-bottom:12px;font-family:'Poppins',sans-serif;letter-spacing:0.4px;">is presented to</div>
 
-        <!-- Recipient name -->
-        <div style="text-align:center;font-size:56px;font-weight:900;color:#1a1a1a;letter-spacing:-1.5px;margin-bottom:16px;line-height:1.05;">${recipientName}</div>
+        <!-- Recipient name — strongest focal point -->
+        <div style="font-size:56px;font-weight:800;color:#111827;letter-spacing:-2px;line-height:1;text-align:center;margin-bottom:20px;font-family:'Poppins',sans-serif;">${recipientName}</div>
 
         <!-- Divider -->
-        <div style="height:1.5px;background:#d1d5db;margin:0 0 16px;"></div>
+        <div style="width:640px;height:1px;background:linear-gradient(90deg,transparent,#d1d5db,transparent);margin-bottom:20px;"></div>
 
-        <!-- Session participation -->
-        <div style="text-align:center;font-size:14px;color:#333;margin-bottom:22px;line-height:1.6;">
-          For their participation in the session titled: <span style="font-weight:700;color:#b45309;">${sessionTitle}</span>
+        <!-- Session block -->
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="font-size:14px;font-weight:400;color:#6b7280;margin-bottom:6px;font-family:'Poppins',sans-serif;">For their participation in the session titled:</div>
+          <div style="font-size:24px;font-weight:600;color:#1a1a1a;line-height:1.3;font-family:'Poppins',sans-serif;">${sessionTitle}</div>
         </div>
 
-        <!-- Session time + date row -->
-        <div style="display:flex;justify-content:space-between;font-size:17px;color:#222;margin-bottom:20px;padding:0 10px;">
-          <div>Session time: ${sessionTime}</div>
-          <div>${today}</div>
+        <!-- Meta row -->
+        <div style="display:flex;gap:48px;justify-content:center;margin-bottom:20px;padding:16px 0;">
+          <div style="text-align:center;">
+            <div style="font-size:19px;font-weight:600;color:#1a1a1a;font-family:'Poppins',sans-serif;">${sessionTime}</div>
+          </div>
+          <div style="width:1px;background:#e5e7eb;"></div>
+          <div style="text-align:center;">
+            <div style="font-size:19px;font-weight:600;color:#1a1a1a;font-family:'Poppins',sans-serif;">${today}</div>
+          </div>
+          <div style="width:1px;background:#e5e7eb;"></div>
+          <div style="text-align:center;">
+            <div style="font-size:19px;font-weight:600;color:#1a1a1a;font-family:'Poppins',sans-serif;">${instructorName}</div>
+          </div>
         </div>
 
         <!-- Description -->
-        <div style="font-size:11.5px;color:#374151;line-height:1.8;text-align:center;max-width:880px;margin:0 auto;">
-          ${descText}
-        </div>
+        <div style="font-size:14px;font-weight:400;color:#4b5563;line-height:1.9;text-align:center;max-width:860px;font-family:'Poppins',sans-serif;">${descText}</div>
 
-        <!-- Footer -->
-        <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;">
-          <div style="font-size:12px;color:#555;">Contact at <strong>support@spedsummit.com</strong> with any questions.</div>
-          <div style="font-size:12px;color:#555;">Certificate ID: &nbsp;<strong>${certId}</strong></div>
-        </div>
+      </div>
 
+      <!-- Footer bar -->
+      <div style="position:absolute;bottom:0;left:0;right:0;padding:16px 56px;display:flex;justify-content:space-between;align-items:center;font-family:'Poppins',sans-serif;font-size:13px;font-weight:400;color:#374151;">
+        <div>
+          <div>Certificate ID: <strong style="font-weight:600;">${certId}</strong></div>
+          <div style="margin-top:3px;">Contact at <strong style="font-weight:600;">support@spedsummit.com</strong></div>
+        </div>
+        <div style="text-align:right;">
+          <div style="margin-bottom:2px;">Verify at:</div>
+          <div style="color:#6490E8;font-weight:600;text-decoration:underline;">${verifyUrl.replace(/^https?:\/\//,"")}</div>
+        </div>
       </div>
     </div>`;
 
   document.body.appendChild(el);
-
   try {
-    const canvas = await html2canvas(el.firstElementChild, {
-      scale: 2, useCORS: true, backgroundColor: "#ffffff", width: W, height: H,
+    const canvas = await html2canvas(el.lastElementChild, {
+      scale: 2, useCORS: true, allowTaint: true, backgroundColor: "#fffef8", width: W, height: H,
     });
     const imgData = canvas.toDataURL("image/jpeg", 0.98);
-    const pdf = new jsPDF({ orientation:"landscape", unit:"px", format:[W, H], hotfixes:["px_scaling"] });
-    pdf.addImage(imgData, "JPEG", 0, 0, W, H);
-    const filename = `SPED-Summit-Certificate-${(sessionTitle||"").replace(/[^a-z0-9]/gi,"_").slice(0,40)}.pdf`;
-    pdf.save(filename);
+    const pdf = new jsPDF({ orientation:"landscape", unit:"in", format:"letter" });
+    pdf.addImage(imgData, "JPEG", 0, 0, 11, 8.5);
+    // Clickable link annotation over the footer verify URL
+    pdf.link(5.5, 7.9, 5.4, 0.6, { url: verifyUrl });
+    pdf.save(`SPED-Summit-Certificate-${(sessionTitle||"").replace(/[^a-z0-9]/gi,"_").slice(0,40)}.pdf`);
   } finally {
     document.body.removeChild(el);
   }
@@ -752,7 +774,7 @@ function Btn({ children, onClick, variant="primary", size="md", disabled=false, 
 /* ─────────────────────────────────────────────────────────────────────────────
    DROPDOWN MENU
 ───────────────────────────────────────────────────────────────────────────── */
-function DropdownMenu({ items, onClose, anchorRef }) {
+function DropdownMenu({ items, onClose, anchorRef, bg }) {
   const ref = useRef(null);
   useEffect(() => {
     const handler = (e) => {
@@ -763,12 +785,12 @@ function DropdownMenu({ items, onClose, anchorRef }) {
     return () => document.removeEventListener("mousedown", handler);
   }, [onClose, anchorRef]);
   return (
-    <div ref={ref} style={{ position:"absolute", right:0, top:"110%", background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, boxShadow:"0 8px 24px rgba(0,0,0,0.12)", minWidth:170, zIndex:200, overflow:"hidden", animation:"fadeIn .15s ease" }}>
+    <div ref={ref} style={{ position:"absolute", right:0, top:"110%", background: bg || "#FEF5EC", border:`1px solid rgba(0,0,0,0.08)`, borderRadius:12, boxShadow:"0 8px 24px rgba(0,0,0,0.12)", minWidth:170, zIndex:200, overflow:"hidden", animation:"fadeIn .15s ease" }}>
       {items.map((item, i) => (
         <button key={i} onClick={() => { item.action(); onClose(); }}
           style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"11px 16px", background:"transparent", border:"none", fontSize:14, fontWeight:500, color:item.danger?C.error:C.gray700, cursor:"pointer", borderBottom:i<items.length-1?`1px solid ${C.gray100}`:"none", textAlign:"left", transition:"background 0.12s" }}
-          onMouseEnter={e=>{ e.currentTarget.style.background=item.danger?"rgba(239,68,68,0.07)":C.gray100; }}
-          onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+          onMouseEnter={e=>{ e.currentTarget.style.background=item.danger?"rgba(239,68,68,0.07)":"rgba(0,0,0,0.05)"; }}
+          onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; }}>
           {item.icon && <Icon name={item.icon} size={16} color={item.danger?C.error:C.primary} weight="fill"/>}
           <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.label}</span>
         </button>
@@ -1000,68 +1022,99 @@ const SEARCH_PAGES = [
    FOOTER
 ───────────────────────────────────────────────────────────────────────────── */
 function Footer({ onNavigate }) {
-  const muted = C.gray500;
-  const text  = C.gray900;
-  const border = C.gray200;
-  const bg = C.white;
-  const hover = C.gray100;
-  const blue = C.primary;
+  const bg     = "#FEF5EC";
+  const muted  = "#5D636F";
+  const text   = "#2B2E33";
+  const border = "#e8ddd3";
   return (
-    <footer style={{ background:bg, borderTop:`1px solid ${border}`, fontFamily:"inherit", flexShrink:0, overflow:"hidden" }}>
+    <footer style={{ background:bg, borderTop:`1px solid ${border}`, fontFamily:"inherit", flexShrink:0 }}>
       <style>{`
-        .footer-inner { box-sizing:border-box; width:100%; }
+        .db-footer-cols { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:48px; }
+        .db-footer-brand { grid-column:auto; }
         @media(max-width:768px){
-          .footer-grid { grid-template-columns:1fr 1fr !important; }
-          .footer-brand { grid-column:1/-1 !important; }
-          .footer-inner { padding-left:20px !important; padding-right:20px !important; }
+          .db-footer-cols { grid-template-columns:1fr 1fr !important; gap:24px !important; }
+          .db-footer-brand { grid-column:1/-1 !important; }
+          .db-footer-wrap { padding:32px 20px 40px !important; }
         }
       `}</style>
 
-
-      <div className="footer-grid footer-inner" style={{ padding:"56px 40px 48px", display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:48, borderBottom:`1px solid ${border}` }}>
-        {/* Brand */}
-        <div className="footer-brand">
-          <img src="/Container.png" alt="SPED Summit" style={{ height:26, display:"block", marginBottom:16 }}/>
-          <p style={{ margin:"0 0 24px", fontSize:14, color:muted, lineHeight:1.7, maxWidth:280 }}>
-            SPED Summit is a free professional development platform for Special Education professionals — built by educators, for educators.
-          </p>
-          <div style={{ display:"flex", gap:10 }}>
-            {[
-              { label:"YouTube",   svg:"M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z" },
-              { label:"Instagram", svg:"M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" },
-              { label:"Facebook",  svg:"M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" },
-            ].map(({ label, svg }) => (
-              <a key={label} href="#" aria-label={label}
-                style={{ width:32, height:32, borderRadius:8, border:`1px solid ${border}`, background:bg, display:"flex", alignItems:"center", justifyContent:"center", transition:"background .12s", textDecoration:"none" }}
-                onMouseEnter={e => e.currentTarget.style.background=hover}
-                onMouseLeave={e => e.currentTarget.style.background=bg}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill={muted}><path d={svg}/></svg>
-              </a>
-            ))}
-          </div>
-        </div>
-
-        {/* Link columns */}
-        {[
-          { heading:"Platform", links:["Sessions","Instructors","Giveaways","Schedule","Community"] },
-          { heading:"Company",  links:["About","Blog","Careers","Press","Contact"] },
-          { heading:"Legal",    links:["Privacy Policy","Terms of Service","Cookie Policy","Accessibility"] },
-        ].map(({ heading, links }) => (
-          <div key={heading}>
-            <div style={{ fontSize:11, fontWeight:600, color:muted, letterSpacing:.8, textTransform:"uppercase", marginBottom:16 }}>{heading}</div>
-            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-              {links.map(l => (
-                <a key={l} href="#" style={{ fontSize:14, color:muted, textDecoration:"none", transition:"color .12s" }}
-                  onMouseEnter={e => e.currentTarget.style.color=text}
-                  onMouseLeave={e => e.currentTarget.style.color=muted}>{l}</a>
+      {/* Columns */}
+      <div className="db-footer-wrap" style={{ padding:"56px 40px 48px", borderBottom:`1px solid ${border}` }}>
+        <div className="db-footer-cols">
+          {/* Brand */}
+          <div className="db-footer-brand">
+            <img src="/Container.png" alt="SPED Summit" style={{ height:26, display:"block", marginBottom:16 }}/>
+            <p style={{ margin:"0 0 24px", fontSize:14, color:muted, lineHeight:1.7, maxWidth:280 }}>
+              SPED Summit is a free professional development platform for Special Education professionals — built by educators, for educators.
+            </p>
+            <div style={{ display:"flex", gap:10 }}>
+              {[
+                { label:"Facebook",  svg:"M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" },
+                { label:"Instagram", svg:"M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" },
+                { label:"YouTube",   svg:"M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z" },
+              ].map(({ label, svg }) => (
+                <a key={label} href="#" aria-label={label}
+                  style={{ width:32, height:32, borderRadius:8, border:`1px solid ${border}`, background:"rgba(0,0,0,0.04)", display:"flex", alignItems:"center", justifyContent:"center", textDecoration:"none", transition:"background .12s" }}
+                  onMouseEnter={e=>e.currentTarget.style.background="rgba(0,0,0,0.09)"}
+                  onMouseLeave={e=>e.currentTarget.style.background="rgba(0,0,0,0.04)"}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill={muted}><path d={svg}/></svg>
+                </a>
               ))}
             </div>
           </div>
-        ))}
+
+          {/* About */}
+          <div>
+            <div style={{ fontSize:11, fontWeight:700, color:text, letterSpacing:.8, textTransform:"uppercase", marginBottom:16 }}>About</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              {["Sessions","Speakers","Community","Contact"].map(l => (
+                <a key={l} href="#"
+                  onClick={e=>{ e.preventDefault(); if(l==="Contact") onNavigate && onNavigate("contact"); else onNavigate && onNavigate(l.toLowerCase()); }}
+                  style={{ fontSize:14, color:muted, textDecoration:"none", transition:"color .12s" }}
+                  onMouseEnter={e=>e.currentTarget.style.color=text}
+                  onMouseLeave={e=>e.currentTarget.style.color=muted}>{l}</a>
+              ))}
+            </div>
+          </div>
+
+          {/* Connect */}
+          <div>
+            <div style={{ fontSize:11, fontWeight:700, color:text, letterSpacing:.8, textTransform:"uppercase", marginBottom:16 }}>Connect</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              {[
+                { label:"Facebook",  svg:"M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" },
+                { label:"Instagram", svg:"M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" },
+                { label:"YouTube",   svg:"M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z" },
+              ].map(({ label, svg }) => (
+                <a key={label} href="#"
+                  style={{ display:"inline-flex", alignItems:"center", gap:8, fontSize:14, color:muted, textDecoration:"none", transition:"color .12s" }}
+                  onMouseEnter={e=>e.currentTarget.style.color=text}
+                  onMouseLeave={e=>e.currentTarget.style.color=muted}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d={svg}/></svg>
+                  {label}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Legal */}
+          <div>
+            <div style={{ fontSize:11, fontWeight:700, color:text, letterSpacing:.8, textTransform:"uppercase", marginBottom:16 }}>Legal</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              {["Privacy Policy","Terms of Service"].map(l => (
+                <a key={l} href="#"
+                  onClick={e=>{ e.preventDefault(); if(l==="Privacy Policy"){ sessionStorage.setItem("page","privacy-policy"); sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("legalReturnTo","dashboard"); window.location.href=window.location.origin; } if(l==="Terms of Service"){ sessionStorage.setItem("page","terms-of-service"); sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("legalReturnTo","dashboard"); window.location.href=window.location.origin; } }}
+                  style={{ fontSize:14, color:muted, textDecoration:"none", transition:"color .12s" }}
+                  onMouseEnter={e=>e.currentTarget.style.color=text}
+                  onMouseLeave={e=>e.currentTarget.style.color=muted}>{l}</a>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Copyright */}
-      <div className="footer-inner" style={{ padding:"16px 40px", display:"flex", justifyContent:"center" }}>
+      <div style={{ padding:"16px 40px", display:"flex", justifyContent:"center" }}>
         <span style={{ fontSize:12, color:muted }}>© {new Date().getFullYear()} SPED Summit. All rights reserved.</span>
       </div>
     </footer>
@@ -1541,7 +1594,7 @@ function TopBar({ toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, 
             <Icon name="caret-down" size={12} color={isDark?"rgba(255,255,255,0.5)":C.gray500}/>
           </button>
           {showProfileMenu && (
-            <DropdownMenu anchorRef={avatarBtnRef}
+            <DropdownMenu bg="#F9FBF8" anchorRef={avatarBtnRef}
               items={[
                 {
                   icon: "user-circle",
@@ -1705,6 +1758,7 @@ function TabBar({ active, onChange, breadcrumbs }) {
     { id:"dashboard",      label:"My Learnings"    },
     { id:"sessions",       label:"All Sessions"    },
     { id:"certifications", label:"My Certificates" },
+    { id:"community",      label:"My Community"    },
   ];
 
   return (
@@ -2027,7 +2081,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 /* ─────────────────────────────────────────────────────────────────────────────
    DASHBOARD
 ───────────────────────────────────────────────────────────────────────────── */
-function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS, seasons = SEASONS, schedule = SCHEDULE, externalFilter, onFilterChange, isAdmin = false, sessionsLoading = false }) {
+function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSession, toast, quizStates, onAssessmentClick, onCertificateClick, enrolledIds = new Set([1,2,3]), onEnroll, scheduleRegistrations = {}, setScheduleRegistrations = ()=>{}, sessions = SESSIONS, seasons = SEASONS, schedule = SCHEDULE, externalFilter, onFilterChange, isAdmin = false, sessionsLoading = false, testimonialsData = [] }) {
   const [vw, setVw] = useState(window.innerWidth);
   const [calendarItem, setCalendarItem] = useState(null);
   const [calDaySession, setCalDaySession] = useState(null);
@@ -2056,6 +2110,11 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
   // shows up automatically. Cross-reference schedule for type/date/time metadata.
   const upcomingSchedule = sessions
     .filter(s => getSessionState(s) === "upcoming")
+    .slice().sort((a, b) => {
+      const da = a.availableFrom ? new Date(a.availableFrom).getTime() : Infinity;
+      const db = b.availableFrom ? new Date(b.availableFrom).getTime() : Infinity;
+      return da - db;
+    })
     .map(s => {
       const schedItem = schedule.find(i => i.session_id === s.id || i.id === s.id);
       return {
@@ -2067,6 +2126,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
         date: schedItem?.date || "",
         time: schedItem?.time || "",
         status: "upcoming",
+        availableFrom: s.availableFrom,
       };
     });
   const completed     = enrolledSessions.filter(s => s.status === "completed").length;
@@ -2369,12 +2429,23 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
     "Dr. Emily Tran": "AI & Technology Educator",
     "Dr. Sarah Kim":  "AAC Specialist, BCBA",
   };
-  const DB_TESTIMONIALS = [
-    { text:"SPED Summit gave me practical tools I could use in my classroom the very next day. Immediately applicable.", name:"Maria Gonzalez", role:"Special Ed Teacher", img:"https://images.unsplash.com/photo-1573497491208-6b1acb260507?w=80&h=80&fit=crop&auto=format", color:"#dcfce7", accent:"#16a34a" },
-    { text:"The AAC module completely changed how I support my non-verbal students. Research-backed and immediately usable.", name:"Priya Nair", role:"AAC Specialist, BCBA", img:"https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=80&h=80&fit=crop&auto=format", color:"#fef9c3", accent:"#ca8a04" },
-    { text:"Best professional development I've attended. The sessions are structured perfectly and easy to follow.", name:"Devon Castillo", role:"Inclusion Facilitator", img:"https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=80&h=80&fit=crop&auto=format", color:"#eef3fd", accent:"#4a77d4" },
-    { text:"I loved how each session was visually clear and immediately applicable. The PD I always wished existed.", name:"Jordan Brooks", role:"Resource Room Specialist", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&auto=format", color:"#fce7f3", accent:"#be185d" },
+  const DB_TESTI_COLORS = [
+    { color:"#dcfce7", accent:"#16a34a" },
+    { color:"#fef9c3", accent:"#ca8a04" },
+    { color:"#eef3fd", accent:"#4a77d4" },
+    { color:"#fce7f3", accent:"#be185d" },
   ];
+  const DB_TESTIMONIALS = testimonialsData.length > 0
+    ? testimonialsData.slice(0, 4).map((t, i) => ({
+        text: t.text, name: t.name, role: "SPED Educator", img: "",
+        ...DB_TESTI_COLORS[i % DB_TESTI_COLORS.length],
+      }))
+    : [
+        { text:"This is, by far, the best presentation of the summit. It kept my attention the whole time.", name:"April M.", role:"SPED Educator", img:"", color:"#dcfce7", accent:"#16a34a" },
+        { text:"The session was highly informative and practical. The speaker presented evidence-based, neurodiversity-affirming strategies.", name:"Auhen Cleo Faith C.", role:"SPED Educator", img:"", color:"#fef9c3", accent:"#ca8a04" },
+        { text:"The discussion reminded us that we cannot give our best to our students if we do not take care of ourselves first.", name:"Erwin G. B.", role:"SPED Educator", img:"", color:"#eef3fd", accent:"#4a77d4" },
+        { text:"Thank you for clarifying the meaning and function of echolalia. The discussion deepened my understanding.", name:"Jea Cyrill C.", role:"SPED Educator", img:"", color:"#fce7f3", accent:"#be185d" },
+      ];
   const CHALLENGES = [
     { icon:"warning-circle", color:"#ef4444", title:"Adapting curriculum for diverse learners", desc:"Every student has unique needs, making one-size-fits-all lesson plans ineffective." },
     { icon:"question",       color:"#f59e0b", title:"Limited planning time and resources", desc:"Educators rarely have enough time to research and develop differentiated materials." },
@@ -2829,7 +2900,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                 <div style={{ marginBottom:0 }} className="db-upcoming-section">
                   <div style={{ fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3, marginBottom:16 }}>Upcoming sessions</div>
                   <div className="db-upcoming-list" style={isMobile ? { display:"flex", flexDirection:"column", gap:12 } : {}}>
-                    {upcomingSchedule.slice(0,4).map((item) => {
+                    {upcomingSchedule.map((item) => {
                       const typeColor = SCHEDULE_TYPE_COLORS[item.type];
                       const catBadge = typeColor ? { label: item.type, bg: typeColor.bg, color: typeColor.c } : (CAT_BADGE_MAP[item.category] || { label: item.type, bg:"rgba(100,144,232,0.12)", color:"#7aa3ee" });
                       const instrRole = INST_ROLES[item.instructor] || "Instructor";
@@ -3170,7 +3241,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
             <div style={{ fontSize:11, fontWeight:700, color:C.primary, letterSpacing:1.2, textTransform:"uppercase", marginBottom:5 }}>Social Proof</div>
             <div style={{ fontSize:22, fontWeight:800, color:C.gray900 }}>Hear straight from our learners</div>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:18 }}>
+          <div className="sp-sessions-grid" style={{ gap:18 }}>
             {DB_TESTIMONIALS.map((t, i) => (
               <div key={i} style={{ background:t.color, borderRadius:16, padding:"22px 20px", display:"flex", flexDirection:"column", gap:14 }}>
                 <div style={{ display:"flex", gap:2 }}>
@@ -3200,7 +3271,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
             <div style={{ fontSize:22, fontWeight:800, color:"#fff" }}>Learning challenges we've all faced</div>
             <div style={{ fontSize:14, color:"rgba(255,255,255,0.55)", marginTop:6 }}>SPED Summit was built to solve these — step by step.</div>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:18 }}>
+          <div className="sp-sessions-grid" style={{ gap:18 }}>
             {CHALLENGES.map((ch, i) => (
               <div key={i} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.09)", borderRadius:16, padding:"24px 20px" }}>
                 <div style={{ width:44, height:44, borderRadius:12, background:`color-mix(in srgb, ${ch.color} 18%, transparent)`, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:14 }}>
@@ -3333,6 +3404,11 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
   /* ── Seasons Overview ── */
   return (
     <div style={{ padding:24, background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
+      <style>{`
+        .sp-sessions-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+        @media(max-width:900px){ .sp-sessions-grid { grid-template-columns:repeat(2,1fr) !important; } }
+        @media(max-width:480px){ .sp-sessions-grid { grid-template-columns:1fr !important; } }
+      `}</style>
 
       {/* Newly published sessions not in any season */}
       {/* ── All sessions grid ── */}
@@ -3361,8 +3437,14 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
           </EmptyHeader>
         </Empty>
       ) : (
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:16 }}>
-          {[...new Map(sessions.map(s => [s.id, s])).values()].map(s => <SessionCard key={s.id} session={s} onClick={onOpenSession} quizState={quizStates?.[s.id]||{}} onAssessmentClick={onAssessmentClick} onCertificateClick={onCertificateClick}/>)}
+        <div className="sp-sessions-grid">
+          {[...new Map(sessions.map(s => [s.id, s])).values()]
+            .slice().sort((a,b) => {
+              const da = a.availableFrom ? new Date(a.availableFrom).getTime() : Infinity;
+              const db = b.availableFrom ? new Date(b.availableFrom).getTime() : Infinity;
+              return da - db;
+            })
+            .map(s => <SessionCard key={s.id} session={s} onClick={onOpenSession} quizState={quizStates?.[s.id]||{}} onAssessmentClick={onAssessmentClick} onCertificateClick={onCertificateClick}/>)}
         </div>
       )}
     </div>
@@ -3828,7 +3910,7 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress, initialProgress = 0, se
   );
 }
 
-function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFooter = false, onNext, canNext }) {
+function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFooter = false, onNext, canNext, onCertificateClick }) {
   const questions = getSessionQuestions(session);
   const [currentQ, setCurrentQ] = useState(quizState.currentQ || 0);
   const [answers, setAnswers] = useState(quizState.answers || {});
@@ -3851,7 +3933,12 @@ function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFoot
           </div>
           <div style={{ fontSize:22, fontWeight:800, color:C.gray900, marginBottom:10 }}>{passed ? "🎉 You passed!" : "Not quite there"}</div>
           <div style={{ fontSize:15, color:C.gray500, marginBottom:28 }}>You scored <strong>{score}%</strong> — {passed ? "your certificate is ready!" : "you need 80% to pass."}</div>
-          {!passed && (
+          {passed ? (
+            <button onClick={()=> onCertificateClick ? onCertificateClick(session) : downloadCertificate({ recipientName:adminName, sessionTitle:session.title, instructor:session.instructor, duration:session.duration, score, description:session.description })}
+              style={{ padding:"12px 32px", background:C.primary, color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer", display:"inline-flex", alignItems:"center", gap:8 }}>
+              <Icon name="certificate" size={16} color="#fff"/> View Certificate
+            </button>
+          ) : (
             <button onClick={()=>{ setAnswers({}); setCurrentQ(0); setSubmitted(false); setScore(null); }}
               style={{ padding:"12px 32px", background:C.primary, color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer" }}>
               Try Again
@@ -3925,7 +4012,7 @@ function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFoot
   );
 }
 
-function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress, adminName = "", adminAvatar = null, isDark = false, quizState = {}, onFinishAssessment, userEmail = "" }) {
+function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress, adminName = "", adminAvatar = null, isDark = false, quizState = {}, onFinishAssessment, userEmail = "", onCertificateClick }) {
   const [playing, setPlaying] = useState(false);
   const [activeLesson, setActiveLesson] = useState(() => { const idx = session.lessons.findIndex(l=>l.status==="active" && l.type!=="quiz"); return idx >= 0 ? idx : 0; });
   const [progress, setProgress] = useState(session.progress || 0);
@@ -3939,15 +4026,11 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const [bottomTab, setBottomTab] = useState("overview");
   const [panelMode, setPanelMode] = useState("video"); // "video" | "assessment"
   const [collapsedSections, setCollapsedSections] = useState({});
-  const [communityPosts, setCommunityPosts] = useState(COMMUNITY_POSTS_DATA.map(p=>({...p,liked:false,saved:false,comments:[]})));
-  const [communityNewPost, setCommunityNewPost] = useState("");
-  const [communityOpenMenu, setCommunityOpenMenu] = useState(null);
-  const [communityReplyingTo, setCommunityReplyingTo] = useState(null);
-  const [communityReplyText, setCommunityReplyText] = useState({});
-  const [communityDeleteConfirm, setCommunityDeleteConfirm] = useState(null);
-  const [communityEditingId, setCommunityEditingId] = useState(null);
-  const [communityEditText, setCommunityEditText] = useState("");
-  const [communitySharePost, setCommunitySharePost] = useState(null);
+  const [sdComments, setSdComments] = useState([]);
+  const [sdCommentsLoading, setSdCommentsLoading] = useState(false);
+  const [sdNewComment, setSdNewComment] = useState("");
+  const [sdPosting, setSdPosting] = useState(false);
+  const [sdDeleteConfirm, setSdDeleteConfirm] = useState(null);
   const chatRef = useRef(null);
   const chatInputRef = useRef(null);
   const containerRef = useRef(null);
@@ -3964,8 +4047,13 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   }, [messages]);
 
   useEffect(() => {
-    if (bottomTab === "community") chatInputRef.current?.focus();
-  }, [bottomTab]);
+    if (bottomTab === "community") {
+      chatInputRef.current?.focus();
+      setSdCommentsLoading(true);
+      supabase.from("session_comments").select("*").eq("session_id", String(session.id)).order("created_at", { ascending: false })
+        .then(({ data }) => { setSdComments(data || []); setSdCommentsLoading(false); });
+    }
+  }, [bottomTab, session.id]);
 
   function sendMessage() {
     if (!message.trim()) return;
@@ -4057,6 +4145,10 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           .sd-video-card { border-radius:0 !important; box-shadow:none !important; height:auto !important; overflow:visible !important; }
           .sd-video-wrap { padding:0 !important; }
           .sd-video-wrap > div { border-radius:0 !important; }
+          .sd-tab-content { padding:16px 14px !important; }
+          .sd-community-layout { flex-direction:column !important; }
+          .sd-community-layout > div:last-child { width:100% !important; }
+          .sd-instructor-header { flex-direction:row !important; }
         }
         @media(max-width:640px){
           .sd-tabs-bar { padding:0 12px !important; overflow-x:auto; -webkit-overflow-scrolling:touch; }
@@ -4251,7 +4343,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
 
           {panelMode === "assessment" ? (
             /* ── Assessment Panel ── */
-            <InlineAssessment session={session} quizState={quizState} onFinish={onFinishAssessment} toast={toast}/>
+            <InlineAssessment session={session} quizState={quizState} onFinish={onFinishAssessment} toast={toast} onCertificateClick={onCertificateClick}/>
           ) : (<>
 
             {/* Video with padding so card corners show */}
@@ -4384,273 +4476,76 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
 
         {/* Community */}
         {bottomTab === "community" && (
-          <div className="sd-tab-content" style={{ padding:"20px 24px", background:isDark?"transparent":C.gray50, minHeight:400 }}>
-            <div style={{ display:"flex", gap:20, alignItems:"flex-start" }}>
-              {/* Left: Posts feed */}
-              <div style={{ flex:1, minWidth:0 }}>
-                {/* Post input */}
-                <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"12px 14px", marginBottom:16, display:"flex", gap:10, alignItems:"center" }}>
-                  <Avatar name={adminName||"You"} src={adminAvatar} size={32}/>
-                  <input ref={chatInputRef} value={communityNewPost} onChange={e=>setCommunityNewPost(e.target.value)}
-                    onKeyDown={e=>{ if(e.key==="Enter" && communityNewPost.trim()) { setCommunityPosts(ps=>[{id:Date.now(),author:adminName||"You",role:"USER",time:"just now",title:communityNewPost.slice(0,80),body:"",tags:[],likes:0,replies:0,type:"post",liked:false,saved:false,comments:[]},...ps]); setCommunityNewPost(""); toast({ type:"success", message:"Posted!" }); }}}
-                    placeholder="Share something with the community…"
-                    style={{ flex:1, padding:"8px 12px", border:"none", borderRadius:8, fontSize:14, outline:"none", color:isDark?"#fff":C.gray700, background:"transparent" }}/>
-                  <button onClick={() => { if (!communityNewPost.trim()) return; setCommunityPosts(ps=>[{id:Date.now(),author:adminName||"You",role:"USER",time:"just now",title:communityNewPost.slice(0,80),body:"",tags:[],likes:0,replies:0,type:"post",liked:false,saved:false,comments:[]},...ps]); setCommunityNewPost(""); toast({ type:"success", message:"Posted!" }); }}
-                    style={{ flexShrink:0, padding:"8px 18px", borderRadius:8, background:communityNewPost.trim() ? C.primary : C.gray200, border:"none", cursor:communityNewPost.trim() ? "pointer" : "default", fontSize:13, fontWeight:700, color:"#fff", transition:"background 0.15s", whiteSpace:"nowrap" }}>
-                    Post
-                  </button>
-                </div>
-                {/* Post count header */}
-                <div style={{ fontSize:13, fontWeight:700, color:C.gray500, marginBottom:12, letterSpacing:.3 }}>
-                  {communityPosts.length === 0 ? "0 Posts" : `${communityPosts.length} Post${communityPosts.length !== 1 ? "s" : ""}`}
-                </div>
-                {communityPosts.length === 0 ? (
-                  <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"40px 24px", textAlign:"center", display:"flex", flexDirection:"column", alignItems:"center" }}>
-                    <Icon name="chat-circle-dots" size={40} color={C.gray300}/>
-                    <div style={{ marginTop:12, fontSize:14, fontWeight:600, color:C.gray500 }}>No posts yet</div>
-                    <div style={{ fontSize:13, color:C.gray400, marginTop:4 }}>Be the first to start a conversation!</div>
-                  </div>
-                ) : communityPosts.map(post => (
-                  <div key={post.id} style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:14, border:`1px solid ${isDark?"rgba(255,255,255,0.09)":C.gray200}`, marginBottom:12, overflow:"hidden" }}>
-                    {/* Card header */}
-                    <div style={{ padding:"16px 18px 12px", display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
-                      <div style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
-                        <Avatar name={post.author} size={40}/>
-                        <div>
-                          <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"wrap", marginBottom:2 }}>
-                            <span style={{ fontWeight:700, fontSize:14, color:isDark?"#fff":C.gray900 }}>{post.author}</span>
-                            {post.role==="MENTOR" && <Badge label="MENTOR" color={C.success} bg={C.successLight} size={11}/>}
-                            {post.type==="question" && <Badge label="QUESTION" color={C.primary} bg={C.primaryLight} size={11}/>}
-                          </div>
-                          <div style={{ fontSize:12, color:isDark?"rgba(255,255,255,0.35)":C.gray400 }}>{post.time}</div>
-                        </div>
-                      </div>
-                      <div style={{ position:"relative" }}>
-                        <button onClick={()=>setCommunityOpenMenu(communityOpenMenu===post.id?null:post.id)}
-                          style={{ width:30, height:30, borderRadius:8, border:"none", background:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}
-                          onMouseEnter={e=>e.currentTarget.style.background=isDark?"rgba(255,255,255,0.08)":C.gray100} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                          <Icon name="dots-three" size={18} color={isDark?"rgba(255,255,255,0.4)":C.gray400}/>
-                        </button>
-                        {communityOpenMenu===post.id && (
-                          <DropdownMenu
-                            items={[
-                              ...(post.author===adminName||post.author==="You"?[{ icon:"pencil", label:"Edit", action:()=>{ setCommunityEditingId(post.id); setCommunityEditText(post.title); setCommunityOpenMenu(null); } }]:[]),
-                              { icon:"share-network", label:"Share", action:()=>{ setCommunitySharePost(post); setCommunityOpenMenu(null); } },
-                              ...(post.author===adminName||post.author==="You"?[{ icon:"trash", label:"Delete", danger:true, action:()=>{ setCommunityDeleteConfirm(post.id); setCommunityOpenMenu(null); } }]:[]),
-                            ]}
-                            onClose={()=>setCommunityOpenMenu(null)}
-                          />
-                        )}
-                      </div>
-                    </div>
-                    {/* Post content */}
-                    <div style={{ padding:"0 18px 14px" }}>
-                      {communityEditingId === post.id ? (
-                        <div>
-                          <textarea value={communityEditText} onChange={e=>setCommunityEditText(e.target.value)}
-                            autoFocus
-                            style={{ width:"100%", minHeight:72, padding:"10px 12px", border:`1px solid ${C.primary}`, borderRadius:8, fontSize:14, fontWeight:600, color:isDark?"#fff":C.gray900, background:isDark?"rgba(255,255,255,0.06)":"#fafafa", outline:"none", resize:"vertical", lineHeight:1.5, boxSizing:"border-box", marginBottom:10 }}/>
-                          <div style={{ display:"flex", gap:8 }}>
-                            <Btn size="sm" onClick={()=>{ if(!communityEditText.trim()) return; setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,title:communityEditText.trim()}:p)); setCommunityEditingId(null); toast({type:"success",message:"Post updated!"}); }}>Save</Btn>
-                            <button onClick={()=>setCommunityEditingId(null)} style={{ padding:"5px 14px", borderRadius:8, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, background:"transparent", fontSize:13, fontWeight:600, color:isDark?"rgba(255,255,255,0.6)":C.gray500, cursor:"pointer" }}>Cancel</button>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <div style={{ fontSize:15, fontWeight:700, color:isDark?"#fff":C.gray900, marginBottom:6, lineHeight:1.5 }}>{post.title}</div>
-                          {post.body && <p style={{ margin:"0 0 10px", fontSize:14, color:isDark?"rgba(255,255,255,0.6)":C.gray600, lineHeight:1.65, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:3, WebkitBoxOrient:"vertical" }}>{post.body}</p>}
-                          {post.tags.length>0 && <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>{post.tags.map(t=><span key={t} style={{ fontSize:11, background:isDark?"rgba(255,255,255,0.08)":C.gray100, color:isDark?"rgba(255,255,255,0.5)":C.gray500, padding:"3px 9px", borderRadius:99, fontWeight:600 }}>{t}</span>)}</div>}
-                        </>
-                      )}
-                    </div>
-                    {/* Action bar */}
-                    <div style={{ display:"flex", alignItems:"center", gap:4, padding:"10px 14px", borderTop:`1px solid ${isDark?"rgba(255,255,255,0.07)":C.gray100}` }}>
-                      <button onClick={()=>setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,liked:!p.liked,likes:p.liked?p.likes-1:p.likes+1}:p))}
-                        style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 12px", borderRadius:99, border:`1px solid ${post.liked?(isDark?"rgba(239,68,68,0.4)":C.error):(isDark?"rgba(255,255,255,0.1)":C.gray200)}`, background:post.liked?(isDark?"rgba(239,68,68,0.12)":C.errorLight):"transparent", color:post.liked?C.error:(isDark?"rgba(255,255,255,0.5)":C.gray500), cursor:"pointer", fontSize:13, fontWeight:600, transition:"all .15s" }}>
-                        <Icon name={post.liked?"heart":"heart"} weight={post.liked?"fill":"regular"} size={14} color={post.liked?C.error:(isDark?"rgba(255,255,255,0.45)":C.gray400)}/>{post.likes}
-                      </button>
-                      <button onClick={()=>setCommunityReplyingTo(communityReplyingTo===post.id?null:post.id)}
-                        style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 12px", borderRadius:99, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, background:"transparent", color:isDark?"rgba(255,255,255,0.5)":C.gray500, cursor:"pointer", fontSize:13, fontWeight:600, transition:"all .15s" }}
-                        onMouseEnter={e=>{e.currentTarget.style.background=isDark?"rgba(255,255,255,0.06)":C.gray50}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}>
-                        <Icon name="chat-circle" size={14} color={isDark?"rgba(255,255,255,0.45)":C.gray400}/>{post.replies} comments
-                      </button>
-                      <button onClick={()=>toast({type:"info",message:"Link copied!"})}
-                        style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 12px", borderRadius:99, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, background:"transparent", color:isDark?"rgba(255,255,255,0.5)":C.gray500, cursor:"pointer", fontSize:13, fontWeight:600, transition:"all .15s" }}
-                        onMouseEnter={e=>{e.currentTarget.style.background=isDark?"rgba(255,255,255,0.06)":C.gray50}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}>
-                        <Icon name="share-network" size={14} color={isDark?"rgba(255,255,255,0.45)":C.gray400}/>Share
-                      </button>
-                      {post.saved && <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:4, fontSize:12, color:C.primary, fontWeight:600 }}><Icon name="bookmark" size={14} color={C.primary} weight="fill"/>Saved</div>}
-                    </div>
-                    {/* Comments section */}
-                    <div style={{ borderTop:`1px solid ${isDark?"rgba(255,255,255,0.07)":C.gray100}` }}>
-                      {(!post.comments || post.comments.length === 0) ? (
-                        <div style={{ padding:"22px 18px", textAlign:"center", color:isDark?"rgba(255,255,255,0.3)":C.gray400, fontSize:13 }}>
-                          No comments yet. Be the first to comment!
-                        </div>
-                      ) : (
-                        <div style={{ padding:"12px 16px 0" }}>
-                          {post.comments.map((c,i) => (
-                            <div key={i} style={{ display:"flex", gap:10, marginBottom:12 }}>
-                              <Avatar name={c.author} size={28}/>
-                              <div style={{ flex:1, background:isDark?"rgba(255,255,255,0.06)":C.gray50, borderRadius:10, padding:"8px 12px" }}>
-                                <div style={{ display:"flex", gap:6, alignItems:"center", marginBottom:3 }}>
-                                  <span style={{ fontWeight:700, fontSize:13, color:isDark?"#fff":C.gray900 }}>{c.author}</span>
-                                  <span style={{ fontSize:11, color:isDark?"rgba(255,255,255,0.3)":C.gray400 }}>{c.time}</span>
-                                </div>
-                                <div style={{ fontSize:13, color:isDark?"rgba(255,255,255,0.65)":C.gray700, lineHeight:1.5 }}>{c.text}</div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {/* Reply input */}
-                      <div style={{ padding:"10px 16px 14px", display:"flex", gap:10, alignItems:"center" }}>
-                        <Avatar name={adminName||"You"} src={adminAvatar} size={28}/>
-                        <div style={{ flex:1, display:"flex", gap:8 }}>
-                          <input value={communityReplyText[post.id]||""} onChange={e=>setCommunityReplyText(prev=>({...prev,[post.id]:e.target.value}))}
-                            onKeyDown={e=>{ const txt=(communityReplyText[post.id]||"").trim(); if(e.key==="Enter" && txt) { setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1,comments:[...(p.comments||[]),{author:adminName||"You",time:"just now",text:txt}]}:p)); setCommunityReplyText(prev=>({...prev,[post.id]:""})); toast({type:"success",message:"Comment posted!"}); }}}
-                            placeholder="Write a comment…"
-                            style={{ flex:1, padding:"7px 12px", border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, borderRadius:8, fontSize:13, outline:"none", color:isDark?"#fff":C.gray700, background:isDark?"rgba(255,255,255,0.05)":"transparent" }}/>
-                          <Btn size="sm" disabled={!(communityReplyText[post.id]||"").trim()} onClick={()=>{ const txt=(communityReplyText[post.id]||"").trim(); if(!txt) return; setCommunityPosts(ps=>ps.map(p=>p.id===post.id?{...p,replies:p.replies+1,comments:[...(p.comments||[]),{author:adminName||"You",time:"just now",text:txt}]}:p)); setCommunityReplyText(prev=>({...prev,[post.id]:""})); toast({type:"success",message:"Comment posted!"}); }}>Reply</Btn>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+          <div className="sd-tab-content" style={{ padding:0, minHeight:400 }}>
+            <div style={{ padding:"20px 24px" }}>
+              {/* Post input */}
+              <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"12px 14px", marginBottom:16, display:"flex", gap:10, alignItems:"center" }}>
+                <Avatar name={adminName||"You"} src={adminAvatar} size={32}/>
+                <input ref={chatInputRef} value={sdNewComment} onChange={e=>setSdNewComment(e.target.value)}
+                  onKeyDown={async e=>{ if(e.key==="Enter" && sdNewComment.trim() && !sdPosting) { const body=sdNewComment.trim(); const tempId="tmp-"+Date.now(); const optimistic={id:tempId,session_id:String(session.id),session_title:session.title,author_name:adminName||"You",body,likes:0,created_at:new Date().toISOString()}; setSdComments(prev=>[optimistic,...prev]); setSdNewComment(""); setSdPosting(true); const { data, error } = await supabase.from("session_comments").insert({ session_id:String(session.id), session_title:session.title, author_name:adminName||"Anonymous", body }).select().single(); if(!error && data) setSdComments(prev=>prev.map(c=>c.id===tempId?data:c)); else if(error) toast({ type:"error", message:"Could not save comment. Please create the session_comments table in Supabase." }); setSdPosting(false); toast({ type:"success", message:"Comment posted!" }); }}}
+                  placeholder="Share a thought about this session…"
+                  style={{ flex:1, padding:"8px 12px", border:"none", borderRadius:8, fontSize:14, outline:"none", color:isDark?"#fff":C.gray700, background:"transparent" }}/>
+                <button onClick={async ()=>{ if(!sdNewComment.trim()||sdPosting) return; const body=sdNewComment.trim(); const tempId="tmp-"+Date.now(); const optimistic={id:tempId,session_id:String(session.id),session_title:session.title,author_name:adminName||"You",body,likes:0,created_at:new Date().toISOString()}; setSdComments(prev=>[optimistic,...prev]); setSdNewComment(""); setSdPosting(true); const { data, error } = await supabase.from("session_comments").insert({ session_id:String(session.id), session_title:session.title, author_name:adminName||"Anonymous", body }).select().single(); if(!error && data) setSdComments(prev=>prev.map(c=>c.id===tempId?data:c)); else if(error) toast({ type:"error", message:"Could not save comment. Please create the session_comments table in Supabase." }); setSdPosting(false); }}
+                  style={{ flexShrink:0, padding:"8px 18px", borderRadius:8, background:sdNewComment.trim()&&!sdPosting?C.primary:C.gray200, border:"none", cursor:sdNewComment.trim()&&!sdPosting?"pointer":"default", fontSize:13, fontWeight:700, color:"#fff", transition:"background 0.15s", whiteSpace:"nowrap" }}>
+                  {sdPosting ? "Posting…" : "Post"}
+                </button>
               </div>
-
-              {/* Share modal */}
-              {communitySharePost && (
-                <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center" }} onClick={()=>setCommunitySharePost(null)}>
-                  <div style={{ background:"#fff", borderRadius:20, padding:"28px 28px 36px", width:400, boxShadow:"0 24px 60px rgba(0,0,0,0.2)" }} onClick={e=>e.stopPropagation()}>
-                    {/* Header */}
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
-                      <div style={{ fontWeight:800, fontSize:18, color:C.gray900 }}>Share to socials</div>
-                      <button onClick={()=>setCommunitySharePost(null)} style={{ width:30, height:30, borderRadius:"50%", border:`1px solid ${C.gray200}`, background:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                        <Icon name="x" size={14} color={C.gray500}/>
-                      </button>
-                    </div>
-                    {/* Link copy row */}
-                    <div style={{ display:"flex", alignItems:"center", gap:10, background:C.gray50, border:`1px solid ${C.gray200}`, borderRadius:12, padding:"10px 14px", marginBottom:8 }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.gray400} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
-                      <span style={{ flex:1, fontSize:13, color:C.gray600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>spedsummit.com/community/{communitySharePost.id}</span>
-                      <button onClick={()=>{ navigator.clipboard?.writeText(`spedsummit.com/community/${communitySharePost.id}`).catch(()=>{}); toast({type:"success",message:"Link copied!"}); }}
-                        style={{ flexShrink:0, padding:"6px 16px", borderRadius:99, background:C.primary, border:"none", color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer" }}>
-                        Copy
-                      </button>
-                    </div>
-                    <div style={{ fontSize:12, color:C.gray400, marginBottom:20, textAlign:"center" }}>Share this post with your network</div>
-                    {/* Social icons */}
-                    <div style={{ fontSize:13, fontWeight:700, color:C.gray700, marginBottom:14 }}>Share via</div>
-                    <div style={{ display:"flex", gap:20, justifyContent:"center" }}>
-                      {[
-                        { label:"Facebook", bg:"#1877F2", svg:<svg viewBox="0 0 24 24" fill="#fff" width="22" height="22"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.27h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg> },
-                        { label:"WhatsApp", bg:"#25D366", svg:<svg viewBox="0 0 24 24" fill="#fff" width="22" height="22"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> },
-                        { label:"LinkedIn", bg:"#0A66C2", svg:<svg viewBox="0 0 24 24" fill="#fff" width="22" height="22"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg> },
-                        { label:"X", bg:"#000", svg:<svg viewBox="0 0 24 24" fill="#fff" width="20" height="20"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> },
-                        { label:"Email", bg:"#EA4335", svg:<svg viewBox="0 0 24 24" fill="#fff" width="22" height="22"><path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.364l-6.545-4.636v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-.9.732-1.636 1.636-1.636h.749L12 11.091l9.615-7.27h.749A1.636 1.636 0 0124 5.457z"/></svg> },
-                      ].map(s => (
-                        <button key={s.label} onClick={()=>{ toast({type:"info",message:`Shared to ${s.label}!`}); setCommunitySharePost(null); }}
-                          style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:8, background:"none", border:"none", cursor:"pointer" }}>
-                          <div style={{ width:52, height:52, borderRadius:"50%", background:s.bg, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                            {s.svg}
-                          </div>
-                          <span style={{ fontSize:12, color:C.gray600, fontWeight:500 }}>{s.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+              {/* Comments count */}
+              <div style={{ fontSize:13, fontWeight:700, color:C.gray500, marginBottom:12, letterSpacing:.3 }}>
+                {sdCommentsLoading ? "Loading…" : sdComments.length === 0 ? "0 Comments" : `${sdComments.length} Comment${sdComments.length!==1?"s":""}`}
+              </div>
+              {/* Comments list */}
+              {!sdCommentsLoading && sdComments.length === 0 && (
+                <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"40px 24px", textAlign:"center", display:"flex", flexDirection:"column", alignItems:"center" }}>
+                  <Icon name="chat-circle-dots" size={40} color={C.gray300}/>
+                  <div style={{ marginTop:12, fontSize:14, fontWeight:600, color:C.gray500 }}>No comments yet</div>
+                  <div style={{ fontSize:13, color:C.gray400, marginTop:4 }}>Be the first to share your thoughts!</div>
                 </div>
               )}
-
-              {/* Delete confirmation modal */}
-              {communityDeleteConfirm && (
-                <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center" }} onClick={()=>setCommunityDeleteConfirm(null)}>
-                  <div style={{ background:"#fff", borderRadius:16, padding:"28px 28px 20px", width:360, boxShadow:"0 24px 60px rgba(0,0,0,0.2)" }} onClick={e=>e.stopPropagation()}>
-                    <div style={{ fontWeight:800, fontSize:18, color:C.gray900, marginBottom:8 }}>Delete this post?</div>
-                    <p style={{ margin:"0 0 24px", fontSize:14, color:C.gray500, lineHeight:1.6 }}>Are you sure you want to delete this post? This action cannot be undone.</p>
-                    <div style={{ display:"flex", justifyContent:"flex-end", gap:10 }}>
-                      <button onClick={()=>setCommunityDeleteConfirm(null)}
-                        style={{ padding:"9px 20px", borderRadius:10, border:`1px solid ${C.gray200}`, background:C.white, fontSize:14, fontWeight:600, color:C.gray700, cursor:"pointer" }}>
-                        Cancel
-                      </button>
-                      <button onClick={()=>{ setCommunityPosts(ps=>ps.filter(p=>p.id!==communityDeleteConfirm)); setCommunityDeleteConfirm(null); toast({type:"success",message:"Post deleted."}); }}
-                        style={{ padding:"9px 20px", borderRadius:10, border:"none", background:"#ef4444", fontSize:14, fontWeight:600, color:"#fff", cursor:"pointer" }}>
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Right: Session details panel */}
-              <div style={{ width: narrow ? "100%" : 260, flexShrink:0, display:"flex", flexDirection:"column", gap:12 }}>
-                {/* Stats */}
-                <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"16px 18px" }}>
-                  <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:14 }}>Session Stats</div>
-                  <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                      <div style={{ width:34, height:34, borderRadius:8, background:isDark?"rgba(100,144,232,0.15)":C.primaryLight, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                        <Icon name="eye" size={16} color={C.primary}/>
-                      </div>
+              {sdComments.map(c => (
+                <div key={c.id} style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.09)":C.gray200}`, marginBottom:8, padding:"12px 14px" }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6 }}>
+                    <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+                      <Avatar name={c.author_name} src={c.author_name===adminName?adminAvatar:undefined} size={28}/>
                       <div>
-                        <div style={{ fontSize:16, fontWeight:800, color:isDark?"#fff":C.gray900, lineHeight:1 }}>—</div>
-                        <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>Active viewers</div>
+                        <span style={{ fontWeight:700, fontSize:13, color:isDark?"#fff":C.gray900 }}>{c.author_name}</span>
+                        <span style={{ fontSize:11, color:isDark?"rgba(255,255,255,0.35)":C.gray400, marginLeft:8 }}>{c.created_at ? new Date(c.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : "just now"}</span>
                       </div>
                     </div>
-                    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                      <div style={{ width:34, height:34, borderRadius:8, background:isDark?"rgba(34,197,94,0.12)":"#f0fdf4", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                        <Icon name="users" size={16} color={C.success}/>
-                      </div>
-                      <div>
-                        <div style={{ fontSize:16, fontWeight:800, color:isDark?"#fff":C.gray900, lineHeight:1 }}>{session.registrations ?? "—"}</div>
-                        <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>Registrations</div>
-                      </div>
-                    </div>
-                    {session.duration && (
-                      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                        <div style={{ width:34, height:34, borderRadius:8, background:isDark?"rgba(249,115,22,0.12)":"#fff7ed", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                          <Icon name="clock" size={16} color="#f97316"/>
-                        </div>
-                        <div>
-                          <div style={{ fontSize:16, fontWeight:800, color:isDark?"#fff":C.gray900, lineHeight:1 }}>{session.duration}</div>
-                          <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>Duration</div>
-                        </div>
-                      </div>
+                    {(c.author_name === adminName || c.author_name === "You" || c.author_name === "Anonymous") && (
+                      <button onClick={()=>setSdDeleteConfirm(c.id)}
+                        style={{ width:24, height:24, borderRadius:6, border:"none", background:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}
+                        onMouseEnter={e=>e.currentTarget.style.background=isDark?"rgba(255,255,255,0.08)":C.gray100} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                        <Icon name="trash" size={13} color={C.error}/>
+                      </button>
                     )}
                   </div>
+                  <div style={{ fontSize:14, color:isDark?"rgba(255,255,255,0.75)":C.gray700, lineHeight:1.6, marginLeft:36, marginBottom:8 }}>{c.body}</div>
+                  <div style={{ marginLeft:36 }}>
+                    <button onClick={async ()=>{ const newLikes=(c.likes||0)+1; await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id); setSdComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x)); }}
+                      style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, background:"transparent", color:isDark?"rgba(255,255,255,0.5)":C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
+                      <Icon name="heart" size={12} color={C.gray400}/>{c.likes||0}
+                    </button>
+                  </div>
                 </div>
+              ))}
+            </div>
 
-                {/* About this session */}
-                <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"16px 18px" }}>
-                  <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:10 }}>About this Session</div>
-                  {session.description ? (
-                    <p style={{ margin:0, fontSize:13, color:isDark?"rgba(255,255,255,0.7)":C.gray600, lineHeight:1.7 }}>{session.description}</p>
-                  ) : (
-                    <p style={{ margin:0, fontSize:13, color:C.gray400, lineHeight:1.7, fontStyle:"italic" }}>No description provided.</p>
-                  )}
-                  {session.category && (
-                    <div style={{ marginTop:12, display:"inline-flex", alignItems:"center", background:isDark?"rgba(255,255,255,0.08)":C.gray100, borderRadius:99, padding:"4px 10px" }}>
-                      <span style={{ fontSize:12, color:isDark?"rgba(255,255,255,0.6)":C.gray600, fontWeight:600 }}>{session.category}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Instructor */}
-                {session.instructor && (
-                  <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"16px 18px" }}>
-                    <div style={{ fontSize:12, fontWeight:700, color:C.gray500, letterSpacing:.5, textTransform:"uppercase", marginBottom:12 }}>Instructor</div>
-                    <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-                      <Avatar name={session.instructor} src={session.instructorImage || INSTRUCTOR_AVATARS[session.instructor]} size={40}/>
-                      <div>
-                        <div style={{ fontWeight:700, fontSize:14, color:isDark?"#fff":C.gray900 }}>{session.instructor}</div>
-                        <div style={{ fontSize:12, color:C.gray400 }}>Speaker</div>
-                      </div>
+              {/* Delete confirmation modal */}
+              {sdDeleteConfirm && (
+                <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center" }} onClick={()=>setSdDeleteConfirm(null)}>
+                  <div style={{ background:"#fff", borderRadius:16, padding:"28px 28px 20px", width:360, boxShadow:"0 24px 60px rgba(0,0,0,0.2)" }} onClick={e=>e.stopPropagation()}>
+                    <div style={{ fontWeight:800, fontSize:18, color:C.gray900, marginBottom:8 }}>Delete comment?</div>
+                    <p style={{ margin:"0 0 24px", fontSize:14, color:C.gray500, lineHeight:1.6 }}>This cannot be undone.</p>
+                    <div style={{ display:"flex", justifyContent:"flex-end", gap:10 }}>
+                      <button onClick={()=>setSdDeleteConfirm(null)} style={{ padding:"9px 20px", borderRadius:10, border:`1px solid ${C.gray200}`, background:C.white, fontSize:14, fontWeight:600, color:C.gray700, cursor:"pointer" }}>Cancel</button>
+                      <button onClick={async ()=>{ await supabase.from("session_comments").delete().eq("id",sdDeleteConfirm); setSdComments(prev=>prev.filter(c=>c.id!==sdDeleteConfirm)); setSdDeleteConfirm(null); toast({type:"success",message:"Comment deleted."}); }}
+                        style={{ padding:"9px 20px", borderRadius:10, border:"none", background:"#ef4444", fontSize:14, fontWeight:600, color:"#fff", cursor:"pointer" }}>Delete</button>
                     </div>
                   </div>
-                )}
-              </div>
-            </div>
+                </div>
+              )}
+
           </div>
         )}
 
@@ -4666,166 +4561,162 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
 /* ─────────────────────────────────────────────────────────────────────────────
    COMMUNITY PAGE
 ───────────────────────────────────────────────────────────────────────────── */
-function CommunityPage({ toast }) {
-  const [posts, setPosts] = useState(COMMUNITY_POSTS_DATA.map(p=>({...p, liked:false, saved:false})));
-  const [newPost, setNewPost] = useState("");
-  const [openMenu, setOpenMenu] = useState(null);
-  const [replyingTo, setReplyingTo] = useState(null);
-  const [replyText, setReplyText] = useState("");
-  const [followed, setFollowed] = useState({});
+function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] }) {
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filterSession, setFilterSession] = useState("all");
+  const [newBody, setNewBody] = useState("");
+  const [selectedSession, setSelectedSession] = useState("");
+  const [posting, setPosting] = useState(false);
+  const [sessionDropOpen, setSessionDropOpen] = useState(false);
+  const sessionDropRef = React.useRef(null);
 
-  function toggleLike(id) {
-    setPosts(ps=>ps.map(p=>p.id===id?{...p, liked:!p.liked, likes:p.liked?p.likes-1:p.likes+1}:p));
+  useEffect(() => {
+    if (!sessionDropOpen) return;
+    function handleClick(e) { if (sessionDropRef.current && !sessionDropRef.current.contains(e.target)) setSessionDropOpen(false); }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [sessionDropOpen]);
+
+  useEffect(() => {
+    setLoading(true);
+    supabase.from("session_comments").select("*").order("created_at", { ascending: false })
+      .then(({ data }) => { setComments(data || []); setLoading(false); });
+  }, []);
+
+  async function submitPost() {
+    if (!newBody.trim() || !selectedSession) return;
+    const session = sessions.find(s => String(s.id) === selectedSession);
+    const body = newBody.trim();
+    const tempId = "tmp-" + Date.now();
+    const optimistic = { id:tempId, session_id:selectedSession, session_title:session?.title||"", author_name:userName||"You", body, likes:0, created_at:new Date().toISOString() };
+    setComments(prev => [optimistic, ...prev]);
+    setNewBody("");
+    setPosting(true);
+    const { data, error } = await supabase.from("session_comments").insert({ session_id:selectedSession, session_title:session?.title||"", author_name:userName||"Anonymous", body }).select().single();
+    if (!error && data) setComments(prev => prev.map(c => c.id === tempId ? data : c));
+    else if (error) toast({ type:"error", message:"Could not save — check Supabase table." });
+    setPosting(false);
+    toast({ type:"success", message:"Comment posted!" });
   }
 
-  function addPost() {
-    if (!newPost.trim()) return;
-    setPosts(ps=>[{id:Date.now(),author:"You",role:"USER",time:"just now",title:newPost.slice(0,80),body:"",tags:[],likes:0,replies:0,type:"post",liked:false,saved:false,comments:[]},...ps]);
-    setNewPost("");
-    toast({ type:"success", title:"Posted! 🎉", message:"Your discussion is now live." });
-  }
+  const sessionGroups = [];
+  const seenIds = {};
+  comments.forEach(c => {
+    if (!seenIds[c.session_id]) { seenIds[c.session_id] = true; sessionGroups.push({ id: c.session_id, title: c.session_title }); }
+  });
 
-  function sendReply(id) {
-    if (!replyText.trim()) return;
-    setPosts(ps=>ps.map(p=>p.id===id?{...p,replies:p.replies+1}:p));
-    setReplyingTo(null); setReplyText("");
-    toast({ type:"success", message:"Reply posted!" });
-  }
-
-  function toggleFollow(name) {
-    setFollowed(f=>({ ...f, [name]: !f[name] }));
-    toast({ type: followed[name] ? "info" : "success", message: followed[name] ? `Unfollowed ${name.split(" ")[0]}` : `Now following ${name.split(" ")[0]}!` });
-  }
+  const filtered = filterSession === "all" ? comments : comments.filter(c => c.session_id === filterSession);
 
   return (
-    <div style={{ display:"flex", flexDirection: narrow ? "column" : "row", gap:20, padding: narrow ? 14 : 24, background:C.gray50, minHeight:"100%", boxSizing:"border-box", width:"100%" }}>
-      <div style={{ flex:1, minWidth:0, width:"100%" }}>
-        <div style={{ marginBottom:20 }}>
-          <div style={{ fontSize:12, color:C.primary, fontWeight:700, letterSpacing:1, marginBottom:4 }}>COLLABORATIVE HUB</div>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
-            <h1 style={{ margin:0, fontSize:24, fontWeight:900, color:C.gray900 }}>Join the <span style={{ color:C.primary }}>conversation.</span></h1>
-            <Btn onClick={addPost}><Icon name="plus" size={14} color="#fff"/> Start a Discussion</Btn>
+    <div style={{ padding:"28px 32px", background:C.gray50, minHeight:"100%", boxSizing:"border-box", display:"flex", gap:24, alignItems:"flex-start" }}>
+
+      {/* Left — composer */}
+      <div style={{ width:300, flexShrink:0, position:"sticky", top:24 }}>
+        <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"12px 16px" }}>
+          {/* Avatar + textarea row */}
+          <div style={{ display:"flex", gap:10, alignItems:"flex-start", marginBottom:12 }}>
+            <Avatar name={userName||"You"} src={userAvatar} size={36}/>
+            <textarea value={newBody} onChange={e=>setNewBody(e.target.value)}
+              onKeyDown={e=>{ if(e.key==="Enter" && e.metaKey) submitPost(); }}
+              placeholder="Share something about this session…"
+              rows={3}
+              style={{ flex:1, padding:0, border:"none", fontSize:14, color:C.gray800, background:"transparent", outline:"none", resize:"none", lineHeight:1.6, fontFamily:"inherit" }}/>
           </div>
-          <p style={{ margin:"6px 0 0", color:C.gray500, fontSize:14, lineHeight:1.5 }}>A dedicated space to share insights and solve roadblocks at Spread Summit.</p>
-        </div>
-        {/* Quick post */}
-        <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"14px 16px", marginBottom:16, display:"flex", gap:12 }}>
-          <Avatar name={userProfile.name} size={34}/>
-          <input value={newPost} onChange={e=>setNewPost(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addPost()} placeholder="Share something with the community…" style={{ flex:1, padding:"8px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:14, outline:"none", color:C.gray700, background:C.white }}/>
-          <Btn size="sm" onClick={addPost}>Post</Btn>
-        </div>
-        {/* Posts */}
-        {posts.map(post=>(
-          <div key={post.id} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"18px 20px", marginBottom:14 }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
-              <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-                <Avatar name={post.author} size={38}/>
-                <div>
-                  <div style={{ display:"flex", gap:6, alignItems:"center" }}>
-                    <span style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{post.author}</span>
-                    {post.role==="MENTOR" && <Badge label="MENTOR" color={C.success} bg={C.successLight} size={12}/>}
-                    {post.type==="question" && <Badge label="QUESTION" color={C.primary} bg={C.primaryLight} size={12}/>}
-                  </div>
-                  <div style={{ fontSize:12, color:C.gray400 }}>{post.time}</div>
-                </div>
-              </div>
-              <div style={{ position:"relative" }}>
-                <button onClick={()=>setOpenMenu(openMenu===post.id?null:post.id)}
-                  style={{ width:30, height:30, borderRadius:8, border:"none", background:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}
-                  onMouseEnter={e=>e.currentTarget.style.background=C.gray100} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                  <Icon name="dots-three" size={18} color={C.gray500}/>
-                </button>
-                {openMenu===post.id && (
-                  <DropdownMenu
-                    items={[
-                      { icon:"bookmark", label:post.saved?"Unsave":"Save", action:()=>{ setPosts(ps=>ps.map(p=>p.id===post.id?{...p,saved:!p.saved}:p)); toast({type:"success",message:post.saved?"Removed from saved":"Saved to your collection!"}); } },
-                      { icon:"share-network", label:"Share", action:()=>toast({type:"info",message:"Link copied to clipboard!"}) },
-                      { icon:"flag", label:"Report", action:()=>toast({type:"warning",title:"Report submitted",message:"We'll review this post shortly."}) },
-                      ...(post.author==="You"?[{ icon:"trash", label:"Delete", danger:true, action:()=>{ setPosts(ps=>ps.filter(p=>p.id!==post.id)); toast({type:"success",message:"Post deleted."}); } }]:[]),
-                    ]}
-                    onClose={()=>setOpenMenu(null)}
-                  />
-                )}
-              </div>
-            </div>
-            <div style={{ fontSize:14, fontWeight:700, color:C.gray900, marginBottom:6, lineHeight:1.4, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{post.title}</div>
-            {post.body && <p style={{ margin:"0 0 10px", fontSize:14, color:C.gray600, lineHeight:1.6, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{post.body}</p>}
-            {post.tags.length>0 && <div style={{ display:"flex", gap:6, marginBottom:10 }}>{post.tags.map(t=><span key={t} style={{ fontSize:12, background:C.gray100, color:C.gray600, padding:"3px 10px", borderRadius:99 }}>{t}</span>)}</div>}
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", paddingTop:10, borderTop:`1px solid ${C.gray100}` }}>
-              <div style={{ display:"flex", gap:4 }}>
-                {/* Like */}
-                <button onClick={()=>toggleLike(post.id)}
-                  style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 12px", borderRadius:8, border:"none", background:post.liked?C.errorLight:"transparent", color:post.liked?C.error:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600, transition:"all .15s" }}>
-                  <Icon name={post.liked?"heart":"heart-straight"} size={15} color={post.liked?C.error:C.gray500}/>{post.likes}
-                </button>
-                {/* Reply */}
-                <button onClick={()=>setReplyingTo(replyingTo===post.id?null:post.id)}
-                  style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 12px", borderRadius:8, border:"none", background:"transparent", color:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}
-                  onMouseEnter={e=>e.currentTarget.style.background=C.gray100} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                  <Icon name="chat-circle" size={15} color={C.gray500}/>{post.replies}
-                </button>
-                {/* Share */}
-                <button onClick={()=>toast({type:"info",message:"Link copied!"})}
-                  style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 12px", borderRadius:8, border:"none", background:"transparent", color:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}
-                  onMouseEnter={e=>e.currentTarget.style.background=C.gray100} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                  <Icon name="share-network" size={15} color={C.gray500}/>Share
-                </button>
-              </div>
-              {post.saved && <Icon name="bookmark" size={16} color={C.primary}/>}
-            </div>
-            {/* Inline reply */}
-            {replyingTo===post.id && (
-              <div style={{ marginTop:12, display:"flex", gap:8 }}>
-                <Avatar name={userProfile.name} size={28}/>
-                <div style={{ flex:1, display:"flex", gap:8 }}>
-                  <input value={replyText} onChange={e=>setReplyText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendReply(post.id)} placeholder="Write a reply…" style={{ flex:1, padding:"7px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:12, outline:"none", color:C.gray700, background:C.white }}/>
-                  <Btn size="sm" onClick={()=>sendReply(post.id)}>Reply</Btn>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-      {/* Sidebar */}
-      <div style={{ width:230, flexShrink:0 }}>
-        <div style={{ background:"linear-gradient(135deg,#d97706,#b45309)", borderRadius:14, padding:16, color:"#fff", marginBottom:14 }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
-            <Icon name="lightning" size={20} color="#fff"/>
-            <Badge label="WEEKLY GOAL" color="#fff" bg="rgba(255,255,255,0.2)" size={12}/>
-          </div>
-          <div style={{ fontWeight:800, fontSize:16, marginBottom:4 }}>Community Momentum</div>
-          <div style={{ fontSize:12, opacity:.9, marginBottom:12, lineHeight:1.5 }}>You're in the top 5% of active contributors this week!</div>
-          <ProgressBar value={72} color="#fff" height={5}/>
-        </div>
-        <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:16, marginBottom:14 }}>
-          <div style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.5, marginBottom:12 }}>TOP MENTORS</div>
-          {["Marcus Chen","Sydney Bassard","Amanda Schaumburg"].map(name=>(
-            <div key={name} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
-              <div style={{ position:"relative" }}>
-                <Avatar name={name} size={34}/>
-                <div style={{ width:8,height:8,borderRadius:"50%",background:C.success,position:"absolute",bottom:0,right:0,border:"2px solid #fff" }}/>
-              </div>
-              <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ fontSize:12, fontWeight:600, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{name}</div>
-                <div style={{ fontSize:12, color:C.gray400 }}>Special Ed Ins…</div>
-              </div>
-              <button onClick={()=>toggleFollow(name)}
-                style={{ padding:"4px 10px", background:followed[name]?C.successLight:"none", border:`1px solid ${followed[name]?C.successBorder:C.gray300}`, borderRadius:6, fontSize:12, fontWeight:600, cursor:"pointer", color:followed[name]?C.success:C.gray600, display:"flex", alignItems:"center", gap:4 }}>
-                {followed[name] && <Icon name="check" size={12} color={C.success}/>}
-                {followed[name]?"Following":"Follow"}
+
+          {/* Divider */}
+          <div style={{ height:1, background:C.gray100, marginBottom:12 }}/>
+
+          {/* Session audience pill + Post button row */}
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8 }}>
+            {/* Twitter-style audience pill */}
+            <div ref={sessionDropRef} style={{ position:"relative", flex:1 }}>
+              <button onClick={()=>setSessionDropOpen(o=>!o)}
+                style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"5px 12px 5px 10px", borderRadius:99, border:`1.5px solid ${selectedSession?C.primary:C.gray300}`, background:selectedSession?C.primaryLight:"transparent", color:selectedSession?C.primary:C.gray500, fontSize:12, fontWeight:700, cursor:"pointer", maxWidth:"100%", overflow:"hidden" }}>
+                <Icon name="play-circle" size={13} color={selectedSession?C.primary:C.gray400} weight={selectedSession?"fill":"regular"}/>
+                <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:140 }}>
+                  {selectedSession ? (sessions.find(s=>String(s.id)===selectedSession)?.title || "Session") : "Choose session"}
+                </span>
+                <Icon name="caret-down" size={11} color={selectedSession?C.primary:C.gray400}/>
               </button>
+              {sessionDropOpen && (
+                <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, boxShadow:"0 8px 32px rgba(0,0,0,0.12)", zIndex:200, width:260, maxHeight:280, overflowY:"auto" }}>
+                  <div style={{ padding:"12px 14px 6px", fontSize:13, fontWeight:800, color:C.gray900 }}>Choose session</div>
+                  {sessions.map(s => (
+                    <button key={s.id} onClick={()=>{ setSelectedSession(String(s.id)); setSessionDropOpen(false); }}
+                      style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"10px 14px", border:"none", background:selectedSession===String(s.id)?C.primaryLight:"transparent", cursor:"pointer", textAlign:"left" }}
+                      onMouseEnter={e=>{ if(selectedSession!==String(s.id)) e.currentTarget.style.background=C.gray50; }} onMouseLeave={e=>{ if(selectedSession!==String(s.id)) e.currentTarget.style.background="transparent"; }}>
+                      <div style={{ width:32, height:32, borderRadius:8, background:C.primaryLight, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                        <Icon name="play-circle" size={15} color={C.primary} weight="fill"/>
+                      </div>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontSize:13, fontWeight:600, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
+                      </div>
+                      {selectedSession===String(s.id) && <Icon name="check" size={14} color={C.primary}/>}
+                    </button>
+                  ))}
+                  <div style={{ height:6 }}/>
+                </div>
+              )}
             </div>
-          ))}
-        </div>
-        <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:16 }}>
-          <div style={{ fontSize:12, fontWeight:700, color:C.gray400, letterSpacing:.5, marginBottom:10 }}>RISING STARS</div>
-          <div style={{ display:"flex", alignItems:"center", gap:4 }}>
-            {["Sarah K","Luis M","Emma T"].map((n,i)=>(
-              <div key={n} style={{ width:32,height:32,borderRadius:"50%",background:["#f97316","#10b981","#6490E8"][i],border:"2px solid #fff",marginLeft:i>0?-8:0,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:700,fontSize:12 }}>{n[0]}</div>
-            ))}
-            <span style={{ marginLeft:8, fontWeight:700, color:C.gray700, fontSize:14 }}>+2.4k</span>
+
+            <button onClick={submitPost} disabled={!newBody.trim()||!selectedSession||posting}
+              style={{ flexShrink:0, padding:"7px 20px", borderRadius:99, border:"none", background:newBody.trim()&&selectedSession&&!posting?C.primary:C.gray200, color:"#fff", fontSize:13, fontWeight:700, cursor:newBody.trim()&&selectedSession&&!posting?"pointer":"default", transition:"background .15s" }}>
+              {posting ? "…" : "Post"}
+            </button>
           </div>
         </div>
+      </div>
+
+      {/* Right — feed */}
+      <div style={{ flex:1, minWidth:0 }}>
+
+        {loading && (
+          <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"40px 24px", textAlign:"center", color:C.gray400, fontSize:14 }}>Loading…</div>
+        )}
+        {!loading && filtered.length === 0 && (
+          <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"48px 24px", textAlign:"center", display:"flex", flexDirection:"column", alignItems:"center" }}>
+            <Icon name="chat-circle-dots" size={44} color={C.gray300}/>
+            <div style={{ marginTop:14, fontSize:15, fontWeight:700, color:C.gray500 }}>No posts yet</div>
+            <div style={{ fontSize:13, color:C.gray400, marginTop:4 }}>Be the first to share your thoughts!</div>
+          </div>
+        )}
+        {!loading && filtered.map((c, i) => {
+          const prevC = filtered[i-1];
+          const showSessionHeader = !prevC || prevC.session_id !== c.session_id;
+          return (
+            <React.Fragment key={c.id}>
+              {showSessionHeader && (
+                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10, marginTop: i > 0 ? 20 : 0 }}>
+                  <div style={{ flex:1, height:1, background:C.gray200 }}/>
+                  <div style={{ display:"flex", alignItems:"center", gap:6, padding:"4px 12px", borderRadius:99, background:C.white, border:`1px solid ${C.gray200}` }}>
+                    <Icon name="play-circle" size={12} color={C.primary} weight="fill"/>
+                    <span style={{ fontSize:12, fontWeight:700, color:C.gray700, maxWidth:360, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{c.session_title}</span>
+                  </div>
+                  <div style={{ flex:1, height:1, background:C.gray200 }}/>
+                </div>
+              )}
+              <div style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, marginBottom:8, padding:"12px 14px" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6 }}>
+                  <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+                    <Avatar name={c.author_name} src={c.author_name===userName?userAvatar:undefined} size={28}/>
+                    <div>
+                      <span style={{ fontWeight:700, fontSize:13, color:C.gray900 }}>{c.author_name}</span>
+                      <span style={{ fontSize:11, color:C.gray400, marginLeft:8 }}>{c.created_at ? new Date(c.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : ""}</span>
+                    </div>
+                  </div>
+                </div>
+                <div style={{ fontSize:14, color:C.gray700, lineHeight:1.6, marginLeft:36, marginBottom:8 }}>{c.body}</div>
+                <div style={{ marginLeft:36 }}>
+                  <button onClick={async ()=>{ const newLikes=(c.likes||0)+1; await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id); setComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x)); }}
+                    style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${C.gray200}`, background:"transparent", color:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
+                    <Icon name="heart" size={12} color={C.gray400}/>{c.likes||0}
+                  </button>
+                </div>
+              </div>
+            </React.Fragment>
+          );
+        })}
       </div>
     </div>
   );
@@ -4933,6 +4824,13 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
   const [changingPassword, setChangingPassword] = useState(false);
   const [pwForm, setPwForm] = useState({ current:"", newPw:"", confirm:"" });
   const [mobileDrilled, setMobileDrilled] = useState(false);
+  const [nameAlreadyChanged, setNameAlreadyChanged] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user?.user_metadata?.name_changed) setNameAlreadyChanged(true);
+    });
+  }, []);
 
   const photoInputRef = useRef(null);
 
@@ -4951,8 +4849,21 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
     reader.readAsDataURL(file);
   }
 
-  function save() {
+  async function save() {
     userProfile.name = form.name;
+    const isNameChange = form.name !== userName;
+    if (isNameChange && nameAlreadyChanged) {
+      toast({ type:"error", title:"Name already changed", message:"Your name can only be changed once." });
+      return;
+    }
+    const { error } = await supabase.auth.updateUser({
+      data: { full_name: form.name, name: form.name, ...(isNameChange ? { name_changed: true } : {}) }
+    });
+    if (error) {
+      toast({ type:"error", title:"Save failed", message: error.message });
+      return;
+    }
+    if (isNameChange) setNameAlreadyChanged(true);
     onNameChange?.(form.name);
     toast({ type:"success", title:"Profile saved", message:"Your changes have been updated." });
   }
@@ -4972,6 +4883,10 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
         <div style={{ marginBottom:24 }}>
           <h2 style={{ margin:"0 0 4px", fontSize:20, fontWeight:800, color:C.gray900 }}>Personal details</h2>
           <p style={{ margin:0, fontSize:14, color:C.gray500 }}>Manage your name, photo and contact information.</p>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:6, marginTop:10, background:"#fffbeb", border:"1px solid rgba(245,158,11,0.35)", borderRadius:8, padding:"6px 12px" }}>
+            <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M10 2a8 8 0 1 0 0 16A8 8 0 0 0 10 2zm.75 11.5h-1.5v-5h1.5v5zm0-6.5h-1.5V5.5h1.5V7z" fill="#d97706"/></svg>
+            <span style={{ fontSize:12, color:"#92400e", fontWeight:500 }}>Personal details can only be changed once. Please review carefully before saving.</span>
+          </div>
         </div>
 
         {/* Photo row */}
@@ -5001,9 +4916,22 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
             { label:"Phone number",       key:"phone", type:"tel"   },
           ].map(f => (
             <div key={f.key}>
-              <div style={{ fontSize:13, fontWeight:600, color:C.gray600, marginBottom:6 }}>{f.label}</div>
-              <input type={f.type} style={inputSt} value={form[f.key]} onChange={e=>setForm(v=>({...v,[f.key]:e.target.value}))}
-                onFocus={e=>e.target.style.borderColor=C.primary} onBlur={e=>e.target.style.borderColor=C.gray200}/>
+              <div style={{ fontSize:13, fontWeight:600, color:C.gray600, marginBottom:6, display:"flex", alignItems:"center", gap:6 }}>
+                {f.label}
+                {f.key==="name" && nameAlreadyChanged && (
+                  <span style={{ fontSize:11, fontWeight:500, color:"#9ca3af", background:"#f3f4f6", borderRadius:4, padding:"1px 6px" }}>locked</span>
+                )}
+              </div>
+              <input type={f.type}
+                style={{ ...inputSt, ...(f.key==="name" && nameAlreadyChanged ? { background:"#f9fafb", color:C.gray400, cursor:"not-allowed" } : {}) }}
+                value={form[f.key]}
+                readOnly={f.key==="name" && nameAlreadyChanged}
+                onChange={e => { if(f.key==="name" && nameAlreadyChanged) return; setForm(v=>({...v,[f.key]:e.target.value})); }}
+                onFocus={e=>{ if(f.key==="name" && nameAlreadyChanged) return; e.target.style.borderColor=C.primary; }}
+                onBlur={e=>e.target.style.borderColor=C.gray200}/>
+              {f.key==="name" && nameAlreadyChanged && (
+                <p style={{ fontSize:12, color:"#9ca3af", margin:"4px 0 0" }}>Your name can only be changed once and has already been updated.</p>
+              )}
             </div>
           ))}
         </div>
@@ -5693,32 +5621,49 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
         {(() => {
           const loose = sessions.filter(s => !allSeasonIds.has(s.id) && quizStates[s.id]?.status === "passed");
           if (!loose.length) return null;
-          return loose.map(s => {
+          return (
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16 }}>
+          {loose.map(s => {
             const qs = quizStates[s.id];
             return (
-              <div key={s.id} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, overflow:"hidden" }}>
-                <div className="cert-row" style={{ display:"flex", alignItems:"center", gap:16, padding:"16px 20px" }}>
-                  <div style={{ width:40, height:40, borderRadius:10, background:"rgba(245,158,11,0.12)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                    <Icon name="medal" size={20} color="#f59e0b"/>
+              <div key={s.id} style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, overflow:"hidden", display:"flex", flexDirection:"column" }}>
+                {/* Mini certificate preview */}
+                <div style={{ position:"relative", background:"#fffdf9", borderBottom:`1px solid ${C.gray100}`, overflow:"hidden", padding:"20px 20px 16px", display:"flex", flexDirection:"column", gap:8 }}>
+                  <div style={{ position:"absolute", top:-30, left:-30, width:140, height:140, borderRadius:"50%", background:"rgba(255,160,160,0.22)", pointerEvents:"none" }}/>
+                  <div style={{ position:"absolute", top:-20, right:-20, width:110, height:110, borderRadius:"50%", background:"rgba(160,220,160,0.18)", pointerEvents:"none" }}/>
+                  <div style={{ position:"absolute", bottom:-20, left:60, width:100, height:100, borderRadius:"50%", background:"rgba(255,210,120,0.18)", pointerEvents:"none" }}/>
+                  <div style={{ position:"absolute", bottom:-20, right:20, width:90, height:90, borderRadius:"50%", background:"rgba(255,160,100,0.15)", pointerEvents:"none" }}/>
+                  <div style={{ position:"relative", zIndex:1, textAlign:"center" }}>
+                    <div style={{ fontSize:14, color:"#3b82f6", letterSpacing:2, marginBottom:4 }}>★ ★ ★</div>
+                    <div style={{ fontSize:11, fontWeight:700, color:"#1a1a1a", lineHeight:1.4 }}>Certificate of Professional Development Hours</div>
                   </div>
-                  <div className="cert-row-text" style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontWeight:700, fontSize:14, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
-                    {qs?.score != null && <div style={{ fontSize:12, color:C.gray500, marginTop:2 }}>Score: {qs.score}%</div>}
+                  <div style={{ position:"relative", zIndex:1, textAlign:"center" }}>
+                    <div style={{ fontSize:22, fontWeight:900, color:"#1a1a1a", letterSpacing:-0.5, marginBottom:8 }}>{userName || "Certificate Holder"}</div>
+                    <div style={{ height:1, background:"#d1d5db", margin:"0 0 8px" }}/>
+                    <div style={{ fontSize:11, color:"#b45309", fontWeight:700, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", paddingBottom:4 }}>{s.title}</div>
                   </div>
-                  <div className="cert-row-actions" style={{ display:"flex", gap:8, flexShrink:0 }}>
+                </div>
+                <div style={{ padding:"12px 16px 16px", display:"flex", flexDirection:"column", gap:10 }}>
+                  <div>
+                    <div style={{ fontWeight:700, fontSize:14, color:C.gray900 }}>{s.title}</div>
+                    {qs?.score != null && <div style={{ fontSize:12, color:C.gray500, marginTop:3 }}>Score: {qs.score}%</div>}
+                  </div>
+                  <div style={{ display:"flex", gap:8 }}>
                     <button onClick={()=>onCertificateClick && onCertificateClick(s)}
-                      style={{ padding:"6px 12px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, fontFamily:"inherit" }}>
+                      style={{ flex:1, padding:"8px 0", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:5, fontFamily:"inherit" }}>
                       <Icon name="eye" size={13} color={C.gray600}/> View
                     </button>
                     <button onClick={()=>downloadCertificate({ recipientName:userName, sessionTitle:s.title, instructor:s.instructor, duration:s.duration, score:qs?.score, description:s.description })}
-                      style={{ padding:"6px 12px", borderRadius:8, border:"none", background:C.primary, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, fontFamily:"inherit" }}>
+                      style={{ flex:1, padding:"8px 0", borderRadius:8, border:"none", background:C.primary, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:5, fontFamily:"inherit" }}>
                       <Icon name="download" size={13} color="#fff"/> Download
                     </button>
                   </div>
                 </div>
               </div>
             );
-          });
+          })}
+          </div>
+          );
         })()}
       </div>}
       {shareCert && (
@@ -6102,25 +6047,279 @@ function ShareCertificateModal({ certUrl, sessionTitle, onClose }) {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
+   PUBLIC CERTIFICATE PAGE (Supabase ID-based)
+───────────────────────────────────────────────────────────────────────────── */
+function PublicCertificatePageById({ certId }) {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(false);
+  useEffect(() => {
+    supabase.from("certificates").select("cert_data").eq("id", certId).single()
+      .then(({ data: row, error: err }) => {
+        if (err || !row) setError(true);
+        else setData(row.cert_data);
+      });
+  }, [certId]);
+  if (error) return <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"sans-serif", color:"#6b7280" }}>Certificate not found.</div>;
+  if (!data) return <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"sans-serif", color:"#6b7280" }}>Loading certificate…</div>;
+  return <PublicCertificatePage data={data}/>;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   PUBLIC CERTIFICATE PAGE
+───────────────────────────────────────────────────────────────────────────── */
+function PublicCertificatePage({ data }) {
+  const { recipientName, sessionTitle, instructor, instructorImage, duration, score, description, certId, date } = data;
+  const instructorName = instructor ? instructor.split("|")[0].trim() : "";
+  const instructorRole = instructor?.includes("|") ? instructor.split("|")[1].trim() : "";
+  const descText = description
+    ? `This session was presented by ${instructorName}. ${description} Participants receiving this certificate completed this session, including the subsequent assessments.`
+    : `This session was presented by ${instructorName}. Participants receiving this certificate completed this session, including the subsequent assessments.`;
+  const certUrl = `${window.location.origin}${window.location.pathname}?cert=${btoa(JSON.stringify(data))}`;
+  const [copied, setCopied] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const [showShare, setShowShare] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => setIsLoggedIn(!!session));
+  }, []);
+
+  return (
+    <div style={{ minHeight:"100vh", background:"#fff", fontFamily:"'Inter',-apple-system,sans-serif" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
+        @media(max-width:768px){ .pub-two-col { grid-template-columns:1fr !important; } }
+      `}</style>
+
+      {/* Nav — matches landing page */}
+      <header style={{ background:"#fff", borderBottom:"1px solid rgba(0,0,0,0.08)", padding:"0 32px", height:56, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:100 }}>
+        <img src="/Container.png" alt="SPED Summit" style={{ height:26 }}/>
+        {isLoggedIn ? (
+          <button onClick={()=>{ sessionStorage.setItem("page","dashboard"); sessionStorage.setItem("showLanding","0"); window.location.href=window.location.origin; }}
+            style={{ padding:"0 18px", height:36, background:"#6490E8", color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer" }}>
+            My Dashboard
+          </button>
+        ) : (
+          <button onClick={()=>setShowAuth(true)}
+            style={{ padding:"0 18px", height:36, background:"#6490E8", color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer" }}>
+            Sign in
+          </button>
+        )}
+      </header>
+      {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={()=>{ window.location.href = window.location.origin; }}/>}
+
+      {/* Breadcrumb bar — shown when logged in */}
+      {isLoggedIn && (
+        <div style={{ background:"#fff", borderBottom:"1px solid #f0f0f0", padding:"0 28px" }}>
+          <div style={{ maxWidth:1100, margin:"0 auto", height:44, display:"flex", alignItems:"center", gap:6, fontSize:13, color:"#6b7280" }}>
+            <a href="#" onClick={e=>{ e.preventDefault(); sessionStorage.setItem("page","certifications"); sessionStorage.setItem("showLanding","0"); window.location.href=window.location.origin; }}
+              style={{ color:"#6b7280", textDecoration:"none", fontWeight:500, transition:"color .12s" }}
+              onMouseEnter={e=>e.currentTarget.style.color="#1a1a1a"}
+              onMouseLeave={e=>e.currentTarget.style.color="#6b7280"}>
+              My Certificates
+            </a>
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="m8 5 5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <span style={{ color:"#1a1a1a", fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{sessionTitle}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Content section */}
+      <div style={{ background:"#F9FBF8" }}>
+      {/* Breadcrumb */}
+      <div style={{ padding:"28px 32px 0", maxWidth:1100, margin:"0 auto" }}>
+        <div style={{ fontSize:12, color:"#6b7280", fontWeight:600, marginBottom:8, textTransform:"uppercase", letterSpacing:.8 }}>Course Certificate</div>
+        <h1 style={{ margin:"0 0 32px", fontSize:"clamp(22px,3vw,34px)", fontWeight:800, color:"#1a1a1a", lineHeight:1.2 }}>{sessionTitle}</h1>
+      </div>
+
+      {/* Two-column layout */}
+      <div className="pub-two-col" style={{ maxWidth:1100, margin:"0 auto", padding:"0 32px 32px", display:"grid", gridTemplateColumns:"1fr 1fr", gap:32, alignItems:"stretch" }}>
+
+        {/* LEFT */}
+        <div style={{ display:"flex", flexDirection:"column", gap:16, height:"100%" }}>
+
+          {/* Completed card — warm tone */}
+          <div style={{ background:"#fff", border:"1px solid rgba(0,0,0,0.08)", borderRadius:16, padding:"24px 28px" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:16 }}>
+              <div style={{ width:52, height:52, borderRadius:"50%", background:"rgba(245,158,11,0.15)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, position:"relative" }}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="#d97706"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                <div style={{ position:"absolute", bottom:0, right:0, width:18, height:18, borderRadius:"50%", background:"#10b981", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="#fff"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize:17, fontWeight:700, color:"#1a1a1a" }}>Completed by {recipientName}</div>
+                <div style={{ fontSize:13, color:"#6b7280", marginTop:3 }}>{date} · {duration || "1 Hour"}</div>
+              </div>
+            </div>
+            <div style={{ fontSize:14, color:"#374151", lineHeight:1.75 }}>
+              <strong style={{ color:"#1a1a1a" }}>{recipientName}'s</strong> achievement is verified. SPED Summit confirms their successful completion of <strong style={{ color:"#1a1a1a" }}>{sessionTitle}</strong> — a professional development session for special educators.
+            </div>
+          </div>
+
+          {/* Session card — landing page style, fills remaining height */}
+          <div style={{ background:"#fff", border:"1px solid rgba(0,0,0,0.08)", borderRadius:14, overflow:"hidden", boxShadow:"0 2px 8px rgba(0,0,0,0.06)", flex:1, display:"flex", flexDirection:"column" }}>
+            <div style={{ display:"flex", gap:0, flex:1 }}>
+              {/* Instructor photo */}
+              <div style={{ width:200, flexShrink:0, position:"relative", background:"#1f2937", overflow:"hidden", alignSelf:"stretch" }}>
+                {instructorImage
+                  ? <img src={instructorImage} alt={instructorName} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top center", display:"block", position:"absolute", inset:0 }} onError={e=>{ e.target.style.display="none"; }}/>
+                  : <div style={{ position:"absolute", inset:0, background:"linear-gradient(135deg,#1e3a5f,#2d5a9e)" }}/>
+                }
+                <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.80) 0%, transparent 55%)", pointerEvents:"none" }}/>
+                <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"8px 12px" }}>
+                  <div style={{ fontSize:12, fontWeight:700, color:"#fff", lineHeight:1.25 }}>{instructorName}{instructorRole ? ` | ${instructorRole}` : ""}</div>
+                  <div style={{ fontSize:10, color:"rgba(255,255,255,0.75)", marginTop:2 }}>Instructor</div>
+                </div>
+              </div>
+              <div style={{ padding:"14px 16px", flex:1, minWidth:0, display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
+                <div>
+                  <div style={{ display:"inline-flex", alignItems:"center", gap:5, background:"rgba(245,158,11,0.10)", color:"#b45309", border:"1px solid rgba(245,158,11,0.25)", borderRadius:5, padding:"4px 10px", fontSize:11, fontWeight:700, marginBottom:10 }}>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    {date}
+                  </div>
+                  <div style={{ fontSize:14, fontWeight:700, color:"#1a1a1a", lineHeight:1.35, marginBottom:6 }}>{sessionTitle}</div>
+                  {description && (
+                    <div style={{ fontSize:12, color:"#6b7280", lineHeight:1.5, marginBottom:8, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>{description}</div>
+                  )}
+                </div>
+                {isLoggedIn ? (
+                  <a href={window.location.origin}
+                    style={{ marginTop:12, padding:"8px 16px", background:"#6490E8", color:"#fff", borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer", alignSelf:"flex-start", textDecoration:"none", display:"inline-block" }}>
+                    Watch Now
+                  </a>
+                ) : (
+                  <button onClick={()=>setShowAuth(true)}
+                    style={{ marginTop:12, padding:"8px 16px", background:"#6490E8", color:"#fff", border:"none", borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer", alignSelf:"flex-start" }}>
+                    Register Now
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* RIGHT: Certificate + actions below */}
+        <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+        <div style={{ width:"100%", aspectRatio:"11/8.5", borderRadius:16, overflow:"hidden", boxShadow:"0 4px 24px rgba(0,0,0,0.10)", position:"relative", border:"1px solid #e5e7eb" }}>
+          <img src="/Certificate Background.png" alt="" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", display:"block", pointerEvents:"none" }}/>
+
+          <div style={{ position:"absolute", inset:0, padding:"24px 32px 20px", display:"flex", flexDirection:"column", alignItems:"center", fontFamily:"'Poppins','Arial',sans-serif", zIndex:1, boxSizing:"border-box", overflow:"hidden" }}>
+            <div style={{ display:"flex", gap:8, marginBottom:10 }}>
+              {[0,1,2].map(i => <span key={i} style={{ fontSize:18, color:"#3b82f6" }}>★</span>)}
+            </div>
+            <div style={{ fontSize:13, fontWeight:700, color:"#1a1a1a", textAlign:"center", lineHeight:1.3, marginBottom:4 }}>Certificate of Professional Development Hours</div>
+            <div style={{ fontSize:10, fontWeight:400, color:"#555", marginBottom:6 }}>is presented to</div>
+            <div style={{ fontSize:28, fontWeight:800, color:"#1a1a1a", letterSpacing:-0.5, lineHeight:1.1, textAlign:"center", marginBottom:10 }}>{recipientName}</div>
+            <div style={{ width:"100%", height:1, background:"#d1d5db", marginBottom:8 }}/>
+            <div style={{ textAlign:"center", fontSize:10, fontWeight:400, color:"#333", lineHeight:1.55, marginBottom:10 }}>
+              <div>For their participation in the session titled:</div>
+              <strong style={{ fontWeight:600, color:"#1a1a1a", fontSize:11 }}>{sessionTitle}</strong>
+            </div>
+            <div style={{ width:"100%", display:"flex", justifyContent:"space-between", fontSize:11, fontWeight:600, color:"#1a1a1a", marginBottom:8 }}>
+              <div>Session time: {duration || "1 Hour"}</div>
+              <div>{date}</div>
+            </div>
+            <div style={{ fontSize:9, fontWeight:400, color:"#374151", lineHeight:1.65, textAlign:"center", flex:1, overflow:"hidden", marginBottom:8 }}>{descText}</div>
+            <div style={{ width:"100%", display:"flex", justifyContent:"space-between", alignItems:"flex-end", fontSize:9, fontWeight:400, color:"#555", paddingTop:8, borderTop:"1px solid #e5e7eb", flexShrink:0 }}>
+              <div>
+                <div>Certificate ID: <strong style={{ fontWeight:600 }}>{certId}</strong></div>
+                <div style={{ marginTop:3 }}>Contact at <strong style={{ fontWeight:600 }}>support@spedsummit.com</strong></div>
+              </div>
+              <div style={{ textAlign:"right" }}>
+                <div style={{ marginBottom:2 }}>Verify at:</div>
+                <a href={certUrl} target="_blank" rel="noopener noreferrer" style={{ color:"#6490E8", fontWeight:600, textDecoration:"underline", display:"block" }}>{window.location.hostname}</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+          {/* Share + Download — below certificate */}
+          <div style={{ display:"flex", gap:10 }}>
+            <button onClick={()=>setShowShare(true)}
+              style={{ flex:1, padding:"11px 16px", borderRadius:10, border:"1px solid rgba(0,0,0,0.12)", background:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
+              <Icon name="share-network" size={16} color="#1a1a1a" weight="fill"/> Share
+            </button>
+            <button onClick={()=> downloadCertificate({ recipientName, sessionTitle, instructor, duration, score, description })}
+              style={{ flex:1, padding:"11px 16px", borderRadius:10, border:"none", background:"#6490E8", color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
+              <Icon name="download" size={16} color="#fff" weight="fill"/> Download PDF
+            </button>
+          </div>
+          {showShare && <ShareCertificateModal certUrl={certUrl.replace(/^https?:\/\//, "")} sessionTitle={sessionTitle} onClose={()=>setShowShare(false)}/>}
+        </div>{/* end right column */}
+      </div>
+
+      </div>{/* end content section */}
+
+      {/* Footer — matches landing page */}
+      <footer style={{ borderTop:"1px solid rgba(0,0,0,0.08)", background:"#fff" }}>
+        <div style={{ maxWidth:1024, margin:"0 auto", padding:"48px 32px 32px", display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:40 }}>
+          <div>
+            <img src="/Container.png" alt="SPED Summit" style={{ height:26, display:"block", marginBottom:14 }}/>
+            <p style={{ margin:"0 0 20px", fontSize:13, color:"#6b7280", lineHeight:1.7, maxWidth:260 }}>SPED Summit is a free professional development platform for Special Education professionals — built by educators, for educators.</p>
+            <div style={{ display:"flex", gap:8 }}>
+              {[
+                { label:"YouTube", svg:"M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z" },
+                { label:"Instagram", svg:"M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" },
+                { label:"Facebook", svg:"M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" },
+              ].map(({ label, svg }) => (
+                <a key={label} href="#" aria-label={label} style={{ width:32, height:32, borderRadius:8, border:"1px solid #e5e7eb", background:"#fff", display:"flex", alignItems:"center", justifyContent:"center", textDecoration:"none" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="#6b7280"><path d={svg}/></svg>
+                </a>
+              ))}
+            </div>
+          </div>
+          {[
+            { heading:"Platform", links:["Sessions","Speakers","Community"] },
+            { heading:"Company",  links:["About","Blog","Contact"] },
+            { heading:"Legal",    links:["Privacy Policy","Terms of Service"] },
+          ].map(({ heading, links }) => (
+            <div key={heading}>
+              <div style={{ fontSize:11, fontWeight:700, color:"#374151", letterSpacing:.8, textTransform:"uppercase", marginBottom:14 }}>{heading}</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                {links.map(l => <a key={l} href="#" onClick={e=>{ e.preventDefault(); if(l==="Privacy Policy"){ sessionStorage.setItem("page","privacy-policy"); sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("legalReturnTo","dashboard"); window.location.href=window.location.origin; } if(l==="Terms of Service"){ sessionStorage.setItem("page","terms-of-service"); sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("legalReturnTo","dashboard"); window.location.href=window.location.origin; } }} style={{ fontSize:14, color:"#6b7280", textDecoration:"none" }}>{l}</a>)}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ borderTop:"1px solid #e5e7eb", padding:"16px 32px", textAlign:"center" }}>
+          <span style={{ fontSize:12, color:"#9ca3af" }}>© 2026 SPED Summit. All rights reserved.</span>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
    CERTIFICATE MODAL
 ───────────────────────────────────────────────────────────────────────────── */
 function CertificateModal({ session, quizState, onClose, userName = "" }) {
   const score = quizState?.score ?? 0;
   const today = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
   const certId = `SS-${session.id}${score}-2024`;
-  const certUrl = `spedsummit.com/cert/${certId.toLowerCase()}`;
+  // Generate shareable cert URL with encoded data
+  const certData = { recipientName:userName, sessionTitle:session.title, instructor:session.instructor, instructorImage:session.instructorImage||"", duration:session.duration, score, description:session.description, certId, date:today };
+  const certUrl = `${window.location.origin}${window.location.pathname}?cert=${btoa(JSON.stringify(certData))}`;
   const [showShare, setShowShare] = useState(false);
 
   return (
     <>
-    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.65)", zIndex:700,
+    <style>{`
+      @media(max-width:600px){
+        .cert-modal-wrap { padding:0 !important; align-items:flex-end !important; }
+        .cert-modal-box { border-radius:20px 20px 0 0 !important; max-height:92vh !important; overflow-y:auto !important; }
+        .cert-modal-actions { flex-wrap:wrap !important; }
+        .cert-modal-actions button { flex:1 !important; justify-content:center !important; }
+      }
+    `}</style>
+    <div className="cert-modal-wrap" style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.65)", zIndex:700,
                   display:"flex", alignItems:"center", justifyContent:"center", padding:24,
                   backdropFilter:"blur(3px)" }}>
-      <div style={{ background:C.white, borderRadius:16, width:"100%", maxWidth:680,
+      <div className="cert-modal-box" style={{ background:C.white, borderRadius:16, width:"100%", maxWidth:680,
                     boxShadow:"0 32px 80px rgba(0,0,0,0.3)", animation:"fadeIn .2s ease", overflow:"hidden" }}>
 
         {/* Modal top bar */}
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"14px 20px", borderBottom:`1px solid ${C.gray100}` }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"14px 20px", borderBottom:`1px solid ${C.gray100}`, position:"sticky", top:0, background:C.white, zIndex:10 }}>
           <span style={{ fontSize:14, fontWeight:700, color:C.gray700 }}>Certificate Preview</span>
           <button onClick={onClose}
             style={{ width:30, height:30, borderRadius:8, border:`1px solid ${C.gray200}`,
@@ -6129,65 +6328,47 @@ function CertificateModal({ session, quizState, onClose, userName = "" }) {
           </button>
         </div>
 
-        {/* ── Certificate Document ── */}
-        <div style={{ margin:"20px 20px 0", borderRadius:12, overflow:"hidden", border:`1px solid ${C.gray200}`, position:"relative", background:"#ffffff" }}>
-          {/* Blobs */}
-          <div style={{ position:"absolute", top:-50, left:-50, width:200, height:200, borderRadius:"50%", background:"rgba(255,160,160,0.28)", pointerEvents:"none" }}/>
-          <div style={{ position:"absolute", top:-30, right:-40, width:160, height:160, borderRadius:"50%", background:"rgba(160,220,160,0.25)", pointerEvents:"none" }}/>
-          <div style={{ position:"absolute", bottom:-40, left:80, width:140, height:140, borderRadius:"50%", background:"rgba(255,210,120,0.22)", pointerEvents:"none" }}/>
-          <div style={{ position:"absolute", bottom:-40, right:60, width:180, height:180, borderRadius:"50%", background:"rgba(255,160,100,0.20)", pointerEvents:"none" }}/>
+        {/* ── Certificate Document — 11:8.5 aspect ratio ── */}
+        <div style={{ margin:"16px 16px 0", borderRadius:12, overflow:"hidden", border:`1px solid ${C.gray200}`, position:"relative", aspectRatio:"11/8.5" }}>
+          <img src="/Certificate Background.png" alt="" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", display:"block", pointerEvents:"none" }}/>
 
-          <div style={{ padding:"32px 40px 28px", position:"relative", zIndex:1 }}>
+          <div style={{ position:"absolute", inset:0, padding:"3% 5%", display:"flex", flexDirection:"column", alignItems:"center", fontFamily:"'Poppins','Arial',sans-serif", zIndex:1, boxSizing:"border-box", overflow:"hidden" }}>
+            <style>{`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');`}</style>
             {/* Stars */}
-            <div style={{ textAlign:"center", marginBottom:10, fontSize:22, color:"#3b82f6" }}>★ ★ ★</div>
-
-            {/* Title */}
-            <div style={{ textAlign:"center", marginBottom:6 }}>
-              <div style={{ fontSize:20, fontWeight:900, color:"#1a1a1a", lineHeight:1.25 }}>Certificate of Professional</div>
-              <div style={{ fontSize:20, fontWeight:900, color:"#1a1a1a", lineHeight:1.25 }}>Development Hours</div>
+            <div style={{ display:"flex", gap:8, marginBottom:"2%" }}>
+              {[0,1,2].map(i => <span key={i} style={{ fontSize:"clamp(12px,2vw,20px)", color:"#3b82f6", lineHeight:1 }}>★</span>)}
             </div>
-
-            {/* is presented to */}
-            <div style={{ textAlign:"center", fontSize:13, color:"#555", margin:"10px 0 4px" }}>is presented to</div>
-
-            {/* Recipient */}
-            <div style={{ textAlign:"center", fontSize:38, fontWeight:900, color:"#1a1a1a", letterSpacing:-1, marginBottom:14, lineHeight:1.1 }}>{userName}</div>
-
-            {/* Divider */}
-            <div style={{ height:1.5, background:"#d1d5db", marginBottom:12 }}/>
-
-            {/* Session line */}
-            <div style={{ textAlign:"center", fontSize:13, color:"#333", marginBottom:14, lineHeight:1.6 }}>
-              For their participation in the session titled:&nbsp;
-              <strong style={{ color:"#b45309" }}>{session.title}</strong>
+            <div style={{ textAlign:"center", fontSize:"clamp(9px,1.4vw,14px)", fontWeight:700, color:"#1a1a1a", lineHeight:1.25, marginBottom:"1%" }}>Certificate of Professional Development Hours</div>
+            <div style={{ fontSize:"clamp(7px,1vw,10px)", fontWeight:400, color:"#555", marginBottom:"1%" }}>is presented to</div>
+            <div style={{ fontSize:"clamp(18px,3.5vw,36px)", fontWeight:800, color:"#1a1a1a", letterSpacing:-0.5, lineHeight:1.1, textAlign:"center", marginBottom:"2%" }}>{userName}</div>
+            <div style={{ width:"100%", height:1, background:"#ccc", marginBottom:"1.5%" }}/>
+            <div style={{ textAlign:"center", fontSize:"clamp(7px,1vw,10px)", fontWeight:400, color:"#333", lineHeight:1.5, marginBottom:"1.5%" }}>
+              <div>For their participation in the session titled:</div>
+              <strong style={{ color:"#1a1a1a", fontWeight:600 }}>{session.title}</strong>
             </div>
-
-            {/* Time + date */}
-            <div style={{ display:"flex", justifyContent:"space-between", fontSize:14, color:"#222", marginBottom:14 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", width:"100%", fontSize:"clamp(7px,1.1vw,11px)", fontWeight:600, color:"#1a1a1a", marginBottom:"1.5%" }}>
               <div>Session time: {session.duration || "1 Hour"}</div>
               <div>{today}</div>
             </div>
-
-            {/* Description */}
-            <div style={{ fontSize:11, color:"#374151", lineHeight:1.75, textAlign:"center", marginBottom:14 }}>
+            <div style={{ fontSize:"clamp(6px,0.85vw,9px)", fontWeight:400, color:"#374151", lineHeight:1.65, textAlign:"center", marginBottom:"1.5%", flex:1, overflow:"hidden" }}>
               {session.description
                 ? `This session was presented by ${session.instructor?.split("|")[0]?.trim()}. ${session.description} Participants receiving this certificate completed this session, including the subsequent assessments.`
                 : `This session was presented by ${session.instructor?.split("|")[0]?.trim()}. Participants receiving this certificate completed this session, including the subsequent assessments.`}
             </div>
-
-            {/* Footer */}
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", fontSize:11, color:"#555" }}>
-              <div>Contact at <strong>support@spedsummit.com</strong> with any questions.</div>
-              <div>Certificate ID:&nbsp;<strong>{certId}</strong></div>
+            <div style={{ display:"flex", justifyContent:"space-between", width:"100%", fontSize:"clamp(6px,0.85vw,9px)", fontWeight:400, color:"#555", paddingTop:"1%", borderTop:"1px solid #e5e7eb", flexShrink:0 }}>
+              <div>Contact at <strong style={{ fontWeight:600 }}>support@spedsummit.com</strong></div>
+              <a href={certUrl} target="_blank" rel="noopener noreferrer" style={{ color:"#6490E8", fontWeight:600, textDecoration:"underline" }}>View Certificate ↗</a>
             </div>
           </div>
         </div>
 
         {/* Actions */}
-        <div style={{ display:"flex", gap:10, padding:"16px 20px", justifyContent:"flex-end" }}>
-          <Btn variant="outline" onClick={onClose}>Close</Btn>
+        <div className="cert-modal-actions" style={{ display:"flex", gap:10, padding:"16px 20px", justifyContent:"flex-end", position:"sticky", bottom:0, background:C.white, borderTop:`1px solid ${C.gray100}`, zIndex:10 }}>
           <Btn variant="outline" onClick={() => setShowShare(true)}>
-            <Icon name="share-network" size={14} color={C.primary}/> Share Certificate
+            <Icon name="share-network" size={14} color={C.primary}/> Share
+          </Btn>
+          <Btn variant="outline" onClick={() => window.open(certUrl, "_blank")}>
+            <Icon name="arrow-square-out" size={14} color={C.primary}/> View Certificate
           </Btn>
           <Btn onClick={() => { downloadCertificate({ sessionTitle: session.title, instructor: session.instructor, duration: session.duration, score }); }}>
             <Icon name="download" size={14} color="#fff"/> Download PDF
@@ -6721,18 +6902,113 @@ const LEGAL_CONTENT = {
   },
   privacy: {
     title: "Privacy Policy",
+    lastUpdated: "June 2026",
+    intro: "At SPED Summit, we value your privacy and are committed to protecting your personal information. This Privacy Policy explains what information we collect, how we use it, and the steps we take to safeguard it. By using our website or registering for our events, you agree to the practices described below.",
     sections: [
-      { heading: "Information We Collect", body: "We collect information you provide when registering (name, email address), your learning activity (progress, quiz results, certificates earned), and technical data (device type, browser, IP address) to operate and improve the platform." },
-      { heading: "How We Use Your Information", body: "Your information is used to provide and personalize your learning experience, issue certificates, send important account and course updates, and improve our platform through anonymized analytics." },
-      { heading: "Data Sharing", body: "We do not sell your personal data. We may share data with trusted service providers who assist in operating our platform, subject to strict confidentiality agreements. We may disclose data when required by law." },
-      { heading: "Cookies", body: "We use cookies and similar technologies to keep you logged in, remember your preferences, and understand how users interact with the platform. You can control cookie settings through your browser." },
-      { heading: "Data Retention", body: "We retain your account and learning data for as long as your account is active. You may request deletion of your account and associated data by contacting our support team." },
-      { heading: "Your Rights", body: "Depending on your location, you may have rights to access, correct, or delete your personal data. To exercise these rights, please contact us at privacy@spedsummit.com." },
-      { heading: "Security", body: "We use industry-standard security measures including encryption in transit and at rest to protect your data. However, no method of transmission over the internet is 100% secure." },
-      { heading: "Contact Us", body: "If you have questions about this Privacy Policy, please contact us at privacy@spedsummit.com." },
+      { heading: "Information We Collect", body: "We collect information that helps us provide a better experience for attendees, speakers, and visitors to our website.\n\nWhen you register for SPED Summit, subscribe to our emails, apply as a speaker, or contact us, you may voluntarily provide information such as your name, email address, professional role, organization, and other details relevant to your participation. This information helps us communicate with you, manage registrations, deliver certificates, and provide event-related services.\n\nLike most websites, we automatically collect certain technical information when you visit our site. This may include your IP address, browser type, device information, pages visited, and general website activity. This information helps us understand how visitors use the website and allows us to improve the overall user experience." },
+      { heading: "How We Use Your Information", body: "The information we collect is used solely to operate and improve SPED Summit and related educational services. We may use your information to register you for summit events, provide access to sessions and resources, deliver professional development certificates, send event updates and reminders, respond to support requests, improve our website and attendee experience, and share information about future SPED Summit events.\n\nWe only use your information for legitimate educational and operational purposes related to the summit." },
+      { heading: "Email Communications", body: "When you register for SPED Summit or subscribe to our mailing list, you may receive emails regarding your registration, summit schedules, speaker announcements, certificates, and future educational opportunities.\n\nWe strive to send relevant and useful communications and avoid excessive email marketing. You may unsubscribe from promotional emails at any time using the unsubscribe link included in our messages." },
+      { heading: "Information Sharing", body: "Protecting attendee privacy is important to us. We do not sell, rent, or share personal information with advertisers, sponsors, or third parties for marketing purposes.\n\nYour information may only be shared with trusted service providers who help us operate the summit or when required by law. Any such providers are expected to handle your information securely and responsibly." },
+      { heading: "Speakers and Third-Party Resources", body: "SPED Summit sessions may include links to speaker websites, social media profiles, downloadable resources, courses, or other external content.\n\nOnce you leave the SPED Summit website and visit a third-party website, their own privacy policies and practices apply. We encourage users to review those policies before sharing personal information." },
+      { heading: "Cookies and Analytics", body: "Our website may use cookies and similar technologies to improve performance and better understand how visitors interact with our content.\n\nThese tools help us analyze website traffic, improve navigation, and enhance the attendee experience. You can manage or disable cookies through your browser settings if you prefer." },
+      { heading: "Data Security", body: "We take reasonable precautions to protect your personal information from unauthorized access, misuse, disclosure, or alteration.\n\nWhile no online system can guarantee complete security, we use industry-standard practices and trusted technology providers to help keep your information secure." },
+      { heading: "Data Retention", body: "We retain personal information only for as long as necessary to provide our services, maintain event records, issue certificates, and comply with legal obligations.\n\nWhen information is no longer needed for these purposes, it may be deleted or securely anonymized." },
+      { heading: "Children's Privacy", body: "SPED Summit is intended for educators, therapists, clinicians, parents, and other adult professionals. Our services are not directed toward children under the age of 13.\n\nWe do not knowingly collect personal information from children. If we become aware that such information has been collected, we will take appropriate steps to remove it." },
+      { heading: "Your Rights", body: "Depending on your location and applicable privacy laws, you may have the right to access, update, correct, or request deletion of your personal information.\n\nYou may also opt out of promotional communications at any time. We are committed to responding to privacy-related requests in a timely and respectful manner." },
+      { heading: "Changes to This Privacy Policy", body: "As SPED Summit continues to grow, we may occasionally update this Privacy Policy to reflect changes in our services, technology, or legal requirements.\n\nAny updates will be posted on this page along with a revised \"Last Updated\" date so that users can stay informed about our privacy practices." },
+      { heading: "Contact Us", body: "If you have any questions regarding this Privacy Policy, your personal information, or our privacy practices, please contact us:\n\nEmail: support@spedsummit.com\n\nWe appreciate your trust and thank you for being part of the SPED Summit community." },
+    ],
+  },
+  tos: {
+    title: "Terms of Service",
+    lastUpdated: "June 2026",
+    intro: "Welcome to SPED Summit. These Terms of Service (\"Terms\") govern your access to and use of the SPED Summit website, events, content, resources, and related services.\n\nBy accessing our website, registering for SPED Summit, or participating in any of our services, you agree to comply with these Terms. If you do not agree with these Terms, please do not use our website or services.",
+    sections: [
+      { heading: "About SPED Summit", body: "SPED Summit is a virtual professional development event designed for special educators, therapists, clinicians, administrators, paraprofessionals, parents, and other professionals who support diverse learners.\n\nOur goal is to provide high-quality educational content, practical strategies, and professional learning opportunities through expert-led presentations and resources." },
+      { heading: "Eligibility", body: "SPED Summit is intended for individuals who are at least 18 years old or have the legal authority to enter into agreements within their jurisdiction.\n\nBy using our website and services, you confirm that the information you provide is accurate and that you are authorized to participate in the event." },
+      { heading: "Registration and Account Information", body: "When registering for SPED Summit, you agree to provide accurate and complete information. This helps us deliver event access, certificates, important updates, and support services.\n\nYou are responsible for maintaining the accuracy of your registration information and ensuring that your email address remains current throughout the event." },
+      { heading: "Event Access", body: "Registration grants access to the content and resources specified during the event registration process.\n\nCertain materials, recordings, resources, or bonus content may have separate access terms, availability periods, or participation requirements. Access details will be communicated through official SPED Summit channels." },
+      { heading: "Professional Development Certificates", body: "SPED Summit may provide professional development certificates for eligible participants who meet the stated completion requirements.\n\nCertificate eligibility, requirements, and availability may vary by session. SPED Summit reserves the right to verify participation before issuing certificates." },
+      { heading: "Intellectual Property", body: "All content provided through SPED Summit, including presentations, videos, graphics, documents, logos, website content, and educational materials, is protected by intellectual property laws.\n\nUnless specifically permitted, users may not copy, reproduce, distribute, sell, modify, publish, or commercially use summit content without prior written permission from the content owner or SPED Summit." },
+      { heading: "Speaker Content", body: "Session presentations, handouts, and resources remain the intellectual property of their respective speakers unless otherwise stated.\n\nAttendees may view and use materials for personal educational purposes but may not redistribute, record, upload, or commercially share speaker content without permission." },
+      { heading: "Acceptable Use", body: "We strive to maintain a professional, respectful, and inclusive learning environment.\n\nWhen using SPED Summit services, you agree not to: violate any applicable laws or regulations, misrepresent your identity, interfere with website operations, attempt unauthorized access to systems or content, share restricted event access with others, or engage in harassment, abuse, discrimination, or inappropriate conduct.\n\nWe reserve the right to restrict access to users who violate these guidelines." },
+      { heading: "Third-Party Links and Resources", body: "SPED Summit may include links to external websites, speaker resources, social media accounts, educational tools, and third-party services.\n\nThese resources are provided for convenience and educational purposes. We are not responsible for the content, policies, practices, or availability of third-party websites." },
+      { heading: "Educational Disclaimer", body: "The information provided during SPED Summit is intended for educational and informational purposes only.\n\nWhile presenters share professional expertise and practical strategies, attendees are responsible for exercising professional judgment and complying with their local regulations, district policies, licensing requirements, and workplace procedures." },
+      { heading: "Event Changes", body: "We may occasionally make changes to speakers, schedules, session topics, event dates, website features, or other aspects of the summit.\n\nWhile we make every effort to communicate important updates promptly, SPED Summit reserves the right to modify event details when necessary." },
+      { heading: "Limitation of Liability", body: "SPED Summit strives to provide a high-quality experience; however, we cannot guarantee uninterrupted access to our website, services, or event content.\n\nTo the fullest extent permitted by law, SPED Summit shall not be liable for any indirect, incidental, consequential, or special damages arising from the use of our website, services, or event materials." },
+      { heading: "Indemnification", body: "By participating in SPED Summit, you agree to indemnify and hold harmless SPED Summit, its organizers, team members, partners, and affiliates from claims, liabilities, damages, or expenses arising from your misuse of the website or violation of these Terms.\n\nThis provision helps protect the summit and its stakeholders from improper use of the platform." },
+      { heading: "Privacy", body: "Your use of SPED Summit is also governed by our Privacy Policy.\n\nWe encourage all users to review the Privacy Policy to understand how personal information is collected, used, and protected." },
+      { heading: "Termination of Access", body: "SPED Summit reserves the right to suspend or terminate access to its services at any time if a user violates these Terms or engages in activities that may harm the summit, its participants, or its community.\n\nSuch actions may be taken without prior notice when necessary to protect the integrity of the event." },
+      { heading: "Changes to These Terms", body: "We may update these Terms of Service periodically to reflect changes in our services, legal requirements, or operational practices.\n\nAny updates will be posted on this page along with a revised \"Last Updated\" date. Continued use of the website after updates constitutes acceptance of the revised Terms." },
+      { heading: "Contact Us", body: "If you have any questions regarding these Terms of Service, please contact us:\n\nEmail: support@spedsummit.com\n\nThank you for being part of the SPED Summit community and helping us create a positive, professional learning experience for educators and support professionals worldwide." },
     ],
   },
 };
+
+function PrivacyPolicyPage({ onBack }) {
+  const content = LEGAL_CONTENT.privacy;
+  const returnLabel = sessionStorage.getItem("legalReturnTo") === "dashboard" ? "Dashboard" : "Home";
+  return (
+    <div style={{ minHeight:"100vh", background:"#fafafa", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+      {/* Header */}
+      <div style={{ background:"#fff", borderBottom:"1px solid #e5e7eb", padding:"14px 24px", position:"sticky", top:0, zIndex:10 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, color:"#9ca3af" }}>
+          <button onClick={onBack} style={{ background:"none", border:"none", cursor:"pointer", fontSize:13, color:"#6b7280", padding:0, fontFamily:"inherit" }}
+            onMouseEnter={e=>e.currentTarget.style.color="#111827"}
+            onMouseLeave={e=>e.currentTarget.style.color="#6b7280"}>
+            {returnLabel}
+          </button>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          <span style={{ color:"#111827", fontWeight:600 }}>Privacy Policy</span>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{ maxWidth:720, margin:"0 auto", padding:"48px 24px 80px" }}>
+        <h1 style={{ fontSize:32, fontWeight:900, color:"#111827", margin:"0 0 8px", letterSpacing:-1 }}>Privacy Policy</h1>
+        <p style={{ fontSize:13, color:"#9ca3af", margin:"0 0 32px" }}>Last updated: {content.lastUpdated || "June 2026"}</p>
+        <p style={{ fontSize:15, color:"#5D636F", lineHeight:1.8, margin:"0 0 40px" }}>{content.intro}</p>
+        {content.sections.map((s, i) => (
+          <div key={i} style={{ marginBottom:32 }}>
+            <h2 style={{ fontSize:18, fontWeight:800, color:"#111827", margin:"0 0 12px" }}>{s.heading}</h2>
+            <p style={{ fontSize:15, color:"#5D636F", lineHeight:1.8, margin:0, whiteSpace:"pre-line" }}>{s.body}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TermsOfServicePage({ onBack }) {
+  const content = LEGAL_CONTENT.tos;
+  const returnLabel = sessionStorage.getItem("legalReturnTo") === "dashboard" ? "Dashboard" : "Home";
+  return (
+    <div style={{ minHeight:"100vh", background:"#fafafa", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+      <div style={{ background:"#fff", borderBottom:"1px solid #e5e7eb", padding:"14px 24px", position:"sticky", top:0, zIndex:10 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, color:"#9ca3af" }}>
+          <button onClick={onBack} style={{ background:"none", border:"none", cursor:"pointer", fontSize:13, color:"#6b7280", padding:0, fontFamily:"inherit" }}
+            onMouseEnter={e=>e.currentTarget.style.color="#111827"}
+            onMouseLeave={e=>e.currentTarget.style.color="#6b7280"}>
+            {returnLabel}
+          </button>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          <span style={{ color:"#111827", fontWeight:600 }}>Terms of Service</span>
+        </div>
+      </div>
+      <div style={{ maxWidth:720, margin:"0 auto", padding:"48px 24px 80px" }}>
+        <h1 style={{ fontSize:32, fontWeight:900, color:"#111827", margin:"0 0 8px", letterSpacing:-1 }}>Terms of Service</h1>
+        <p style={{ fontSize:13, color:"#9ca3af", margin:"0 0 32px" }}>Last updated: {content.lastUpdated}</p>
+        <p style={{ fontSize:15, color:"#5D636F", lineHeight:1.8, margin:"0 0 40px", whiteSpace:"pre-line" }}>{content.intro}</p>
+        {content.sections.map((s, i) => (
+          <div key={i} style={{ marginBottom:32 }}>
+            <h2 style={{ fontSize:18, fontWeight:800, color:"#111827", margin:"0 0 12px" }}>{s.heading}</h2>
+            <p style={{ fontSize:15, color:"#5D636F", lineHeight:1.8, margin:0, whiteSpace:"pre-line" }}>{s.body}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function LegalModal({ type, onClose }) {
   const content = LEGAL_CONTENT[type];
@@ -6750,11 +7026,12 @@ function LegalModal({ type, onClose }) {
         </div>
         {/* Body */}
         <div style={{ overflowY:"auto", padding:"20px 24px 28px" }}>
-          <p style={{ fontSize:12, color:"#707685", marginTop:0, marginBottom:20 }}>Last updated: January 2025</p>
+          <p style={{ fontSize:12, color:"#707685", marginTop:0, marginBottom:16 }}>Last updated: {content.lastUpdated || "June 2026"}</p>
+          {content.intro && <p style={{ fontSize:14, color:"#5D636F", lineHeight:1.7, marginTop:0, marginBottom:20 }}>{content.intro}</p>}
           {content.sections.map((s,i) => (
             <div key={i} style={{ marginBottom:18 }}>
               <div style={{ fontWeight:700, fontSize:14, color:"#111827", marginBottom:6 }}>{s.heading}</div>
-              <p style={{ fontSize:14, color:"#5D636F", lineHeight:1.7, margin:0 }}>{s.body}</p>
+              <p style={{ fontSize:14, color:"#5D636F", lineHeight:1.7, margin:0, whiteSpace:"pre-line" }}>{s.body}</p>
             </div>
           ))}
         </div>
@@ -7436,10 +7713,10 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel, registe
 
             {/* Review cards */}
             {[
-              { name:"Maria Gonzalez",   role:"Special Ed Teacher",            rating:5, date:"Mar 18, 2025", text:"Absolutely loved this session. The strategies were practical and immediately applicable in my classroom. Highly recommend to any SPED educator." },
-              { name:"Jordan Brooks",    role:"Resource Room Specialist",       rating:5, date:"Mar 10, 2025", text:"The quality of instruction is outstanding. I learned strategies I hadn't encountered in years of professional development." },
-              { name:"Alex Reinholt",    role:"Learning & Development Manager", rating:4, date:"Feb 28, 2025", text:"Very informative overall. Covers the 'what' and 'why' well — would love a deeper dive into the 'how' in a follow-up session." },
-              { name:"Priya Nair",       role:"Curriculum Coordinator",         rating:5, date:"Feb 14, 2025", text:"Engaging content, well-paced, and the instructor's passion really comes through. Worth every minute." },
+              { name:"April M.",            role:"SPED Educator", rating:5, date:"Mar 18, 2025", text:"This is, by far, the best presentation of the summit. It kept my attention the whole time." },
+              { name:"Auhen Cleo Faith C.", role:"SPED Educator", rating:5, date:"Mar 10, 2025", text:"The session was highly informative and practical. The speaker presented evidence-based, neurodiversity-affirming strategies that were clearly explained and directly applicable to educational and therapeutic settings." },
+              { name:"Erwin G. B.",         role:"SPED Educator", rating:5, date:"Feb 28, 2025", text:"The discussion reminded us that we cannot give our best to our students if we do not take care of ourselves first. It highlighted the value of setting healthy boundaries and preventing burnout." },
+              { name:"Jea Cyrill C.",       role:"SPED Educator", rating:5, date:"Feb 14, 2025", text:"Thank you for clarifying the meaning and function of echolalia. The discussion deepened my understanding of echolalia as a communicative behavior rather than merely repetitive speech. I intend to apply the strategies presented in my own teaching practice." },
             ].map((r, i) => (
               <div key={i} style={{ padding:"20px 0", borderBottom: i < 3 ? "1px solid #f0e8df" : "none" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8 }}>
@@ -7726,15 +8003,15 @@ function QuizOverlay({ T, onComplete }) {
 
 /* ── Testimonial components defined at module level so Framer Motion never resets ── */
 const V1_TESTIMONIALS = [
-  { text:"The IEP session alone was worth it. I walked away with three new strategies I used that same week. The certificate was ready instantly — no chasing required.", name:"Sarah M.", role:"Resource Room Teacher, TX", img:"https://randomuser.me/api/portraits/women/1.jpg" },
-  { text:"I've paid hundreds for PD that wasn't as good as this. The AAC module was incredibly practical and the quizzes really locked in the learning.", name:"James K.", role:"Inclusion Specialist, NY", img:"https://randomuser.me/api/portraits/men/2.jpg" },
-  { text:"Recommended it to my entire department. Free, self-paced, and the quality rivals anything I've seen on paid platforms.", name:"Priya D.", role:"Special Ed Coordinator, CA", img:"https://randomuser.me/api/portraits/women/3.jpg" },
-  { text:"The mindfulness session shifted how I approach dysregulation in the classroom. Really well-presented, even after a long day.", name:"Tom R.", role:"Behavior Interventionist, FL", img:"https://randomuser.me/api/portraits/men/4.jpg" },
-  { text:"I was nervous about the quiz format but they're fair — multiple attempts allowed and instant feedback. I felt genuinely proud of my scores.", name:"Lisa H.", role:"SPED Paraprofessional, OH", img:"https://randomuser.me/api/portraits/women/5.jpg" },
-  { text:"The Ablespace giveaway was a bonus, but honestly the content itself kept me coming back. Nine sessions was the perfect amount.", name:"Deb A.", role:"Elementary SPED Teacher, WA", img:"https://randomuser.me/api/portraits/women/6.jpg" },
-  { text:"Every instructor had real classroom experience — not just theory. The behavior intervention session was immediately applicable.", name:"Marcus T.", role:"Behavioral Support Specialist, IL", img:"https://randomuser.me/api/portraits/men/7.jpg" },
-  { text:"Sharing my certificate on LinkedIn got more engagement than anything I've posted. Colleagues started asking where to sign up.", name:"Aisha N.", role:"Special Ed Department Head, GA", img:"https://randomuser.me/api/portraits/women/8.jpg" },
-  { text:"Finally, PD that doesn't feel like a checkbox. I replayed two sessions because the content was that good. Completely free is wild.", name:"Carlos B.", role:"Transition Planning Specialist, AZ", img:"https://randomuser.me/api/portraits/men/9.jpg" },
+  { text:"This is, by far, the best presentation of the summit. It kept my attention the whole time.", name:"April M.", role:"SPED Educator", img:"" },
+  { text:"The session was highly informative and practical. The speaker presented evidence-based, neurodiversity-affirming strategies that were clearly explained and directly applicable to educational and therapeutic settings.", name:"Auhen Cleo Faith C.", role:"SPED Educator", img:"" },
+  { text:"The discussion reminded us that we cannot give our best to our students if we do not take care of ourselves first. It highlighted the value of setting healthy boundaries and preventing burnout.", name:"Erwin G. B.", role:"SPED Educator", img:"" },
+  { text:"Thank you for clarifying the meaning and function of echolalia. The discussion deepened my understanding of echolalia as a communicative behavior rather than merely repetitive speech. I intend to apply the strategies presented in my own teaching practice.", name:"Jea Cyrill C.", role:"SPED Educator", img:"" },
+  { text:"The mindfulness-based strategies and real classroom applications were especially helpful. Thank you for prioritizing both student and teacher wellness.", name:"Auhen Cleo Faith C.", role:"SPED Educator", img:"" },
+  { text:"The session was valuable and inspiring, and it effectively supported professional growth in SPED practices.", name:"Jonal P. P.", role:"SPED Educator", img:"" },
+  { text:"The speaker was engaging, knowledgeable, and provided practical strategies that can be applied directly in SPED settings.", name:"Rizza S. C.", role:"SPED Educator", img:"" },
+  { text:"AbleSpace is a very useful tool to help me with IEP goals and assessments. It will be very helpful for creating and modifying plans according to the needs and skills of my students.", name:"Samantha Jane S. Z.", role:"SPED Educator", img:"" },
+  { text:"The session was highly informative and practical. The speaker presented evidence-based, neurodiversity-affirming strategies that were clearly explained and directly applicable to educational and therapeutic settings.", name:"Auhen Cleo Faith C.", role:"SPED Educator", img:"" },
 ];
 const V1_T_CARD_W = 320;
 
@@ -7742,13 +8019,7 @@ function V1TestiCard({ t, overrideWidth, fixedHeight }) {
   return (
     <div style={{ background:"#FEF5EC", border:"1px solid #E5E7EB", borderRadius:20, padding:24, width:overrideWidth ?? V1_T_CARD_W, height:fixedHeight ?? "auto", boxSizing:"border-box", boxShadow:"0 2px 12px rgba(0,0,0,0.03)", flexShrink:0, display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
       <p style={{ margin:"0 0 18px", fontSize:14, color:"#5D636F", lineHeight:1.7, overflow:"hidden", display:"-webkit-box", WebkitLineClamp:5, WebkitBoxOrient:"vertical" }}>"{t.text}"</p>
-      <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-        <img src={t.img} alt={t.name} style={{ width:40, height:40, borderRadius:"50%", objectFit:"cover", flexShrink:0 }}/>
-        <div>
-          <div style={{ fontSize:14, fontWeight:700, color:"#2B2E33", lineHeight:1.3 }}>{t.name}</div>
-          <div style={{ fontSize:12, color:"#5D636F", marginTop:2 }}>{t.role}</div>
-        </div>
-      </div>
+      <div style={{ fontSize:14, fontWeight:700, color:"#2B2E33" }}>— {t.name}</div>
     </div>
   );
 }
@@ -7892,13 +8163,7 @@ function V1PricingCardOnly({ onGetStarted, onClose, isLoggedIn = false }) {
                   initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-10 }}
                   transition={{ duration:0.35 }}>
                   <p style={{ margin:"0 0 12px", fontSize:14, color:"#2B2E33", lineHeight:1.65, fontStyle:"italic" }}>"{testi.content}"</p>
-                  <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                    <img src={testi.avatar} alt={testi.name} style={{ width:32, height:32, borderRadius:"50%", objectFit:"cover" }}/>
-                    <div>
-                      <div style={{ fontSize:13, fontWeight:700, color:"#111827" }}>{testi.name}</div>
-                      <div style={{ fontSize:12, color:"#707685" }}>{testi.role}</div>
-                    </div>
-                  </div>
+                  <div style={{ fontSize:13, fontWeight:700, color:"#111827" }}>— {testi.name}</div>
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -8042,13 +8307,7 @@ function V1PricingSection({ onGetStarted, isLoggedIn = false }) {
                   style={{ position:"absolute", inset:0, padding:"16px 0" }}
                 >
                   <p style={{ margin:"0 0 14px", fontSize:13, color:"#5D636F", lineHeight:1.65, fontStyle:"italic" }}>"{testi.content}"</p>
-                  <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                    <img src={testi.avatar} alt={testi.name} style={{ width:32, height:32, borderRadius:"50%", objectFit:"cover", flexShrink:0 }}/>
-                    <div>
-                      <div style={{ fontSize:13, fontWeight:700, color:"#111827", lineHeight:1.2 }}>{testi.name}</div>
-                      <div style={{ fontSize:11, color:"#707685", marginTop:2 }}>{testi.role}</div>
-                    </div>
-                  </div>
+                  <div style={{ fontSize:13, fontWeight:700, color:"#111827" }}>— {testi.name}</div>
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -8145,7 +8404,14 @@ function SpAccordionFeature({ T }) {
                     </svg>
                   </button>
                   <div className="sp-acc-content" style={{ display: isOpen ? "block" : "none", opacity: isOpen ? 1 : 0 }}>
-                    <p style={{ margin:"0 0 16px", fontSize:14, color:"rgba(255,255,255,0.6)", lineHeight:1.7 }}>{f.description}</p>
+                    <p style={{ margin:"0 0 12px", fontSize:14, color:"rgba(255,255,255,0.6)", lineHeight:1.7 }}>{f.description}</p>
+                    <a href="https://ablespace.io" target="_blank" rel="noopener noreferrer"
+                      style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:13, fontWeight:600, color:"rgba(255,255,255,0.75)", textDecoration:"none", marginBottom:16, transition:"color .15s" }}
+                      onMouseEnter={e=>e.currentTarget.style.color="#fff"}
+                      onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.75)"}>
+                      Learn More
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </a>
                     {/* Mobile image — shown inline below description */}
                     <div className="sp-acc-mobile-img" style={{ marginBottom:20 }}>
                       <div style={{ width:"100%", aspectRatio:"1840/1424", overflow:"hidden", borderRadius:12 }}>
@@ -8265,7 +8531,11 @@ function SpBentoChart({ T }) {
   );
 }
 
-function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvatar = null, onGoToDashboard, onLogout, onWatchSession, openInstructorName = null, onInstructorOpened, sessions = [], sessionsLoading = false }) {
+function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvatar = null, onGoToDashboard, onLogout, onWatchSession, openInstructorName = null, onInstructorOpened, sessions = [], sessionsLoading = false, testimonialsData = [] }) {
+  const v1Testimonials = testimonialsData.length > 0
+    ? testimonialsData.map(t => ({ text:t.text, name:t.name, role:"SPED Educator", img:"" }))
+    : V1_TESTIMONIALS;
+
   // Build experts from sessions FIRST — used in resolveInstructor which is called in useState init below
   const _expertsFromSessions = (() => {
     const seen = new Set();
@@ -8406,19 +8676,21 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
     }
   }, [openInstructorName]);
 
-  const testimonials = [
-    { stars:5, text:"SPED Summit gave me the practical tools I could use in my classroom the very next day. The sessions are so mindful and packed with the right content.", name:"Maria Gonzalez", role:"Special Ed Teacher", img:"https://images.unsplash.com/photo-1573497491208-6b1acb260507?w=80&h=80&fit=crop&auto=format" },
-    { stars:5, text:"The quality of speakers is outstanding. I learned strategies for supporting DHH students that I had not encountered in years of professional development.", name:"Jordan Brooks", role:"Resource Room Specialist", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&auto=format" },
-    { stars:5, text:"The AAC module changed how I work with my non-verbal students. Practical, research-backed, and delivered by someone who truly understands the classroom.", name:"Priya Nair", role:"AAC Specialist, BCBA", img:"https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=80&h=80&fit=crop&auto=format" },
-    { stars:5, text:"I loved how each session was structured — easy to follow, visually clear, and immediately applicable. This is the PD I have always wished existed.", name:"Devon Castillo", role:"Inclusion Facilitator", img:"https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=80&h=80&fit=crop&auto=format" },
-  ];
+  const testimonials = testimonialsData.length > 0
+    ? testimonialsData.map(t => ({ stars:5, text:t.text, name:t.name, role:"SPED Educator", img:"" }))
+    : [
+        { stars:5, text:"This is, by far, the best presentation of the summit. It kept my attention the whole time.", name:"April M.", role:"SPED Educator", img:"" },
+        { stars:5, text:"The session was highly informative and practical. The speaker presented evidence-based, neurodiversity-affirming strategies.", name:"Auhen Cleo Faith C.", role:"SPED Educator", img:"" },
+        { stars:5, text:"The discussion reminded us that we cannot give our best to our students if we do not take care of ourselves first.", name:"Erwin G. B.", role:"SPED Educator", img:"" },
+        { stars:5, text:"The mindfulness-based strategies and real classroom applications were especially helpful.", name:"Auhen Cleo Faith C.", role:"SPED Educator", img:"" },
+      ];
 
   const faqs = [
-    { q:"Is SPED Summit completely free?",               a:"SPED Summit is free to join. The core sessions and community are available at no cost. A Plus plan unlocks certificates and premium content." },
-    { q:"Can I rewatch if I am unable to attend live?",  a:"Yes! All sessions are recorded and available on demand so you can watch at your own pace." },
-    { q:"How will I get the Completion Certificate?",    a:"After completing all sessions and passing the assessments, a downloadable certificate is automatically generated for you." },
-    { q:"Can I retake quizzes if I don't pass?",         a:"Absolutely. You can retake any quiz as many times as needed until you feel confident." },
-    { q:"What topics are covered at SPED Summit?",       a:"We cover mindfulness, inclusion, AAC, behavior strategies, AI in SPED, literacy, IEP planning, and much more." },
+    { q:"Is SPED Summit completely free?", a:"Yes! SPED Summit is completely free to attend. Registered attendees can access all summit sessions during the event and earn free PD certificates by completing the required assessments.\n\nA Plus Plan also includes access to PD certificates from previous years' SPED Summit sessions, along with premium content, extended access to recordings, and additional resources." },
+    { q:"Can I rewatch if I am unable to attend live?", a:"Absolutely! All summit sessions remain available to watch on-demand throughout the event period, so you can learn at a time that works best for you.\n\nIf you'd like extended access beyond the summit dates, a Plus Plan includes access to session recordings after the event concludes." },
+    { q:"How will I get the Completion Certificate?", a:"After completing a session and successfully passing the accompanying assessment, your PD certificate will be available directly within your SPED Summit account.\n\nPlus Plan members can also access certificates from eligible sessions in previous years' SPED Summit libraries." },
+    { q:"Can I retake quizzes if I don't pass?", a:"Yes! If you don't pass an assessment on your first attempt, you can retake it. Our goal is to support your learning and help you successfully earn your PD certificate." },
+    { q:"What topics are covered at SPED Summit?", a:"SPED Summit features expert-led sessions on a wide range of special education topics, including autism support, AAC and communication, IEP development, data collection, literacy and dyslexia, executive functioning, emotional regulation, inclusion, behavior support, student independence, family collaboration, transition planning, and much more." },
   ];
 
   useEffect(()=>{
@@ -8449,7 +8721,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
   if (selectedInstructor) {
     const instr = selectedInstructor;
     const paras = instr.bio.split("\n\n");
-    const instrSession = sessions.find(s => s.instructor === instr.name) || SESSIONS.find(s => s.instructor === instr.name);
+    const instrSession = sessions.find(s => s.instructor === instr.name || s.instructor?.split("|")[0]?.trim() === instr.name) || SESSIONS.find(s => s.instructor === instr.name);
     const instrSessionAvailable = instrSession ? isSessionAvailable(instrSession.id) : false;
     const instrSessionDate = instrSession?.date || instrSession?.scheduledDate || null;
     return (
@@ -8467,48 +8739,79 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           </div>
         </nav>
 
-        <div style={{ maxWidth:1024, margin:"0 auto", padding:"64px 24px", display:"grid", gridTemplateColumns:"1fr 1fr", gap:80, alignItems:"start" }}>
+        <style>{`.spk-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;padding:64px 24px;max-width:1024px;margin:0 auto;align-items:start}@media(max-width:767px){.spk-detail-grid{grid-template-columns:1fr!important;gap:32px!important;padding:24px 16px!important}}`}</style>
+        <div className="spk-detail-grid">
           {/* Left: Instructor bio */}
           <div>
             {/* Header */}
-            <div style={{ display:"flex", alignItems:"flex-start", gap:20, marginBottom:32 }}>
-              <div style={{ width:120, height:120, borderRadius:16, overflow:"hidden", flexShrink:0, background:T.hover }}>
+            <div style={{ display:"flex", alignItems:"flex-start", gap:16, marginBottom:24 }}>
+              <div style={{ width:88, height:88, borderRadius:14, overflow:"hidden", flexShrink:0, background:T.hover }}>
                 <img src={instr.img} alt={instr.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 20%", display:"block" }}/>
               </div>
               <div style={{ paddingTop:4 }}>
-                <h1 style={{ margin:"0 0 6px", fontSize:28, fontWeight:700, color:T.text, letterSpacing:-.5 }}>{instr.name}</h1>
-                <p style={{ margin:"0 0 4px", fontSize:15, color:T.muted }}>{instr.role}</p>
-                <p style={{ margin:0, fontSize:13, color:T.muted }}>{instr.org}</p>
+                <h1 style={{ margin:"0 0 6px", fontSize:22, fontWeight:700, color:T.text, letterSpacing:-.5 }}>{instr.name}</h1>
+                <p style={{ margin:"0 0 4px", fontSize:14, color:T.muted }}>{instr.role}</p>
+                <p style={{ margin:0, fontSize:12, color:T.muted }}>{instr.org}</p>
               </div>
             </div>
             {/* Bio paragraphs */}
-            <div style={{ borderTop:`1px solid ${T.border}`, paddingTop:28 }}>
+            <div style={{ borderTop:`1px solid ${T.border}`, paddingTop:20 }}>
+              <p style={{ margin:"0 0 12px", fontSize:13, fontWeight:600, color:T.blue, letterSpacing:.5, textTransform:"uppercase" }}>About</p>
               {paras.map((p,i)=>(
-                <p key={i} style={{ margin:"0 0 20px", fontSize:15, color:T.text, lineHeight:1.75 }}>{p}</p>
+                <p key={i} style={{ margin:"0 0 16px", fontSize:14, color:T.text, lineHeight:1.75 }}>{p}</p>
               ))}
             </div>
+            {/* Social handles */}
+            {(instrSession?.instructorLinkedin || instrSession?.instructorTwitter) && (
+              <div style={{ display:"flex", gap:10, marginTop:8 }}>
+                {instrSession?.instructorLinkedin && (
+                  <a href={instrSession.instructorLinkedin.startsWith("http") ? instrSession.instructorLinkedin : `https://linkedin.com/in/${instrSession.instructorLinkedin}`}
+                    target="_blank" rel="noopener noreferrer"
+                    style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"7px 14px", borderRadius:8, border:`1px solid ${T.border}`, background:T.bg, fontSize:13, fontWeight:600, color:"#0a66c2", textDecoration:"none", transition:"border-color .12s" }}
+                    onMouseEnter={e=>e.currentTarget.style.borderColor="#0a66c2"}
+                    onMouseLeave={e=>e.currentTarget.style.borderColor=T.border}>
+                    <Icon name="linkedin-logo" size={16} color="#0a66c2" weight="fill"/>
+                    LinkedIn
+                  </a>
+                )}
+                {instrSession?.instructorTwitter && (
+                  <a href={instrSession.instructorTwitter.startsWith("http") ? instrSession.instructorTwitter : `https://twitter.com/${instrSession.instructorTwitter}`}
+                    target="_blank" rel="noopener noreferrer"
+                    style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"7px 14px", borderRadius:8, border:`1px solid ${T.border}`, background:T.bg, fontSize:13, fontWeight:600, color:"#1d9bf0", textDecoration:"none", transition:"border-color .12s" }}
+                    onMouseEnter={e=>e.currentTarget.style.borderColor="#1d9bf0"}
+                    onMouseLeave={e=>e.currentTarget.style.borderColor=T.border}>
+                    <Icon name="twitter-logo" size={16} color="#1d9bf0" weight="fill"/>
+                    Twitter / X
+                  </a>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Right: Session info */}
-          <div style={{ paddingTop:8 }}>
-            <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.blue, letterSpacing:.5, textTransform:"uppercase" }}>Session</p>
+          <div style={{ paddingTop:0 }}>
+            <p style={{ margin:"0 0 16px", fontSize:13, fontWeight:600, color:T.blue, letterSpacing:.5, textTransform:"uppercase" }}>Session</p>
+            {(() => {
+              const af = instrSession?.availableFrom || instrSession?.available_from;
+              if (!af) return null;
+              const d = new Date(af);
+              const date = d.toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
+              const time = d.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit", hour12:true });
+              return (
+                <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"rgba(245,158,11,0.10)", border:"1px solid rgba(245,158,11,0.25)", borderRadius:7, padding:"5px 12px", fontSize:13, fontWeight:600, color:"#b45309", marginBottom:12 }}>
+                  <Icon name="calendar" size={13} color="#b45309"/>
+                  {date} · {time}
+                </div>
+              );
+            })()}
             <h2 style={{ margin:"0 0 16px", fontSize:28, fontWeight:700, color:T.text, letterSpacing:-.5, lineHeight:1.2 }}>{instr.session}</h2>
             <p style={{ margin:"0 0 24px", fontSize:15, color:T.muted, lineHeight:1.7 }}>{instr.sessionDesc}</p>
 
-            <p style={{ margin:"0 0 14px", fontSize:14, color:T.text, fontWeight:500 }}>In this session:</p>
-            <ul style={{ margin:"0 0 36px", padding:0, listStyle:"none", display:"flex", flexDirection:"column", gap:12 }}>
-              {instr.highlights.map((h,i)=>(
-                <li key={i} style={{ display:"flex", alignItems:"flex-start", gap:10, fontSize:14, color:T.text, lineHeight:1.6 }}>
-                  <span style={{ color:"#8a46ff", fontWeight:700, flexShrink:0, marginTop:1 }}>•</span>
-                  {h}
-                </li>
-              ))}
-            </ul>
 
             {isLoggedIn ? (
               instrSessionAvailable ? (
                 <button onClick={()=>{ if(instrSession) { onWatchSession ? onWatchSession(instrSession) : onGetStarted(instrSession.id); } }}
-                  style={{ padding:"0 24px", height:42, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s", display:"flex", alignItems:"center", gap:8 }}
+                  style={{ padding:"0 24px", height:44, width:"100%", background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}
                   onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
                   onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
                   <Icon name="play-circle" size={16} color="#fff" weight="fill"/>
@@ -8525,11 +8828,11 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                 style={{ padding:"0 24px", height:42, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
                 onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
                 onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-                Register for this session
+                Register Now
               </button>
             )}
           </div>
-        </div>
+        </div>{/* end spk-detail-grid */}
         {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={(role)=>onGetStarted(null,role)}/>}
       </div>
     );
@@ -8559,11 +8862,18 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
         }
         /* ── Mobile (≤767px) ── */
         @media(max-width:767px){
-          .lp-hero-h1 { font-size:36px !important; letter-spacing:-1px !important; line-height:1.1 !important; }
+          .lp-hero-h1 { font-size:32px !important; letter-spacing:-1px !important; line-height:1.15 !important; }
+          .lp-hero-certified { font-size:48px !important; line-height:1.05 !important; }
+          .lp-hero-sub { font-size:14px !important; line-height:1.55 !important; margin-bottom:24px !important; }
+          .lp-hero-logo { height:24px !important; }
+          .lp-welcome-block { margin-bottom:12px !important; }
           .lp-hero-text { padding:0 8px !important; }
           .lp-hero-cta-row { flex-direction:column !important; }
           .lp-hero-cta-row button { width:100% !important; min-width:unset !important; }
-          .lp-trust-badge { flex-wrap:wrap !important; justify-content:center !important; gap:8px !important; }
+          .lp-trust-badge { flex-wrap:nowrap !important; justify-content:center !important; gap:6px !important; }
+          .lp-trust-badge .lp-laurel { height:18px !important; }
+          .lp-trust-badge .lp-trust-text { font-size:12px !important; white-space:nowrap !important; }
+          .lp-trust-badge .lp-trust-avatars img { width:22px !important; height:22px !important; margin-left:-6px !important; }
           .lp-stats-strip { gap:20px !important; flex-wrap:wrap !important; justify-content:center !important; }
           .lp-bento-grid { grid-template-columns:1fr !important; grid-template-rows:auto !important; }
           .lp-bento-grid > * { grid-column:1 !important; grid-row:auto !important; }
@@ -8572,18 +8882,16 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           .lp-session-card { flex-direction:column !important; }
           .lp-session-card-img { width:100% !important; height:180px !important; flex-shrink:0 !important; }
           .lp-session-card > div:last-child { padding:12px 12px 14px !important; }
-          .lp-session-card > div:last-child > div:nth-child(3) { display:none !important; }
           .lp-apply-banner { flex-direction:column !important; align-items:flex-start !important; gap:14px !important; }
           .lp-apply-banner-btn { width:100% !important; justify-content:center !important; height:44px !important; }
           .lp-section-pad { padding:40px 16px !important; }
           .lp-section-pad-top { padding-top:40px !important; padding-left:16px !important; padding-right:16px !important; }
           .lp-social-strip { gap:20px !important; justify-content:flex-start !important; overflow-x:auto !important; padding-bottom:4px !important; }
-          .lp-hero-collage { position:relative !important; bottom:auto !important; left:auto !important; right:auto !important; height:auto !important; overflow:hidden !important; margin-top:24px !important; }
-          .lp-hero-collage-inner { display:flex !important; flex-direction:row !important; gap:10px !important; overflow:visible !important; padding:0 0 12px !important; width:max-content; animation: lp-scroll 22s linear infinite; }
-          .lp-hero-collage-col { flex-direction:row !important; margin-top:0 !important; gap:0 !important; }
-          .lp-hero-collage-card { width:110px !important; height:140px !important; flex-shrink:0 !important; }
-          .lp-hero-collage-card-second { display:none !important; }
-          @keyframes lp-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+          .lp-hero-collage { position:relative !important; bottom:auto !important; left:0 !important; right:0 !important; height:auto !important; overflow:hidden !important; margin-top:24px !important; }
+          .lp-hero-collage-inner { justify-content:center !important; gap:6px !important; height:auto !important; padding:0 8px !important; }
+          .lp-hero-collage-col { gap:6px !important; margin-top:0 !important; }
+          .lp-hero-collage-card { width:calc(25vw - 10px) !important; height:calc(25vw - 10px) !important; border-radius:14px !important; }
+          .lp-hero-collage-card-second { width:calc(25vw - 10px) !important; height:calc(25vw - 10px) !important; border-radius:14px !important; display:block !important; }
           .spk-grid { grid-template-columns:repeat(2,1fr) !important; }
           .spk-card { border-radius:14px !important; }
           .spk-card > div { height:260px !important; }
@@ -8598,7 +8906,8 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
         }
         /* ── Small mobile (≤480px) ── */
         @media(max-width:480px){
-          .lp-hero-h1 { font-size:30px !important; }
+          .lp-hero-h1 { font-size:26px !important; }
+          .lp-hero-certified { font-size:38px !important; }
           .spk-grid { grid-template-columns:1fr !important; }
           .spk-card > div { height:300px !important; }
           .lp-sessions-grid { grid-template-columns:1fr !important; }
@@ -8609,10 +8918,8 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       {/* ── Nav ── */}
       <header style={{ position:"sticky", top:0, zIndex:100, width:"100%", borderBottom: navScrolled ? `1px solid ${T.border}` : "1px solid transparent", background: navScrolled ? "rgba(254,245,236,0.95)" : "transparent", backdropFilter: navScrolled ? "blur(12px)" : "none", transition:"background 0.2s, border-color 0.2s, backdrop-filter 0.2s" }}>
         <nav style={{ maxWidth:1024, margin:"0 auto", height:56, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 24px" }}>
-          <div style={{ display:"flex", alignItems:"center", cursor:"pointer", borderRadius:8, padding:"6px 8px", transition:"background .12s" }}
-            onClick={()=>window.scrollTo({ top:0, behavior:"smooth" })}
-            onMouseEnter={e=>e.currentTarget.style.background=T.hover}
-            onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+          <div style={{ display:"flex", alignItems:"center", cursor:"pointer" }}
+            onClick={()=>window.scrollTo({ top:0, behavior:"smooth" })}>
             <img src="/Container.png" alt="SPED Summit" style={{ height:26, width:"auto", display:"block" }}/>
           </div>
           {/* Desktop links */}
@@ -8679,8 +8986,12 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       {navOpen && createPortal(
         <div style={{ position:"fixed", top:56, left:0, right:0, bottom:0, zIndex:99, background:"rgba(254,245,236,0.97)", backdropFilter:"blur(12px)", borderTop:`1px solid ${T.border}`, display:"flex", flexDirection:"column", padding:"16px 24px 32px" }}>
           <div style={{ display:"flex", flexDirection:"column", gap:4, flex:1 }}>
-            {[["Sessions","sessions"],["Speakers","instructors"]].map(([l,id])=>(
-              <button key={l} onClick={()=>{ document.getElementById(id)?.scrollIntoView({ behavior:"smooth" }); setNavOpen(false); }}
+            {[["Sessions","sessions"],["Speakers","instructors"],["FAQ","help"],["Contact",null]].map(([l,id])=>(
+              <button key={l} onClick={()=>{
+                setNavOpen(false);
+                if(l==="Contact"){ sessionStorage.setItem("page","contact"); sessionStorage.setItem("showLanding","0"); window.location.href=window.location.origin; return; }
+                document.getElementById(id)?.scrollIntoView({ behavior:"smooth" });
+              }}
                 style={{ background:"none", border:"none", fontSize:16, color:T.text, fontWeight:600, cursor:"pointer", padding:"12px 16px", borderRadius:10, textAlign:"left", transition:"background .15s" }}
                 onMouseEnter={e=>e.currentTarget.style.background="rgba(245,158,11,0.1)"}
                 onMouseLeave={e=>e.currentTarget.style.background="none"}>{l}</button>
@@ -8710,8 +9021,8 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       )}
 
       {/* ── Hero ── */}
-      <section style={{ paddingTop:48, paddingBottom:64, background:T.bg, position:"relative", overflow:"hidden", height:900, marginTop:56 }} className="lp-hero-section">
-        <style>{`@media(max-width:767px){ .lp-hero-section{ min-height:unset !important; padding-top:32px !important; padding-bottom:48px !important; } .lp-hero-content{ position:relative !important; top:auto !important; left:auto !important; right:auto !important; bottom:auto !important; padding:48px 20px 0 !important; } }`}</style>
+      <section style={{ paddingTop:48, paddingBottom:64, background:T.bg, position:"relative", overflowX:"clip", height:900, marginTop:56 }} className="lp-hero-section">
+        <style>{`@media(max-width:767px){ .lp-hero-section{ height:auto !important; min-height:unset !important; padding-top:4px !important; padding-bottom:0 !important; } .lp-hero-content{ position:relative !important; top:auto !important; left:auto !important; right:auto !important; bottom:auto !important; padding:4px 20px 0 !important; } }`}</style>
 
 
         {/* ── Centered content wrapper ── */}
@@ -8722,34 +9033,32 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
 
           {/* Rating badge */}
           <div className="animate-fade-in-up" style={{ opacity:0, animationDelay:"0.2s", marginBottom:16 }}>
-            <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"#FEF5EC", border:`1px solid ${T.border}`, borderRadius:8, padding:"5px 14px" }}>
-              <div style={{ width:22, height:22, border:`1px solid ${T.border}`, borderRadius:5, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <Icon name="calendar" size={12} color="#f59e0b"/>
-              </div>
-              <span style={{ fontSize:13, fontWeight:600, color:T.text }}>13th Jul – 12th Aug 2026</span>
+            <div style={{ display:"inline-flex", alignItems:"center", gap:7, background:"rgba(245,158,11,0.10)", border:"1px solid rgba(245,158,11,0.28)", borderRadius:8, padding:"6px 14px" }}>
+              <Icon name="calendar" size={13} color="#b45309"/>
+              <span style={{ fontSize:13, fontWeight:700, color:"#b45309" }}>13th Jul – 12th Aug 2026</span>
             </div>
           </div>
 
           {/* Welcome to SPED Summit — inline below date */}
-          <div style={{ marginBottom:20 }}>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:16, marginBottom:4 }}>
-              <div style={{ flex:1, maxWidth:80, height:1.5, background:"linear-gradient(to right, transparent, #e8a030)" }}/>
-              <p style={{ margin:0, fontSize:10, fontWeight:700, letterSpacing:2, color:"#c8872a", textTransform:"uppercase" }}>Welcome to</p>
-              <div style={{ flex:1, maxWidth:80, height:1.5, background:"linear-gradient(to left, transparent, #e8a030)" }}/>
+          <div className="lp-welcome-block" style={{ marginBottom:20 }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:12, marginBottom:6 }}>
+              <div style={{ flex:1, maxWidth:60, height:1.5, background:"linear-gradient(to right, transparent, #e8a030)" }}/>
+              <p style={{ margin:0, fontSize:9, fontWeight:700, letterSpacing:2, color:"#c8872a", textTransform:"uppercase" }}>Welcome to</p>
+              <div style={{ flex:1, maxWidth:60, height:1.5, background:"linear-gradient(to left, transparent, #e8a030)" }}/>
             </div>
-            <img src="/Logo SPED Summit.png" alt="SPED Summit" style={{ height:32, width:"auto", display:"block", margin:"0 auto" }}/>
+            <img src="/Logo SPED Summit.png" alt="SPED Summit" className="lp-hero-logo" style={{ height:32, width:"auto", display:"block", margin:"0 auto" }}/>
           </div>
 
           {/* Main heading */}
           <h1 className="animate-fade-in-up lp-hero-h1" style={{ opacity:0, animationDelay:"0.3s", margin:"0 0 20px", paddingTop:0, paddingBottom:0, fontSize:72, fontWeight:800, color:T.text, lineHeight:1.08, letterSpacing:-3 }}>
             Watch. Learn. Earn.<br/>
-            <span style={{ backgroundImage:"linear-gradient(90deg, rgba(74, 119, 212, 1) 0%, rgba(74, 119, 212, 1) 100%)", WebkitBackgroundClip:"text", backgroundClip:"text", WebkitTextFillColor:"transparent", color:"transparent", fontSize:83, fontWeight:800, lineHeight:"75px", paddingTop:0, paddingBottom:0 }}>
+            <span className="lp-hero-certified" style={{ backgroundImage:"linear-gradient(90deg, rgba(74, 119, 212, 1) 0%, rgba(74, 119, 212, 1) 100%)", WebkitBackgroundClip:"text", backgroundClip:"text", WebkitTextFillColor:"transparent", color:"transparent", fontSize:83, fontWeight:800, lineHeight:"75px", paddingTop:0, paddingBottom:0 }}>
               Get Certified.
             </span>
           </h1>
 
           {/* Sub heading */}
-          <p className="animate-fade-in-up" style={{ opacity:0, animationDelay:"0.4s", margin:"0 0 32px", fontSize:18, color:T.muted, lineHeight:1.65, maxWidth:560, marginLeft:"auto", marginRight:"auto" }}>
+          <p className="animate-fade-in-up lp-hero-sub" style={{ opacity:0, animationDelay:"0.4s", margin:"0 0 32px", fontSize:18, color:T.muted, lineHeight:1.65, maxWidth:560, marginLeft:"auto", marginRight:"auto" }}>
             Learn from leading SPED experts, complete interactive quizzes, and earn real professional development certificates.
           </p>
 
@@ -8772,15 +9081,15 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           {/* Trusted badge */}
           <div className="lp-trust-badge" style={{ marginTop:20, display:"flex", alignItems:"center", justifyContent:"center", gap:10 }}>
             {/* Left laurel */}
-            <img src="/laurel wreath.svg" alt="" style={{ height:28, width:"auto", filter:"brightness(0) saturate(100%) invert(58%) sepia(51%) saturate(500%) hue-rotate(5deg) brightness(90%) contrast(90%)" }}/>
-            <div style={{ display:"flex" }}>
+            <img className="lp-laurel" src="/laurel wreath.svg" alt="" style={{ height:28, width:"auto", flexShrink:0, filter:"brightness(0) saturate(100%) invert(58%) sepia(51%) saturate(500%) hue-rotate(5deg) brightness(90%) contrast(90%)" }}/>
+            <div className="lp-trust-avatars" style={{ display:"flex", flexShrink:0 }}>
               {experts.slice(0,4).map((e,i) => (
                 <img key={i} src={e.img} alt={e.name} style={{ width:32, height:32, borderRadius:"50%", border:"2px solid #fff", marginLeft:i===0?0:-10, objectFit:"cover" }}/>
               ))}
             </div>
-            <span style={{ fontSize:14, color:T.muted }}>Trusted by <strong style={{ color:T.blue }}>30,000+</strong> educators worldwide</span>
+            <span className="lp-trust-text" style={{ fontSize:14, color:T.muted }}>Trusted by <strong style={{ color:T.blue }}>30,000+</strong> educators worldwide</span>
             {/* Right laurel (mirrored) */}
-            <img src="/laurel wreath.svg" alt="" style={{ height:28, width:"auto", transform:"scaleX(-1)", filter:"brightness(0) saturate(100%) invert(58%) sepia(51%) saturate(500%) hue-rotate(5deg) brightness(90%) contrast(90%)" }}/>
+            <img className="lp-laurel" src="/laurel wreath.svg" alt="" style={{ height:28, width:"auto", flexShrink:0, transform:"scaleX(-1)", filter:"brightness(0) saturate(100%) invert(58%) sepia(51%) saturate(500%) hue-rotate(5deg) brightness(90%) contrast(90%)" }}/>
           </div>
         </div>
 
@@ -8805,7 +9114,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           const n = experts.length;
           if (n === 0) return null;
           return (
-            <div className="lp-hero-collage" style={{ position:"absolute", bottom:-80, left:0, right:0, height:420, overflow:"hidden", zIndex:2 }}>
+            <div className="lp-hero-collage" style={{ position:"absolute", bottom:-80, left:0, right:0, height:420, overflow:"hidden", zIndex:2, background:"#FEF5EC" }}>
               <div className="lp-hero-collage-inner" style={{ display:"flex", justifyContent:"center", gap:10, height:400 }}>
                 {[...cols, ...cols].map((col, ci) => {
                   const top = experts[ci % n];
@@ -8833,7 +9142,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       </section>
 
       {/* ── Social proof strip ── */}
-      <section style={{ borderTop:`1px solid ${T.border}`, borderBottom:`1px solid ${T.border}`, padding:"28px 24px" }}>
+      <section style={{ borderBottom:`1px solid ${T.border}`, padding:"28px 24px" }}>
         <div style={{ maxWidth:1024, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"center", gap:48, flexWrap:"wrap" }}>
           <span style={{ fontSize:13, color:T.muted, fontWeight:500, whiteSpace:"nowrap" }}>Trusted by educators at</span>
           {[
@@ -9099,44 +9408,53 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                 className="lp-bento-grid"
               style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20 }}
               >
-                {/* Card 1 — 100% Free */}
-                <motion.div variants={itemVariants}>
-                  <div className="lp-bento-card" style={{ ...cardBase, position:"relative", display:"flex", flexDirection:"column", justifyContent:"flex-end", padding:"28px 28px 24px" }}>
-                    <div style={{ position:"relative" }}>
-                      <div style={{ fontSize:"clamp(36px,6vw,64px)", fontWeight:900, color:T.text, letterSpacing:-3, lineHeight:1 }}>100%</div>
-                      <div style={{ fontSize:13, color:T.muted, marginTop:4, fontWeight:500 }}>Free to attend</div>
-                    </div>
-                  </div>
-                </motion.div>
-
-                {/* Card 2 — Completion Rate */}
-                <motion.div variants={itemVariants}>
-                  <div className="lp-bento-card" style={{ ...cardBase, padding:"28px 28px 24px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
-                    <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
-                      <div>
-                        <div style={{ fontSize:15, fontWeight:700, color:T.text, marginBottom:2 }}>Completion Rate</div>
-                        <div style={{ fontSize:13, color:T.muted }}>Summit-wide average</div>
+                {/* Card 1 — Sessions Start Date */}
+                {(() => {
+                  const earliest = sessions.filter(s => s.availableFrom).sort((a,b) => new Date(a.availableFrom) - new Date(b.availableFrom))[0];
+                  const startLabel = earliest ? new Date(earliest.availableFrom).toLocaleDateString("en-US", { day:"2-digit", month:"short", year:"numeric" }) : "Jul 13, 2026";
+                  return (
+                    <motion.div variants={itemVariants}>
+                      <div className="lp-bento-card" style={{ ...cardBase, padding:"28px 28px 24px", display:"flex", alignItems:"center", gap:18 }}>
+                        <div style={{ width:52, height:52, borderRadius:12, background:"rgba(249,115,22,0.12)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                          <Icon name="calendar" size={26} color="#f97316"/>
+                        </div>
+                        <div>
+                          <div style={{ fontSize:16, fontWeight:600, color:T.text, lineHeight:1.4 }}>Sessions start</div>
+                          <div style={{ fontSize:16, fontWeight:600, color:T.text, lineHeight:1.3 }}>{startLabel}</div>
+                        </div>
                       </div>
-                      <span style={{ fontSize:11, fontWeight:700, color:"#2563eb", background:"rgba(37,99,235,0.1)", padding:"3px 9px", borderRadius:99 }}>Live</span>
+                    </motion.div>
+                  );
+                })()}
+
+                {/* Card 2 — Speakers & Sessions count */}
+                {(() => {
+                  const speakerCount = new Set(sessions.filter(s=>s.instructor).map(s=>s.instructor)).size;
+                  const sessionCount = sessions.length;
+                  return (
+                    <motion.div variants={itemVariants}>
+                      <div className="lp-bento-card" style={{ ...cardBase, padding:"28px 28px 24px", display:"flex", alignItems:"center", gap:18 }}>
+                        <div style={{ width:52, height:52, borderRadius:12, background:"rgba(249,115,22,0.12)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                          <Icon name="users" size={26} color="#f97316"/>
+                        </div>
+                        <div>
+                          <div style={{ fontSize:16, fontWeight:600, color:T.text, lineHeight:1.3 }}>{speakerCount} speakers</div>
+                          <div style={{ fontSize:16, fontWeight:600, color:T.text, lineHeight:1.4 }}>and {sessionCount} sessions</div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })()}
+
+                {/* Card 3 — Professional Development Certificates */}
+                <motion.div variants={itemVariants}>
+                  <div className="lp-bento-card" style={{ ...cardBase, padding:"28px 28px 24px", display:"flex", alignItems:"center", gap:18 }}>
+                    <div style={{ width:52, height:52, borderRadius:12, background:"rgba(249,115,22,0.12)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                      <Icon name="certificate" size={26} color="#f97316"/>
                     </div>
                     <div>
-                      <div style={{ fontSize:"clamp(32px,6vw,52px)", fontWeight:900, color:T.text, lineHeight:1, letterSpacing:-2 }}>78%</div>
-                      <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, color:T.muted, marginTop:6 }}>
-                        <span>Sessions finished</span><span>This quarter</span>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-
-                {/* Card 3 — Learn at Your Pace */}
-                <motion.div variants={itemVariants}>
-                  <div className="lp-bento-card" style={{ ...cardBase, padding:"28px 28px 24px", display:"flex", flexDirection:"column", justifyContent:"flex-end" }}>
-                    <div style={{ width:40, height:40, borderRadius:10, background:"rgba(16,185,129,0.1)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:14 }}>
-                      <Icon name="play-circle" size={20} color="#10b981"/>
-                    </div>
-                    <div style={{ fontSize:15, fontWeight:700, color:T.text, marginBottom:6 }}>Learn at Your Pace</div>
-                    <div style={{ fontSize:13, color:T.muted, lineHeight:1.55 }}>
-                      All sessions recorded. Rewatch anytime, on any device.
+                      <div style={{ fontSize:16, fontWeight:600, color:T.text, lineHeight:1.3 }}>Professional Development</div>
+                      <div style={{ fontSize:16, fontWeight:600, color:T.text, lineHeight:1.4 }}>Certificates</div>
                     </div>
                   </div>
                 </motion.div>
@@ -9148,7 +9466,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       </section>
 
       {/* ── Instructors ── */}
-      <section id="instructors" style={{ padding:"80px 0", borderBottom:`1px solid ${T.border}`, overflow:"hidden", position:"relative" }}>
+      <section id="instructors" style={{ padding:"80px 0", borderBottom:`1px solid ${T.border}`, overflowX:"clip", position:"relative" }}>
         <style>{`
           @keyframes spk-marquee {
             from { transform: translateX(0); }
@@ -9177,8 +9495,6 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               
               
             }
-            /* Reveal full color on hover */
-            .spk-card:hover .spk-img { filter: grayscale(0%);  }
             /* Slightly stronger scrim on hover */
             .spk-card:hover .spk-overlay {
               background: linear-gradient(180deg, transparent 0%, rgba(43, 38, 32, 0.45) 35%, rgba(43, 38, 32, 0.94) 100%);
@@ -9186,15 +9502,15 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           }
           .spk-card:active { transform: scale(0.97); }
 
-          /* Full grayscale by default */
+          /* Full color always */
           .spk-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             object-position: center 15%;
             display: block;
-            filter: grayscale(100%);
-            transition: filter 350ms ease, transform 400ms cubic-bezier(0.23,1,0.32,1);
+            filter: grayscale(0%);
+            transition: transform 400ms cubic-bezier(0.23,1,0.32,1);
           }
 
           /* Name/role overlay — warm dark scrim on the photo */
@@ -9275,7 +9591,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           </div>
 
           {/* Apply banner */}
-          <div style={{ maxWidth:1200, margin:"48px auto 0", padding:"0 24px" }}>
+          <div style={{ maxWidth:1200, margin:"48px auto 0", padding:0 }}>
             <div className="lp-apply-banner" style={{ borderRadius:16, background:T.bg, border:`1px solid ${T.border}`, padding:"22px 28px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:24 }}>
               <div style={{ display:"flex", alignItems:"center", gap:16 }}>
                 <div style={{ width:40, height:40, borderRadius:10, background:"rgba(245,158,11,0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
@@ -9443,7 +9759,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                       style={{ background:"#FEF5EC", border:`1px solid ${T.border}`, borderRadius:12, boxShadow:"0 8px 24px rgba(43, 46, 51, 0.08), 0 2px 6px rgba(43, 46, 51, 0.04)", display:"flex", flexDirection:"column", alignItems:"stretch", overflow:"hidden", cursor: cardClickable ? "pointer" : "default", height:"100%", opacity: 1 }}
                       onClick={handleCardClick}>
 
-                      {/* ── Top: instructor image with name overlay ── */}
+                      {/* ── Top: instructor image with name/role overlay ── */}
                       <div className="lp-session-card-img" style={{ flexShrink:0, width:"100%", height:220, position:"relative", background:C.gray200 }}>
                         {avatarSrc
                           ? <img src={avatarSrc} alt={s.instructor} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top center", display:"block" }}/>
@@ -9451,26 +9767,27 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                               <span style={{ fontSize:40, fontWeight:800, color:"rgba(255,255,255,0.3)" }}>{(s.instructor||"?")[0]}</span>
                             </div>
                         }
-                        <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.25) 45%, transparent 75%)" }}/>
-                        <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"0 10px 10px" }}>
-                          <div style={{ fontSize:13, fontWeight:700, color:"#fff", lineHeight:1.25, overflow:"hidden", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" }}>{s.instructor || "Instructor"}</div>
+                        <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 55%)", pointerEvents:"none" }}/>
+                        <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"10px 12px 12px" }}>
+                          <div style={{ fontSize:14, fontWeight:700, color:"#fff", lineHeight:1.2 }}>{s.instructor?.split("|")[0]?.trim()}</div>
+                          {s.instructor?.includes("|") && (
+                            <div style={{ fontSize:12, color:"rgba(255,255,255,0.75)", marginTop:2 }}>{s.instructor.split("|")[1]?.trim()}</div>
+                          )}
                         </div>
                       </div>
 
                       {/* ── Bottom: session details ── */}
-                      <div style={{ flex:1, minWidth:0, padding:"16px 18px 18px", display:"flex", flexDirection:"column" }}>
-                        <div style={{ marginBottom:8 }}>
-                          <span style={{ display:"inline-block", fontSize:11, fontWeight:600, padding:"2px 7px", borderRadius:4, background:catBadge.bg, color:catBadge.color, letterSpacing:.2, textTransform:"uppercase" }}>
-                            {catBadge.label}
-                          </span>
-                        </div>
-                        <div style={{ fontSize:15, fontWeight:700, color:C.gray900, lineHeight:1.35, marginBottom:6, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>{s.title}</div>
+                      <div style={{ flex:1, minWidth:0, padding:"14px 16px 16px", display:"flex", flexDirection:"column", gap:8 }}>
+                        {/* Date pill — highlighted, above title */}
                         {(date || time) && (
-                          <div style={{ fontSize:12, fontWeight:500, color:C.gray700, marginBottom:6 }}>
+                          <div style={{ display:"inline-flex", alignItems:"center", gap:5, background:"rgba(245,158,11,0.12)", color:"#b45309", border:"1px solid rgba(245,158,11,0.25)", borderRadius:6, padding:"4px 9px", fontSize:11, fontWeight:700, marginBottom:8, alignSelf:"flex-start" }}>
+                            <Icon name="calendar" size={11} color="#b45309"/>
                             {[date, time].filter(Boolean).join(" · ")}
                           </div>
                         )}
-                        <div style={{ fontSize:12, color:C.gray600, lineHeight:1.5, marginBottom:14, flex:1, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
+                        {/* Session title */}
+                        <div style={{ fontSize:15, fontWeight:700, color:C.gray900, lineHeight:1.35, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>{s.title}</div>
+                        <div style={{ fontSize:12, color:C.gray600, lineHeight:1.5, flex:1, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
                           {s.description}
                         </div>
                         <button
@@ -9545,15 +9862,15 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
 
           {/* Desktop: vertical scrolling columns */}
           <div className="t1-desktop" style={{ justifyContent:"center", gap:20, maxHeight:740, overflow:"hidden", maskImage:"linear-gradient(to bottom,transparent,black 15%,black 85%,transparent)", WebkitMaskImage:"linear-gradient(to bottom,transparent,black 15%,black 85%,transparent)" }}>
-            <V1TestiCol items={V1_TESTIMONIALS.slice(0,3)} duration={15}/>
-            <div className="t1-col2"><V1TestiCol items={V1_TESTIMONIALS.slice(3,6)} duration={19}/></div>
-            <div className="t1-col3"><V1TestiCol items={V1_TESTIMONIALS.slice(6,9)} duration={17}/></div>
+            <V1TestiCol items={v1Testimonials.slice(0,3)} duration={15}/>
+            <div className="t1-col2"><V1TestiCol items={v1Testimonials.slice(3,6)} duration={19}/></div>
+            <div className="t1-col3"><V1TestiCol items={v1Testimonials.slice(6,9)} duration={17}/></div>
           </div>
 
           {/* Mobile: horizontal auto-scrolling strip */}
           <div className="t1-mobile" style={{ overflow:"hidden", maskImage:"linear-gradient(to right,transparent,black 8%,black 92%,transparent)", WebkitMaskImage:"linear-gradient(to right,transparent,black 8%,black 92%,transparent)" }}>
             <div className="t1-mobile-track">
-              {[...V1_TESTIMONIALS, ...V1_TESTIMONIALS].map((t,i) => (
+              {[...v1Testimonials, ...v1Testimonials].map((t,i) => (
                 <div key={i} style={{ width:280, height:220, flexShrink:0, boxSizing:"border-box" }}>
                   <V1TestiCard t={t} overrideWidth={280} fixedHeight={220}/>
                 </div>
@@ -9583,7 +9900,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                 <span style={{ fontSize:18, color:T.muted, flexShrink:0, transform: faqOpen===i?"rotate(45deg)":"none", display:"block", transition:"transform .2s", lineHeight:1 }}>+</span>
               </button>
               {faqOpen===i && (
-                <div style={{ fontSize:14, color:T.muted, lineHeight:1.7, paddingBottom:18 }}>{f.a}</div>
+                <div style={{ fontSize:14, color:T.muted, lineHeight:1.7, paddingBottom:18, whiteSpace:"pre-line" }}>{f.a}</div>
               )}
             </div>
           ))}
@@ -9633,39 +9950,54 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               <p style={{ margin:"0 0 24px", fontSize:14, color:T.muted, lineHeight:1.7, maxWidth:280 }}>
                 SPED Summit is a free professional development platform for Special Education professionals — built by educators, for educators.
               </p>
-              <div style={{ display:"flex", gap:10 }}>
+            </div>
+
+            {/* About column */}
+            <div>
+              <div style={{ fontSize:11, fontWeight:700, color:T.text, letterSpacing:.8, textTransform:"uppercase", marginBottom:16 }}>About</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                {["Sessions","Speakers","FAQ","Contact"].map(l => (
+                  <a key={l} href="#"
+                    onClick={e=>{ e.preventDefault(); const sectionMap={"Sessions":"sessions","Speakers":"instructors","FAQ":"help"}; if(sectionMap[l]){ document.getElementById(sectionMap[l])?.scrollIntoView({behavior:"smooth"}); } if(l==="Contact"){ sessionStorage.setItem("page","contact"); sessionStorage.setItem("showLanding","0"); window.location.href=window.location.origin; } }}
+                    style={{ fontSize:14, color:T.muted, textDecoration:"none", transition:"color .12s" }}
+                    onMouseEnter={e=>e.currentTarget.style.color=T.text}
+                    onMouseLeave={e=>e.currentTarget.style.color=T.muted}>{l}</a>
+                ))}
+              </div>
+            </div>
+
+            {/* Connect column */}
+            <div>
+              <div style={{ fontSize:11, fontWeight:700, color:T.text, letterSpacing:.8, textTransform:"uppercase", marginBottom:16 }}>Connect</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
                 {[
-                  { label:"YouTube",   icon:null, svg:"M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z" },
-                  { label:"Instagram", icon:null, svg:"M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" },
-                  { label:"Facebook",  icon:null, svg:"M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" },
-                ].map(({ label, icon, svg }) => (
-                  <a key={label} href="#" aria-label={label}
-                    style={{ width:32, height:32, borderRadius:8, border:`1px solid ${T.border}`, background:T.bg, display:"flex", alignItems:"center", justifyContent:"center", transition:"background .12s", textDecoration:"none" }}
-                    onMouseEnter={e=>e.currentTarget.style.background=T.hover}
-                    onMouseLeave={e=>e.currentTarget.style.background=T.bg}>
-                    {icon ? <Icon name={icon} size={14} color={T.muted}/> : <svg width="14" height="14" viewBox="0 0 24 24" fill={T.muted}><path d={svg}/></svg>}
+                  { label:"Facebook",  svg:"M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" },
+                  { label:"Instagram", svg:"M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" },
+                  { label:"YouTube",   svg:"M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z" },
+                ].map(({ label, svg }) => (
+                  <a key={label} href="#" style={{ display:"inline-flex", alignItems:"center", gap:8, fontSize:14, color:T.muted, textDecoration:"none", transition:"color .12s" }}
+                    onMouseEnter={e=>e.currentTarget.style.color=T.text}
+                    onMouseLeave={e=>e.currentTarget.style.color=T.muted}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d={svg}/></svg>
+                    {label}
                   </a>
                 ))}
               </div>
             </div>
 
-            {/* Links columns */}
-            {[
-              { heading:"Platform", links:["Sessions","Instructors","Giveaways","Schedule","Community"] },
-              { heading:"Company",  links:["About","Blog","Careers","Press","Contact"] },
-              { heading:"Legal",    links:["Privacy Policy","Terms of Service","Cookie Policy","Accessibility"] },
-            ].map(({ heading, links }) => (
-              <div key={heading}>
-                <div style={{ fontSize:11, fontWeight:600, color:T.muted, letterSpacing:.8, textTransform:"uppercase", marginBottom:16 }}>{heading}</div>
-                <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-                  {links.map(l => (
-                    <a key={l} href="#" style={{ fontSize:14, color:T.muted, textDecoration:"none", transition:"color .12s" }}
-                      onMouseEnter={e=>e.currentTarget.style.color=T.text}
-                      onMouseLeave={e=>e.currentTarget.style.color=T.muted}>{l}</a>
-                  ))}
-                </div>
+            {/* Legal column */}
+            <div>
+              <div style={{ fontSize:11, fontWeight:700, color:T.text, letterSpacing:.8, textTransform:"uppercase", marginBottom:16 }}>Legal</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                {["Privacy Policy","Terms of Service"].map(l => (
+                  <a key={l} href="#"
+                    onClick={e=>{ e.preventDefault(); if(l==="Privacy Policy"){ sessionStorage.setItem("page","privacy-policy"); sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("legalReturnTo","landing"); window.location.href=window.location.origin; } if(l==="Terms of Service"){ sessionStorage.setItem("page","terms-of-service"); sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("legalReturnTo","landing"); window.location.href=window.location.origin; } }}
+                    style={{ fontSize:14, color:T.muted, textDecoration:"none", transition:"color .12s" }}
+                    onMouseEnter={e=>e.currentTarget.style.color=T.text}
+                    onMouseLeave={e=>e.currentTarget.style.color=T.muted}>{l}</a>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         </div>
 
@@ -9741,9 +10073,9 @@ function LandingPageV2({ onGetStarted, sessions = [] }) {
   ];
 
   const TESTIMONIALS = [
-    { text:"SPED Summit gave me practical tools I could use the very next day.", name:"Maria Gonzalez", role:"Special Ed Teacher", img:"https://images.unsplash.com/photo-1573497491208-6b1acb260507?w=80&h=80&fit=crop&auto=format" },
-    { text:"The AAC module changed how I work with my non-verbal students.", name:"Priya Nair", role:"AAC Specialist, BCBA", img:"https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=80&h=80&fit=crop&auto=format" },
-    { text:"Best professional development I've ever attended. And it was free!", name:"Devon Castillo", role:"Inclusion Facilitator", img:"https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=80&h=80&fit=crop&auto=format" },
+    { text:"This is, by far, the best presentation of the summit. It kept my attention the whole time.", name:"April M.", role:"SPED Educator", img:"" },
+    { text:"The session was highly informative and practical. The speaker presented evidence-based, neurodiversity-affirming strategies that were clearly explained and directly applicable to educational and therapeutic settings.", name:"Auhen Cleo Faith C.", role:"SPED Educator", img:"" },
+    { text:"The discussion reminded us that we cannot give our best to our students if we do not take care of ourselves first. It highlighted the value of setting healthy boundaries and preventing burnout.", name:"Erwin G. B.", role:"SPED Educator", img:"" },
   ];
 
   const S = { /* inline style helpers */
@@ -10006,13 +10338,7 @@ function LandingPageV2({ onGetStarted, sessions = [] }) {
                   {Array(5).fill(0).map((_,j)=><Icon key={j} name="star" size={16} color="#f59e0b" weight="fill"/>)}
                 </div>
                 <p style={{ margin:"0 0 20px", fontSize:15, color:T2.text, lineHeight:1.7 }}>"{t.text}"</p>
-                <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-                  <img src={t.img} alt={t.name} style={{ width:40, height:40, borderRadius:"50%", objectFit:"cover" }}/>
-                  <div>
-                    <div style={{ fontSize:14, fontWeight:700, color:T2.text }}>{t.name}</div>
-                    <div style={{ fontSize:12, color:T2.muted }}>{t.role}</div>
-                  </div>
-                </div>
+                <div style={{ fontSize:14, fontWeight:700, color:T2.text }}>— {t.name}</div>
               </div>
             ))}
           </div>
@@ -10036,7 +10362,7 @@ function LandingPageV2({ onGetStarted, sessions = [] }) {
               <summary style={{ fontSize:16, fontWeight:700, color:T2.text, cursor:"pointer", listStyle:"none", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                 {faq.q} <Icon name="caret-down" size={18} color={T2.muted}/>
               </summary>
-              <p style={{ margin:"12px 0 0", fontSize:15, color:T2.muted, lineHeight:1.7 }}>{faq.a}</p>
+              <p style={{ margin:"12px 0 0", fontSize:15, color:T2.muted, lineHeight:1.7, whiteSpace:"pre-line" }}>{faq.a}</p>
             </details>
           ))}
         </div>
@@ -10080,7 +10406,7 @@ function getSessionQuestions(session) {
   );
 }
 
-function SessionQuizModal({ session, quizState, onClose, onSaveProgress, onFinish }) {
+function SessionQuizModal({ session, quizState, onClose, onSaveProgress, onFinish, onViewCertificate }) {
   const questions = getSessionQuestions(session);
   const [currentQ, setCurrentQ] = useState(quizState.currentQ || 0);
   const [answers,  setAnswers]  = useState(quizState.answers  || {});
@@ -10240,7 +10566,7 @@ function SessionQuizModal({ session, quizState, onClose, onSaveProgress, onFinis
                   onSaveProgress(session.id, { currentQ:0, answers:{} });
                 }}>Try Again</Btn>
               )}
-              <Btn onClick={onClose}>{passed ? "View Certificate" : "Close"}</Btn>
+              <Btn onClick={passed ? () => { onClose(); onViewCertificate && onViewCertificate(session); } : onClose}>{passed ? "View Certificate" : "Close"}</Btn>
             </div>
           </div>
         )}
@@ -10250,9 +10576,94 @@ function SessionQuizModal({ session, quizState, onClose, onSaveProgress, onFinis
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
+   CONTACT PAGE
+───────────────────────────────────────────────────────────────────────────── */
+function ContactPage() {
+  const cards = [
+    {
+      logo: "/Container.png",
+      logoBg: "rgba(100,144,232,0.10)",
+      iconColor: "#6490E8",
+      title: "Talk to SPED Summit",
+      subtitle: "Questions about sessions, certificates, or your learning journey?",
+      body: "Reach out to our team and we'll get back to you within 24 hours.",
+      email: "support@spedsummit.com",
+      label: "support@spedsummit.com",
+    },
+    {
+      logo: "/ablespace.svg",
+      logoBg: "rgba(249,115,22,0.10)",
+      iconColor: "#f97316",
+      title: "Talk to AbleSpace",
+      subtitle: "Interested in our platform or want to partner with us?",
+      body: "Write to the AbleSpace team and one of our representatives will be in touch.",
+      email: "hello@ablespace.io",
+      label: "hello@ablespace.io",
+    },
+  ];
+
+  return (
+    <div style={{ minHeight:"100vh", background:"#FEF5EC", fontFamily:"'Inter',-apple-system,sans-serif" }}>
+      {/* Header banner */}
+      <div style={{ background:"#6490E8", padding:"56px 32px 48px" }}>
+        <div style={{ maxWidth:1200, margin:"0 auto" }}>
+          <p style={{ margin:"0 0 10px", fontSize:13, fontWeight:700, color:"rgba(255,255,255,0.7)", letterSpacing:1.2, textTransform:"uppercase" }}>Get in touch</p>
+          <h1 style={{ margin:"0 0 12px", fontSize:"clamp(28px,4vw,42px)", fontWeight:800, color:"#fff", lineHeight:1.15 }}>Have a question?<br/>We're here to help.</h1>
+          <p style={{ margin:0, fontSize:16, color:"rgba(255,255,255,0.8)", lineHeight:1.6 }}>Choose the right team below and we'll make sure your message gets to the right place.</p>
+        </div>
+      </div>
+
+      {/* Cards */}
+      <div style={{ maxWidth:1200, margin:"0 auto", padding:"48px 32px 64px" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))", gap:24 }}>
+          {cards.map(card => (
+            <div key={card.title} style={{ background:"#fff", borderRadius:20, border:"1px solid rgba(0,0,0,0.07)", padding:"36px 32px", display:"flex", flexDirection:"column", gap:0 }}>
+              {/* Logo */}
+              <div style={{ width:64, height:64, borderRadius:16, background:card.logoBg, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:24, padding:10, boxSizing:"border-box" }}>
+                <img src={card.logo} alt="" style={{ width:"100%", height:"100%", objectFit:"contain" }}/>
+              </div>
+              {/* Title */}
+              <div style={{ fontSize:20, fontWeight:800, color:"#1a1a1a", marginBottom:8 }}>{card.title}</div>
+              {/* Subtitle */}
+              <p style={{ margin:"0 0 16px", fontSize:14, fontStyle:"italic", color:"#6b7280", lineHeight:1.55 }}>{card.subtitle}</p>
+              {/* Body */}
+              <p style={{ margin:"0 0 24px", fontSize:15, color:"#374151", lineHeight:1.7 }}>{card.body}</p>
+              {/* Email CTA */}
+              <a href={`mailto:${card.email}`}
+                style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"12px 20px", borderRadius:10, border:`1px solid ${card.iconColor}22`, background:card.logoBg, color:card.iconColor, fontSize:14, fontWeight:600, textDecoration:"none", transition:"filter .15s", marginTop:"auto" }}
+                onMouseEnter={e=>e.currentTarget.style.filter="brightness(0.93)"}
+                onMouseLeave={e=>e.currentTarget.style.filter="brightness(1)"}>
+                <Icon name="envelope" size={15} color={card.iconColor} weight="fill"/>
+                {card.label}
+              </a>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer note */}
+        <p style={{ textAlign:"center", fontSize:13, color:"#9ca3af", marginTop:40, lineHeight:1.6 }}>
+          You can also reach us on social media — we typically respond within a business day.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
    APP
 ───────────────────────────────────────────────────────────────────────────── */
 export default function App() {
+  // ── Check for public certificate link ──
+  const certParam = new URLSearchParams(window.location.search).get("cert");
+  const certIdParam = new URLSearchParams(window.location.search).get("cert_id");
+  if (certIdParam) return <PublicCertificatePageById certId={certIdParam}/>;
+  if (certParam) {
+    try {
+      const certData = JSON.parse(decodeURIComponent(escape(atob(certParam))));
+      return <PublicCertificatePage data={certData}/>;
+    } catch(e) { /* invalid cert param, continue normally */ }
+  }
+
   // ── ALL useState declarations MUST come before any useCallback/useEffect ──
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLanding, setShowLanding] = useState(() => sessionStorage.getItem("showLanding") !== "0");
@@ -10287,6 +10698,26 @@ export default function App() {
   const [certSession,       setCertSession]       = useState(null);
   const [reviewSession,     setReviewSession]     = useState(null);
   const [,                  setReviews]           = useState({});
+  const [testimonialsData,  setTestimonialsData]  = useState([]);
+
+  useEffect(() => {
+    const url = "https://eziioterdhlaqatrnubx.supabase.co/storage/v1/object/public/session%20resources/Comments/Curated_Landing_Page_Testimonials.xlsx";
+    fetch(url)
+      .then(r => r.arrayBuffer())
+      .then(buf => {
+        const wb = XLSX.read(buf, { type: "array" });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        // rows[0] is header: [Speaker, Name, Selected Testimonial]
+        const parsed = rows.slice(1).filter(r => r[1] && r[2]).map(r => ({
+          speaker: r[0] || "",
+          name: r[1],
+          text: r[2],
+        }));
+        setTestimonialsData(parsed);
+      })
+      .catch(() => {}); // silently fall back to hardcoded on error
+  }, []);
 
   const fetchSessions = useCallback(() => {
     supabase.from("sessions").select("*").then(({ data, error }) => {
@@ -10294,7 +10725,7 @@ export default function App() {
 
       const toSession = s => ({
         id: s.id, title: s.title, category: s.category,
-        instructor: s.instructor || "", instructorBio: s.instructor_bio || "", instructorImage: s.instructor_image || "",
+        instructor: s.instructor || "", instructorBio: s.instructor_bio || "", instructorImage: s.instructor_image || "", instructorLinkedin: s.linkedin || "", instructorTwitter: s.twitter || "",
         duration: s.duration || "60 mins", resources: s.resources || 0,
         progress: 0, status: "not-started",
         description: s.description || "",
@@ -10347,7 +10778,7 @@ export default function App() {
         sessionStorage.removeItem("loggedOut");
         const meta = session.user.user_metadata || {};
         const name = meta.full_name || meta.name || session.user.email || "User";
-        setUserName(name.split(" ")[0] || name);
+        setUserName(name);
         setUserEmail(session.user.email || "");
         setUserAvatar(meta.avatar_url || meta.picture || null);
         setIsLoggedIn(true);
@@ -10435,7 +10866,7 @@ export default function App() {
       if (session?.user) {
         const meta = session.user.user_metadata || {};
         const name = meta.full_name || meta.name || session.user.email || "User";
-        setUserName(name.split(" ")[0] || name);
+        setUserName(name);
         setUserEmail(session.user.email || "");
         setUserAvatar(meta.avatar_url || meta.picture || null);
         setIsLoggedIn(true);
@@ -10505,7 +10936,20 @@ export default function App() {
   }
 
   function handleAssessmentClick(session) { setAssessmentSession(session); }
-  function handleCertificateClick(session) { setCertSession(session); }
+  async function handleCertificateClick(session) {
+    const qs = quizStates[session.id] || {};
+    const score = qs.score ?? 0;
+    const today = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
+    const certId = `SS-${session.id}${score}-2024`;
+    const certData = { recipientName:userName, sessionTitle:session.title, instructor:session.instructor, instructorImage:session.instructorImage||"", duration:session.duration, score, description:session.description, certId, date:today };
+    try {
+      const dbId = await saveCertToSupabase(certData);
+      window.open(`${window.location.origin}/?cert_id=${dbId}`, "_blank");
+    } catch(e) {
+      // Fallback to base64 URL if Supabase fails
+      window.open(`${window.location.origin}/?cert=${btoa(JSON.stringify(certData))}`, "_blank");
+    }
+  }
 
   function handleSaveProgress(sessionId, partial) {
     updateQuizState(sessionId, partial);
@@ -10617,7 +11061,7 @@ export default function App() {
   function renderPage() {
     if (page==="session-detail" && activeSession) {
       const liveSession = sessions.find(s => s.id === activeSession.id) || activeSession;
-      return <SessionDetail session={liveSession} onBack={()=>nav(sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress} adminName={userName} adminAvatar={userAvatar} isDark={isDark} quizState={quizStates[liveSession.id]||{}} onFinishAssessment={handleAssessmentFinish} userEmail={userEmail}/>;
+      return <SessionDetail session={liveSession} onBack={()=>nav(sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress} adminName={userName} adminAvatar={userAvatar} isDark={isDark} quizState={quizStates[liveSession.id]||{}} onFinishAssessment={handleAssessmentFinish} userEmail={userEmail} onCertificateClick={handleCertificateClick}/>;
     }
     if (page==="past-season" && pastSeasonPageId) {
       const season = seasons.find(s => s.id === pastSeasonPageId);
@@ -10730,21 +11174,24 @@ export default function App() {
         </div>
       );
     }
-    if (page==="dashboard") { return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenPastSeason={(id)=>{ setPastSeasonPageId(id); nav("past-season"); }} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} seasons={seasons} schedule={scheduleData.length > 0 ? scheduleData : SCHEDULE} externalFilter={dashFilter} onFilterChange={setDashFilter} sessionsLoading={sessionsLoading}/>; }
+    if (page==="dashboard") { return <Dashboard onNavigate={nav} onNavigateToSeason={navToSeason} onOpenPastSeason={(id)=>{ setPastSeasonPageId(id); nav("past-season"); }} onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onEnroll={enroll} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} seasons={seasons} schedule={scheduleData.length > 0 ? scheduleData : SCHEDULE} externalFilter={dashFilter} onFilterChange={setDashFilter} sessionsLoading={sessionsLoading} testimonialsData={testimonialsData}/>; }
     if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} seasons={seasons} sessionsLoading={sessionsLoading}/>;
     if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} schedule={scheduleData.length > 0 ? scheduleData : SCHEDULE}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
-    if (page==="community") return <CommunityPage toast={toast}/>;
+    if (page==="community") return <CommunityPage toast={toast} userName={userName} userAvatar={userAvatar} sessions={sessions}/>;
     if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick} userName={userName} sessions={sessions} seasons={seasons}/>;
     if (page==="past-sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} seasons={seasons} sessionsLoading={sessionsLoading}/>;
     if (page==="notifications")  return <NotificationsPage />;
     if (page==="profile")   return <ProfilePage toast={toast} userName={userName} userEmail={userEmail} userAvatar={userAvatar} onNameChange={setUserName} onBack={() => nav("dashboard")}/>;
+    if (page==="contact")   return <ContactPage/>;
+    if (page==="privacy-policy") return <PrivacyPolicyPage onBack={()=>{ const from=sessionStorage.getItem("legalReturnTo")||"landing"; sessionStorage.removeItem("legalReturnTo"); if(from==="dashboard"){ sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("page","dashboard"); setShowLanding(false); setPage("dashboard"); } else { sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("page","dashboard"); setShowLanding(true); setPage("dashboard"); } }}/>;
+    if (page==="terms-of-service") return <TermsOfServicePage onBack={()=>{ const from=sessionStorage.getItem("legalReturnTo")||"landing"; sessionStorage.removeItem("legalReturnTo"); if(from==="dashboard"){ sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("page","dashboard"); setShowLanding(false); setPage("dashboard"); } else { sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("page","dashboard"); setShowLanding(true); setPage("dashboard"); } }}/>;
     return null;
   }
 
   const activePage = page==="session-detail" ? "sessions" : page;
 
-  if (showLanding) {
+  if (showLanding && page !== "contact" && page !== "privacy-policy" && page !== "terms-of-service") {
     const handleGetStarted = (sessionId) => {
       setIsLoggedIn(true);
       setShowLanding(false);
@@ -10758,7 +11205,7 @@ export default function App() {
     return (
       <>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToPage} onWatchSession={(s)=>{ setShowLanding(false); openSession(s, "landing"); }} onLogout={async ()=>{ sessionStorage.setItem("loggedOut","1"); sessionStorage.removeItem("loggedIn"); sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("page","dashboard"); await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setEnrolledIds(new Set()); setQuizStates({}); }} openInstructorName={openInstructorName} onInstructorOpened={()=>setOpenInstructorName(null)} sessions={sessions} sessionsLoading={sessionsLoading}/>
+        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToPage} onWatchSession={(s)=>{ setShowLanding(false); openSession(s, "landing"); }} onLogout={async ()=>{ sessionStorage.setItem("loggedOut","1"); sessionStorage.removeItem("loggedIn"); sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("page","dashboard"); await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setEnrolledIds(new Set()); setQuizStates({}); }} openInstructorName={openInstructorName} onInstructorOpened={()=>setOpenInstructorName(null)} sessions={sessions} sessionsLoading={sessionsLoading} testimonialsData={testimonialsData}/>
       </>
     );
   }
@@ -10821,7 +11268,7 @@ export default function App() {
         `}</style>
 
         <div className="app-tabbar-wrap">
-          {activePage !== "profile" && page !== "session-detail" && page !== "past-season" && <TabBar
+          {activePage !== "profile" && page !== "session-detail" && page !== "past-season" && page !== "contact" && page !== "privacy-policy" && page !== "terms-of-service" && <TabBar
             active={activePage}
             onChange={nav}
           />}
@@ -10859,6 +11306,7 @@ export default function App() {
           onClose={() => setAssessmentSession(null)}
           onSaveProgress={handleSaveProgress}
           onFinish={handleAssessmentFinish}
+          onViewCertificate={handleCertificateClick}
         />
       )}
       {/* Password Reset Modal */}
@@ -10905,15 +11353,6 @@ export default function App() {
           onSubmit={({ sessionId, rating, review }) => {
             setReviews(r => ({ ...r, [sessionId]: { rating, review, date: new Date().toISOString() } }));
           }}
-        />
-      )}
-      {/* Certificate Modal */}
-      {certSession && (
-        <CertificateModal
-          session={certSession}
-          quizState={quizStates[certSession.id] || {}}
-          onClose={() => setCertSession(null)}
-          userName={userName}
         />
       )}
       <ToastContainer toasts={toasts} onRemove={remove}/>
