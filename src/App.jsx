@@ -5903,18 +5903,13 @@ const COMMON_TIMEZONES = [
 ];
 
 function TimezoneModal({ detectedTz, onConfirm }) {
-  // Always read directly from browser so aliases (e.g. Asia/Calcutta → Asia/Kolkata) resolve correctly
   const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  function resolveToListValue(tz) {
-    if (!tz) return "UTC";
-    // exact match first
-    if (COMMON_TIMEZONES.find(t => t.value === tz)) return tz;
-    // try case-insensitive / alias match by region
-    const lower = tz.toLowerCase();
-    const found = COMMON_TIMEZONES.find(t => lower.includes(t.value.split("/")[1]?.toLowerCase() || ""));
-    return found ? found.value : "UTC";
-  }
-  const [selected, setSelected] = useState(() => resolveToListValue(browserTz) || resolveToListValue(detectedTz));
+  // Build the options list, injecting the browser tz at the top if it's not already there
+  const inList = COMMON_TIMEZONES.find(t => t.value === browserTz);
+  const tzOptions = inList
+    ? COMMON_TIMEZONES
+    : [{ label: browserTz.replace(/_/g," "), value: browserTz }, ...COMMON_TIMEZONES];
+  const [selected, setSelected] = useState(browserTz);
 
   function fmtNow(tz) {
     try {
@@ -5939,7 +5934,7 @@ function TimezoneModal({ detectedTz, onConfirm }) {
         <label style={{ fontSize:13, fontWeight:600, color:"#374151", display:"block", marginBottom:6 }}>Your timezone</label>
         <select value={selected} onChange={e=>setSelected(e.target.value)}
           style={{ width:"100%", padding:"10px 12px", border:"1px solid #e5e7eb", borderRadius:10, fontSize:14, color:"#111827", background:"#fff", outline:"none", marginBottom:8, cursor:"pointer", boxSizing:"border-box" }}>
-          {COMMON_TIMEZONES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+          {tzOptions.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
         </select>
         <div style={{ fontSize:12, color:"#9ca3af", marginBottom:24 }}>Current time in selected zone: <strong style={{ color:"#374151" }}>{fmtNow(selected)}</strong></div>
 
