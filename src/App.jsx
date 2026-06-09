@@ -10649,6 +10649,12 @@ function ContactPage() {
 
   return (
     <div style={{ minHeight:"100vh", background:"#FEF5EC", fontFamily:"'Inter',-apple-system,sans-serif" }}>
+      {/* Nav */}
+      <header style={{ background:"#fff", borderBottom:"1px solid rgba(0,0,0,0.08)", padding:"0 32px", height:56, display:"flex", alignItems:"center", position:"sticky", top:0, zIndex:100 }}>
+        <img src="/Container.png" alt="SPED Summit" style={{ height:26, cursor:"pointer" }}
+          onClick={()=>{ sessionStorage.setItem("showLanding","1"); window.location.href=window.location.origin; }}/>
+      </header>
+
       {/* Header banner */}
       <div style={{ background:"#6490E8", padding:"56px 32px 48px" }}>
         <div style={{ maxWidth:1200, margin:"0 auto" }}>
