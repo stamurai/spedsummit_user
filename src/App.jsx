@@ -4920,12 +4920,6 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
             </div>
           ))}
         </div>
-        <div style={{ marginBottom:16 }}>
-          <div style={{ fontSize:13, fontWeight:600, color:C.gray600, marginBottom:6 }}>Language</div>
-          <select style={{...inputSt, appearance:"none"}} value={form.language} onChange={e=>setForm(f=>({...f,language:e.target.value}))}>
-            {["English (US)","Spanish","French","German","Mandarin"].map(l=><option key={l}>{l}</option>)}
-          </select>
-        </div>
         <div style={{ paddingTop:20, display:"flex", justifyContent:"flex-end" }}>
           <Btn onClick={save}>Save</Btn>
         </div>
