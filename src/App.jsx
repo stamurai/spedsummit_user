@@ -4593,7 +4593,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
   }, []);
 
   async function submitPost() {
-    if (!newBody.trim() || !selectedSession) return;
+    if (!newBody.trim()) return;
     const session = sessions.find(s => String(s.id) === selectedSession);
     const body = newBody.trim();
     const tempId = "tmp-" + Date.now();
@@ -4601,7 +4601,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
     setComments(prev => [...prev, optimistic]);
     setNewBody("");
     setPosting(true);
-    const { data, error } = await supabase.from("session_comments").insert({ session_id:selectedSession, session_title:session?.title||"", author_name:userName||"Anonymous", body, parent_id:null }).select().single();
+    const { data, error } = await supabase.from("session_comments").insert({ session_id:selectedSession||null, session_title:session?.title||"", author_name:userName||"Anonymous", body, parent_id:null }).select().single();
     if (!error && data) setComments(prev => prev.map(c => c.id === tempId ? data : c));
     else if (error) toast({ type:"error", message:"Could not save — check Supabase table." });
     setPosting(false);
@@ -4621,13 +4621,9 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
     else if (error) toast({ type:"error", message:"Could not save reply." });
   }
 
-  // Only top-level comments (no parent_id), ordered oldest first per session
+  // Only top-level comments (no parent_id), chronological
   const topLevel = comments.filter(c => !c.parent_id);
   const filteredTop = filterSession === "all" ? topLevel : topLevel.filter(c => c.session_id === filterSession);
-  // Group by session preserving order
-  const sessionOrder = [];
-  const seenSessions = {};
-  filteredTop.forEach(c => { if (!seenSessions[c.session_id]) { seenSessions[c.session_id] = true; sessionOrder.push(c.session_id); } });
 
   return (
     <div style={{ padding:"28px 32px", background:C.gray50, minHeight:"100%", boxSizing:"border-box", display:"flex", gap:24, alignItems:"flex-start" }}>
@@ -4674,8 +4670,8 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
                 </div>
               )}
             </div>
-            <button onClick={submitPost} disabled={!newBody.trim()||!selectedSession||posting}
-              style={{ flexShrink:0, padding:"7px 20px", borderRadius:99, border:"none", background:newBody.trim()&&selectedSession&&!posting?C.primary:C.gray200, color:"#fff", fontSize:13, fontWeight:700, cursor:newBody.trim()&&selectedSession&&!posting?"pointer":"default", transition:"background .15s" }}>
+            <button onClick={submitPost} disabled={!newBody.trim()||posting}
+              style={{ flexShrink:0, padding:"7px 20px", borderRadius:99, border:"none", background:newBody.trim()&&!posting?C.primary:C.gray200, color:"#fff", fontSize:13, fontWeight:700, cursor:newBody.trim()&&!posting?"pointer":"default", transition:"background .15s" }}>
               {posting ? "…" : "Post"}
             </button>
           </div>
@@ -4694,90 +4690,80 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
             <div style={{ fontSize:13, color:C.gray400, marginTop:4 }}>Be the first to share your thoughts!</div>
           </div>
         )}
-        {!loading && sessionOrder.map((sid, si) => {
-          const sessionComments = filteredTop.filter(c => c.session_id === sid);
-          const sessionTitle = sessionComments[0]?.session_title || "";
+        {!loading && filteredTop.map(c => {
+          const replies = comments.filter(r => r.parent_id === c.id);
+          const rs = replyState[c.id] || {};
           return (
-            <React.Fragment key={sid}>
-              {/* Session header divider */}
-              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10, marginTop: si > 0 ? 20 : 0 }}>
-                <div style={{ flex:1, height:1, background:C.gray200 }}/>
-                <div style={{ display:"flex", alignItems:"center", gap:6, padding:"4px 12px", borderRadius:99, background:C.white, border:`1px solid ${C.gray200}` }}>
-                  <Icon name="play-circle" size={12} color={C.primary} weight="fill"/>
-                  <span style={{ fontSize:12, fontWeight:700, color:C.gray700, maxWidth:360, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{sessionTitle}</span>
+            <div key={c.id} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, marginBottom:8, padding:"12px 14px" }}>
+              {/* Comment header */}
+              <div style={{ display:"flex", gap:8, alignItems:"flex-start", marginBottom:6 }}>
+                <Avatar name={c.author_name} src={c.author_name===userName?userAvatar:undefined} size={28}/>
+                <div>
+                  <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                    <span style={{ fontWeight:700, fontSize:13, color:C.gray900 }}>{c.author_name}</span>
+                    <span style={{ fontSize:11, color:C.gray400 }}>{c.created_at ? new Date(c.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : ""}</span>
+                  </div>
+                  {c.session_title && (
+                    <div style={{ display:"inline-flex", alignItems:"center", gap:4, marginTop:3 }}>
+                      <Icon name="play-circle" size={11} color={C.primary} weight="fill"/>
+                      <span style={{ fontSize:11, color:C.primary, fontWeight:600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:320 }}>{c.session_title}</span>
+                    </div>
+                  )}
                 </div>
-                <div style={{ flex:1, height:1, background:C.gray200 }}/>
+              </div>
+              {/* Body */}
+              <div style={{ fontSize:14, color:C.gray700, lineHeight:1.6, marginLeft:36, marginBottom:8 }}>{c.body}</div>
+              {/* Actions */}
+              <div style={{ marginLeft:36, display:"flex", gap:8, alignItems:"center" }}>
+                <button onClick={async ()=>{ const isLiked=liked[c.id]; const newLikes=isLiked?Math.max(0,(c.likes||0)-1):(c.likes||0)+1; setLiked(prev=>({...prev,[c.id]:!isLiked})); await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id); setComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x)); }}
+                  style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${liked[c.id]?"rgba(239,68,68,0.3)":C.gray200}`, background:liked[c.id]?"rgba(239,68,68,0.08)":"transparent", color:liked[c.id]?"#ef4444":C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
+                  <Icon name="heart" size={12} color={liked[c.id]?"#ef4444":C.gray400} weight={liked[c.id]?"fill":"regular"}/>{c.likes||0}
+                </button>
+                <button onClick={()=>setReplyState(prev=>({ ...prev, [c.id]:{ ...prev[c.id], open:!(prev[c.id]?.open), body:prev[c.id]?.body||"" } }))}
+                  style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${C.gray200}`, background:rs.open?C.primaryLight:"transparent", color:rs.open?C.primary:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
+                  <Icon name="chat-circle" size={12} color={rs.open?C.primary:C.gray400}/>Reply{replies.length > 0 ? ` (${replies.length})` : ""}
+                </button>
               </div>
 
-              {sessionComments.map(c => {
-                const replies = comments.filter(r => r.parent_id === c.id);
-                const rs = replyState[c.id] || {};
-                return (
-                  <div key={c.id} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, marginBottom:8, padding:"12px 14px" }}>
-                    {/* Comment header */}
-                    <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:6 }}>
-                      <Avatar name={c.author_name} src={c.author_name===userName?userAvatar:undefined} size={28}/>
-                      <div>
-                        <span style={{ fontWeight:700, fontSize:13, color:C.gray900 }}>{c.author_name}</span>
-                        <span style={{ fontSize:11, color:C.gray400, marginLeft:8 }}>{c.created_at ? new Date(c.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : ""}</span>
+              {/* Replies */}
+              {replies.length > 0 && (
+                <div style={{ marginLeft:36, marginTop:10, borderLeft:`2px solid ${C.gray100}`, paddingLeft:12, display:"flex", flexDirection:"column", gap:8 }}>
+                  {replies.map(r => (
+                    <div key={r.id}>
+                      <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:4 }}>
+                        <Avatar name={r.author_name} src={r.author_name===userName?userAvatar:undefined} size={22}/>
+                        <span style={{ fontWeight:700, fontSize:12, color:C.gray900 }}>{r.author_name}</span>
+                        <span style={{ fontSize:11, color:C.gray400 }}>{r.created_at ? new Date(r.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric"}) : ""}</span>
                       </div>
+                      <div style={{ fontSize:13, color:C.gray700, lineHeight:1.55, marginLeft:30 }}>{r.body}</div>
                     </div>
-                    {/* Body */}
-                    <div style={{ fontSize:14, color:C.gray700, lineHeight:1.6, marginLeft:36, marginBottom:8 }}>{c.body}</div>
-                    {/* Actions */}
-                    <div style={{ marginLeft:36, display:"flex", gap:8, alignItems:"center" }}>
-                      <button onClick={async ()=>{ const isLiked=liked[c.id]; const newLikes=isLiked?Math.max(0,(c.likes||0)-1):(c.likes||0)+1; setLiked(prev=>({...prev,[c.id]:!isLiked})); await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id); setComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x)); }}
-                        style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${liked[c.id]?"rgba(239,68,68,0.3)":C.gray200}`, background:liked[c.id]?"rgba(239,68,68,0.08)":"transparent", color:liked[c.id]?"#ef4444":C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
-                        <Icon name="heart" size={12} color={liked[c.id]?"#ef4444":C.gray400} weight={liked[c.id]?"fill":"regular"}/>{c.likes||0}
-                      </button>
-                      <button onClick={()=>setReplyState(prev=>({ ...prev, [c.id]:{ ...prev[c.id], open:!(prev[c.id]?.open), body:prev[c.id]?.body||"" } }))}
-                        style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${C.gray200}`, background:rs.open?C.primaryLight:"transparent", color:rs.open?C.primary:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
-                        <Icon name="chat-circle" size={12} color={rs.open?C.primary:C.gray400}/>Reply{replies.length > 0 ? ` (${replies.length})` : ""}
-                      </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Reply composer */}
+              {rs.open && (
+                <div style={{ marginLeft:36, marginTop:10, display:"flex", gap:8, alignItems:"flex-start" }}>
+                  <Avatar name={userName||"You"} src={userAvatar} size={24}/>
+                  <div style={{ flex:1, border:`1px solid ${C.gray200}`, borderRadius:10, padding:"8px 10px", background:C.gray50, display:"flex", flexDirection:"column", gap:8 }}>
+                    <textarea
+                      autoFocus
+                      value={rs.body||""}
+                      onChange={e=>setReplyState(prev=>({ ...prev, [c.id]:{ ...prev[c.id], body:e.target.value } }))}
+                      onKeyDown={e=>{ if(e.key==="Enter" && e.metaKey) submitReply(c.id, c.session_id, c.session_title); }}
+                      placeholder={`Reply to ${c.author_name}…`}
+                      rows={2}
+                      style={{ border:"none", background:"transparent", outline:"none", fontSize:13, color:C.gray800, resize:"none", lineHeight:1.5, fontFamily:"inherit", width:"100%" }}/>
+                    <div style={{ display:"flex", justifyContent:"flex-end", gap:6 }}>
+                      <button onClick={()=>setReplyState(prev=>({ ...prev, [c.id]:{ open:false, body:"" } }))}
+                        style={{ padding:"4px 14px", borderRadius:99, border:`1px solid ${C.gray200}`, background:"transparent", color:C.gray500, fontSize:12, fontWeight:600, cursor:"pointer" }}>Cancel</button>
+                      <button onClick={()=>submitReply(c.id, c.session_id, c.session_title)} disabled={!rs.body?.trim()}
+                        style={{ padding:"4px 14px", borderRadius:99, border:"none", background:rs.body?.trim()?C.primary:C.gray200, color:"#fff", fontSize:12, fontWeight:700, cursor:rs.body?.trim()?"pointer":"default" }}>Reply</button>
                     </div>
-
-                    {/* Replies */}
-                    {replies.length > 0 && (
-                      <div style={{ marginLeft:36, marginTop:10, borderLeft:`2px solid ${C.gray100}`, paddingLeft:12, display:"flex", flexDirection:"column", gap:8 }}>
-                        {replies.map(r => (
-                          <div key={r.id}>
-                            <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:4 }}>
-                              <Avatar name={r.author_name} src={r.author_name===userName?userAvatar:undefined} size={22}/>
-                              <span style={{ fontWeight:700, fontSize:12, color:C.gray900 }}>{r.author_name}</span>
-                              <span style={{ fontSize:11, color:C.gray400 }}>{r.created_at ? new Date(r.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric"}) : ""}</span>
-                            </div>
-                            <div style={{ fontSize:13, color:C.gray700, lineHeight:1.55, marginLeft:30 }}>{r.body}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Reply composer */}
-                    {rs.open && (
-                      <div style={{ marginLeft:36, marginTop:10, display:"flex", gap:8, alignItems:"flex-start" }}>
-                        <Avatar name={userName||"You"} src={userAvatar} size={24}/>
-                        <div style={{ flex:1, border:`1px solid ${C.gray200}`, borderRadius:10, padding:"8px 10px", background:C.gray50, display:"flex", flexDirection:"column", gap:8 }}>
-                          <textarea
-                            autoFocus
-                            value={rs.body||""}
-                            onChange={e=>setReplyState(prev=>({ ...prev, [c.id]:{ ...prev[c.id], body:e.target.value } }))}
-                            onKeyDown={e=>{ if(e.key==="Enter" && e.metaKey) submitReply(c.id, c.session_id, c.session_title); }}
-                            placeholder={`Reply to ${c.author_name}…`}
-                            rows={2}
-                            style={{ border:"none", background:"transparent", outline:"none", fontSize:13, color:C.gray800, resize:"none", lineHeight:1.5, fontFamily:"inherit", width:"100%" }}/>
-                          <div style={{ display:"flex", justifyContent:"flex-end", gap:6 }}>
-                            <button onClick={()=>setReplyState(prev=>({ ...prev, [c.id]:{ open:false, body:"" } }))}
-                              style={{ padding:"4px 14px", borderRadius:99, border:`1px solid ${C.gray200}`, background:"transparent", color:C.gray500, fontSize:12, fontWeight:600, cursor:"pointer" }}>Cancel</button>
-                            <button onClick={()=>submitReply(c.id, c.session_id, c.session_title)} disabled={!rs.body?.trim()}
-                              style={{ padding:"4px 14px", borderRadius:99, border:"none", background:rs.body?.trim()?C.primary:C.gray200, color:"#fff", fontSize:12, fontWeight:700, cursor:rs.body?.trim()?"pointer":"default" }}>Reply</button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </div>
-                );
-              })}
-            </React.Fragment>
+                </div>
+              )}
+            </div>
           );
         })}
       </div>
