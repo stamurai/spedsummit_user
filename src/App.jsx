@@ -4628,11 +4628,15 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
   // Build session buckets: group top-level comments by session_title (or "General" if none)
   const topLevel = comments.filter(c => !c.parent_id);
 
-  // Collect unique session buckets in order of most-recent comment
+  // Separate general (no session) from session-bucketed
+  const generalComments = topLevel.filter(c => !c.session_title);
+  const sessionTopLevel = topLevel.filter(c => !!c.session_title);
+
+  // Collect session buckets in order of most-recent comment
   const bucketMap = {};
-  topLevel.forEach(c => {
-    const key = c.session_title || "__general__";
-    if (!bucketMap[key]) bucketMap[key] = { title: c.session_title || "", comments: [], latestAt: c.created_at };
+  sessionTopLevel.forEach(c => {
+    const key = c.session_title;
+    if (!bucketMap[key]) bucketMap[key] = { title: c.session_title, comments: [], latestAt: c.created_at };
     bucketMap[key].comments.push(c);
     if (c.created_at > bucketMap[key].latestAt) bucketMap[key].latestAt = c.created_at;
   });
@@ -4705,8 +4709,8 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
   return (
     <div style={{ padding:"28px 32px", background:C.gray50, minHeight:"100%", boxSizing:"border-box", display:"flex", gap:24, alignItems:"flex-start" }}>
 
-      {/* Left — composer */}
-      <div style={{ width:300, flexShrink:0, position:"sticky", top:24 }}>
+      {/* Left — composer + general comments */}
+      <div style={{ width:300, flexShrink:0 }}>
         <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"12px 16px" }}>
           <div style={{ display:"flex", gap:10, alignItems:"flex-start", marginBottom:12 }}>
             <Avatar name={userName||"You"} src={userAvatar} size={36}/>
@@ -4753,6 +4757,22 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
             </button>
           </div>
         </div>
+
+        {/* General comments (no session) */}
+        {!loading && generalComments.length > 0 && (
+          <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, marginTop:16, overflow:"hidden" }}>
+            <div style={{ padding:"12px 16px", borderBottom:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", gap:8 }}>
+              <div style={{ width:30, height:30, borderRadius:8, background:C.gray100, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <Icon name="chat-circle-dots" size={15} color={C.gray500}/>
+              </div>
+              <div>
+                <div style={{ fontSize:13, fontWeight:800, color:C.gray900 }}>General</div>
+                <div style={{ fontSize:11, color:C.gray400 }}>{generalComments.length} comment{generalComments.length!==1?"s":""}</div>
+              </div>
+            </div>
+            <div>{generalComments.map(c => renderComment(c))}</div>
+          </div>
+        )}
       </div>
 
       {/* Right — session buckets */}
