@@ -4704,9 +4704,9 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
                     <span style={{ fontSize:11, color:C.gray400 }}>{c.created_at ? new Date(c.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : ""}</span>
                   </div>
                   {c.session_title && (
-                    <div style={{ display:"inline-flex", alignItems:"center", gap:4, marginTop:3 }}>
+                    <div style={{ display:"inline-flex", alignItems:"center", gap:4, marginTop:4, padding:"3px 9px 3px 7px", borderRadius:99, border:`1px solid ${C.gray200}`, background:C.white }}>
                       <Icon name="play-circle" size={11} color={C.primary} weight="fill"/>
-                      <span style={{ fontSize:11, color:C.primary, fontWeight:600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:320 }}>{c.session_title}</span>
+                      <span style={{ fontSize:11, color:C.primary, fontWeight:600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:280 }}>{c.session_title}</span>
                     </div>
                   )}
                 </div>
