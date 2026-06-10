@@ -9561,8 +9561,12 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           .spk-desktop-only { display: grid !important; }
           .spk-mobile-marquee { display: none !important; }
           @media (max-width: 900px) {
-            .spk-desktop-only { display: none !important; }
-            .spk-mobile-marquee { display: block !important; }
+            .spk-desktop-only { grid-template-columns: repeat(2, 1fr) !important; }
+            .spk-desktop-only .spk-card > div { height: 260px !important; }
+          }
+          @media (max-width: 500px) {
+            .spk-desktop-only { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+            .spk-desktop-only .spk-card > div { height: 200px !important; }
           }
 
           /* Card = just the image container, no separate plate */
