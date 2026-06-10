@@ -1,5 +1,4 @@
 {
-  "toolbar": {
-    "items": []
-  }
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist"
 }
