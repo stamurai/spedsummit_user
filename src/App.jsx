@@ -8941,7 +8941,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           .lp-bento-card { height:160px !important; min-height:unset !important; }
           .lp-stat-cards { grid-template-columns:repeat(2,1fr) !important; gap:12px !important; }
           .lp-stat-cards > * { grid-column:auto !important; }
-          .lp-stat-cards > *:last-child { grid-column:1 / -1 !important; }
+          .lp-stat-cards > *:last-child { grid-column:1 / -1 !important; max-width:calc(50% - 6px) !important; margin:0 auto !important; width:100% !important; }
           .lp-stat-card { padding:16px 14px !important; gap:12px !important; height:auto !important; min-height:unset !important; }
           .lp-stat-card-icon { width:40px !important; height:40px !important; border-radius:10px !important; flex-shrink:0 !important; }
           .lp-stat-card-text { font-size:13px !important; line-height:1.3 !important; }
