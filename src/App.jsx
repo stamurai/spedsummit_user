@@ -433,21 +433,25 @@ async function saveCertToSupabase(certData) {
   return data.id;
 }
 
-async function downloadCertificate({ recipientName = "", sessionTitle, instructor, duration = "", score = null, quizTitle = null, description = "" }) {
-  const today = new Date().toLocaleDateString("en-US", { month:"long", day:"numeric", year:"numeric" });
-  const certId = `${Math.random().toString(36).slice(2,8).toUpperCase()}-CE${String(Date.now()).slice(-6)}`;
+async function downloadCertificate({ recipientName = "", sessionTitle, instructor, duration = "", score = null, quizTitle = null, description = "", existingCertId = null, existingDate = null }) {
+  const today = existingDate || new Date().toLocaleDateString("en-US", { month:"long", day:"numeric", year:"numeric" });
+  const certId = existingCertId || `${Math.random().toString(36).slice(2,8).toUpperCase()}-CE${String(Date.now()).slice(-6)}`;
   const sessionTime = duration || "1 Hour";
   const instructorName = instructor ? instructor.split("|")[0].trim() : "";
   const descText = description
     ? `This session was presented by ${instructorName}. ${description} Participants receiving this certificate completed this session, including the subsequent assessments.`
     : `This session was presented by ${instructorName}. Participants receiving this certificate completed this session, including the subsequent assessments.`;
 
-  // Save to Supabase and get a short UUID-based verify URL
+  // Save to Supabase only for new certs; re-downloads use existing verify URL
   let verifyUrl = window.location.origin;
   try {
-    const certData = { recipientName, sessionTitle, instructor, duration, score, description, certId, date: today };
-    const certDbId = await saveCertToSupabase(certData);
-    verifyUrl = `${window.location.origin}/?cert_id=${certDbId}`;
+    if (!existingCertId) {
+      const certData = { recipientName, sessionTitle, instructor, duration, score, description, certId, date: today };
+      const certDbId = await saveCertToSupabase(certData);
+      verifyUrl = `${window.location.origin}/?cert_id=${certDbId}`;
+    } else {
+      verifyUrl = window.location.href.split("?")[0] + window.location.search;
+    }
   } catch(e) { /* fallback to homepage */ }
 
   // Industry standard: Letter landscape 11" × 8.5" at 96dpi
@@ -6322,7 +6326,7 @@ function PublicCertificatePage({ data }) {
               style={{ flex:1, padding:"11px 16px", borderRadius:10, border:"1px solid rgba(0,0,0,0.12)", background:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
               <Icon name="share-network" size={16} color="#1a1a1a" weight="fill"/> Share
             </button>
-            <button onClick={()=> downloadCertificate({ recipientName, sessionTitle, instructor, duration, score, description })}
+            <button onClick={()=> downloadCertificate({ recipientName, sessionTitle, instructor, duration, score, description, existingCertId: certId, existingDate: date })}
               style={{ flex:1, padding:"11px 16px", borderRadius:10, border:"none", background:"#6490E8", color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
               <Icon name="download" size={16} color="#fff" weight="fill"/> Download PDF
             </button>
