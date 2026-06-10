@@ -2779,7 +2779,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
           };
           function renderSessionCard(s, btnLabel) {
             const catBadge = CAT_BADGE_MAP[s.category] || { label:s.category, bg:C.gray100, color:C.gray700 };
-            const instrRole = INST_ROLES[s.instructor] || "Instructor";
+            const instrRole = s.instructorDesignation || INST_ROLES[s.instructor] || "Instructor";
             const schedItem = schedule.find(i => i.id === s.id);
             const typeLabel = schedItem ? schedItem.type.charAt(0) + schedItem.type.slice(1).toLowerCase() : "Session";
             return (
@@ -2836,7 +2836,8 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
               {calDaySession && calDaySession.status === "upcoming" && (() => {
                 const tc = SCHEDULE_TYPE_COLORS[calDaySession.type] || { c:C.gray500, bg:"rgba(128,128,128,0.10)" };
                 const registered = !!scheduleRegistrations[calDaySession.id];
-                const instrRole = INST_ROLES[calDaySession.instructor] || "Instructor";
+                const calSession = sessions.find(s => s.id === calDaySession.id);
+                const instrRole = calSession?.instructorDesignation || INST_ROLES[calDaySession.instructor] || "Instructor";
                 const typeLabel = calDaySession.type.charAt(0) + calDaySession.type.slice(1).toLowerCase();
                 return (
                   <div style={{ marginBottom:32 }}>
@@ -2919,8 +2920,8 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                     {upcomingSchedule.map((item) => {
                       const typeColor = SCHEDULE_TYPE_COLORS[item.type];
                       const catBadge = typeColor ? { label: item.type, bg: typeColor.bg, color: typeColor.c } : (CAT_BADGE_MAP[item.category] || { label: item.type, bg:"rgba(100,144,232,0.12)", color:"#7aa3ee" });
-                      const instrRole = INST_ROLES[item.instructor] || "Instructor";
                       const session = sessions.find(s => s.id === item.id);
+                      const instrRole = session?.instructorDesignation || INST_ROLES[item.instructor] || "Instructor";
                       return (
                         <div key={item.id} className="db-session-card-row db-upcoming-session-card"
                           style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, cursor:"default", overflow:"hidden", width:"100%", boxSizing:"border-box", ...(isMobile ? { flexDirection:"column", minHeight:"unset" } : {}) }}>
