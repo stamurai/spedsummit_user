@@ -3203,7 +3203,8 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                 Full schedule <Icon name="caret-right" size={13} color={C.primary}/>
               </button>
             </div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(320px, 1fr))", gap:20 }}>
+            <style>{`@media(max-width:767px){ .db-upcoming-grid{ grid-template-columns:repeat(2,1fr) !important; gap:12px !important; } .db-upcoming-item{ flex-direction:column !important; gap:8px !important; } .db-upcoming-item > div:last-child{ align-self:flex-start !important; } }`}</style>
+            <div className="db-upcoming-grid" style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(320px, 1fr))", gap:20 }}>
               {upcomingSchedule.map(item => {
                 const tc = SCHEDULE_TYPE_COLORS[item.type] || { c:C.gray500, bg:"rgba(128,128,128,0.10)" };
                 const registered = !!scheduleRegistrations[item.id];
