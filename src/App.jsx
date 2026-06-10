@@ -9148,9 +9148,9 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               {isLoggedIn ? "Go to Dashboard" : "Sign in"}
             </button>
             <button onClick={()=>document.getElementById("sessions")?.scrollIntoView({ behavior:"smooth" })}
-              style={{ padding:"0 26px", height:44, minWidth:200, background:"transparent", color:T.text, border:"1.5px solid #b0b4b6", borderRadius:10, fontSize:15, fontWeight:500, cursor:"pointer", transition:"background .15s, border-color .15s" }}
+              style={{ padding:"0 26px", height:44, minWidth:200, background:"transparent", color:T.text, border:"1.5px solid #c8cacc", borderRadius:10, fontSize:15, fontWeight:500, cursor:"pointer", transition:"background .15s, border-color .15s" }}
               onMouseEnter={e=>{ e.currentTarget.style.background="rgba(0,0,0,0.04)"; e.currentTarget.style.borderColor="#7a7e80"; }}
-              onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor="#b0b4b6"; }}>
+              onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor="#c8cacc"; }}>
               View sessions
             </button>
           </div>
@@ -10056,9 +10056,9 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                 {isLoggedIn ? "Go to Dashboard" : "Sign in"}
               </button>
               <button onClick={()=>document.getElementById("sessions")?.scrollIntoView({ behavior:"smooth" })}
-                style={{ padding:"0 24px", height:42, background:"transparent", color:T.text, border:"1px solid #b0b4b6", borderRadius:8, fontSize:14, fontWeight:500, cursor:"pointer", transition:"background .15s, border-color .15s" }}
+                style={{ padding:"0 24px", height:42, background:"transparent", color:T.text, border:"1px solid #c8cacc", borderRadius:8, fontSize:14, fontWeight:500, cursor:"pointer", transition:"background .15s, border-color .15s" }}
                 onMouseEnter={e=>{ e.currentTarget.style.background="rgba(0,0,0,0.06)"; e.currentTarget.style.borderColor="rgba(0,0,0,0.3)"; }}
-                onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor="#b0b4b6"; }}>
+                onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor="#c8cacc"; }}>
                 View sessions
               </button>
             </div>
@@ -10277,9 +10277,9 @@ function LandingPageV2({ onGetStarted, sessions = [] }) {
               Start learning for free →
             </button>
             <button onClick={()=>document.getElementById("sessions")?.scrollIntoView({behavior:"smooth"})}
-              style={{ padding:"0 32px", height:54, background:"transparent", color:T2.text, border:"2px solid rgba(0,0,0,0.28)", borderRadius:12, fontSize:16, fontWeight:600, cursor:"pointer", transition:"all .15s" }}
-              onMouseEnter={e=>{ e.currentTarget.style.background=T2.hover; e.currentTarget.style.borderColor="rgba(0,0,0,0.45)"; }}
-              onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor="rgba(0,0,0,0.28)"; }}>
+              style={{ padding:"0 32px", height:54, background:"transparent", color:T2.text, border:"2px solid rgba(0,0,0,0.20)", borderRadius:12, fontSize:16, fontWeight:600, cursor:"pointer", transition:"all .15s" }}
+              onMouseEnter={e=>{ e.currentTarget.style.background=T2.hover; e.currentTarget.style.borderColor="rgba(0,0,0,0.35)"; }}
+              onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor="rgba(0,0,0,0.20)"; }}>
               View sessions
             </button>
           </div>
