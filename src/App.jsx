@@ -9408,7 +9408,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       })()}
 
       {/* ── Bento Features ── */}
-      <section className="lp-section-pad" style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
+      <section className="lp-section-pad" style={{ padding:"120px 24px 80px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
 
           {/* Header */}
