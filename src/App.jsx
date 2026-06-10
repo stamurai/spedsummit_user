@@ -10794,8 +10794,10 @@ export default function App() {
         return;
       }
       if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") && session) {
-        // Block ALL session restoration after explicit logout (including SIGNED_IN from storage restore)
-        if (sessionStorage.getItem("loggedOut") === "1") return;
+        // On INITIAL_SESSION (page load/refresh), clear any stale loggedOut flag so cross-tab logins are picked up
+        if (event === "INITIAL_SESSION") sessionStorage.removeItem("loggedOut");
+        // Block session restoration after explicit logout in this tab (only applies to SIGNED_IN/TOKEN_REFRESHED)
+        if (event !== "INITIAL_SESSION" && sessionStorage.getItem("loggedOut") === "1") return;
         sessionStorage.removeItem("loggedOut");
         const meta = session.user.user_metadata || {};
         const name = meta.full_name || meta.name || session.user.email || "User";
@@ -10824,6 +10826,42 @@ export default function App() {
     });
     return () => subscription.unsubscribe();
   }, [fetchSessions]);
+
+  // Sync auth state across tabs — when another tab logs in/out via localStorage, re-check session here
+  useEffect(() => {
+    const onStorage = async (e) => {
+      // Supabase stores its session under a key starting with "sb-"
+      if (!e.key || !e.key.startsWith("sb-")) return;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session && !isLoggedIn) {
+        // Another tab logged in — sync this tab
+        if (sessionStorage.getItem("loggedOut") === "1") return;
+        const meta = session.user.user_metadata || {};
+        setUserName(meta.full_name || meta.name || session.user.email || "User");
+        setUserEmail(session.user.email || "");
+        setUserAvatar(meta.avatar_url || meta.picture || null);
+        if (meta.timezone) setUserTimezone(meta.timezone);
+        setIsLoggedIn(true);
+        sessionStorage.setItem("loggedIn", "1");
+        fetchSessions();
+        fetchUserProgress();
+      } else if (!session && isLoggedIn) {
+        // Another tab logged out — sync this tab
+        setIsLoggedIn(false);
+        setShowLanding(true);
+        setPage("dashboard");
+        setUserName(""); setUserEmail(""); setUserAvatar(null);
+        setEnrolledIds(new Set()); setScheduleRegistrations({}); setQuizStates({});
+        setSessions(prev => prev.map(s => ({ ...s, progress: 0, status: "not-started" })));
+        sessionStorage.removeItem("loggedIn");
+        sessionStorage.setItem("showLanding", "1");
+        sessionStorage.setItem("loggedOut", "1");
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [isLoggedIn, fetchSessions]);
+
   async function fetchUserProgress() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
