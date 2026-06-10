@@ -165,7 +165,7 @@ function InstructorSocialIcons({ instr, T = {} }) {
   return (
     <div style={{ display:"flex", gap:8, marginTop:10, flexWrap:"wrap" }}>
       {links.map(({ key, icon, color }) => (
-        <a key={key} href={instr[key]} target="_blank" rel="noopener noreferrer"
+        <a key={key} href={/^https?:\/\//i.test(instr[key]) ? instr[key] : `https://${instr[key]}`} target="_blank" rel="noopener noreferrer"
           style={{ display:"flex", alignItems:"center", justifyContent:"center", width:34, height:34, borderRadius:"50%", background:bg, textDecoration:"none", transition:"background .15s", flexShrink:0 }}
           onMouseEnter={e=>e.currentTarget.style.background=bgHov}
           onMouseLeave={e=>e.currentTarget.style.background=bg}>
