@@ -4593,7 +4593,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
   }, []);
 
   async function submitPost() {
-    if (!newBody.trim()) return;
+    if (!newBody.trim() || !selectedSession) return;
     const session = sessions.find(s => String(s.id) === selectedSession);
     const body = newBody.trim();
     const tempId = "tmp-" + Date.now();
@@ -4670,8 +4670,8 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
                 </div>
               )}
             </div>
-            <button onClick={submitPost} disabled={!newBody.trim()||posting}
-              style={{ flexShrink:0, padding:"7px 20px", borderRadius:99, border:"none", background:newBody.trim()&&!posting?C.primary:C.gray200, color:"#fff", fontSize:13, fontWeight:700, cursor:newBody.trim()&&!posting?"pointer":"default", transition:"background .15s" }}>
+            <button onClick={submitPost} disabled={!newBody.trim()||!selectedSession||posting}
+              style={{ flexShrink:0, padding:"7px 20px", borderRadius:99, border:"none", background:newBody.trim()&&selectedSession&&!posting?C.primary:C.gray200, color:"#fff", fontSize:13, fontWeight:700, cursor:newBody.trim()&&selectedSession&&!posting?"pointer":"default", transition:"background .15s" }}>
               {posting ? "…" : "Post"}
             </button>
           </div>
