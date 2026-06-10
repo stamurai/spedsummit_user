@@ -9426,8 +9426,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               >
                 {/* Card 1 — Sessions Start Date */}
                 {(() => {
-                  const earliest = sessions.filter(s => s.availableFrom).sort((a,b) => new Date(a.availableFrom) - new Date(b.availableFrom))[0];
-                  const startLabel = earliest ? new Date(earliest.availableFrom).toLocaleDateString("en-US", { day:"2-digit", month:"short", year:"numeric" }) : "Jul 13, 2026";
+                  const startLabel = "Jul 13, 2026";
                   return (
                     <motion.div variants={itemVariants}>
                       <div className="lp-bento-card" style={{ ...cardBase, padding:"28px 28px 24px", display:"flex", alignItems:"center", gap:18 }}>
