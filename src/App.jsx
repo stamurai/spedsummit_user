@@ -4699,7 +4699,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
                       <button onClick={()=>{ setEditState(prev=>({...prev,[c.id]:{open:true,body:c.body}})); setMenuOpen(null); }}
                         style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"10px 14px", border:"none", background:"none", cursor:"pointer", fontSize:13, color:C.gray800, textAlign:"left" }}
                         onMouseEnter={e=>e.currentTarget.style.background=C.gray50} onMouseLeave={e=>e.currentTarget.style.background="none"}>
-                        <Icon name="pencil-simple" size={14} color={C.gray500}/> Edit
+                        <Icon name="pencil" size={14} color={C.gray500}/> Edit
                       </button>
                       <button onClick={()=>{ deleteComment(c.id); setMenuOpen(null); }}
                         style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"10px 14px", border:"none", background:"none", cursor:"pointer", fontSize:13, color:"#ef4444", textAlign:"left" }}
