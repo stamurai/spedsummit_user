@@ -4574,6 +4574,8 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
   const [posting, setPosting] = useState(false);
   const [sessionDropOpen, setSessionDropOpen] = useState(false);
   const sessionDropRef = React.useRef(null);
+  // reply state: { [commentId]: { open, body, posting } }
+  const [replyState, setReplyState] = useState({});
 
   useEffect(() => {
     if (!sessionDropOpen) return;
@@ -4584,7 +4586,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
 
   useEffect(() => {
     setLoading(true);
-    supabase.from("session_comments").select("*").order("created_at", { ascending: false })
+    supabase.from("session_comments").select("*").order("created_at", { ascending: true })
       .then(({ data }) => { setComments(data || []); setLoading(false); });
   }, []);
 
@@ -4593,24 +4595,37 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
     const session = sessions.find(s => String(s.id) === selectedSession);
     const body = newBody.trim();
     const tempId = "tmp-" + Date.now();
-    const optimistic = { id:tempId, session_id:selectedSession, session_title:session?.title||"", author_name:userName||"You", body, likes:0, created_at:new Date().toISOString() };
-    setComments(prev => [optimistic, ...prev]);
+    const optimistic = { id:tempId, session_id:selectedSession, session_title:session?.title||"", author_name:userName||"You", body, likes:0, parent_id:null, created_at:new Date().toISOString() };
+    setComments(prev => [...prev, optimistic]);
     setNewBody("");
     setPosting(true);
-    const { data, error } = await supabase.from("session_comments").insert({ session_id:selectedSession, session_title:session?.title||"", author_name:userName||"Anonymous", body }).select().single();
+    const { data, error } = await supabase.from("session_comments").insert({ session_id:selectedSession, session_title:session?.title||"", author_name:userName||"Anonymous", body, parent_id:null }).select().single();
     if (!error && data) setComments(prev => prev.map(c => c.id === tempId ? data : c));
     else if (error) toast({ type:"error", message:"Could not save — check Supabase table." });
     setPosting(false);
     toast({ type:"success", message:"Comment posted!" });
   }
 
-  const sessionGroups = [];
-  const seenIds = {};
-  comments.forEach(c => {
-    if (!seenIds[c.session_id]) { seenIds[c.session_id] = true; sessionGroups.push({ id: c.session_id, title: c.session_title }); }
-  });
+  async function submitReply(parentId, sessionId, sessionTitle) {
+    const rs = replyState[parentId] || {};
+    if (!rs.body?.trim()) return;
+    const body = rs.body.trim();
+    const tempId = "tmp-reply-" + Date.now();
+    const optimistic = { id:tempId, session_id:sessionId, session_title:sessionTitle, author_name:userName||"You", body, likes:0, parent_id:parentId, created_at:new Date().toISOString() };
+    setComments(prev => [...prev, optimistic]);
+    setReplyState(prev => ({ ...prev, [parentId]: { open:false, body:"", posting:false } }));
+    const { data, error } = await supabase.from("session_comments").insert({ session_id:sessionId, session_title:sessionTitle, author_name:userName||"Anonymous", body, parent_id:parentId }).select().single();
+    if (!error && data) setComments(prev => prev.map(c => c.id === tempId ? data : c));
+    else if (error) toast({ type:"error", message:"Could not save reply." });
+  }
 
-  const filtered = filterSession === "all" ? comments : comments.filter(c => c.session_id === filterSession);
+  // Only top-level comments (no parent_id), ordered oldest first per session
+  const topLevel = comments.filter(c => !c.parent_id);
+  const filteredTop = filterSession === "all" ? topLevel : topLevel.filter(c => c.session_id === filterSession);
+  // Group by session preserving order
+  const sessionOrder = [];
+  const seenSessions = {};
+  filteredTop.forEach(c => { if (!seenSessions[c.session_id]) { seenSessions[c.session_id] = true; sessionOrder.push(c.session_id); } });
 
   return (
     <div style={{ padding:"28px 32px", background:C.gray50, minHeight:"100%", boxSizing:"border-box", display:"flex", gap:24, alignItems:"flex-start" }}>
@@ -4618,7 +4633,6 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
       {/* Left — composer */}
       <div style={{ width:300, flexShrink:0, position:"sticky", top:24 }}>
         <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"12px 16px" }}>
-          {/* Avatar + textarea row */}
           <div style={{ display:"flex", gap:10, alignItems:"flex-start", marginBottom:12 }}>
             <Avatar name={userName||"You"} src={userAvatar} size={36}/>
             <textarea value={newBody} onChange={e=>setNewBody(e.target.value)}
@@ -4627,13 +4641,8 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
               rows={3}
               style={{ flex:1, padding:0, border:"none", fontSize:14, color:C.gray800, background:"transparent", outline:"none", resize:"none", lineHeight:1.6, fontFamily:"inherit" }}/>
           </div>
-
-          {/* Divider */}
           <div style={{ height:1, background:C.gray100, marginBottom:12 }}/>
-
-          {/* Session audience pill + Post button row */}
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8 }}>
-            {/* Twitter-style audience pill */}
             <div ref={sessionDropRef} style={{ position:"relative", flex:1 }}>
               <button onClick={()=>setSessionDropOpen(o=>!o)}
                 style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"5px 12px 5px 10px", borderRadius:99, border:`1.5px solid ${selectedSession?C.primary:C.gray300}`, background:selectedSession?C.primaryLight:"transparent", color:selectedSession?C.primary:C.gray500, fontSize:12, fontWeight:700, cursor:"pointer", maxWidth:"100%", overflow:"hidden" }}>
@@ -4663,7 +4672,6 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
                 </div>
               )}
             </div>
-
             <button onClick={submitPost} disabled={!newBody.trim()||!selectedSession||posting}
               style={{ flexShrink:0, padding:"7px 20px", borderRadius:99, border:"none", background:newBody.trim()&&selectedSession&&!posting?C.primary:C.gray200, color:"#fff", fontSize:13, fontWeight:700, cursor:newBody.trim()&&selectedSession&&!posting?"pointer":"default", transition:"background .15s" }}>
               {posting ? "…" : "Post"}
@@ -4674,50 +4682,99 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
 
       {/* Right — feed */}
       <div style={{ flex:1, minWidth:0 }}>
-
         {loading && (
           <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"40px 24px", textAlign:"center", color:C.gray400, fontSize:14 }}>Loading…</div>
         )}
-        {!loading && filtered.length === 0 && (
+        {!loading && filteredTop.length === 0 && (
           <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"48px 24px", textAlign:"center", display:"flex", flexDirection:"column", alignItems:"center" }}>
             <Icon name="chat-circle-dots" size={44} color={C.gray300}/>
             <div style={{ marginTop:14, fontSize:15, fontWeight:700, color:C.gray500 }}>No posts yet</div>
             <div style={{ fontSize:13, color:C.gray400, marginTop:4 }}>Be the first to share your thoughts!</div>
           </div>
         )}
-        {!loading && filtered.map((c, i) => {
-          const prevC = filtered[i-1];
-          const showSessionHeader = !prevC || prevC.session_id !== c.session_id;
+        {!loading && sessionOrder.map((sid, si) => {
+          const sessionComments = filteredTop.filter(c => c.session_id === sid);
+          const sessionTitle = sessionComments[0]?.session_title || "";
           return (
-            <React.Fragment key={c.id}>
-              {showSessionHeader && (
-                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10, marginTop: i > 0 ? 20 : 0 }}>
-                  <div style={{ flex:1, height:1, background:C.gray200 }}/>
-                  <div style={{ display:"flex", alignItems:"center", gap:6, padding:"4px 12px", borderRadius:99, background:C.white, border:`1px solid ${C.gray200}` }}>
-                    <Icon name="play-circle" size={12} color={C.primary} weight="fill"/>
-                    <span style={{ fontSize:12, fontWeight:700, color:C.gray700, maxWidth:360, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{c.session_title}</span>
-                  </div>
-                  <div style={{ flex:1, height:1, background:C.gray200 }}/>
+            <React.Fragment key={sid}>
+              {/* Session header divider */}
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10, marginTop: si > 0 ? 20 : 0 }}>
+                <div style={{ flex:1, height:1, background:C.gray200 }}/>
+                <div style={{ display:"flex", alignItems:"center", gap:6, padding:"4px 12px", borderRadius:99, background:C.white, border:`1px solid ${C.gray200}` }}>
+                  <Icon name="play-circle" size={12} color={C.primary} weight="fill"/>
+                  <span style={{ fontSize:12, fontWeight:700, color:C.gray700, maxWidth:360, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{sessionTitle}</span>
                 </div>
-              )}
-              <div style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, marginBottom:8, padding:"12px 14px" }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6 }}>
-                  <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-                    <Avatar name={c.author_name} src={c.author_name===userName?userAvatar:undefined} size={28}/>
-                    <div>
-                      <span style={{ fontWeight:700, fontSize:13, color:C.gray900 }}>{c.author_name}</span>
-                      <span style={{ fontSize:11, color:C.gray400, marginLeft:8 }}>{c.created_at ? new Date(c.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : ""}</span>
-                    </div>
-                  </div>
-                </div>
-                <div style={{ fontSize:14, color:C.gray700, lineHeight:1.6, marginLeft:36, marginBottom:8 }}>{c.body}</div>
-                <div style={{ marginLeft:36 }}>
-                  <button onClick={async ()=>{ const newLikes=(c.likes||0)+1; await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id); setComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x)); }}
-                    style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${C.gray200}`, background:"transparent", color:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
-                    <Icon name="heart" size={12} color={C.gray400}/>{c.likes||0}
-                  </button>
-                </div>
+                <div style={{ flex:1, height:1, background:C.gray200 }}/>
               </div>
+
+              {sessionComments.map(c => {
+                const replies = comments.filter(r => r.parent_id === c.id);
+                const rs = replyState[c.id] || {};
+                return (
+                  <div key={c.id} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, marginBottom:8, padding:"12px 14px" }}>
+                    {/* Comment header */}
+                    <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:6 }}>
+                      <Avatar name={c.author_name} src={c.author_name===userName?userAvatar:undefined} size={28}/>
+                      <div>
+                        <span style={{ fontWeight:700, fontSize:13, color:C.gray900 }}>{c.author_name}</span>
+                        <span style={{ fontSize:11, color:C.gray400, marginLeft:8 }}>{c.created_at ? new Date(c.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : ""}</span>
+                      </div>
+                    </div>
+                    {/* Body */}
+                    <div style={{ fontSize:14, color:C.gray700, lineHeight:1.6, marginLeft:36, marginBottom:8 }}>{c.body}</div>
+                    {/* Actions */}
+                    <div style={{ marginLeft:36, display:"flex", gap:8, alignItems:"center" }}>
+                      <button onClick={async ()=>{ const newLikes=(c.likes||0)+1; await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id); setComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x)); }}
+                        style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${C.gray200}`, background:"transparent", color:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
+                        <Icon name="heart" size={12} color={C.gray400}/>{c.likes||0}
+                      </button>
+                      <button onClick={()=>setReplyState(prev=>({ ...prev, [c.id]:{ ...prev[c.id], open:!(prev[c.id]?.open), body:prev[c.id]?.body||"" } }))}
+                        style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${C.gray200}`, background:rs.open?C.primaryLight:"transparent", color:rs.open?C.primary:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
+                        <Icon name="chat-circle" size={12} color={rs.open?C.primary:C.gray400}/>Reply{replies.length > 0 ? ` (${replies.length})` : ""}
+                      </button>
+                    </div>
+
+                    {/* Replies */}
+                    {replies.length > 0 && (
+                      <div style={{ marginLeft:36, marginTop:10, borderLeft:`2px solid ${C.gray100}`, paddingLeft:12, display:"flex", flexDirection:"column", gap:8 }}>
+                        {replies.map(r => (
+                          <div key={r.id}>
+                            <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:4 }}>
+                              <Avatar name={r.author_name} src={r.author_name===userName?userAvatar:undefined} size={22}/>
+                              <span style={{ fontWeight:700, fontSize:12, color:C.gray900 }}>{r.author_name}</span>
+                              <span style={{ fontSize:11, color:C.gray400 }}>{r.created_at ? new Date(r.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric"}) : ""}</span>
+                            </div>
+                            <div style={{ fontSize:13, color:C.gray700, lineHeight:1.55, marginLeft:30 }}>{r.body}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Reply composer */}
+                    {rs.open && (
+                      <div style={{ marginLeft:36, marginTop:10, display:"flex", gap:8, alignItems:"flex-start" }}>
+                        <Avatar name={userName||"You"} src={userAvatar} size={24}/>
+                        <div style={{ flex:1, border:`1px solid ${C.gray200}`, borderRadius:10, padding:"8px 10px", background:C.gray50, display:"flex", flexDirection:"column", gap:8 }}>
+                          <textarea
+                            autoFocus
+                            value={rs.body||""}
+                            onChange={e=>setReplyState(prev=>({ ...prev, [c.id]:{ ...prev[c.id], body:e.target.value } }))}
+                            onKeyDown={e=>{ if(e.key==="Enter" && e.metaKey) submitReply(c.id, c.session_id, c.session_title); }}
+                            placeholder={`Reply to ${c.author_name}…`}
+                            rows={2}
+                            style={{ border:"none", background:"transparent", outline:"none", fontSize:13, color:C.gray800, resize:"none", lineHeight:1.5, fontFamily:"inherit", width:"100%" }}/>
+                          <div style={{ display:"flex", justifyContent:"flex-end", gap:6 }}>
+                            <button onClick={()=>setReplyState(prev=>({ ...prev, [c.id]:{ open:false, body:"" } }))}
+                              style={{ padding:"4px 14px", borderRadius:99, border:`1px solid ${C.gray200}`, background:"transparent", color:C.gray500, fontSize:12, fontWeight:600, cursor:"pointer" }}>Cancel</button>
+                            <button onClick={()=>submitReply(c.id, c.session_id, c.session_title)} disabled={!rs.body?.trim()}
+                              style={{ padding:"4px 14px", borderRadius:99, border:"none", background:rs.body?.trim()?C.primary:C.gray200, color:"#fff", fontSize:12, fontWeight:700, cursor:rs.body?.trim()?"pointer":"default" }}>Reply</button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </React.Fragment>
           );
         })}
