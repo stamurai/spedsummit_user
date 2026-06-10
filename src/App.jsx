@@ -2012,11 +2012,6 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
 
       {/* Card body */}
       <div style={{ padding:"16px 16px 18px", flex:1, display:"flex", flexDirection:"column" }}>
-        {/* Category tag */}
-        <div style={{ marginBottom:10 }}>
-          <Badge label={session.category} color={cc.c} bg={cc.bg} size={12}/>
-        </div>
-
         {/* Title */}
         <div style={{ fontWeight:700, fontSize:15, color:C.gray900, marginBottom:8, lineHeight:1.4,
                       display:"-webkit-box", WebkitLineClamp:3, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
@@ -2790,11 +2785,6 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                   </div>
                 </div>
                 <div className="db-session-card-body" style={{ flex:1, minWidth:0, padding: isMobile ? "14px 16px" : "24px 28px", display:"flex", flexDirection:"column" }}>
-                  <div style={{ marginBottom:12 }}>
-                    <span style={{ display:"inline-block", fontSize:11, fontWeight:600, padding:"3px 9px", borderRadius:4, background:catBadge.bg, color:catBadge.color, letterSpacing:.2, textTransform:"uppercase" }}>
-                      {catBadge.label}
-                    </span>
-                  </div>
                   <div style={{ fontSize:18, fontWeight:700, color:C.gray900, lineHeight:1.35, marginBottom:10 }}>{s.title}</div>
                   <div style={{ fontSize:13, color:C.gray600, lineHeight:1.6, marginBottom:s.progress > 0 && s.status!=="completed" ? 14 : 10, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
                     {s.description}
@@ -11164,11 +11154,6 @@ export default function App() {
                     </div>
                   </div>
                   <div className="ps-session-body" style={{ flex:1, minWidth:0, display:"flex", flexDirection:"column" }}>
-                    <div style={{ marginBottom:8 }}>
-                      <span style={{ display:"inline-block", fontSize:11, fontWeight:600, padding:"2px 7px", borderRadius:4, background:catBadge.bg, color:catBadge.color, letterSpacing:.2, textTransform:"uppercase" }}>
-                        {catBadge.label}
-                      </span>
-                    </div>
                     <div style={{ fontSize:17, fontWeight:700, color:C.gray900, lineHeight:1.3, marginBottom:6, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>{s.title}</div>
                     <div style={{ fontSize:12, color:C.gray600, lineHeight:1.55, marginBottom:6, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
                       {s.description}
