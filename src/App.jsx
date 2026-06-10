@@ -4625,9 +4625,82 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
     else if (error) toast({ type:"error", message:"Could not save reply." });
   }
 
-  // Only top-level comments (no parent_id), chronological
+  // Build session buckets: group top-level comments by session_title (or "General" if none)
   const topLevel = comments.filter(c => !c.parent_id);
-  const filteredTop = filterSession === "all" ? topLevel : topLevel.filter(c => c.session_id === filterSession);
+
+  // Collect unique session buckets in order of most-recent comment
+  const bucketMap = {};
+  topLevel.forEach(c => {
+    const key = c.session_title || "__general__";
+    if (!bucketMap[key]) bucketMap[key] = { title: c.session_title || "", comments: [], latestAt: c.created_at };
+    bucketMap[key].comments.push(c);
+    if (c.created_at > bucketMap[key].latestAt) bucketMap[key].latestAt = c.created_at;
+  });
+  const buckets = Object.values(bucketMap).sort((a,b) => b.latestAt.localeCompare(a.latestAt));
+  const filteredBuckets = filterSession === "all"
+    ? buckets
+    : buckets.filter(b => b.title === (sessions.find(s=>String(s.id)===filterSession)?.title || ""));
+
+  function renderComment(c) {
+    const replies = comments.filter(r => r.parent_id === c.id);
+    const rs = replyState[c.id] || {};
+    return (
+      <div key={c.id} style={{ padding:"12px 14px", borderBottom:`1px solid ${C.gray100}` }}>
+        <div style={{ display:"flex", gap:8, alignItems:"flex-start", marginBottom:6 }}>
+          <Avatar name={c.author_name} src={c.author_name===userName?userAvatar:undefined} size={28}/>
+          <div>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <span style={{ fontWeight:700, fontSize:13, color:C.gray900 }}>{c.author_name}</span>
+              <span style={{ fontSize:11, color:C.gray400 }}>{c.created_at ? new Date(c.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : ""}</span>
+            </div>
+          </div>
+        </div>
+        <div style={{ fontSize:14, color:C.gray700, lineHeight:1.6, marginLeft:36, marginBottom:8 }}>{c.body}</div>
+        <div style={{ marginLeft:36, display:"flex", gap:8, alignItems:"center" }}>
+          <button onClick={async ()=>{ const isLiked=liked[c.id]; const newLikes=isLiked?Math.max(0,(c.likes||0)-1):(c.likes||0)+1; setLiked(prev=>({...prev,[c.id]:!isLiked})); await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id); setComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x)); }}
+            style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${liked[c.id]?"rgba(239,68,68,0.3)":C.gray200}`, background:liked[c.id]?"rgba(239,68,68,0.08)":"transparent", color:liked[c.id]?"#ef4444":C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
+            <Icon name="heart" size={12} color={liked[c.id]?"#ef4444":C.gray400} weight={liked[c.id]?"fill":"regular"}/>{c.likes||0}
+          </button>
+          <button onClick={()=>setReplyState(prev=>({ ...prev, [c.id]:{ ...prev[c.id], open:!(prev[c.id]?.open), body:prev[c.id]?.body||"" } }))}
+            style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${C.gray200}`, background:rs.open?C.primaryLight:"transparent", color:rs.open?C.primary:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
+            <Icon name="chat-circle" size={12} color={rs.open?C.primary:C.gray400}/>Reply{replies.length > 0 ? ` (${replies.length})` : ""}
+          </button>
+        </div>
+        {replies.length > 0 && (
+          <div style={{ marginLeft:36, marginTop:10, borderLeft:`2px solid ${C.gray100}`, paddingLeft:12, display:"flex", flexDirection:"column", gap:8 }}>
+            {replies.map(r => (
+              <div key={r.id}>
+                <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:4 }}>
+                  <Avatar name={r.author_name} src={r.author_name===userName?userAvatar:undefined} size={22}/>
+                  <span style={{ fontWeight:700, fontSize:12, color:C.gray900 }}>{r.author_name}</span>
+                  <span style={{ fontSize:11, color:C.gray400 }}>{r.created_at ? new Date(r.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric"}) : ""}</span>
+                </div>
+                <div style={{ fontSize:13, color:C.gray700, lineHeight:1.55, marginLeft:30 }}>{r.body}</div>
+              </div>
+            ))}
+          </div>
+        )}
+        {rs.open && (
+          <div style={{ marginLeft:36, marginTop:10, display:"flex", gap:8, alignItems:"flex-start" }}>
+            <Avatar name={userName||"You"} src={userAvatar} size={24}/>
+            <div style={{ flex:1, border:`1px solid ${C.gray200}`, borderRadius:10, padding:"8px 10px", background:C.gray50, display:"flex", flexDirection:"column", gap:8 }}>
+              <textarea autoFocus value={rs.body||""}
+                onChange={e=>setReplyState(prev=>({ ...prev, [c.id]:{ ...prev[c.id], body:e.target.value } }))}
+                onKeyDown={e=>{ if(e.key==="Enter" && e.metaKey) submitReply(c.id, c.session_id, c.session_title); }}
+                placeholder={`Reply to ${c.author_name}…`} rows={2}
+                style={{ border:"none", background:"transparent", outline:"none", fontSize:13, color:C.gray800, resize:"none", lineHeight:1.5, fontFamily:"inherit", width:"100%" }}/>
+              <div style={{ display:"flex", justifyContent:"flex-end", gap:6 }}>
+                <button onClick={()=>setReplyState(prev=>({ ...prev, [c.id]:{ open:false, body:"" } }))}
+                  style={{ padding:"4px 14px", borderRadius:99, border:`1px solid ${C.gray200}`, background:"transparent", color:C.gray500, fontSize:12, fontWeight:600, cursor:"pointer" }}>Cancel</button>
+                <button onClick={()=>submitReply(c.id, c.session_id, c.session_title)} disabled={!rs.body?.trim()}
+                  style={{ padding:"4px 14px", borderRadius:99, border:"none", background:rs.body?.trim()?C.primary:C.gray200, color:"#fff", fontSize:12, fontWeight:700, cursor:rs.body?.trim()?"pointer":"default" }}>Reply</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding:"28px 32px", background:C.gray50, minHeight:"100%", boxSizing:"border-box", display:"flex", gap:24, alignItems:"flex-start" }}>
@@ -4682,94 +4755,38 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
         </div>
       </div>
 
-      {/* Right — feed */}
+      {/* Right — session buckets */}
       <div style={{ flex:1, minWidth:0 }}>
         {loading && (
           <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"40px 24px", textAlign:"center", color:C.gray400, fontSize:14 }}>Loading…</div>
         )}
-        {!loading && filteredTop.length === 0 && (
+        {!loading && filteredBuckets.length === 0 && (
           <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"48px 24px", textAlign:"center", display:"flex", flexDirection:"column", alignItems:"center" }}>
             <Icon name="chat-circle-dots" size={44} color={C.gray300}/>
             <div style={{ marginTop:14, fontSize:15, fontWeight:700, color:C.gray500 }}>No posts yet</div>
             <div style={{ fontSize:13, color:C.gray400, marginTop:4 }}>Be the first to share your thoughts!</div>
           </div>
         )}
-        {!loading && filteredTop.map(c => {
-          const replies = comments.filter(r => r.parent_id === c.id);
-          const rs = replyState[c.id] || {};
-          return (
-            <div key={c.id} style={{ background:C.white, borderRadius:12, border:`1px solid ${C.gray200}`, marginBottom:8, padding:"12px 14px" }}>
-              {/* Comment header */}
-              <div style={{ display:"flex", gap:8, alignItems:"flex-start", marginBottom:6 }}>
-                <Avatar name={c.author_name} src={c.author_name===userName?userAvatar:undefined} size={28}/>
-                <div>
-                  <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                    <span style={{ fontWeight:700, fontSize:13, color:C.gray900 }}>{c.author_name}</span>
-                    <span style={{ fontSize:11, color:C.gray400 }}>{c.created_at ? new Date(c.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : ""}</span>
-                  </div>
-                  {c.session_title && (
-                    <div style={{ display:"inline-flex", alignItems:"center", gap:4, marginTop:4, padding:"3px 9px 3px 7px", borderRadius:99, border:`1px solid ${C.gray200}`, background:C.white }}>
-                      <Icon name="play-circle" size={11} color={C.primary} weight="fill"/>
-                      <span style={{ fontSize:11, color:C.primary, fontWeight:600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:280 }}>{c.session_title}</span>
-                    </div>
-                  )}
-                </div>
+        {!loading && filteredBuckets.map(bucket => (
+          <div key={bucket.title||"__general__"} style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, marginBottom:16, overflow:"hidden" }}>
+            {/* Bucket header */}
+            <div style={{ padding:"14px 18px", borderBottom:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", gap:10 }}>
+              <div style={{ width:34, height:34, borderRadius:9, background:C.primaryLight, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <Icon name="play-circle" size={16} color={C.primary} weight="fill"/>
               </div>
-              {/* Body */}
-              <div style={{ fontSize:14, color:C.gray700, lineHeight:1.6, marginLeft:36, marginBottom:8 }}>{c.body}</div>
-              {/* Actions */}
-              <div style={{ marginLeft:36, display:"flex", gap:8, alignItems:"center" }}>
-                <button onClick={async ()=>{ const isLiked=liked[c.id]; const newLikes=isLiked?Math.max(0,(c.likes||0)-1):(c.likes||0)+1; setLiked(prev=>({...prev,[c.id]:!isLiked})); await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id); setComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x)); }}
-                  style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${liked[c.id]?"rgba(239,68,68,0.3)":C.gray200}`, background:liked[c.id]?"rgba(239,68,68,0.08)":"transparent", color:liked[c.id]?"#ef4444":C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
-                  <Icon name="heart" size={12} color={liked[c.id]?"#ef4444":C.gray400} weight={liked[c.id]?"fill":"regular"}/>{c.likes||0}
-                </button>
-                <button onClick={()=>setReplyState(prev=>({ ...prev, [c.id]:{ ...prev[c.id], open:!(prev[c.id]?.open), body:prev[c.id]?.body||"" } }))}
-                  style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${C.gray200}`, background:rs.open?C.primaryLight:"transparent", color:rs.open?C.primary:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
-                  <Icon name="chat-circle" size={12} color={rs.open?C.primary:C.gray400}/>Reply{replies.length > 0 ? ` (${replies.length})` : ""}
-                </button>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:14, fontWeight:800, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                  {bucket.title || "General"}
+                </div>
+                <div style={{ fontSize:12, color:C.gray400, marginTop:1 }}>{bucket.comments.length} comment{bucket.comments.length!==1?"s":""}</div>
               </div>
-
-              {/* Replies */}
-              {replies.length > 0 && (
-                <div style={{ marginLeft:36, marginTop:10, borderLeft:`2px solid ${C.gray100}`, paddingLeft:12, display:"flex", flexDirection:"column", gap:8 }}>
-                  {replies.map(r => (
-                    <div key={r.id}>
-                      <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:4 }}>
-                        <Avatar name={r.author_name} src={r.author_name===userName?userAvatar:undefined} size={22}/>
-                        <span style={{ fontWeight:700, fontSize:12, color:C.gray900 }}>{r.author_name}</span>
-                        <span style={{ fontSize:11, color:C.gray400 }}>{r.created_at ? new Date(r.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric"}) : ""}</span>
-                      </div>
-                      <div style={{ fontSize:13, color:C.gray700, lineHeight:1.55, marginLeft:30 }}>{r.body}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Reply composer */}
-              {rs.open && (
-                <div style={{ marginLeft:36, marginTop:10, display:"flex", gap:8, alignItems:"flex-start" }}>
-                  <Avatar name={userName||"You"} src={userAvatar} size={24}/>
-                  <div style={{ flex:1, border:`1px solid ${C.gray200}`, borderRadius:10, padding:"8px 10px", background:C.gray50, display:"flex", flexDirection:"column", gap:8 }}>
-                    <textarea
-                      autoFocus
-                      value={rs.body||""}
-                      onChange={e=>setReplyState(prev=>({ ...prev, [c.id]:{ ...prev[c.id], body:e.target.value } }))}
-                      onKeyDown={e=>{ if(e.key==="Enter" && e.metaKey) submitReply(c.id, c.session_id, c.session_title); }}
-                      placeholder={`Reply to ${c.author_name}…`}
-                      rows={2}
-                      style={{ border:"none", background:"transparent", outline:"none", fontSize:13, color:C.gray800, resize:"none", lineHeight:1.5, fontFamily:"inherit", width:"100%" }}/>
-                    <div style={{ display:"flex", justifyContent:"flex-end", gap:6 }}>
-                      <button onClick={()=>setReplyState(prev=>({ ...prev, [c.id]:{ open:false, body:"" } }))}
-                        style={{ padding:"4px 14px", borderRadius:99, border:`1px solid ${C.gray200}`, background:"transparent", color:C.gray500, fontSize:12, fontWeight:600, cursor:"pointer" }}>Cancel</button>
-                      <button onClick={()=>submitReply(c.id, c.session_id, c.session_title)} disabled={!rs.body?.trim()}
-                        style={{ padding:"4px 14px", borderRadius:99, border:"none", background:rs.body?.trim()?C.primary:C.gray200, color:"#fff", fontSize:12, fontWeight:700, cursor:rs.body?.trim()?"pointer":"default" }}>Reply</button>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
-          );
-        })}
+            {/* Comments in this bucket */}
+            <div>
+              {bucket.comments.map(c => renderComment(c))}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
