@@ -4649,7 +4649,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
     const replies = comments.filter(r => r.parent_id === c.id);
     const rs = replyState[c.id] || {};
     return (
-      <div key={c.id} style={{ padding:"12px 14px", borderBottom:`1px solid ${C.gray100}` }}>
+      <div key={c.id} style={{ padding:"12px 18px", borderBottom:`1px solid ${C.gray100}` }}>
         <div style={{ display:"flex", gap:8, alignItems:"flex-start", marginBottom:6 }}>
           <Avatar name={c.author_name} src={c.author_name===userName?userAvatar:undefined} size={28}/>
           <div>
@@ -4761,8 +4761,8 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
         {/* General comments (no session) */}
         {!loading && generalComments.length > 0 && (
           <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, marginTop:16, overflow:"hidden" }}>
-            <div style={{ padding:"12px 16px", borderBottom:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", gap:8 }}>
-              <div style={{ width:30, height:30, borderRadius:8, background:C.gray100, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+            <div style={{ padding:"14px 18px", borderBottom:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", gap:10 }}>
+              <div style={{ width:34, height:34, borderRadius:9, background:C.gray100, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                 <Icon name="chat-circle-dots" size={15} color={C.gray500}/>
               </div>
               <div>
