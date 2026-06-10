@@ -9515,6 +9515,14 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
             from { transform: translateX(0); }
             to   { transform: translateX(calc(-50% - 12px)); }
           }
+          @keyframes spk-marquee-l {
+            from { transform: translateX(0); }
+            to   { transform: translateX(calc(-50% - 5px)); }
+          }
+          @keyframes spk-marquee-r {
+            from { transform: translateX(calc(-50% - 5px)); }
+            to   { transform: translateX(0); }
+          }
           .spk-track {
             display: flex;
             gap: 20px;
@@ -9522,6 +9530,12 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
             animation: spk-marquee 36s linear infinite;
           }
           .spk-track:hover { animation-play-state: paused; }
+          .spk-desktop-only { display: grid !important; }
+          .spk-mobile-marquee { display: none !important; }
+          @media (max-width: 900px) {
+            .spk-desktop-only { display: none !important; }
+            .spk-mobile-marquee { display: block !important; }
+          }
 
           /* Card = just the image container, no separate plate */
           .spk-card {
@@ -9585,26 +9599,6 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
             text-overflow: ellipsis;
           }
 
-          @media (max-width: 900px) {
-            .spk-grid {
-              grid-template-columns: repeat(3, 1fr) !important;
-              grid-auto-rows: 180px !important;
-              gap: 12px !important;
-            }
-            .spk-card { height: auto !important; }
-            .spk-card > div { height: 100% !important; }
-            .spk-card:nth-child(odd)  { grid-row: span 2; }
-          }
-          @media (max-width: 500px) {
-            .spk-grid {
-              grid-template-columns: repeat(2, 1fr) !important;
-              grid-auto-rows: 150px !important;
-              gap: 10px !important;
-            }
-            .spk-card { height: auto !important; }
-            .spk-card > div { height: 100% !important; }
-            .spk-card:nth-child(odd)  { grid-row: span 2; }
-          }
 
           .spk-fade-l {
             position: absolute; top: 0; left: 0; z-index: 10;
@@ -9634,8 +9628,8 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
             </p>
           </div>
 
-          {/* Responsive speaker grid */}
-          <div className="spk-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:20, padding:"8px 0 16px" }}>
+          {/* Desktop grid */}
+          <div className="spk-grid spk-desktop-only" style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:20, padding:"8px 0 16px" }}>
             {experts.map((e, i) => (
               <div key={i} className="spk-card"
                 onClick={() => { savedScrollY.current = window.scrollY; setSelectedInstructor(e); window.scrollTo(0, 0); }}
@@ -9649,6 +9643,35 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Mobile marquee — two rows scrolling in opposite directions */}
+          <div className="spk-mobile-marquee" style={{ display:"none" }}>
+            {[0, 1].map(row => {
+              const rowExperts = experts.filter((_, i) => i % 2 === row);
+              const doubled = [...rowExperts, ...rowExperts];
+              return (
+                <div key={row} style={{ overflow:"hidden", marginBottom: row === 0 ? 10 : 0, position:"relative" }}>
+                  <div style={{
+                    display:"flex", gap:10,
+                    width:"max-content",
+                    animation: `spk-marquee-${row === 0 ? "l" : "r"} ${32 + row * 8}s linear infinite`,
+                  }}>
+                    {doubled.map((e, i) => (
+                      <div key={i}
+                        onClick={() => { savedScrollY.current = window.scrollY; setSelectedInstructor(e); window.scrollTo(0, 0); }}
+                        style={{ position:"relative", borderRadius:14, overflow:"hidden", cursor:"pointer", flexShrink:0, width:140, height:180 }}>
+                        <img src={e.img} alt={e.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%", display:"block" }}/>
+                        <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"20px 10px 10px", background:"linear-gradient(180deg,transparent 0%,rgba(43,38,32,0.88) 100%)", borderRadius:"0 0 14px 14px" }}>
+                          <div style={{ fontSize:12, fontWeight:700, color:"#FEF5EC", lineHeight:1.2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{e.name}</div>
+                          <div style={{ fontSize:10, color:"rgba(254,245,236,0.75)", marginTop:2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{e.role}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           {/* Apply banner */}
