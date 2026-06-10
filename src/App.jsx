@@ -4705,23 +4705,26 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
     const isOwn = c.author_name === userName;
     const es = editState[c.id] || {};
     return (
-      <div key={c.id} style={{ padding:"12px 18px", borderBottom:`1px solid ${C.gray100}` }}>
+      <div key={c.id} style={{ padding:"14px 18px 10px", borderBottom:`1px solid ${C.gray100}` }}>
+        {/* Main comment row — Twitter layout */}
         <div style={{ display:"flex", gap:10, alignItems:"flex-start" }}>
-          <div style={{ width:34, flexShrink:0, display:"flex", justifyContent:"center", marginTop:1 }}>
-            <Avatar name={c.author_name} src={c.author_name===userName?userAvatar:undefined} size={28}/>
+          {/* Left col: avatar + thread line */}
+          <div style={{ width:34, flexShrink:0, display:"flex", flexDirection:"column", alignItems:"center" }}>
+            <Avatar name={c.author_name} src={c.author_name===userName?userAvatar:undefined} size={34}/>
+            {(replies.length > 0 || rs.open) && (
+              <div style={{ width:2, flex:1, background:C.gray200, marginTop:6, minHeight:16, borderRadius:1 }}/>
+            )}
           </div>
-          <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
+          {/* Right col: name + body + actions */}
+          <div style={{ flex:1, minWidth:0, paddingBottom:8 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
               <span style={{ fontWeight:700, fontSize:13, color:C.gray900 }}>{c.author_name}</span>
               <span style={{ fontSize:11, color:C.gray400 }}>{c.created_at ? new Date(c.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : ""}</span>
-              {/* Three-dot menu */}
               <div style={{ marginLeft:"auto", position:"relative" }} ref={menuOpen===c.id?menuRef:null}>
                 <button onClick={()=>setMenuOpen(menuOpen===c.id?null:c.id)}
                   style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 6px", borderRadius:6, color:C.gray400, fontSize:16, lineHeight:1, display:"flex", alignItems:"center" }}
                   onMouseEnter={e=>e.currentTarget.style.background=C.gray100}
-                  onMouseLeave={e=>e.currentTarget.style.background="none"}>
-                  ···
-                </button>
+                  onMouseLeave={e=>e.currentTarget.style.background="none"}>···</button>
                 {menuOpen===c.id && (
                   <div style={{ position:"absolute", top:"calc(100% + 4px)", right:0, background:C.white, borderRadius:10, border:`1px solid ${C.gray200}`, boxShadow:"0 8px 24px rgba(0,0,0,0.1)", zIndex:300, minWidth:140, overflow:"hidden" }}>
                     {isOwn ? (<>
@@ -4747,63 +4750,68 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
               </div>
             </div>
             {es.open ? (
-              <div style={{ marginBottom:8 }}>
-                <textarea value={es.body||""}
-                  onChange={e=>setEditState(prev=>({...prev,[c.id]:{...prev[c.id],body:e.target.value}}))}
-                  rows={2}
+              <div style={{ marginBottom:10 }}>
+                <textarea value={es.body||""} onChange={e=>setEditState(prev=>({...prev,[c.id]:{...prev[c.id],body:e.target.value}}))} rows={2}
                   style={{ width:"100%", padding:"8px 10px", border:`1px solid ${C.primary}`, borderRadius:8, fontSize:14, color:C.gray800, background:C.white, outline:"none", resize:"none", lineHeight:1.5, fontFamily:"inherit", boxSizing:"border-box" }}/>
                 <div style={{ display:"flex", gap:6, marginTop:6 }}>
-                  <button onClick={()=>setEditState(prev=>({...prev,[c.id]:{open:false,body:""}}))}
-                    style={{ padding:"4px 14px", borderRadius:99, border:`1px solid ${C.gray200}`, background:"transparent", color:C.gray500, fontSize:12, fontWeight:600, cursor:"pointer" }}>Cancel</button>
-                  <button onClick={()=>saveEdit(c.id)} disabled={!es.body?.trim()}
-                    style={{ padding:"4px 14px", borderRadius:99, border:"none", background:es.body?.trim()?C.primary:C.gray200, color:"#fff", fontSize:12, fontWeight:700, cursor:es.body?.trim()?"pointer":"default" }}>Save</button>
+                  <button onClick={()=>setEditState(prev=>({...prev,[c.id]:{open:false,body:""}}))} style={{ padding:"4px 14px", borderRadius:99, border:`1px solid ${C.gray200}`, background:"transparent", color:C.gray500, fontSize:12, fontWeight:600, cursor:"pointer" }}>Cancel</button>
+                  <button onClick={()=>saveEdit(c.id)} disabled={!es.body?.trim()} style={{ padding:"4px 14px", borderRadius:99, border:"none", background:es.body?.trim()?C.primary:C.gray200, color:"#fff", fontSize:12, fontWeight:700, cursor:es.body?.trim()?"pointer":"default" }}>Save</button>
                 </div>
               </div>
             ) : (
-              <div style={{ fontSize:14, color:C.gray700, lineHeight:1.6, marginBottom:8 }}>{c.body}</div>
+              <div style={{ fontSize:14, color:C.gray700, lineHeight:1.6, marginBottom:10 }}>{c.body}</div>
             )}
+            <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+              <button onClick={async ()=>{ const isLiked=liked[c.id]; const newLikes=isLiked?Math.max(0,(c.likes||0)-1):(c.likes||0)+1; setLiked(prev=>({...prev,[c.id]:!isLiked})); await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id); setComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x)); }}
+                style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${liked[c.id]?"rgba(239,68,68,0.3)":C.gray200}`, background:liked[c.id]?"rgba(239,68,68,0.08)":"transparent", color:liked[c.id]?"#ef4444":C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
+                <Icon name="heart" size={12} color={liked[c.id]?"#ef4444":C.gray400} weight={liked[c.id]?"fill":"regular"}/>{c.likes||0}
+              </button>
+              <button onClick={()=>setReplyState(prev=>({ ...prev, [c.id]:{ ...prev[c.id], open:!(prev[c.id]?.open), body:prev[c.id]?.body||"" } }))}
+                style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${C.gray200}`, background:rs.open?C.primaryLight:"transparent", color:rs.open?C.primary:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
+                <Icon name="chat-circle" size={12} color={rs.open?C.primary:C.gray400}/>Reply{replies.length > 0 ? ` (${replies.length})` : ""}
+              </button>
+            </div>
           </div>
         </div>
-        <div style={{ marginLeft:44, display:"flex", gap:8, alignItems:"center", marginTop:4 }}>
-          <button onClick={async ()=>{ const isLiked=liked[c.id]; const newLikes=isLiked?Math.max(0,(c.likes||0)-1):(c.likes||0)+1; setLiked(prev=>({...prev,[c.id]:!isLiked})); await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id); setComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x)); }}
-            style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${liked[c.id]?"rgba(239,68,68,0.3)":C.gray200}`, background:liked[c.id]?"rgba(239,68,68,0.08)":"transparent", color:liked[c.id]?"#ef4444":C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
-            <Icon name="heart" size={12} color={liked[c.id]?"#ef4444":C.gray400} weight={liked[c.id]?"fill":"regular"}/>{c.likes||0}
-          </button>
-          <button onClick={()=>setReplyState(prev=>({ ...prev, [c.id]:{ ...prev[c.id], open:!(prev[c.id]?.open), body:prev[c.id]?.body||"" } }))}
-            style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${C.gray200}`, background:rs.open?C.primaryLight:"transparent", color:rs.open?C.primary:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
-            <Icon name="chat-circle" size={12} color={rs.open?C.primary:C.gray400}/>Reply{replies.length > 0 ? ` (${replies.length})` : ""}
-          </button>
-        </div>
-        {replies.length > 0 && (
-          <div style={{ marginLeft:44, marginTop:10, borderLeft:`2px solid ${C.gray100}`, paddingLeft:12, display:"flex", flexDirection:"column", gap:8 }}>
-            {replies.map(r => (
-              <div key={r.id}>
-                <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:4 }}>
-                  <Avatar name={r.author_name} src={r.author_name===userName?userAvatar:undefined} size={22}/>
-                  <span style={{ fontWeight:700, fontSize:12, color:C.gray900 }}>{r.author_name}</span>
-                  <span style={{ fontSize:11, color:C.gray400 }}>{r.created_at ? new Date(r.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric"}) : ""}</span>
+
+        {/* Replies — Twitter threading: avatar column continues the line */}
+        {(replies.length > 0 || rs.open) && (
+          <div style={{ display:"flex", flexDirection:"column", gap:0 }}>
+            {replies.map((r, ri) => (
+              <div key={r.id} style={{ display:"flex", gap:10, alignItems:"flex-start", paddingTop:12 }}>
+                <div style={{ width:34, flexShrink:0, display:"flex", flexDirection:"column", alignItems:"center" }}>
+                  <Avatar name={r.author_name} src={r.author_name===userName?userAvatar:undefined} size={28}/>
+                  {(ri < replies.length - 1 || rs.open) && (
+                    <div style={{ width:2, flex:1, background:C.gray200, marginTop:6, minHeight:16, borderRadius:1 }}/>
+                  )}
                 </div>
-                <div style={{ fontSize:13, color:C.gray700, lineHeight:1.55, marginLeft:30 }}>{r.body}</div>
+                <div style={{ flex:1, minWidth:0, paddingBottom: ri < replies.length - 1 ? 0 : 4 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
+                    <span style={{ fontWeight:700, fontSize:12, color:C.gray900 }}>{r.author_name}</span>
+                    <span style={{ fontSize:11, color:C.gray400 }}>{r.created_at ? new Date(r.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric"}) : ""}</span>
+                  </div>
+                  <div style={{ fontSize:13, color:C.gray700, lineHeight:1.55 }}>{r.body}</div>
+                </div>
               </div>
             ))}
-          </div>
-        )}
-        {rs.open && (
-          <div style={{ marginLeft:44, marginTop:10, display:"flex", gap:8, alignItems:"flex-start" }}>
-            <Avatar name={userName||"You"} src={userAvatar} size={24}/>
-            <div style={{ flex:1, border:`1px solid ${C.gray200}`, borderRadius:10, padding:"8px 10px", background:C.gray50, display:"flex", flexDirection:"column", gap:8 }}>
-              <textarea autoFocus value={rs.body||""}
-                onChange={e=>setReplyState(prev=>({ ...prev, [c.id]:{ ...prev[c.id], body:e.target.value } }))}
-                onKeyDown={e=>{ if(e.key==="Enter" && e.metaKey) submitReply(c.id, c.session_id, c.session_title); }}
-                placeholder={`Reply to ${c.author_name}…`} rows={2}
-                style={{ border:"none", background:"transparent", outline:"none", fontSize:13, color:C.gray800, resize:"none", lineHeight:1.5, fontFamily:"inherit", width:"100%" }}/>
-              <div style={{ display:"flex", justifyContent:"flex-end", gap:6 }}>
-                <button onClick={()=>setReplyState(prev=>({ ...prev, [c.id]:{ open:false, body:"" } }))}
-                  style={{ padding:"4px 14px", borderRadius:99, border:`1px solid ${C.gray200}`, background:"transparent", color:C.gray500, fontSize:12, fontWeight:600, cursor:"pointer" }}>Cancel</button>
-                <button onClick={()=>submitReply(c.id, c.session_id, c.session_title)} disabled={!rs.body?.trim()}
-                  style={{ padding:"4px 14px", borderRadius:99, border:"none", background:rs.body?.trim()?C.primary:C.gray200, color:"#fff", fontSize:12, fontWeight:700, cursor:rs.body?.trim()?"pointer":"default" }}>Reply</button>
+            {rs.open && (
+              <div style={{ display:"flex", gap:10, alignItems:"flex-start", paddingTop:12 }}>
+                <div style={{ width:34, flexShrink:0, display:"flex", justifyContent:"center" }}>
+                  <Avatar name={userName||"You"} src={userAvatar} size={28}/>
+                </div>
+                <div style={{ flex:1, border:`1px solid ${C.gray200}`, borderRadius:10, padding:"8px 10px", background:C.gray50, display:"flex", flexDirection:"column", gap:8 }}>
+                  <textarea autoFocus value={rs.body||""}
+                    onChange={e=>setReplyState(prev=>({ ...prev, [c.id]:{ ...prev[c.id], body:e.target.value } }))}
+                    onKeyDown={e=>{ if(e.key==="Enter" && e.metaKey) submitReply(c.id, c.session_id, c.session_title); }}
+                    placeholder={`Reply to ${c.author_name}…`} rows={2}
+                    style={{ border:"none", background:"transparent", outline:"none", fontSize:13, color:C.gray800, resize:"none", lineHeight:1.5, fontFamily:"inherit", width:"100%" }}/>
+                  <div style={{ display:"flex", justifyContent:"flex-end", gap:6 }}>
+                    <button onClick={()=>setReplyState(prev=>({ ...prev, [c.id]:{ open:false, body:"" } }))} style={{ padding:"4px 14px", borderRadius:99, border:`1px solid ${C.gray200}`, background:"transparent", color:C.gray500, fontSize:12, fontWeight:600, cursor:"pointer" }}>Cancel</button>
+                    <button onClick={()=>submitReply(c.id, c.session_id, c.session_title)} disabled={!rs.body?.trim()} style={{ padding:"4px 14px", borderRadius:99, border:"none", background:rs.body?.trim()?C.primary:C.gray200, color:"#fff", fontSize:12, fontWeight:700, cursor:rs.body?.trim()?"pointer":"default" }}>Reply</button>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>
