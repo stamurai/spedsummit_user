@@ -9562,18 +9562,14 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           .spk-mobile-marquee { display: none !important; }
           @media (max-width: 900px) {
             .spk-desktop-only { grid-template-columns: repeat(2, 1fr) !important; }
-            .spk-desktop-only .spk-card > div { height: 300px !important; }
-            .spk-desktop-only .spk-img { object-position: center 10% !important; }
-            .spk-overlay-name { font-size: 13px !important; white-space: normal !important; }
-            .spk-overlay-role { font-size: 11px !important; white-space: normal !important; }
+            .spk-desktop-only .spk-card { height: 300px !important; }
           }
           @media (max-width: 500px) {
             .spk-desktop-only { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
-            .spk-desktop-only .spk-card > div { height: 240px !important; }
-            .spk-desktop-only .spk-img { object-position: center 10% !important; }
+            .spk-desktop-only .spk-card { height: 240px !important; }
             .spk-overlay { padding: 20px 10px 10px !important; }
-            .spk-overlay-name { font-size: 12px !important; white-space: normal !important; }
-            .spk-overlay-role { font-size: 10px !important; white-space: normal !important; }
+            .spk-overlay-name { font-size: 12px !important; }
+            .spk-overlay-role { font-size: 10px !important; }
           }
 
           /* Card = just the image container, no separate plate */
@@ -9672,10 +9668,8 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
             {experts.map((e, i) => (
               <div key={i} className="spk-card"
                 onClick={() => { savedScrollY.current = window.scrollY; setSelectedInstructor(e); window.scrollTo(0, 0); }}
-                style={{ position:"relative", borderRadius:16, overflow:"hidden", cursor:"pointer" }}>
-                <div style={{ height:"368px", overflow:"hidden" }}>
-                  <img className="spk-img" src={e.img} alt={e.name}/>
-                </div>
+                style={{ position:"relative", borderRadius:16, overflow:"hidden", cursor:"pointer", height:"368px" }}>
+                <img className="spk-img" src={e.img} alt={e.name} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%" }}/>
                 <div className="spk-overlay">
                   <div className="spk-overlay-name">{e.name}</div>
                   <div className="spk-overlay-role">{e.role}</div>
