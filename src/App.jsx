@@ -8953,11 +8953,21 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           .lp-section-pad { padding:40px 16px !important; }
           .lp-section-pad-top { padding-top:40px !important; padding-left:16px !important; padding-right:16px !important; }
           .lp-social-strip { gap:20px !important; justify-content:flex-start !important; overflow-x:auto !important; padding-bottom:4px !important; }
-          .lp-hero-collage { position:relative !important; bottom:auto !important; left:0 !important; right:0 !important; height:auto !important; overflow:hidden !important; margin-top:24px !important; }
-          .lp-hero-collage-inner { justify-content:center !important; gap:6px !important; height:auto !important; padding:0 8px !important; }
-          .lp-hero-collage-col { gap:6px !important; margin-top:0 !important; }
-          .lp-hero-collage-card { width:calc(25vw - 10px) !important; height:calc(25vw - 10px) !important; border-radius:14px !important; }
-          .lp-hero-collage-card-second { width:calc(25vw - 10px) !important; height:calc(25vw - 10px) !important; border-radius:14px !important; display:block !important; }
+          .lp-hero-collage { position:relative !important; bottom:auto !important; left:0 !important; right:0 !important; height:auto !important; overflow:hidden !important; margin-top:24px !important; background:transparent !important; }
+          .lp-hero-collage-inner { display:flex !important; flex-direction:column !important; gap:10px !important; height:auto !important; padding:0 !important; justify-content:flex-start !important; }
+          .lp-hero-collage-row { display:flex !important; gap:10px !important; width:max-content !important; }
+          .lp-hero-collage-row-1 { animation: hero-scroll-l 28s linear infinite !important; }
+          .lp-hero-collage-row-2 { animation: hero-scroll-r 34s linear infinite !important; }
+          .lp-hero-collage-col { display:contents !important; }
+          .lp-hero-collage-card, .lp-hero-collage-card-second { width:120px !important; height:150px !important; border-radius:14px !important; flex-shrink:0 !important; display:block !important; }
+          @keyframes hero-scroll-l { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+          @keyframes hero-scroll-r { from { transform:translateX(-50%); } to { transform:translateX(0); } }
+          .lp-hero-collage-desktop { display:flex !important; }
+          .lp-hero-collage-mobile  { display:none !important; }
+          @media(max-width:767px){
+            .lp-hero-collage-desktop { display:none !important; }
+            .lp-hero-collage-mobile  { display:flex !important; }
+          }
           .spk-card { border-radius:14px !important; }
           .lp-footer-cta { padding:40px 16px !important; flex-direction:column !important; align-items:flex-start !important; gap:20px !important; }
           .lp-footer-cta-btns { display:flex !important; flex-direction:column !important; width:100% !important; gap:10px !important; }
@@ -9177,7 +9187,8 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           if (n === 0) return null;
           return (
             <div className="lp-hero-collage" style={{ position:"absolute", bottom:-80, left:0, right:0, height:420, overflow:"hidden", zIndex:2, background:"#FEF5EC" }}>
-              <div className="lp-hero-collage-inner" style={{ display:"flex", justifyContent:"center", gap:10, height:400 }}>
+              {/* Desktop: staggered columns */}
+              <div className="lp-hero-collage-inner lp-hero-collage-desktop" style={{ display:"flex", justifyContent:"center", gap:10, height:400 }}>
                 {[...cols, ...cols].map((col, ci) => {
                   const top = experts[ci % n];
                   const bot = experts[(ci + 5) % n];
@@ -9192,6 +9203,23 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                         onMouseEnter={e=>e.currentTarget.querySelector("img").style.transform="scale(1.08)"}
                         onMouseLeave={e=>e.currentTarget.querySelector("img").style.transform="scale(1)"}>
                         <img src={bot.img} alt={bot.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%", display:"block", transition:"transform 0.4s ease" }}/>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Mobile: two auto-scrolling rows */}
+              <div className="lp-hero-collage-inner lp-hero-collage-mobile" style={{ display:"none", flexDirection:"column", gap:10, height:"auto", padding:0 }}>
+                {[0, 1].map(row => {
+                  const rowImgs = [...experts.filter((_,i)=>i%2===row), ...experts.filter((_,i)=>i%2===row)];
+                  return (
+                    <div key={row} style={{ overflow:"hidden" }}>
+                      <div className={`lp-hero-collage-row lp-hero-collage-row-${row+1}`}>
+                        {rowImgs.map((e, i) => (
+                          <div key={i} className="lp-hero-collage-card" style={{ borderRadius:14, overflow:"hidden", boxShadow:"0 4px 16px rgba(0,0,0,0.10)", cursor:"pointer" }}>
+                            <img src={e.img} alt={e.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%", display:"block" }}/>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   );
