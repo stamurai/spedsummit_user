@@ -8919,7 +8919,6 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
         /* ── Tablet (≤900px) ── */
         @media(max-width:900px){
           .lp-sessions-grid { grid-template-columns:repeat(2, minmax(0,1fr)) !important; }
-          .spk-grid { grid-template-columns:repeat(2,1fr) !important; }
         }
         /* ── Mobile (≤767px) ── */
         @media(max-width:767px){
@@ -8959,9 +8958,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           .lp-hero-collage-col { gap:6px !important; margin-top:0 !important; }
           .lp-hero-collage-card { width:calc(25vw - 10px) !important; height:calc(25vw - 10px) !important; border-radius:14px !important; }
           .lp-hero-collage-card-second { width:calc(25vw - 10px) !important; height:calc(25vw - 10px) !important; border-radius:14px !important; display:block !important; }
-          .spk-grid { grid-template-columns:repeat(2,1fr) !important; }
           .spk-card { border-radius:14px !important; }
-          .spk-card > div { height:260px !important; }
           .lp-footer-cta { padding:40px 16px !important; flex-direction:column !important; align-items:flex-start !important; gap:20px !important; }
           .lp-footer-cta-btns { display:flex !important; flex-direction:column !important; width:100% !important; gap:10px !important; }
           .lp-footer-cta-btns button { width:100% !important; }
@@ -8975,8 +8972,6 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
         @media(max-width:480px){
           .lp-hero-h1 { font-size:26px !important; }
           .lp-hero-certified { font-size:38px !important; }
-          .spk-grid { grid-template-columns:1fr !important; }
-          .spk-card > div { height:300px !important; }
           .lp-sessions-grid { grid-template-columns:1fr !important; }
           .lp-session-card-img { height:220px !important; }
         }
@@ -9590,8 +9585,26 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
             text-overflow: ellipsis;
           }
 
-          @media (max-width: 900px) { .spk-grid { grid-template-columns: repeat(2, 1fr) !important; } }
-          @media (max-width: 500px) { .spk-grid { grid-template-columns: 1fr !important; } }
+          @media (max-width: 900px) {
+            .spk-grid {
+              grid-template-columns: repeat(3, 1fr) !important;
+              grid-auto-rows: 180px !important;
+              gap: 12px !important;
+            }
+            .spk-card { height: auto !important; }
+            .spk-card > div { height: 100% !important; }
+            .spk-card:nth-child(odd)  { grid-row: span 2; }
+          }
+          @media (max-width: 500px) {
+            .spk-grid {
+              grid-template-columns: repeat(2, 1fr) !important;
+              grid-auto-rows: 150px !important;
+              gap: 10px !important;
+            }
+            .spk-card { height: auto !important; }
+            .spk-card > div { height: 100% !important; }
+            .spk-card:nth-child(odd)  { grid-row: span 2; }
+          }
 
           .spk-fade-l {
             position: absolute; top: 0; left: 0; z-index: 10;
