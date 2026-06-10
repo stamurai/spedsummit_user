@@ -4588,7 +4588,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
 
   useEffect(() => {
     setLoading(true);
-    supabase.from("session_comments").select("*").order("created_at", { ascending: true })
+    supabase.from("session_comments").select("*").order("created_at", { ascending: false })
       .then(({ data }) => { setComments(data || []); setLoading(false); });
   }, []);
 
@@ -4598,7 +4598,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
     const body = newBody.trim();
     const tempId = "tmp-" + Date.now();
     const optimistic = { id:tempId, session_id:selectedSession, session_title:session?.title||"", author_name:userName||"You", body, likes:0, parent_id:null, created_at:new Date().toISOString() };
-    setComments(prev => [...prev, optimistic]);
+    setComments(prev => [optimistic, ...prev]);
     setNewBody("");
     setPosting(true);
     const { data, error } = await supabase.from("session_comments").insert({ session_id:selectedSession||null, session_title:session?.title||"", author_name:userName||"Anonymous", body, parent_id:null }).select().single();
