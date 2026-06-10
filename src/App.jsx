@@ -2488,7 +2488,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
           {[
             { icon:"play-circle", label:"Sessions Watched",    val: completed,   color:C.primary  },
             { icon:"certificate", label:"Certificates Earned", val: certsEarned, color:"#f59e0b"  },
-            { icon:"timer",       label:"Hours Learned",       val: hoursLearned,      color:C.success  },
+            { icon:"timer",       label:"PD Hours Learned",       val: hoursLearned,      color:C.success  },
           ].map((row, i, arr) => (
             <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 0", borderBottom: i < arr.length - 1 ? `1px solid ${C.gray100}` : "none" }}>
               <div style={{ width:30, height:30, borderRadius:8, background:`color-mix(in srgb, ${row.color} 12%, transparent)`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
@@ -2978,7 +2978,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
               {[
                 { label:"Sessions Watched",    val: completed },
                 { label:"Certificates Earned", val: certsEarned },
-                { label:"Hours Learned",       val: hoursLearned },
+                { label:"PD Hours Learned",       val: hoursLearned },
               ].map((row, i, arr) => (
                 <div key={i} style={{ padding:"14px 18px", borderBottom: i < arr.length-1 ? `1px solid ${C.gray100}` : "none" }}>
                   <div style={{ fontSize:24, fontWeight:900, color:C.gray900, lineHeight:1, letterSpacing:"-0.5px" }}>{row.val}</div>
@@ -3085,7 +3085,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
               {[
                 { val:completed,   label:"Sessions Done" },
                 { val:certsEarned, label:"Certificates"  },
-                { val:hoursLearned, label:"Hours Learned" },
+                { val:hoursLearned, label:"PD Hours Learned" },
               ].map((stat,i) => (
                 <div key={i} style={{ textAlign:"center", background:"rgba(255,255,255,0.12)", backdropFilter:"blur(6px)", border:"1px solid rgba(255,255,255,0.18)", borderRadius:16, padding:"18px 22px", minWidth:90 }}>
                   <div style={{ fontSize:26, fontWeight:900, color:"#fff", lineHeight:1 }}>{stat.val}</div>
