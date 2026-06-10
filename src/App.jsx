@@ -4705,9 +4705,9 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
     const isOwn = c.author_name === userName;
     const es = editState[c.id] || {};
     return (
-      <div key={c.id} style={{ padding:"14px 18px 10px", borderBottom:`1px solid ${C.gray100}` }}>
+      <div key={c.id} className="comm-comment-pad" style={{ padding:"14px 18px 10px", borderBottom:`1px solid ${C.gray100}` }}>
         {/* Twitter layout: shared left column for ALL avatars + lines, right column for content */}
-        <div style={{ display:"grid", gridTemplateColumns:"34px 1fr", gap:"0 10px" }}>
+        <div className="comm-thread-grid" style={{ display:"grid", gridTemplateColumns:"34px 1fr", gap:"0 10px" }}>
 
           {/* ── Row 0 left: parent avatar + line down to first reply ── */}
           <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gridRow:1 }}>
@@ -4818,10 +4818,23 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
   }
 
   return (
-    <div style={{ padding:"28px 32px", background:C.gray50, minHeight:"100%", boxSizing:"border-box", display:"flex", gap:24, alignItems:"flex-start" }}>
+    <div className="comm-page" style={{ padding:"28px 32px", background:C.gray50, minHeight:"100%", boxSizing:"border-box", display:"flex", gap:24, alignItems:"flex-start" }}>
+      <style>{`
+        @media (max-width: 900px) {
+          .comm-page { flex-direction: column !important; padding: 16px !important; }
+          .comm-left  { width: 100% !important; position: static !important; }
+          .comm-right { width: 100% !important; }
+        }
+        @media (max-width: 500px) {
+          .comm-page { padding: 12px 10px !important; gap: 14px !important; }
+          .comm-thread-grid { grid-template-columns: 28px 1fr !important; gap: 0 8px !important; }
+          .comm-bucket-header { padding: 12px 14px !important; }
+          .comm-comment-pad { padding: 12px 14px 8px !important; }
+        }
+      `}</style>
 
       {/* Left — composer + general comments */}
-      <div style={{ width:300, flexShrink:0 }}>
+      <div className="comm-left" style={{ width:300, flexShrink:0, position:"sticky", top:24 }}>
         <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"12px 16px" }}>
           <div style={{ display:"flex", gap:10, alignItems:"flex-start", marginBottom:12 }}>
             <Avatar name={userName||"You"} src={userAvatar} size={36}/>
@@ -4882,7 +4895,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
       </div>
 
       {/* Right — session buckets */}
-      <div style={{ flex:1, minWidth:0 }}>
+      <div className="comm-right" style={{ flex:1, minWidth:0 }}>
         {loading && (
           <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"40px 24px", textAlign:"center", color:C.gray400, fontSize:14 }}>Loading…</div>
         )}
@@ -4896,7 +4909,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
         {!loading && filteredBuckets.map(bucket => (
           <div key={bucket.title||"__general__"} style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, marginBottom:16, overflow:"hidden" }}>
             {/* Bucket header */}
-            <div style={{ padding:"14px 18px", borderBottom:`1px solid ${C.gray100}`, textAlign:"center" }}>
+            <div className="comm-bucket-header" style={{ padding:"14px 18px", borderBottom:`1px solid ${C.gray100}`, textAlign:"center" }}>
               <div style={{ fontSize:14, fontWeight:800, color:C.gray900 }}>{bucket.title || "General"}</div>
               <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{bucket.comments.length} comment{bucket.comments.length!==1?"s":""}</div>
             </div>
