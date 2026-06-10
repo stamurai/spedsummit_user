@@ -4031,6 +4031,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const [sdComments, setSdComments] = useState([]);
   const [sdCommentsLoading, setSdCommentsLoading] = useState(false);
   const [sdNewComment, setSdNewComment] = useState("");
+  const [sdLiked, setSdLiked] = useState({});
   const [sdPosting, setSdPosting] = useState(false);
   const [sdDeleteConfirm, setSdDeleteConfirm] = useState(null);
   const chatRef = useRef(null);
@@ -4526,9 +4527,9 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                   </div>
                   <div style={{ fontSize:14, color:isDark?"rgba(255,255,255,0.75)":C.gray700, lineHeight:1.6, marginLeft:36, marginBottom:8 }}>{c.body}</div>
                   <div style={{ marginLeft:36 }}>
-                    <button onClick={async ()=>{ const newLikes=(c.likes||0)+1; await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id); setSdComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x)); }}
-                      style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, background:"transparent", color:isDark?"rgba(255,255,255,0.5)":C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
-                      <Icon name="heart" size={12} color={C.gray400}/>{c.likes||0}
+                    <button onClick={async ()=>{ const liked=sdLiked[c.id]; const newLikes=liked?Math.max(0,(c.likes||0)-1):(c.likes||0)+1; setSdLiked(prev=>({...prev,[c.id]:!liked})); await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id); setSdComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x)); }}
+                      style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${sdLiked[c.id]?"rgba(239,68,68,0.3)":(isDark?"rgba(255,255,255,0.1)":C.gray200)}`, background:sdLiked[c.id]?"rgba(239,68,68,0.08)":"transparent", color:sdLiked[c.id]?"#ef4444":(isDark?"rgba(255,255,255,0.5)":C.gray500), cursor:"pointer", fontSize:12, fontWeight:600 }}>
+                      <Icon name="heart" size={12} color={sdLiked[c.id]?"#ef4444":C.gray400} weight={sdLiked[c.id]?"fill":"regular"}/>{c.likes||0}
                     </button>
                   </div>
                 </div>
@@ -4576,6 +4577,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
   const sessionDropRef = React.useRef(null);
   // reply state: { [commentId]: { open, body, posting } }
   const [replyState, setReplyState] = useState({});
+  const [liked, setLiked] = useState({});
 
   useEffect(() => {
     if (!sessionDropOpen) return;
@@ -4724,9 +4726,9 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
                     <div style={{ fontSize:14, color:C.gray700, lineHeight:1.6, marginLeft:36, marginBottom:8 }}>{c.body}</div>
                     {/* Actions */}
                     <div style={{ marginLeft:36, display:"flex", gap:8, alignItems:"center" }}>
-                      <button onClick={async ()=>{ const newLikes=(c.likes||0)+1; await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id); setComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x)); }}
-                        style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${C.gray200}`, background:"transparent", color:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
-                        <Icon name="heart" size={12} color={C.gray400}/>{c.likes||0}
+                      <button onClick={async ()=>{ const isLiked=liked[c.id]; const newLikes=isLiked?Math.max(0,(c.likes||0)-1):(c.likes||0)+1; setLiked(prev=>({...prev,[c.id]:!isLiked})); await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id); setComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x)); }}
+                        style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${liked[c.id]?"rgba(239,68,68,0.3)":C.gray200}`, background:liked[c.id]?"rgba(239,68,68,0.08)":"transparent", color:liked[c.id]?"#ef4444":C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
+                        <Icon name="heart" size={12} color={liked[c.id]?"#ef4444":C.gray400} weight={liked[c.id]?"fill":"regular"}/>{c.likes||0}
                       </button>
                       <button onClick={()=>setReplyState(prev=>({ ...prev, [c.id]:{ ...prev[c.id], open:!(prev[c.id]?.open), body:prev[c.id]?.body||"" } }))}
                         style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${C.gray200}`, background:rs.open?C.primaryLight:"transparent", color:rs.open?C.primary:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
