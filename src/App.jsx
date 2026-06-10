@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useReducer } from "react";
 import ReactDOM from "react-dom/client";
 import { supabase } from "./supabase";
-import { Agentation } from "agentation";
 import { createPortal } from "react-dom";
 import * as PhosphorIcons from "@phosphor-icons/react";
 import jsPDF from "jspdf";
@@ -11796,21 +11795,7 @@ export default function App() {
         }}
       />
     )}
-    <AgentationMount />
   </>
   );
 }
 
-function AgentationMount() {
-  useEffect(() => {
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    const root = ReactDOM.createRoot(container);
-    root.render(React.createElement(Agentation));
-    return () => {
-      root.unmount();
-      document.body.removeChild(container);
-    };
-  }, []);
-  return null;
-}
