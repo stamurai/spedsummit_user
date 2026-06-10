@@ -4650,8 +4650,8 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
     const rs = replyState[c.id] || {};
     return (
       <div key={c.id} style={{ padding:"12px 18px", borderBottom:`1px solid ${C.gray100}` }}>
-        <div style={{ display:"flex", gap:10, alignItems:"center", marginBottom:6 }}>
-          <div style={{ width:34, flexShrink:0, display:"flex", justifyContent:"center" }}>
+        <div style={{ display:"flex", gap:10, alignItems:"flex-start", marginBottom:6 }}>
+          <div style={{ width:34, flexShrink:0, display:"flex", justifyContent:"center", marginTop:1 }}>
             <Avatar name={c.author_name} src={c.author_name===userName?userAvatar:undefined} size={28}/>
           </div>
           <div>
