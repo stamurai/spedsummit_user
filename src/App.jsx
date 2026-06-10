@@ -4478,7 +4478,8 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               <div className="sd-instructor-header" style={{ display:"flex", gap:16, alignItems:"flex-start" }}>
                 <Avatar name={session.instructor} src={session.instructorImage || undefined} size={68}/>
                 <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontWeight:800, fontSize:18, color:C.gray900, marginBottom:session.instructorBio ? 8 : 0 }}>{session.instructor}</div>
+                  <div style={{ fontWeight:800, fontSize:18, color:C.gray900, marginBottom:2 }}>{session.instructor?.split("|")[0]?.trim()}</div>
+                  {session.instructorDesignation && <div style={{ fontSize:13, color:C.primary, fontWeight:600, marginBottom:6 }}>{session.instructorDesignation}</div>}
                   {session.instructorBio && (
                     <p style={{ margin:"0 0 4px", fontSize:14, color:C.gray600, lineHeight:1.8 }}>{session.instructorBio}</p>
                   )}
@@ -8629,7 +8630,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       .filter(s => { if (seen.has(s.instructor)) return false; seen.add(s.instructor); return true; })
       .map(s => {
         const parts = s.instructor.split("|").map(p => p.trim());
-        return { name: parts[0] || s.instructor, role: parts[1] || "", org: "", img: s.instructorImage,
+        return { name: parts[0] || s.instructor, role: s.instructorDesignation || parts[1] || "", org: "", img: s.instructorImage,
                  bio: s.instructorBio || "", session: s.title, sessionDesc: s.description || "", highlights: [],
                  linkedin: s.instructorLinkedin || "", instagram: s.instructorInstagram || "",
                  facebook: s.instructorFacebook || "", website: s.instructorWebsite || "", podcast: s.instructorPodcast || "" };
@@ -8739,7 +8740,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       }) || SESSIONS.find(s => s.instructor === name);
       if (s) match = {
         name,
-        role: s.instructor?.split("|")[1]?.trim() || "",
+        role: s.instructorDesignation || s.instructor?.split("|")[1]?.trim() || "",
         org: "",
         img: s.instructorImage || INSTRUCTOR_AVATARS[s.instructor] || "",
         bio: s.instructorBio || "No bio available.",
@@ -10789,6 +10790,7 @@ export default function App() {
       const toSession = s => ({
         id: s.id, title: s.title, category: s.category,
         instructor: s.instructor || "", instructorBio: s.instructor_bio || "", instructorImage: s.instructor_image || "",
+        instructorDesignation: s.designation || "",
         instructorLinkedin: s.linkedin || "", instructorInstagram: s.instagram || "",
         instructorFacebook: s.facebook || "", instructorWebsite: s.website || "", instructorPodcast: s.podcast || "",
         duration: s.duration || "60 mins", resources: s.resources || 0,
