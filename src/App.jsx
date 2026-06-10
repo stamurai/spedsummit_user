@@ -1047,10 +1047,10 @@ const SEARCH_PAGES = [
    FOOTER
 ───────────────────────────────────────────────────────────────────────────── */
 function Footer({ onNavigate }) {
-  const bg     = "#FEF5EC";
+  const bg     = "#ffffff";
   const muted  = "#5D636F";
   const text   = "#2B2E33";
-  const border = "#e8ddd3";
+  const border = "#e5e7eb";
   return (
     <footer style={{ background:bg, borderTop:`1px solid ${border}`, fontFamily:"inherit", flexShrink:0 }}>
       <style>{`
