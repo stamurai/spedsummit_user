@@ -492,18 +492,9 @@ async function downloadCertificate({ recipientName = "", sessionTitle, instructo
         </div>
 
         <!-- Meta row -->
-        <div style="display:flex;gap:48px;justify-content:center;margin-bottom:20px;padding:16px 0;">
-          <div style="text-align:center;">
-            <div style="font-size:19px;font-weight:600;color:#1a1a1a;font-family:'Poppins',sans-serif;">${sessionTime}</div>
-          </div>
-          <div style="width:1px;background:#e5e7eb;"></div>
-          <div style="text-align:center;">
-            <div style="font-size:19px;font-weight:600;color:#1a1a1a;font-family:'Poppins',sans-serif;">${today}</div>
-          </div>
-          <div style="width:1px;background:#e5e7eb;"></div>
-          <div style="text-align:center;">
-            <div style="font-size:19px;font-weight:600;color:#1a1a1a;font-family:'Poppins',sans-serif;">${instructorName}</div>
-          </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:20px;padding:14px 0;border-top:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;">
+          <div style="font-size:17px;font-weight:600;color:#1a1a1a;font-family:'Poppins',sans-serif;">Session time: ${sessionTime}</div>
+          <div style="font-size:17px;font-weight:600;color:#1a1a1a;font-family:'Poppins',sans-serif;">${today}</div>
         </div>
 
         <!-- Description -->
@@ -519,7 +510,7 @@ async function downloadCertificate({ recipientName = "", sessionTitle, instructo
         </div>
         <div style="text-align:right;">
           <div style="margin-bottom:2px;">Verify at:</div>
-          <div style="color:#6490E8;font-weight:600;text-decoration:underline;">${verifyUrl.replace(/^https?:\/\//,"")}</div>
+          <div style="color:#6490E8;font-weight:600;text-decoration:underline;">${window.location.hostname}</div>
         </div>
       </div>
     </div>`;
