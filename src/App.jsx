@@ -9202,24 +9202,6 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
 
       </section>
 
-      {/* ── Social proof strip ── */}
-      <section style={{ borderBottom:`1px solid ${T.border}`, padding:"28px 24px" }}>
-        <div style={{ maxWidth:1024, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"center", gap:48, flexWrap:"wrap" }}>
-          <span style={{ fontSize:13, color:T.muted, fontWeight:500, whiteSpace:"nowrap" }}>Trusted by educators at</span>
-          {[
-            { icon:"house",        label:"Public Schools" },
-            { icon:"heart",        label:"Children's Hospitals" },
-            { icon:"student",      label:"Universities" },
-            { icon:"brain",        label:"ABA Clinics" },
-            { icon:"clipboard",    label:"IEP Teams" },
-          ].map(({icon,label},i)=>(
-            <span key={i} style={{ display:"flex", alignItems:"center", gap:6, fontSize:14, fontWeight:600, color:T.muted, whiteSpace:"nowrap" }}>
-              <Icon name={icon} size={16} color={T.muted}/>
-              {label}
-            </span>
-          ))}
-        </div>
-      </section>
 
       {/* ── Social Proof Bento (moved below FAQ) ── */}
       {false && (() => {
