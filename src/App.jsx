@@ -4584,6 +4584,35 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
   const [liked, setLiked] = useState({});
   const [menuOpen, setMenuOpen] = useState(null); // commentId
   const [editState, setEditState] = useState({}); // { [commentId]: { open, body } }
+  const [reportModal, setReportModal] = useState(null); // { commentId, authorName }
+  const [reportReason, setReportReason] = useState("");
+  const [reportOther, setReportOther] = useState("");
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [reportDone, setReportDone] = useState(false);
+
+  const REPORT_REASONS = [
+    "Spam or self-promotion",
+    "Harassment or bullying",
+    "Hate speech or discrimination",
+    "Misinformation",
+    "Inappropriate content",
+    "Other",
+  ];
+
+  async function submitReport() {
+    if (!reportReason) return;
+    setReportSubmitting(true);
+    await new Promise(r => setTimeout(r, 800));
+    setReportSubmitting(false);
+    setReportDone(true);
+  }
+
+  function closeReportModal() {
+    setReportModal(null);
+    setReportReason("");
+    setReportOther("");
+    setReportDone(false);
+  }
   const menuRef = React.useRef(null);
 
   useEffect(() => {
@@ -4707,7 +4736,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
                         <Icon name="trash" size={14} color="#ef4444"/> Delete
                       </button>
                     </>) : (
-                      <button onClick={()=>{ toast({type:"success",message:"Comment reported."}); setMenuOpen(null); }}
+                      <button onClick={()=>{ setReportModal({commentId:c.id, authorName:c.author_name}); setMenuOpen(null); }}
                         style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"10px 14px", border:"none", background:"none", cursor:"pointer", fontSize:13, color:"#f59e0b", textAlign:"left" }}
                         onMouseEnter={e=>e.currentTarget.style.background="#fffbeb"} onMouseLeave={e=>e.currentTarget.style.background="none"}>
                         <Icon name="flag" size={14} color="#f59e0b"/> Report
@@ -4883,12 +4912,77 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
           </div>
         ))}
       </div>
+
+      {/* Report Modal */}
+      {reportModal && (
+        <div style={{ position:"fixed", inset:0, zIndex:1200, background:"rgba(15,23,42,0.55)", display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}
+          onClick={e=>{ if(e.target===e.currentTarget) closeReportModal(); }}>
+          <div style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:420, boxShadow:"0 24px 60px rgba(0,0,0,0.18)", overflow:"hidden" }}>
+            {reportDone ? (
+              <div style={{ padding:"40px 32px", textAlign:"center" }}>
+                <div style={{ width:56, height:56, borderRadius:"50%", background:"#f0fdf4", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px" }}>
+                  <Icon name="check-circle" size={28} color="#22c55e" weight="fill"/>
+                </div>
+                <div style={{ fontSize:17, fontWeight:800, color:C.gray900, marginBottom:8 }}>Report submitted</div>
+                <div style={{ fontSize:14, color:C.gray500, lineHeight:1.6, marginBottom:24 }}>Thanks for letting us know. We'll review this comment and take appropriate action.</div>
+                <button onClick={closeReportModal}
+                  style={{ padding:"10px 28px", borderRadius:10, border:"none", background:C.primary, color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer" }}>Done</button>
+              </div>
+            ) : (
+              <>
+                <div style={{ padding:"22px 24px 0", display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12 }}>
+                  <div>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+                      <div style={{ width:36, height:36, borderRadius:10, background:"#fffbeb", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        <Icon name="flag" size={18} color="#f59e0b" weight="fill"/>
+                      </div>
+                      <div style={{ fontSize:16, fontWeight:800, color:C.gray900 }}>Report comment</div>
+                    </div>
+                    <div style={{ fontSize:13, color:C.gray500, marginTop:6 }}>Reporting comment by <strong style={{color:C.gray700}}>{reportModal.authorName}</strong></div>
+                  </div>
+                  <button onClick={closeReportModal}
+                    style={{ width:30, height:30, borderRadius:8, border:`1px solid ${C.gray200}`, background:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    <Icon name="x" size={13} color={C.gray500}/>
+                  </button>
+                </div>
+                <div style={{ padding:"16px 24px 24px" }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:C.gray700, marginBottom:10 }}>Why are you reporting this?</div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:16 }}>
+                    {REPORT_REASONS.map(r => (
+                      <label key={r} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", borderRadius:10, border:`1.5px solid ${reportReason===r?C.primary:C.gray200}`, background:reportReason===r?C.primaryLight:"#fff", cursor:"pointer", transition:"border-color .12s, background .12s" }}
+                        onClick={()=>setReportReason(r)}>
+                        <div style={{ width:16, height:16, borderRadius:"50%", border:`2px solid ${reportReason===r?C.primary:C.gray300}`, background:reportReason===r?C.primary:"#fff", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                          {reportReason===r && <div style={{ width:6, height:6, borderRadius:"50%", background:"#fff" }}/>}
+                        </div>
+                        <span style={{ fontSize:13, color:C.gray800, fontWeight:reportReason===r?600:400 }}>{r}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {reportReason==="Other" && (
+                    <textarea value={reportOther} onChange={e=>setReportOther(e.target.value)}
+                      placeholder="Please describe the issue…" rows={3}
+                      style={{ width:"100%", padding:"10px 12px", border:`1.5px solid ${C.gray200}`, borderRadius:10, fontSize:13, color:C.gray800, outline:"none", resize:"none", fontFamily:"inherit", boxSizing:"border-box", marginBottom:16 }}/>
+                  )}
+                  <div style={{ display:"flex", gap:10 }}>
+                    <button onClick={closeReportModal}
+                      style={{ flex:1, padding:"11px 0", borderRadius:10, border:`1px solid ${C.gray200}`, background:"#fff", fontSize:14, fontWeight:600, color:C.gray700, cursor:"pointer", fontFamily:"inherit" }}>Cancel</button>
+                    <button onClick={submitReport} disabled={!reportReason||(reportReason==="Other"&&!reportOther.trim())||reportSubmitting}
+                      style={{ flex:1, padding:"11px 0", borderRadius:10, border:"none", background:reportReason&&!(reportReason==="Other"&&!reportOther.trim())?C.primary:C.gray200, color:"#fff", fontSize:14, fontWeight:700, cursor:reportReason?"pointer":"not-allowed", fontFamily:"inherit" }}>
+                      {reportSubmitting ? "Submitting…" : "Submit report"}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   PROFILE PAGE HELPERS  (defined outside so React doesn't remount on re-render)
+   PROFILE PAGE HELPERS  (defined outside so React don't remount on re-render)
 ───────────────────────────────────────────────────────────────────────────── */
 function ProfileToggle({ on, onToggle }) {
   return (
