@@ -4780,7 +4780,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
             const isLast = ri === replies.length - 1 && !rs.open;
             return ([
               <div key={`rl-${r.id}`} style={{ display:"flex", flexDirection:"column", alignItems:"center" }}>
-                <Avatar name={r.author_name} src={r.author_name===userName?userAvatar:undefined} size={28}/>
+                <Avatar name={r.author_name} src={r.author_name===userName?userAvatar:undefined} size={34}/>
                 {!isLast && <div style={{ width:2, flex:1, background:C.gray200, marginTop:6, borderRadius:1, minHeight:12 }}/>}
               </div>,
               <div key={`rc-${r.id}`} style={{ paddingBottom: isLast ? 2 : 12 }}>
@@ -4796,7 +4796,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
           {/* ── Reply composer row ── */}
           {rs.open && ([
             <div key="compose-avatar" style={{ display:"flex", flexDirection:"column", alignItems:"center" }}>
-              <Avatar name={userName||"You"} src={userAvatar} size={28}/>
+              <Avatar name={userName||"You"} src={userAvatar} size={34}/>
             </div>,
             <div key="compose-input">
               <div style={{ border:`1px solid ${C.gray200}`, borderRadius:10, padding:"8px 10px", background:C.gray50, display:"flex", flexDirection:"column", gap:8 }}>
