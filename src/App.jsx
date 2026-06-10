@@ -8984,8 +8984,8 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
         @media(max-width:480px){
           .lp-hero-h1 { font-size:26px !important; }
           .lp-hero-certified { font-size:38px !important; }
-          .lp-sessions-grid { grid-template-columns:1fr !important; }
-          .lp-session-card-img { height:220px !important; }
+          .lp-sessions-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+          .lp-session-card-img { height:160px !important; }
         }
       `}</style>
 
