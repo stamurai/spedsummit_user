@@ -8934,6 +8934,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           .lp-trust-badge .lp-laurel { height:18px !important; }
           .lp-trust-badge .lp-trust-text { font-size:12px !important; white-space:nowrap !important; }
           .lp-trust-badge .lp-trust-avatars img { width:22px !important; height:22px !important; margin-left:-6px !important; }
+          .lp-trust-avatar-4th { display:none !important; }
           .lp-stats-strip { gap:20px !important; flex-wrap:wrap !important; justify-content:center !important; }
           .lp-bento-grid { grid-template-columns:1fr !important; grid-template-rows:auto !important; }
           .lp-bento-grid > * { grid-column:1 !important; grid-row:auto !important; }
@@ -9156,7 +9157,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
             <img className="lp-laurel" src="/laurel wreath.svg" alt="" style={{ height:28, width:"auto", flexShrink:0, filter:"brightness(0) saturate(100%) invert(58%) sepia(51%) saturate(500%) hue-rotate(5deg) brightness(90%) contrast(90%)" }}/>
             <div className="lp-trust-avatars" style={{ display:"flex", flexShrink:0 }}>
               {experts.slice(0,4).map((e,i) => (
-                <img key={i} src={e.img} alt={e.name} style={{ width:32, height:32, borderRadius:"50%", border:"2px solid #fff", marginLeft:i===0?0:-10, objectFit:"cover" }}/>
+                <img key={i} src={e.img} alt={e.name} className={i===3?"lp-trust-avatar-4th":""} style={{ width:32, height:32, borderRadius:"50%", border:"2px solid #fff", marginLeft:i===0?0:-10, objectFit:"cover" }}/>
               ))}
             </div>
             <span className="lp-trust-text" style={{ fontSize:14, color:T.muted }}>Trusted by <strong style={{ color:T.blue }}>30,000+</strong> educators worldwide</span>
