@@ -8939,6 +8939,11 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           .lp-bento-grid { grid-template-columns:1fr !important; grid-template-rows:auto !important; }
           .lp-bento-grid > * { grid-column:1 !important; grid-row:auto !important; }
           .lp-bento-card { height:160px !important; min-height:unset !important; }
+          .lp-stat-cards { grid-template-columns:repeat(3,1fr) !important; gap:10px !important; }
+          .lp-stat-cards > * { grid-column:auto !important; }
+          .lp-stat-card { padding:14px 10px !important; gap:10px !important; height:auto !important; min-height:unset !important; }
+          .lp-stat-card-icon { width:36px !important; height:36px !important; border-radius:8px !important; flex-shrink:0 !important; }
+          .lp-stat-card-text { font-size:12px !important; line-height:1.3 !important; }
           .lp-sessions-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
           .lp-session-card { flex-direction:column !important; }
           .lp-session-card-img { width:100% !important; height:180px !important; flex-shrink:0 !important; }
@@ -9448,7 +9453,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: "-60px" }}
-                className="lp-bento-grid"
+                className="lp-bento-grid lp-stat-cards"
               style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20 }}
               >
                 {/* Card 1 — Sessions Start Date */}
@@ -9456,13 +9461,13 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                   const startLabel = "Jul 13, 2026";
                   return (
                     <motion.div variants={itemVariants}>
-                      <div className="lp-bento-card" style={{ ...cardBase, padding:"28px 28px 24px", display:"flex", alignItems:"center", gap:18 }}>
-                        <div style={{ width:52, height:52, borderRadius:12, background:"rgba(249,115,22,0.12)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                      <div className="lp-bento-card lp-stat-card" style={{ ...cardBase, padding:"28px 28px 24px", display:"flex", alignItems:"center", gap:18 }}>
+                        <div className="lp-stat-card-icon" style={{ width:52, height:52, borderRadius:12, background:"rgba(249,115,22,0.12)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                           <Icon name="calendar" size={26} color="#f97316"/>
                         </div>
                         <div>
-                          <div style={{ fontSize:16, fontWeight:600, color:T.text, lineHeight:1.4 }}>Sessions start</div>
-                          <div style={{ fontSize:16, fontWeight:600, color:T.text, lineHeight:1.3 }}>{startLabel}</div>
+                          <div className="lp-stat-card-text" style={{ fontSize:16, fontWeight:600, color:T.text, lineHeight:1.4 }}>Sessions start</div>
+                          <div className="lp-stat-card-text" style={{ fontSize:16, fontWeight:600, color:T.text, lineHeight:1.3 }}>{startLabel}</div>
                         </div>
                       </div>
                     </motion.div>
@@ -9475,13 +9480,13 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                   const sessionCount = sessions.length;
                   return (
                     <motion.div variants={itemVariants}>
-                      <div className="lp-bento-card" style={{ ...cardBase, padding:"28px 28px 24px", display:"flex", alignItems:"center", gap:18 }}>
-                        <div style={{ width:52, height:52, borderRadius:12, background:"rgba(249,115,22,0.12)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                      <div className="lp-bento-card lp-stat-card" style={{ ...cardBase, padding:"28px 28px 24px", display:"flex", alignItems:"center", gap:18 }}>
+                        <div className="lp-stat-card-icon" style={{ width:52, height:52, borderRadius:12, background:"rgba(249,115,22,0.12)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                           <Icon name="users" size={26} color="#f97316"/>
                         </div>
                         <div>
-                          <div style={{ fontSize:16, fontWeight:600, color:T.text, lineHeight:1.3 }}>{speakerCount} speakers</div>
-                          <div style={{ fontSize:16, fontWeight:600, color:T.text, lineHeight:1.4 }}>and {sessionCount} sessions</div>
+                          <div className="lp-stat-card-text" style={{ fontSize:16, fontWeight:600, color:T.text, lineHeight:1.3 }}>{speakerCount} speakers</div>
+                          <div className="lp-stat-card-text" style={{ fontSize:16, fontWeight:600, color:T.text, lineHeight:1.4 }}>and {sessionCount} sessions</div>
                         </div>
                       </div>
                     </motion.div>
@@ -9490,13 +9495,13 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
 
                 {/* Card 3 — Professional Development Certificates */}
                 <motion.div variants={itemVariants}>
-                  <div className="lp-bento-card" style={{ ...cardBase, padding:"28px 28px 24px", display:"flex", alignItems:"center", gap:18 }}>
-                    <div style={{ width:52, height:52, borderRadius:12, background:"rgba(249,115,22,0.12)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <div className="lp-bento-card lp-stat-card" style={{ ...cardBase, padding:"28px 28px 24px", display:"flex", alignItems:"center", gap:18 }}>
+                    <div className="lp-stat-card-icon" style={{ width:52, height:52, borderRadius:12, background:"rgba(249,115,22,0.12)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                       <Icon name="certificate" size={26} color="#f97316"/>
                     </div>
                     <div>
-                      <div style={{ fontSize:16, fontWeight:600, color:T.text, lineHeight:1.3 }}>Professional Development</div>
-                      <div style={{ fontSize:16, fontWeight:600, color:T.text, lineHeight:1.4 }}>Certificates</div>
+                      <div className="lp-stat-card-text" style={{ fontSize:16, fontWeight:600, color:T.text, lineHeight:1.3 }}>Professional Development</div>
+                      <div className="lp-stat-card-text" style={{ fontSize:16, fontWeight:600, color:T.text, lineHeight:1.4 }}>Certificates</div>
                     </div>
                   </div>
                 </motion.div>
