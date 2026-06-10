@@ -4582,6 +4582,31 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
   // reply state: { [commentId]: { open, body, posting } }
   const [replyState, setReplyState] = useState({});
   const [liked, setLiked] = useState({});
+  const [menuOpen, setMenuOpen] = useState(null); // commentId
+  const [editState, setEditState] = useState({}); // { [commentId]: { open, body } }
+  const menuRef = React.useRef(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handleClick(e) { if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(null); }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [menuOpen]);
+
+  async function deleteComment(id) {
+    await supabase.from("session_comments").delete().eq("id", id);
+    setComments(prev => prev.filter(c => c.id !== id && c.parent_id !== id));
+    toast({ type:"success", message:"Comment deleted." });
+  }
+
+  async function saveEdit(id) {
+    const body = (editState[id]?.body || "").trim();
+    if (!body) return;
+    await supabase.from("session_comments").update({ body }).eq("id", id);
+    setComments(prev => prev.map(c => c.id === id ? { ...c, body } : c));
+    setEditState(prev => ({ ...prev, [id]: { open:false, body:"" } }));
+    toast({ type:"success", message:"Comment updated." });
+  }
 
   useEffect(() => {
     if (!sessionDropOpen) return;
@@ -4648,6 +4673,8 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
   function renderComment(c) {
     const replies = comments.filter(r => r.parent_id === c.id);
     const rs = replyState[c.id] || {};
+    const isOwn = c.author_name === userName;
+    const es = editState[c.id] || {};
     return (
       <div key={c.id} style={{ padding:"12px 18px", borderBottom:`1px solid ${C.gray100}` }}>
         <div style={{ display:"flex", gap:10, alignItems:"flex-start" }}>
@@ -4658,8 +4685,54 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
               <span style={{ fontWeight:700, fontSize:13, color:C.gray900 }}>{c.author_name}</span>
               <span style={{ fontSize:11, color:C.gray400 }}>{c.created_at ? new Date(c.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : ""}</span>
+              {/* Three-dot menu */}
+              <div style={{ marginLeft:"auto", position:"relative" }} ref={menuOpen===c.id?menuRef:null}>
+                <button onClick={()=>setMenuOpen(menuOpen===c.id?null:c.id)}
+                  style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 6px", borderRadius:6, color:C.gray400, fontSize:16, lineHeight:1, display:"flex", alignItems:"center" }}
+                  onMouseEnter={e=>e.currentTarget.style.background=C.gray100}
+                  onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                  ···
+                </button>
+                {menuOpen===c.id && (
+                  <div style={{ position:"absolute", top:"calc(100% + 4px)", right:0, background:C.white, borderRadius:10, border:`1px solid ${C.gray200}`, boxShadow:"0 8px 24px rgba(0,0,0,0.1)", zIndex:300, minWidth:140, overflow:"hidden" }}>
+                    {isOwn ? (<>
+                      <button onClick={()=>{ setEditState(prev=>({...prev,[c.id]:{open:true,body:c.body}})); setMenuOpen(null); }}
+                        style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"10px 14px", border:"none", background:"none", cursor:"pointer", fontSize:13, color:C.gray800, textAlign:"left" }}
+                        onMouseEnter={e=>e.currentTarget.style.background=C.gray50} onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                        <Icon name="pencil-simple" size={14} color={C.gray500}/> Edit
+                      </button>
+                      <button onClick={()=>{ deleteComment(c.id); setMenuOpen(null); }}
+                        style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"10px 14px", border:"none", background:"none", cursor:"pointer", fontSize:13, color:"#ef4444", textAlign:"left" }}
+                        onMouseEnter={e=>e.currentTarget.style.background="#fef2f2"} onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                        <Icon name="trash" size={14} color="#ef4444"/> Delete
+                      </button>
+                    </>) : (
+                      <button onClick={()=>{ toast({type:"success",message:"Comment reported."}); setMenuOpen(null); }}
+                        style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"10px 14px", border:"none", background:"none", cursor:"pointer", fontSize:13, color:"#f59e0b", textAlign:"left" }}
+                        onMouseEnter={e=>e.currentTarget.style.background="#fffbeb"} onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                        <Icon name="flag" size={14} color="#f59e0b"/> Report
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-            <div style={{ fontSize:14, color:C.gray700, lineHeight:1.6, marginBottom:8 }}>{c.body}</div>
+            {es.open ? (
+              <div style={{ marginBottom:8 }}>
+                <textarea value={es.body||""}
+                  onChange={e=>setEditState(prev=>({...prev,[c.id]:{...prev[c.id],body:e.target.value}}))}
+                  rows={2}
+                  style={{ width:"100%", padding:"8px 10px", border:`1px solid ${C.primary}`, borderRadius:8, fontSize:14, color:C.gray800, background:C.white, outline:"none", resize:"none", lineHeight:1.5, fontFamily:"inherit", boxSizing:"border-box" }}/>
+                <div style={{ display:"flex", gap:6, marginTop:6 }}>
+                  <button onClick={()=>setEditState(prev=>({...prev,[c.id]:{open:false,body:""}}))}
+                    style={{ padding:"4px 14px", borderRadius:99, border:`1px solid ${C.gray200}`, background:"transparent", color:C.gray500, fontSize:12, fontWeight:600, cursor:"pointer" }}>Cancel</button>
+                  <button onClick={()=>saveEdit(c.id)} disabled={!es.body?.trim()}
+                    style={{ padding:"4px 14px", borderRadius:99, border:"none", background:es.body?.trim()?C.primary:C.gray200, color:"#fff", fontSize:12, fontWeight:700, cursor:es.body?.trim()?"pointer":"default" }}>Save</button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ fontSize:14, color:C.gray700, lineHeight:1.6, marginBottom:8 }}>{c.body}</div>
+            )}
           </div>
         </div>
         <div style={{ marginLeft:44, display:"flex", gap:8, alignItems:"center", marginTop:4 }}>
