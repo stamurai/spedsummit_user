@@ -122,6 +122,9 @@ const ICON_MAP = {
   "linkedin-logo":      PhosphorIcons.LinkedinLogo,
   "youtube-logo":       PhosphorIcons.YoutubeLogo,
   "instagram-logo":     PhosphorIcons.InstagramLogo,
+  "facebook-logo":      PhosphorIcons.FacebookLogo,
+  globe:                PhosphorIcons.Globe,
+  microphone:           PhosphorIcons.Microphone,
 };
 
 const Icon = ({ name, size = 20, color = "currentColor", weight, style: s = {} }) => {
@@ -145,6 +148,33 @@ const Icon = ({ name, size = 20, color = "currentColor", weight, style: s = {} }
 /* ─────────────────────────────────────────────────────────────────────────────
    DESIGN TOKENS
 ───────────────────────────────────────────────────────────────────────────── */
+
+const INSTRUCTOR_SOCIAL_FIELDS = [
+  { key:"linkedin",  icon:"linkedin-logo",  color:"#0077B5" },
+  { key:"instagram", icon:"instagram-logo", color:"#E1306C" },
+  { key:"facebook",  icon:"facebook-logo",  color:"#1877F2" },
+  { key:"website",   icon:"globe",          color:"#6490E8" },
+  { key:"podcast",   icon:"microphone",     color:"#9333ea" },
+];
+
+function InstructorSocialIcons({ instr, T = {} }) {
+  const links = INSTRUCTOR_SOCIAL_FIELDS.filter(f => instr?.[f.key]);
+  if (!links.length) return null;
+  const bg    = T.bg    || "#f3f4f6";
+  const bgHov = T.bgHov || "#e5e7eb";
+  return (
+    <div style={{ display:"flex", gap:8, marginTop:10, flexWrap:"wrap" }}>
+      {links.map(({ key, icon, color }) => (
+        <a key={key} href={instr[key]} target="_blank" rel="noopener noreferrer"
+          style={{ display:"flex", alignItems:"center", justifyContent:"center", width:34, height:34, borderRadius:"50%", background:bg, textDecoration:"none", transition:"background .15s", flexShrink:0 }}
+          onMouseEnter={e=>e.currentTarget.style.background=bgHov}
+          onMouseLeave={e=>e.currentTarget.style.background=bg}>
+          <Icon name={icon} size={18} color={color}/>
+        </a>
+      ))}
+    </div>
+  );
+}
 
 /* ── Empty state primitives ─────────────────────────────────────────────── */
 function Empty({ children, style, fullPage }) {
@@ -4450,8 +4480,9 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontWeight:800, fontSize:18, color:C.gray900, marginBottom:session.instructorBio ? 8 : 0 }}>{session.instructor}</div>
                   {session.instructorBio && (
-                    <p style={{ margin:0, fontSize:14, color:C.gray600, lineHeight:1.8 }}>{session.instructorBio}</p>
+                    <p style={{ margin:"0 0 4px", fontSize:14, color:C.gray600, lineHeight:1.8 }}>{session.instructorBio}</p>
                   )}
+                  <InstructorSocialIcons instr={{ linkedin: session.instructorLinkedin, instagram: session.instructorInstagram, facebook: session.instructorFacebook, website: session.instructorWebsite, podcast: session.instructorPodcast }} T={{ border: C.gray200, bg: C.gray50 }}/>
                 </div>
               </div>
             ) : (
@@ -8599,7 +8630,9 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       .map(s => {
         const parts = s.instructor.split("|").map(p => p.trim());
         return { name: parts[0] || s.instructor, role: parts[1] || "", org: "", img: s.instructorImage,
-                 bio: s.instructorBio || "", session: s.title, sessionDesc: s.description || "", highlights: [] };
+                 bio: s.instructorBio || "", session: s.title, sessionDesc: s.description || "", highlights: [],
+                 linkedin: s.instructorLinkedin || "", instagram: s.instructorInstagram || "",
+                 facebook: s.instructorFacebook || "", website: s.instructorWebsite || "", podcast: s.instructorPodcast || "" };
       });
   })();
 
@@ -8713,6 +8746,8 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
         session: s.title,
         sessionDesc: s.description || "",
         highlights: [],
+        linkedin: s.instructorLinkedin || "", instagram: s.instructorInstagram || "",
+        facebook: s.instructorFacebook || "", website: s.instructorWebsite || "", podcast: s.instructorPodcast || "",
       };
     }
     return match || null;
@@ -8811,30 +8846,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               ))}
             </div>
             {/* Social handles */}
-            {(instrSession?.instructorLinkedin || instrSession?.instructorTwitter) && (
-              <div style={{ display:"flex", gap:10, marginTop:8 }}>
-                {instrSession?.instructorLinkedin && (
-                  <a href={instrSession.instructorLinkedin.startsWith("http") ? instrSession.instructorLinkedin : `https://linkedin.com/in/${instrSession.instructorLinkedin}`}
-                    target="_blank" rel="noopener noreferrer"
-                    style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"7px 14px", borderRadius:8, border:`1px solid ${T.border}`, background:T.bg, fontSize:13, fontWeight:600, color:"#0a66c2", textDecoration:"none", transition:"border-color .12s" }}
-                    onMouseEnter={e=>e.currentTarget.style.borderColor="#0a66c2"}
-                    onMouseLeave={e=>e.currentTarget.style.borderColor=T.border}>
-                    <Icon name="linkedin-logo" size={16} color="#0a66c2" weight="fill"/>
-                    LinkedIn
-                  </a>
-                )}
-                {instrSession?.instructorTwitter && (
-                  <a href={instrSession.instructorTwitter.startsWith("http") ? instrSession.instructorTwitter : `https://twitter.com/${instrSession.instructorTwitter}`}
-                    target="_blank" rel="noopener noreferrer"
-                    style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"7px 14px", borderRadius:8, border:`1px solid ${T.border}`, background:T.bg, fontSize:13, fontWeight:600, color:"#1d9bf0", textDecoration:"none", transition:"border-color .12s" }}
-                    onMouseEnter={e=>e.currentTarget.style.borderColor="#1d9bf0"}
-                    onMouseLeave={e=>e.currentTarget.style.borderColor=T.border}>
-                    <Icon name="twitter-logo" size={16} color="#1d9bf0" weight="fill"/>
-                    Twitter / X
-                  </a>
-                )}
-              </div>
-            )}
+            <InstructorSocialIcons instr={instr} T={T}/>
           </div>
 
           {/* Right: Session info */}
@@ -10776,7 +10788,9 @@ export default function App() {
 
       const toSession = s => ({
         id: s.id, title: s.title, category: s.category,
-        instructor: s.instructor || "", instructorBio: s.instructor_bio || "", instructorImage: s.instructor_image || "", instructorLinkedin: s.linkedin || "", instructorTwitter: s.twitter || "",
+        instructor: s.instructor || "", instructorBio: s.instructor_bio || "", instructorImage: s.instructor_image || "",
+        instructorLinkedin: s.linkedin || "", instructorInstagram: s.instagram || "",
+        instructorFacebook: s.facebook || "", instructorWebsite: s.website || "", instructorPodcast: s.podcast || "",
         duration: s.duration || "60 mins", resources: s.resources || 0,
         progress: 0, status: "not-started",
         description: s.description || "",
