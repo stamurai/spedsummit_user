@@ -9562,11 +9562,18 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           .spk-mobile-marquee { display: none !important; }
           @media (max-width: 900px) {
             .spk-desktop-only { grid-template-columns: repeat(2, 1fr) !important; }
-            .spk-desktop-only .spk-card > div { height: 260px !important; }
+            .spk-desktop-only .spk-card > div { height: 300px !important; }
+            .spk-desktop-only .spk-img { object-position: center 10% !important; }
+            .spk-overlay-name { font-size: 13px !important; white-space: normal !important; }
+            .spk-overlay-role { font-size: 11px !important; white-space: normal !important; }
           }
           @media (max-width: 500px) {
-            .spk-desktop-only { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
-            .spk-desktop-only .spk-card > div { height: 200px !important; }
+            .spk-desktop-only { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+            .spk-desktop-only .spk-card > div { height: 240px !important; }
+            .spk-desktop-only .spk-img { object-position: center 10% !important; }
+            .spk-overlay { padding: 20px 10px 10px !important; }
+            .spk-overlay-name { font-size: 12px !important; white-space: normal !important; }
+            .spk-overlay-role { font-size: 10px !important; white-space: normal !important; }
           }
 
           /* Card = just the image container, no separate plate */
