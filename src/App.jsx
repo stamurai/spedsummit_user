@@ -2058,21 +2058,21 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
                 ? new Date(af).toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit" })
                 : null;
               return (
-                <div style={{ width:"100%", padding:"11px", borderRadius:10, border:`1px solid ${C.gray200}`,
+                <div style={{ width:"100%", height:44, padding:"0 11px", borderRadius:10, border:`1px solid ${C.gray200}`,
                               background:C.gray50, color:C.gray500, fontSize:13, fontWeight:600,
-                              textAlign:"center", boxSizing:"border-box" }}>
+                              textAlign:"center", boxSizing:"border-box", display:"flex", alignItems:"center", justifyContent:"center" }}>
                   {dateLabel ? `Available ${dateLabel}` : "Coming Soon"}
                 </div>
               );
             })()
           ) : (
             <button onClick={e=>{ e.stopPropagation(); if(!cta.disabled) onClick(session); }}
-              style={{ width:"100%", padding:"11px", borderRadius:10,
+              style={{ width:"100%", height:44, padding:"0 11px", borderRadius:10,
                        border: cta.disabled ? `1px solid ${C.gray200}` : "none",
                        background: cta.disabled ? C.gray100 : "#6490E8",
                        color: cta.disabled ? C.gray400 : "#fff",
                        fontSize:14, fontWeight:700, cursor: cta.disabled ? "not-allowed" : "pointer",
-                       transition:"opacity .15s" }}
+                       boxSizing:"border-box", transition:"opacity .15s" }}
               onMouseEnter={e=>{ if(!cta.disabled) e.currentTarget.style.opacity=".85"; }}
               onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
               {cta.disabled ? "Locked" : "Watch Now"}
