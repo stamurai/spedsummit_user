@@ -8495,8 +8495,8 @@ function SpAccordionFeature({ T }) {
                     </a>
                     {/* Mobile image — shown inline below description */}
                     <div className="sp-acc-mobile-img" style={{ marginBottom:20 }}>
-                      <div style={{ width:"100%", borderRadius:12, overflow:"hidden", background:"#1e2d47", padding:"16px 16px 0" }}>
-                        <img src={f.image} alt={f.title} style={{ width:"100%", height:"auto", display:"block", borderRadius:"8px 8px 0 0" }}/>
+                      <div style={{ width:"100%", borderRadius:12, overflow:"hidden", background:"#1e2d47", padding:"16px" }}>
+                        <img src={f.image} alt={f.title} style={{ width:"100%", height:"auto", display:"block", borderRadius:8 }}/>
                       </div>
                     </div>
                   </div>
