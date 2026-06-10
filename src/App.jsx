@@ -4650,19 +4650,19 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
     const rs = replyState[c.id] || {};
     return (
       <div key={c.id} style={{ padding:"12px 18px", borderBottom:`1px solid ${C.gray100}` }}>
-        <div style={{ display:"flex", gap:10, alignItems:"flex-start", marginBottom:6 }}>
+        <div style={{ display:"flex", gap:10, alignItems:"flex-start" }}>
           <div style={{ width:34, flexShrink:0, display:"flex", justifyContent:"center", marginTop:1 }}>
             <Avatar name={c.author_name} src={c.author_name===userName?userAvatar:undefined} size={28}/>
           </div>
-          <div>
-            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
               <span style={{ fontWeight:700, fontSize:13, color:C.gray900 }}>{c.author_name}</span>
               <span style={{ fontSize:11, color:C.gray400 }}>{c.created_at ? new Date(c.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : ""}</span>
             </div>
+            <div style={{ fontSize:14, color:C.gray700, lineHeight:1.6, marginBottom:8 }}>{c.body}</div>
           </div>
         </div>
-        <div style={{ fontSize:14, color:C.gray700, lineHeight:1.6, marginLeft:44, marginBottom:8 }}>{c.body}</div>
-        <div style={{ marginLeft:44, display:"flex", gap:8, alignItems:"center" }}>
+        <div style={{ marginLeft:44, display:"flex", gap:8, alignItems:"center", marginTop:4 }}>
           <button onClick={async ()=>{ const isLiked=liked[c.id]; const newLikes=isLiked?Math.max(0,(c.likes||0)-1):(c.likes||0)+1; setLiked(prev=>({...prev,[c.id]:!isLiked})); await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id); setComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x)); }}
             style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${liked[c.id]?"rgba(239,68,68,0.3)":C.gray200}`, background:liked[c.id]?"rgba(239,68,68,0.08)":"transparent", color:liked[c.id]?"#ef4444":C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
             <Icon name="heart" size={12} color={liked[c.id]?"#ef4444":C.gray400} weight={liked[c.id]?"fill":"regular"}/>{c.likes||0}
