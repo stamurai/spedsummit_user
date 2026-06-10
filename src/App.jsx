@@ -9834,8 +9834,8 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                         <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 55%)", pointerEvents:"none" }}/>
                         <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"10px 12px 12px" }}>
                           <div style={{ fontSize:14, fontWeight:700, color:"#fff", lineHeight:1.2 }}>{s.instructor?.split("|")[0]?.trim()}</div>
-                          {s.instructor?.includes("|") && (
-                            <div style={{ fontSize:12, color:"rgba(255,255,255,0.75)", marginTop:2 }}>{s.instructor.split("|")[1]?.trim()}</div>
+                          {(s.instructorDesignation || s.instructor?.includes("|")) && (
+                            <div style={{ fontSize:12, color:"rgba(255,255,255,0.75)", marginTop:2 }}>{s.instructorDesignation || s.instructor.split("|")[1]?.trim()}</div>
                           )}
                         </div>
                       </div>
