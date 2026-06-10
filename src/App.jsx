@@ -1987,7 +1987,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
         {/* Instructor name + title at bottom */}
         <div style={{ position:"absolute", bottom:14, left:16, right:16, pointerEvents:"none" }}>
           <div style={{ fontSize:15, fontWeight:800, color:"#fff", lineHeight:1.2 }}>{session.instructor}</div>
-          {session.instructorTitle && <div style={{ fontSize:12, color:"rgba(255,255,255,0.7)", marginTop:2 }}>{session.instructorTitle}</div>}
+          {(session.instructorDesignation || session.instructorTitle) && <div style={{ fontSize:12, color:"rgba(255,255,255,0.7)", marginTop:2 }}>{session.instructorDesignation || session.instructorTitle}</div>}
         </div>
         {/* Locked overlay (past — requires subscription) */}
         {isLocked && (
@@ -11188,7 +11188,7 @@ export default function App() {
             )}
             {seasonSessions.map(s => {
               const catBadge = CAT_BADGE_PS[s.category] || { label:s.category, bg:C.gray100, color:C.gray700 };
-              const instrRole = INST_ROLES_PS[s.instructor] || "Instructor";
+              const instrRole = s.instructorDesignation || INST_ROLES_PS[s.instructor] || "Instructor";
               return (
                 <div key={s.id} className="ps-session-card"
                   style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, overflow:"hidden", cursor:"pointer" }}
