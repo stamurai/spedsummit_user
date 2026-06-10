@@ -8194,7 +8194,7 @@ function V1PricingCardOnly({ onGetStarted, onClose, isLoggedIn = false }) {
               </button>
             )}
             <style>{`@media(max-width:767px){ .v1pco-back-btn { display:flex !important; } }`}</style>
-            <h3 style={{ margin:"0 0 8px", fontSize:22, fontWeight:800, color:"#111827", lineHeight:1.2 }}>Full Summit Access</h3>
+            <h3 style={{ margin:"0 0 8px", fontSize:22, fontWeight:800, color:"#111827", lineHeight:1.2 }}>SPED Summit Plus</h3>
             <p style={{ margin:"0 0 24px", fontSize:14, color:"#6B7280", lineHeight:1.6 }}>Build your next SPED skill set with this comprehensive free summit</p>
             <div style={{ display:"flex", alignItems:"baseline", gap:10, marginBottom:8 }}>
               <span style={{ fontSize:"clamp(44px,7vw,64px)", fontWeight:900, lineHeight:1, letterSpacing:-2, color:"#111827" }}>$19</span>
@@ -8309,7 +8309,7 @@ function V1PricingSection({ onGetStarted, isLoggedIn = false }) {
           <div className="v1pc-left">
             {/* Title */}
             <h3 style={{ margin:"0 0 8px", fontSize:22, fontWeight:800, color:"#111827", lineHeight:1.2 }}>
-              Full Summit Access
+              SPED Summit Plus
             </h3>
             <p style={{ margin:"0 0 24px", fontSize:14, color:"#6B7280", lineHeight:1.6 }}>
               Build your next SPED skill set with this comprehensive free summit
