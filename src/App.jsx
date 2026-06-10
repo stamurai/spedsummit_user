@@ -4865,14 +4865,9 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
         {/* General comments (no session) */}
         {!loading && generalComments.length > 0 && (
           <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, marginTop:16, overflow:"hidden" }}>
-            <div style={{ padding:"14px 18px", borderBottom:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", gap:10 }}>
-              <div style={{ width:34, height:34, borderRadius:9, background:C.gray100, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                <Icon name="chat-circle-dots" size={15} color={C.gray500}/>
-              </div>
-              <div>
-                <div style={{ fontSize:13, fontWeight:800, color:C.gray900 }}>General</div>
-                <div style={{ fontSize:11, color:C.gray400 }}>{generalComments.length} comment{generalComments.length!==1?"s":""}</div>
-              </div>
+            <div style={{ padding:"14px 18px", borderBottom:`1px solid ${C.gray100}`, textAlign:"center" }}>
+              <div style={{ fontSize:13, fontWeight:800, color:C.gray900 }}>General</div>
+              <div style={{ fontSize:11, color:C.gray400, marginTop:2 }}>{generalComments.length} comment{generalComments.length!==1?"s":""}</div>
             </div>
             <div>{generalComments.map(c => renderComment(c))}</div>
           </div>
@@ -4894,16 +4889,9 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
         {!loading && filteredBuckets.map(bucket => (
           <div key={bucket.title||"__general__"} style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, marginBottom:16, overflow:"hidden" }}>
             {/* Bucket header */}
-            <div style={{ padding:"14px 18px", borderBottom:`1px solid ${C.gray100}`, display:"flex", alignItems:"center", gap:10 }}>
-              <div style={{ width:34, height:34, borderRadius:9, background:C.primaryLight, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                <Icon name="play-circle" size={16} color={C.primary} weight="fill"/>
-              </div>
-              <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ fontSize:14, fontWeight:800, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                  {bucket.title || "General"}
-                </div>
-                <div style={{ fontSize:12, color:C.gray400, marginTop:1 }}>{bucket.comments.length} comment{bucket.comments.length!==1?"s":""}</div>
-              </div>
+            <div style={{ padding:"14px 18px", borderBottom:`1px solid ${C.gray100}`, textAlign:"center" }}>
+              <div style={{ fontSize:14, fontWeight:800, color:C.gray900 }}>{bucket.title || "General"}</div>
+              <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{bucket.comments.length} comment{bucket.comments.length!==1?"s":""}</div>
             </div>
             {/* Comments in this bucket */}
             <div>
