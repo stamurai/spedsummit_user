@@ -7674,6 +7674,7 @@ function SessionPublicPage({ session, onBack, onRegister, registerLabel, registe
                 <p key={i} style={{ margin:"0 0 12px" }}>{para}</p>
               ))}
             </div>
+            <InstructorSocialIcons instr={{ linkedin: session.instructorLinkedin, instagram: session.instructorInstagram, facebook: session.instructorFacebook, website: session.instructorWebsite, podcast: session.instructorPodcast }} T={{ border:"#e4e6ef", bg:"#f9fafb" }}/>
           </div>
 
           {/* Curriculum */}
