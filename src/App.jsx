@@ -3352,7 +3352,7 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
     const pastSessions     = seasonSessions.filter(s => getSessionState(s) === "past");
 
     return (
-      <div style={{ padding:24, background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
+      <div className="page-pad" style={{ padding:24, background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
         {/* Breadcrumb */}
         <div style={{ display:"flex", flexWrap:"wrap", alignItems:"center", gap:4, marginBottom:20, fontSize:14, fontWeight:500, color:C.gray500 }}>
           <button onClick={()=>changeSeason(null)} style={{ background:"none", border:"none", cursor:"pointer", padding:0, fontSize:14, fontWeight:500, color:C.gray500 }}
@@ -3403,8 +3403,9 @@ function SessionsPage({ onOpenSession, toast, quizStates, onAssessmentClick, onC
 
   /* ── Seasons Overview ── */
   return (
-    <div style={{ padding:24, background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
+    <div className="page-pad" style={{ padding:24, background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
       <style>{`
+        @media(max-width:767px){ .page-pad { padding:16px !important; } }
         .sp-sessions-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
         @media(max-width:900px){ .sp-sessions-grid { grid-template-columns:repeat(2,1fr) !important; } }
         @media(max-width:480px){ .sp-sessions-grid { grid-template-columns:1fr !important; } }
@@ -3547,7 +3548,7 @@ function SchedulePage({ onOpenSession, toast, scheduleRegistrations = {}, setSch
   const pastCount = schedule.filter(i => i.status === "past").length;
 
   return (
-    <div style={{ padding:24, background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
+    <div className="page-pad" style={{ padding:24, background:C.gray50, minHeight:"100%", display:"flex", flexDirection:"column" }}>
       {calendarItem && (
         <AddToCalendarModal
           item={calendarItem}
@@ -4963,7 +4964,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
           .comm-right { width: 100% !important; }
         }
         @media (max-width: 500px) {
-          .comm-page { padding: 12px 10px !important; gap: 14px !important; }
+          .comm-page { padding: 16px !important; gap: 14px !important; }
           .comm-thread-grid { grid-template-columns: 28px 1fr !important; gap: 0 8px !important; }
           .comm-bucket-header { padding: 12px 14px !important; }
           .comm-comment-pad { padding: 12px 14px 8px !important; }
