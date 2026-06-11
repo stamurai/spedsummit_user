@@ -4381,38 +4381,40 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               const title = mat?.title || "Material";
               const fileType = mat?.file_type || mat?.type_label || (fileUrl.toLowerCase().includes(".pdf") ? "PDF" : fileUrl.toLowerCase().includes(".pptx") || fileUrl.toLowerCase().includes(".ppt") ? "PPTX" : fileUrl.toLowerCase().includes(".doc") ? "DOCX" : "FILE");
               const typeColor = fileType==="PDF" ? { bg:"#fef2f2", color:"#dc2626" } : fileType==="PPTX" ? { bg:"#fff7ed", color:"#ea580c" } : fileType==="DOCX" ? { bg:"#eff6ff", color:"#2563eb" } : { bg:C.primaryLight, color:C.primary };
+              const isMob = window.innerWidth <= 767;
               return (
-                <div style={{ padding:"32px 28px", display:"flex", flexDirection:"column", gap:24, flex:1 }}>
+                <div style={{ padding: isMob ? "16px 14px" : "32px 28px", display:"flex", flexDirection:"column", gap: isMob ? 14 : 24, flex:1, boxSizing:"border-box" }}>
+                  <style>{`@media(max-width:767px){.mat-iframe-wrap{min-height:calc(100vh - 280px) !important;}}`}</style>
                   {/* Header */}
-                  <div style={{ display:"flex", alignItems:"center", gap:14 }}>
-                    <div style={{ width:52, height:52, borderRadius:12, background:typeColor.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                      <Icon name="paperclip" size={24} color={typeColor.color}/>
+                  <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                    <div style={{ width: isMob ? 40 : 52, height: isMob ? 40 : 52, borderRadius:12, background:typeColor.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                      <Icon name="paperclip" size={isMob ? 18 : 24} color={typeColor.color}/>
                     </div>
                     <div>
-                      <div style={{ fontSize:11, fontWeight:700, color:typeColor.color, background:typeColor.bg, borderRadius:4, padding:"2px 8px", display:"inline-block", marginBottom:6, letterSpacing:.4 }}>{fileType}</div>
-                      <div style={{ fontSize:20, fontWeight:700, color:C.gray900, lineHeight:1.3 }}>{title}</div>
+                      <div style={{ fontSize:11, fontWeight:700, color:typeColor.color, background:typeColor.bg, borderRadius:4, padding:"2px 8px", display:"inline-block", marginBottom:4, letterSpacing:.4 }}>{fileType}</div>
+                      <div style={{ fontSize: isMob ? 16 : 20, fontWeight:700, color:C.gray900, lineHeight:1.3 }}>{title}</div>
                     </div>
                   </div>
 
                   {/* PDF inline preview */}
                   {fileUrl && (fileType === "PDF" || fileUrl.toLowerCase().endsWith(".pdf")) ? (
-                    <div style={{ flex:1, minHeight:500, borderRadius:12, overflow:"hidden", border:`1px solid ${C.gray200}` }}>
-                      <iframe src={`${fileUrl}#toolbar=1`} style={{ width:"100%", height:"100%", minHeight:500, border:"none" }} title={title}/>
+                    <div className="mat-iframe-wrap" style={{ flex:1, minHeight: isMob ? "calc(100vh - 280px)" : 500, borderRadius:12, overflow:"hidden", border:`1px solid ${C.gray200}` }}>
+                      <iframe src={`${fileUrl}#toolbar=1`} style={{ width:"100%", height:"100%", minHeight: isMob ? "calc(100vh - 280px)" : 500, border:"none", display:"block" }} title={title}/>
                     </div>
                   ) : fileUrl ? (
                     /* Non-PDF: show preview card with open/download */
-                    <div style={{ background:C.gray50, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"48px 32px", display:"flex", flexDirection:"column", alignItems:"center", gap:16, textAlign:"center" }}>
-                      <div style={{ width:72, height:72, borderRadius:16, background:typeColor.bg, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                        <Icon name="paperclip" size={32} color={typeColor.color}/>
+                    <div style={{ background:C.gray50, borderRadius:16, border:`1px solid ${C.gray200}`, padding: isMob ? "32px 20px" : "48px 32px", display:"flex", flexDirection:"column", alignItems:"center", gap:16, textAlign:"center" }}>
+                      <div style={{ width:64, height:64, borderRadius:16, background:typeColor.bg, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        <Icon name="paperclip" size={28} color={typeColor.color}/>
                       </div>
-                      <div style={{ fontSize:16, fontWeight:600, color:C.gray700 }}>{title}</div>
-                      <div style={{ display:"flex", gap:12, flexWrap:"wrap", justifyContent:"center" }}>
+                      <div style={{ fontSize:15, fontWeight:600, color:C.gray700 }}>{title}</div>
+                      <div style={{ display:"flex", gap:10, flexWrap:"wrap", justifyContent:"center", width:"100%" }}>
                         <a href={fileUrl} target="_blank" rel="noopener noreferrer"
-                          style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"10px 22px", borderRadius:10, background:C.primary, color:"#fff", fontSize:14, fontWeight:700, textDecoration:"none" }}>
+                          style={{ flex:1, minWidth:120, display:"inline-flex", alignItems:"center", justifyContent:"center", gap:8, padding:"10px 20px", borderRadius:10, background:C.primary, color:"#fff", fontSize:14, fontWeight:700, textDecoration:"none" }}>
                           <Icon name="arrow-square-out" size={16} color="#fff"/> Open File
                         </a>
                         <a href={fileUrl} download
-                          style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"10px 22px", borderRadius:10, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:14, fontWeight:600, textDecoration:"none" }}>
+                          style={{ flex:1, minWidth:120, display:"inline-flex", alignItems:"center", justifyContent:"center", gap:8, padding:"10px 20px", borderRadius:10, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:14, fontWeight:600, textDecoration:"none" }}>
                           <Icon name="download-simple" size={16} color={C.gray600}/> Download
                         </a>
                       </div>
