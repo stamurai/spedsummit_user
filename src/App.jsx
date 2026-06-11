@@ -10312,7 +10312,6 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       </section>
 
       {/* ── Pricing ── */}
-      <V1PricingSection onGetStarted={onGetStarted} isLoggedIn={isLoggedIn} />
 
       {/* ── FAQ ── */}
       <section id="help" style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
