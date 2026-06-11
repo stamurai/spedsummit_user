@@ -1077,12 +1077,17 @@ function Footer({ onNavigate }) {
           <div>
             <div style={{ fontSize:11, fontWeight:700, color:text, letterSpacing:.8, textTransform:"uppercase", marginBottom:16 }}>About</div>
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-              {["Sessions","Speakers","FAQ","Contact"].map(l => (
-                <a key={l} href="#"
-                  onClick={e=>{ e.preventDefault(); if(l==="Contact") onNavigate && onNavigate("contact"); else onNavigate && onNavigate(l.toLowerCase()); }}
+              {[
+                { label:"Sessions",  action: ()=>{ onNavigate && onNavigate("sessions"); } },
+                { label:"Speakers",  action: ()=>{ sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("landingScroll","speakers"); window.location.href=window.location.origin; } },
+                { label:"FAQ",       action: ()=>{ sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("landingScroll","faq-v2"); window.location.href=window.location.origin; } },
+                { label:"Contact",   action: ()=>{ onNavigate && onNavigate("contact"); } },
+              ].map(({ label, action }) => (
+                <a key={label} href="#"
+                  onClick={e=>{ e.preventDefault(); action(); }}
                   style={{ fontSize:14, color:muted, textDecoration:"none", transition:"color .12s" }}
                   onMouseEnter={e=>e.currentTarget.style.color=text}
-                  onMouseLeave={e=>e.currentTarget.style.color=muted}>{l}</a>
+                  onMouseLeave={e=>e.currentTarget.style.color=muted}>{label}</a>
               ))}
             </div>
           </div>
@@ -1685,10 +1690,11 @@ function Sidebar({ active, onChange }) {
 /* ── LimelightBottomNav ─────────────────────────────────────────────────────── */
 function LimelightBottomNav({ active, onChange, onNotif, notifCount = 0 }) {
   const items = [
-    { id:'dashboard',      icon:'house',            label:'My Learnings' },
-    { id:'past-sessions',  icon:'squares-four',  label:'Browse'       },
-    { id:'certifications', icon:'certificate',       label:'Achievements'  },
-    { id:'__notif__',      icon:'bell',              label:'Notifications' },
+    { id:'dashboard',      icon:'house',        label:'Home'          },
+    { id:'sessions',       icon:'play-circle',  label:'Sessions'      },
+    { id:'community',      icon:'users',        label:'Community'     },
+    { id:'certifications', icon:'certificate',  label:'Certificates'  },
+    { id:'__notif__',      icon:'bell',         label:'Notifications' },
   ];
   const activeIdx = Math.max(0, items.findIndex(i => i.id === active));
 
@@ -4784,10 +4790,10 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
               </div>,
               <div key={`rc-${r.id}`} style={{ paddingBottom: isLast ? 2 : 12 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
-                  <span style={{ fontWeight:700, fontSize:12, color:C.gray900 }}>{r.author_name}</span>
-                  <span style={{ fontSize:11, color:C.gray400 }}>{r.created_at ? new Date(r.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric"}) : ""}</span>
+                  <span style={{ fontWeight:700, fontSize:13, color:C.gray900 }}>{r.author_name}</span>
+                  <span style={{ fontSize:12, color:C.gray400 }}>{r.created_at ? new Date(r.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric"}) : ""}</span>
                 </div>
-                <div style={{ fontSize:13, color:C.gray700, lineHeight:1.55 }}>{r.body}</div>
+                <div style={{ fontSize:14, color:C.gray700, lineHeight:1.6 }}>{r.body}</div>
               </div>
             ]);
           })}
@@ -11363,6 +11369,17 @@ export default function App() {
   // Persist showLanding so refresh restores the correct view
   useEffect(() => {
     sessionStorage.setItem("showLanding", showLanding ? "1" : "0");
+  }, [showLanding]);
+
+  // Scroll to landing section after footer link navigation
+  useEffect(() => {
+    if (!showLanding) return;
+    const sectionId = sessionStorage.getItem("landingScroll");
+    if (!sectionId) return;
+    sessionStorage.removeItem("landingScroll");
+    setTimeout(() => {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior:"smooth" });
+    }, 400);
   }, [showLanding]);
 
   function _applyPage(p, keepSession = false) {
