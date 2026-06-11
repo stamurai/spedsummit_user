@@ -9406,7 +9406,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
 
       {/* ── Hero ── */}
       <section style={{ paddingTop:48, paddingBottom:64, background:T.bg, position:"relative", overflowX:"clip", height:900, marginTop:56 }} className="lp-hero-section">
-        <style>{`@media(max-width:767px){ .lp-hero-section{ height:auto !important; min-height:unset !important; padding-top:4px !important; padding-bottom:0 !important; } .lp-hero-content{ position:relative !important; top:auto !important; left:auto !important; right:auto !important; bottom:auto !important; padding:4px 20px 0 !important; } }`}</style>
+        <style>{`@media(max-width:767px){ .lp-hero-section{ height:auto !important; min-height:unset !important; padding-top:0 !important; padding-bottom:0 !important; margin-top:0 !important; } .lp-hero-content{ position:relative !important; top:auto !important; left:auto !important; right:auto !important; bottom:auto !important; padding:16px 20px 0 !important; } }`}</style>
 
 
         {/* ── Centered content wrapper ── */}
