@@ -4043,6 +4043,13 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const [sdLiked, setSdLiked] = useState({});
   const [sdPosting, setSdPosting] = useState(false);
   const [sdDeleteConfirm, setSdDeleteConfirm] = useState(null);
+  const [sdMenuOpen, setSdMenuOpen] = useState(null);
+  const [sdEditState, setSdEditState] = useState({});
+  const [sdReportModal, setSdReportModal] = useState(null);
+  const [sdReportReason, setSdReportReason] = useState("");
+  const [sdReportOther, setSdReportOther] = useState("");
+  const [sdReportSubmitting, setSdReportSubmitting] = useState(false);
+  const [sdReportDone, setSdReportDone] = useState(false);
   const chatRef = useRef(null);
   const chatInputRef = useRef(null);
   const containerRef = useRef(null);
@@ -4516,7 +4523,10 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                   <div style={{ fontSize:13, color:C.gray400, marginTop:4 }}>Be the first to share your thoughts!</div>
                 </div>
               )}
-              {sdComments.map(c => (
+              {sdComments.map(c => {
+                const isOwn = c.author_name === adminName || c.author_name === "You" || c.author_name === "Anonymous";
+                const sdEs = sdEditState[c.id] || {};
+                return (
                 <div key={c.id} style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.09)":C.gray200}`, marginBottom:8, padding:"12px 14px" }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6 }}>
                     <div style={{ display:"flex", gap:8, alignItems:"center" }}>
@@ -4526,15 +4536,48 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                         <span style={{ fontSize:11, color:isDark?"rgba(255,255,255,0.35)":C.gray400, marginLeft:8 }}>{c.created_at ? new Date(c.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : "just now"}</span>
                       </div>
                     </div>
-                    {(c.author_name === adminName || c.author_name === "You" || c.author_name === "Anonymous") && (
-                      <button onClick={()=>setSdDeleteConfirm(c.id)}
-                        style={{ width:24, height:24, borderRadius:6, border:"none", background:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}
-                        onMouseEnter={e=>e.currentTarget.style.background=isDark?"rgba(255,255,255,0.08)":C.gray100} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                        <Icon name="trash" size={13} color={C.error}/>
-                      </button>
-                    )}
+                    {/* Three-dot menu */}
+                    <div style={{ position:"relative" }} ref={sdMenuOpen===c.id?sdMenuRef:null}>
+                      <button onClick={()=>setSdMenuOpen(sdMenuOpen===c.id?null:c.id)}
+                        style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 6px", borderRadius:6, color:C.gray400, fontSize:16, lineHeight:1, display:"flex", alignItems:"center" }}
+                        onMouseEnter={e=>e.currentTarget.style.background=isDark?"rgba(255,255,255,0.08)":C.gray100}
+                        onMouseLeave={e=>e.currentTarget.style.background="none"}>···</button>
+                      {sdMenuOpen===c.id && (
+                        <div style={{ position:"absolute", top:"calc(100% + 4px)", right:0, background:C.white, borderRadius:10, border:`1px solid ${C.gray200}`, boxShadow:"0 8px 24px rgba(0,0,0,0.1)", zIndex:300, minWidth:140, overflow:"hidden" }} onClick={e=>e.stopPropagation()}>
+                          {isOwn ? (<>
+                            <button onClick={()=>{ setSdEditState(prev=>({...prev,[c.id]:{open:true,body:c.body}})); setSdMenuOpen(null); }}
+                              style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"10px 14px", border:"none", background:"none", cursor:"pointer", fontSize:13, color:C.gray800, textAlign:"left" }}
+                              onMouseEnter={e=>e.currentTarget.style.background=C.gray50} onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                              <Icon name="pencil" size={14} color={C.gray500}/>Edit
+                            </button>
+                            <button onClick={()=>{ setSdDeleteConfirm(c.id); setSdMenuOpen(null); }}
+                              style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"10px 14px", border:"none", background:"none", cursor:"pointer", fontSize:13, color:"#ef4444", textAlign:"left" }}
+                              onMouseEnter={e=>e.currentTarget.style.background="#fff5f5"} onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                              <Icon name="trash" size={14} color="#ef4444"/>Delete
+                            </button>
+                          </>) : (
+                            <button onClick={()=>{ setSdReportModal({commentId:c.id,authorName:c.author_name}); setSdReportReason(""); setSdReportOther(""); setSdReportDone(false); setSdMenuOpen(null); }}
+                              style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"10px 14px", border:"none", background:"none", cursor:"pointer", fontSize:13, color:C.gray800, textAlign:"left" }}
+                              onMouseEnter={e=>e.currentTarget.style.background=C.gray50} onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                              <Icon name="flag" size={14} color={C.gray500}/>Report
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div style={{ fontSize:14, color:isDark?"rgba(255,255,255,0.75)":C.gray700, lineHeight:1.6, marginLeft:36, marginBottom:8 }}>{c.body}</div>
+                  {sdEs.open ? (
+                    <div style={{ marginLeft:36, marginBottom:8 }}>
+                      <textarea value={sdEs.body||""} onChange={e=>setSdEditState(prev=>({...prev,[c.id]:{...prev[c.id],body:e.target.value}}))} rows={2}
+                        style={{ width:"100%", padding:"8px 10px", border:`1px solid ${C.primary}`, borderRadius:8, fontSize:14, color:C.gray800, background:C.white, outline:"none", resize:"none", lineHeight:1.5, fontFamily:"inherit", boxSizing:"border-box" }}/>
+                      <div style={{ display:"flex", gap:6, marginTop:6 }}>
+                        <button onClick={()=>setSdEditState(prev=>({...prev,[c.id]:{open:false,body:""}}))} style={{ padding:"4px 14px", borderRadius:99, border:`1px solid ${C.gray200}`, background:"transparent", color:C.gray500, fontSize:12, fontWeight:600, cursor:"pointer" }}>Cancel</button>
+                        <button onClick={async ()=>{ const body=sdEs.body?.trim(); if(!body) return; await supabase.from("session_comments").update({body}).eq("id",c.id); setSdComments(prev=>prev.map(x=>x.id===c.id?{...x,body}:x)); setSdEditState(prev=>({...prev,[c.id]:{open:false,body:""}})); toast({type:"success",message:"Comment updated."}); }} disabled={!sdEs.body?.trim()} style={{ padding:"4px 14px", borderRadius:99, border:"none", background:sdEs.body?.trim()?C.primary:C.gray200, color:"#fff", fontSize:12, fontWeight:700, cursor:sdEs.body?.trim()?"pointer":"default" }}>Save</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize:14, color:isDark?"rgba(255,255,255,0.75)":C.gray700, lineHeight:1.6, marginLeft:36, marginBottom:8 }}>{c.body}</div>
+                  )}
                   <div style={{ marginLeft:36 }}>
                     <button onClick={async ()=>{ const liked=sdLiked[c.id]; const newLikes=liked?Math.max(0,(c.likes||0)-1):(c.likes||0)+1; setSdLiked(prev=>({...prev,[c.id]:!liked})); await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id); setSdComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x)); }}
                       style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${sdLiked[c.id]?"rgba(239,68,68,0.3)":(isDark?"rgba(255,255,255,0.1)":C.gray200)}`, background:sdLiked[c.id]?"rgba(239,68,68,0.08)":"transparent", color:sdLiked[c.id]?"#ef4444":(isDark?"rgba(255,255,255,0.5)":C.gray500), cursor:"pointer", fontSize:12, fontWeight:600 }}>
@@ -4542,7 +4585,8 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                     </button>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
 
               {/* Delete confirmation modal */}
@@ -4556,6 +4600,44 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                       <button onClick={async ()=>{ await supabase.from("session_comments").delete().eq("id",sdDeleteConfirm); setSdComments(prev=>prev.filter(c=>c.id!==sdDeleteConfirm)); setSdDeleteConfirm(null); toast({type:"success",message:"Comment deleted."}); }}
                         style={{ padding:"9px 20px", borderRadius:10, border:"none", background:"#ef4444", fontSize:14, fontWeight:600, color:"#fff", cursor:"pointer" }}>Delete</button>
                     </div>
+                  </div>
+                </div>
+              )}
+              {/* Report modal */}
+              {sdReportModal && (
+                <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }} onClick={()=>setSdReportModal(null)}>
+                  <div style={{ background:"#fff", borderRadius:16, padding:"28px 24px 20px", width:"100%", maxWidth:400, boxShadow:"0 24px 60px rgba(0,0,0,0.2)" }} onClick={e=>e.stopPropagation()}>
+                    {sdReportDone ? (<>
+                      <div style={{ textAlign:"center", padding:"12px 0 8px" }}>
+                        <Icon name="check-circle" size={48} color="#10b981"/>
+                        <div style={{ fontWeight:800, fontSize:18, color:C.gray900, marginTop:12, marginBottom:8 }}>Report submitted</div>
+                        <p style={{ margin:"0 0 24px", fontSize:14, color:C.gray500, lineHeight:1.6 }}>Thanks for letting us know. We'll review this comment.</p>
+                        <button onClick={()=>setSdReportModal(null)} style={{ padding:"10px 28px", borderRadius:10, border:"none", background:C.primary, fontSize:14, fontWeight:700, color:"#fff", cursor:"pointer" }}>Done</button>
+                      </div>
+                    </>) : (<>
+                      <div style={{ fontWeight:800, fontSize:18, color:C.gray900, marginBottom:4 }}>Report comment</div>
+                      <p style={{ margin:"0 0 18px", fontSize:13, color:C.gray500 }}>Why are you reporting <strong>{sdReportModal.authorName}</strong>'s comment?</p>
+                      <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:18 }}>
+                        {["Spam or self-promotion","Harassment or bullying","Hate speech or discrimination","Misinformation","Inappropriate content","Other"].map(reason=>(
+                          <label key={reason} style={{ display:"flex", alignItems:"center", gap:10, cursor:"pointer", padding:"10px 12px", borderRadius:10, border:`1.5px solid ${sdReportReason===reason?C.primary:C.gray200}`, background:sdReportReason===reason?"rgba(100,144,232,0.06)":"transparent", transition:"all .12s" }}>
+                            <input type="radio" name="sd-report-reason" value={reason} checked={sdReportReason===reason} onChange={()=>setSdReportReason(reason)} style={{ accentColor:C.primary }}/>
+                            <span style={{ fontSize:13, color:C.gray800 }}>{reason}</span>
+                          </label>
+                        ))}
+                        {sdReportReason==="Other" && (
+                          <textarea value={sdReportOther} onChange={e=>setSdReportOther(e.target.value)} placeholder="Please describe…" rows={3}
+                            style={{ width:"100%", padding:"8px 12px", border:`1px solid ${C.gray200}`, borderRadius:8, fontSize:13, color:C.gray700, outline:"none", resize:"none", fontFamily:"inherit", boxSizing:"border-box" }}/>
+                        )}
+                      </div>
+                      <div style={{ display:"flex", justifyContent:"flex-end", gap:10 }}>
+                        <button onClick={()=>setSdReportModal(null)} style={{ padding:"9px 20px", borderRadius:10, border:`1px solid ${C.gray200}`, background:C.white, fontSize:14, fontWeight:600, color:C.gray700, cursor:"pointer" }}>Cancel</button>
+                        <button disabled={!sdReportReason||(sdReportReason==="Other"&&!sdReportOther.trim())||sdReportSubmitting}
+                          onClick={async ()=>{ setSdReportSubmitting(true); await new Promise(r=>setTimeout(r,800)); setSdReportSubmitting(false); setSdReportDone(true); }}
+                          style={{ padding:"9px 20px", borderRadius:10, border:"none", background:sdReportReason&&!(sdReportReason==="Other"&&!sdReportOther.trim())?C.primary:C.gray200, fontSize:14, fontWeight:700, color:"#fff", cursor:"pointer" }}>
+                          {sdReportSubmitting?"Submitting…":"Submit Report"}
+                        </button>
+                      </div>
+                    </>)}
                   </div>
                 </div>
               )}
@@ -4619,6 +4701,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
     setReportDone(false);
   }
   const menuRef = React.useRef(null);
+  const sdMenuRef = React.useRef(null);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -4626,6 +4709,13 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [menuOpen]);
+
+  useEffect(() => {
+    if (!sdMenuOpen) return;
+    function handleClick(e) { if (sdMenuRef.current && !sdMenuRef.current.contains(e.target)) setSdMenuOpen(null); }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [sdMenuOpen]);
 
   async function deleteComment(id) {
     await supabase.from("session_comments").delete().eq("id", id);
