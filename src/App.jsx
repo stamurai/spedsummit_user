@@ -10105,7 +10105,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
         ];
 
         return (
-          <section style={{ padding:"64px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
+          <section className="lp-section-pad" style={{ padding:"64px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
             <div style={{ maxWidth:1100, margin:"0 auto" }}>
               {/* Header */}
               <div style={{ textAlign:"center", marginBottom:64 }}>
