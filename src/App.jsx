@@ -4800,10 +4800,10 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
 
           {/* ── Reply composer row ── */}
           {rs.open && ([
-            <div key="compose-avatar" style={{ display:"flex", flexDirection:"column", alignItems:"center" }}>
+            <div key="compose-avatar" style={{ display:"flex", flexDirection:"column", alignItems:"center", paddingTop:8 }}>
               <Avatar name={userName||"You"} src={userAvatar} size={34}/>
             </div>,
-            <div key="compose-input">
+            <div key="compose-input" style={{ paddingTop:8 }}>
               <div style={{ border:`1px solid ${C.gray200}`, borderRadius:10, padding:"8px 10px", background:C.gray50, display:"flex", flexDirection:"column", gap:8 }}>
                 <textarea autoFocus value={rs.body||""}
                   onChange={e=>setReplyState(prev=>({ ...prev, [c.id]:{ ...prev[c.id], body:e.target.value } }))}
