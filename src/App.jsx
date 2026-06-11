@@ -1538,7 +1538,7 @@ function ReferFriendsModal({ onClose, userName }) {
   );
 }
 
-function TopBar({ toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, onOpenSession, onNavigate, userName = "", userAvatar, onBrowseSelect, seasons = SEASONS, sessions = [], onOpenInstructor, onGoHome }) {
+function TopBar({ toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, onOpenSession, onNavigate, userName = "", userAvatar, onBrowseSelect, seasons = SEASONS, sessions = [], onOpenInstructor, onGoHome, isLoggedIn = true, onShowAuth }) {
   const [showNotif, setShowNotif] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showReferModal, setShowReferModal] = useState(false);
@@ -1581,7 +1581,13 @@ function TopBar({ toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, 
 
         {showReferModal && <ReferFriendsModal onClose={() => setShowReferModal(false)} userName={userName}/>}
 
-        {/* Avatar */}
+        {/* Avatar / Sign In */}
+        {!isLoggedIn ? (
+          <button onClick={onShowAuth}
+            style={{ padding:"8px 18px", background:"#6490E8", color:"#fff", border:"none", borderRadius:99, fontSize:13, fontWeight:700, cursor:"pointer", letterSpacing:.2 }}>
+            Sign In
+          </button>
+        ) : (
         <div style={{ position: "relative" }} ref={avatarBtnRef}>
           <button
             onClick={() => setShowProfileMenu(v => !v)}
@@ -1621,6 +1627,7 @@ function TopBar({ toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, 
             />
           )}
         </div>
+        )}
       </div>
     </div>
   );
@@ -4401,7 +4408,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                         </a>
                         <a href={fileUrl} download
                           style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"10px 22px", borderRadius:10, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:14, fontWeight:600, textDecoration:"none" }}>
-                          <Icon name="download-simple" size={16} color={C.gray600}"/> Download
+                          <Icon name="download-simple" size={16} color={C.gray600}/> Download
                         </a>
                       </div>
                     </div>
@@ -11760,6 +11767,8 @@ export default function App() {
         userAvatar={userAvatar}
         seasons={seasons}
         sessions={sessions}
+        isLoggedIn={isLoggedIn}
+        onShowAuth={() => setShowAuth(true)}
         onGoHome={() => { setPage("dashboard"); setShowLanding(true); }}
         onOpenInstructor={(name) => { setOpenInstructorName(name); setShowLanding(true); }}
         onBrowseSelect={(season, year) => {
@@ -11812,7 +11821,7 @@ export default function App() {
       </div>
 
       {/* Mobile bottom nav — hidden when drilling into sub-pages */}
-      {!(page === "profile" || page === "session-detail" || activeSession || sessionsDeepLink) && (
+      {!(page === "profile" || page === "session-detail" || page === "contact" || page === "privacy-policy" || page === "terms-of-service" || activeSession || sessionsDeepLink) && (
         <div className="app-bottom-nav" style={{ display:"none" }}>
           <LimelightBottomNav
             active={page === "past-season" ? "past-sessions" : activePage}
