@@ -1678,7 +1678,6 @@ function LimelightBottomNav({ active, onChange, onNotif, notifCount = 0 }) {
     { id:'sessions',       icon:'play-circle',  label:'Sessions'      },
     { id:'community',      icon:'users',        label:'Community'     },
     { id:'certifications', icon:'certificate',  label:'Certificates'  },
-    { id:'__notif__',      icon:'bell',         label:'Notifications' },
   ];
   const activeIdx = Math.max(0, items.findIndex(i => i.id === active));
 
@@ -11761,10 +11760,8 @@ export default function App() {
       {!(page === "profile" || page === "session-detail" || activeSession || sessionsDeepLink) && (
         <div className="app-bottom-nav" style={{ display:"none" }}>
           <LimelightBottomNav
-            active={page === "notifications" ? "__notif__" : page === "past-season" ? "past-sessions" : activePage}
+            active={page === "past-season" ? "past-sessions" : activePage}
             onChange={nav}
-            notifCount={NOTIF_DATA.filter(n => !n.read).length}
-            onNotif={() => nav("notifications")}
           />
         </div>
       )}
