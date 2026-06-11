@@ -9229,7 +9229,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
         .lp-sessions-grid { grid-template-columns: repeat(4, minmax(0,1fr)); }
         /* ── Tablet (≤900px) ── */
         @media(max-width:900px){
-          .lp-sessions-grid { grid-template-columns:repeat(2, minmax(0,1fr)) !important; }
+          .lp-sessions-grid { grid-template-columns:repeat(2, minmax(0,1fr)) !important; padding:0 8px !important; box-sizing:border-box !important; }
         }
         /* ── Mobile (≤767px) ── */
         @media(max-width:767px){
@@ -9294,7 +9294,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
         @media(max-width:480px){
           .lp-hero-h1 { font-size:26px !important; }
           .lp-hero-certified { font-size:38px !important; }
-          .lp-sessions-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+          .lp-sessions-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; padding:0 8px !important; box-sizing:border-box !important; }
           .lp-session-card-img { height:160px !important; }
         }
       `}</style>
