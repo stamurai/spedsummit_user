@@ -1624,7 +1624,7 @@ function TopBar({ toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, 
                 {
                   icon: "question",
                   label: "Help Center",
-                  action: () => toast({ type: "info", message: "Opening Help Center..." }),
+                  action: () => { onNavigate && onNavigate("contact"); },
                 },
                 {
                   icon: "sign-out",
