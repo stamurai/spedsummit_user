@@ -10090,9 +10090,6 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                         <div style={{ width:44, height:44, borderRadius:10, background:iconBg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                           <Icon name={icon} size={20} color={iconColor}/>
                         </div>
-                        <span style={{ fontSize:11, fontWeight:700, color:iconColor, background:iconBg, border:`1px solid ${iconColor}30`, borderRadius:99, padding:"3px 10px", letterSpacing:.5 }}>
-                          {value}
-                        </span>
                       </div>
                       <h3 style={{ margin:"0 0 10px", fontSize:16, fontWeight:700, color:T.text, lineHeight:1.3 }}>{title}</h3>
                       <p style={{ margin:0, fontSize:13, color:T.muted, lineHeight:1.65 }}>{desc}</p>
