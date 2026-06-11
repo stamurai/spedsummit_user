@@ -4784,11 +4784,11 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
           {replies.map((r, ri) => {
             const isLast = ri === replies.length - 1 && !rs.open;
             return ([
-              <div key={`rl-${r.id}`} style={{ display:"flex", flexDirection:"column", alignItems:"center" }}>
+              <div key={`rl-${r.id}`} style={{ display:"flex", flexDirection:"column", alignItems:"center", paddingTop:8 }}>
                 <Avatar name={r.author_name} src={r.author_name===userName?userAvatar:undefined} size={34}/>
                 {!isLast && <div style={{ width:2, flex:1, background:C.gray200, marginTop:6, borderRadius:1, minHeight:12 }}/>}
               </div>,
-              <div key={`rc-${r.id}`} style={{ paddingBottom: isLast ? 2 : 12 }}>
+              <div key={`rc-${r.id}`} style={{ paddingBottom: isLast ? 2 : 12, paddingTop:8 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
                   <span style={{ fontWeight:700, fontSize:13, color:C.gray900 }}>{r.author_name}</span>
                   <span style={{ fontSize:12, color:C.gray400 }}>{r.created_at ? new Date(r.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric"}) : ""}</span>
