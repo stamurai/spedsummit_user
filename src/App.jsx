@@ -4079,6 +4079,11 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
     if (l.type==="quiz") {
       setPanelMode("assessment"); return;
     }
+    if (l.type==="material") {
+      setPanelMode("material");
+      setActiveLesson(idx);
+      return;
+    }
     setPanelMode("video");
     setActiveLesson(idx);
     setProgress(l.status==="completed"?100:0);
@@ -4275,7 +4280,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                           const isQuiz = l.type === "quiz";
                           // Hide assessment row if no real questions exist for this session
                           if (isQuiz && getSessionQuestions(session).length === 0) return null;
-                          const isActive = (i === activeLesson && l.type !== "quiz" && panelMode === "video") || (l.type === "quiz" && panelMode === "assessment");
+                          const isActive = (i === activeLesson && l.type === "material" && panelMode === "material") || (i === activeLesson && l.type !== "quiz" && l.type !== "material" && panelMode === "video") || (l.type === "quiz" && panelMode === "assessment");
                           const locked = !unlockedIndices.has(i) && l.type !== "material";
                           const quizDone = isQuiz && l.status === "completed";
                           const isPreview = i === 0 || l.status === "available";
@@ -4292,15 +4297,19 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                                 onMouseEnter={e => { if (!locked && !isActive && !done) e.currentTarget.style.background = C.gray50; }}
                                 onMouseLeave={e => { if (!isActive && !done) e.currentTarget.style.background = "transparent"; }}>
                                 <div style={{ flexShrink:0 }}>
-                                  {done
-                                    ? <div style={{ width:18, height:18, borderRadius:"50%", background:"#16a34a", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="check" size={11} color="#fff"/></div>
-                                    : <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${locked ? C.gray200 : isActive ? C.primary : C.gray300}`, background:"transparent" }}/>
+                                  {l.type === "material"
+                                    ? <div style={{ width:18, height:18, borderRadius:4, background:"#fef2f2", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="paperclip" size={11} color="#dc2626"/></div>
+                                    : done
+                                      ? <div style={{ width:18, height:18, borderRadius:"50%", background:"#16a34a", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="check" size={11} color="#fff"/></div>
+                                      : <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${locked ? C.gray200 : isActive ? C.primary : C.gray300}`, background:"transparent" }}/>
                                   }
                                 </div>
                                 <div style={{ flex:1, minWidth:0 }}>
-                                  <div style={{ fontSize:13, fontWeight: isActive || done ? 600 : 400, color: locked ? C.gray400 : C.gray900, lineHeight:1.4 }}>{isQuiz ? "Assessment" : session.title}</div>
+                                  <div style={{ fontSize:13, fontWeight: isActive || done ? 600 : 400, color: locked ? C.gray400 : C.gray900, lineHeight:1.4 }}>
+                                    {isQuiz ? "Assessment" : l.type === "material" ? (l.title || "Material") : session.title}
+                                  </div>
                                   <div style={{ fontSize:12, color: C.gray400, marginTop:2 }}>
-                                    {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
+                                    {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : l.type === "material" ? "Material" : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
                                   </div>
                                 </div>
                                 {locked && <Icon name="lock" size={13} color={C.gray300}/>}
@@ -4352,6 +4361,58 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           {panelMode === "assessment" ? (
             /* ── Assessment Panel ── */
             <InlineAssessment session={session} quizState={quizState} onFinish={onFinishAssessment} toast={toast} onCertificateClick={onCertificateClick}/>
+          ) : panelMode === "material" ? (
+            /* ── Material Panel ── */
+            (() => {
+              const mat = session.lessons[activeLesson];
+              const fileUrl = mat?.url || mat?.file_url || mat?.resource_url || mat?.fileUrl || "";
+              const title = mat?.title || "Material";
+              const fileType = mat?.file_type || mat?.type_label || (fileUrl.toLowerCase().includes(".pdf") ? "PDF" : fileUrl.toLowerCase().includes(".pptx") || fileUrl.toLowerCase().includes(".ppt") ? "PPTX" : fileUrl.toLowerCase().includes(".doc") ? "DOCX" : "FILE");
+              const typeColor = fileType==="PDF" ? { bg:"#fef2f2", color:"#dc2626" } : fileType==="PPTX" ? { bg:"#fff7ed", color:"#ea580c" } : fileType==="DOCX" ? { bg:"#eff6ff", color:"#2563eb" } : { bg:C.primaryLight, color:C.primary };
+              return (
+                <div style={{ padding:"32px 28px", display:"flex", flexDirection:"column", gap:24, flex:1 }}>
+                  {/* Header */}
+                  <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+                    <div style={{ width:52, height:52, borderRadius:12, background:typeColor.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                      <Icon name="paperclip" size={24} color={typeColor.color}/>
+                    </div>
+                    <div>
+                      <div style={{ fontSize:11, fontWeight:700, color:typeColor.color, background:typeColor.bg, borderRadius:4, padding:"2px 8px", display:"inline-block", marginBottom:6, letterSpacing:.4 }}>{fileType}</div>
+                      <div style={{ fontSize:20, fontWeight:700, color:C.gray900, lineHeight:1.3 }}>{title}</div>
+                    </div>
+                  </div>
+
+                  {/* PDF inline preview */}
+                  {fileUrl && (fileType === "PDF" || fileUrl.toLowerCase().endsWith(".pdf")) ? (
+                    <div style={{ flex:1, minHeight:500, borderRadius:12, overflow:"hidden", border:`1px solid ${C.gray200}` }}>
+                      <iframe src={`${fileUrl}#toolbar=1`} style={{ width:"100%", height:"100%", minHeight:500, border:"none" }} title={title}/>
+                    </div>
+                  ) : fileUrl ? (
+                    /* Non-PDF: show preview card with open/download */
+                    <div style={{ background:C.gray50, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"48px 32px", display:"flex", flexDirection:"column", alignItems:"center", gap:16, textAlign:"center" }}>
+                      <div style={{ width:72, height:72, borderRadius:16, background:typeColor.bg, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        <Icon name="paperclip" size={32} color={typeColor.color}/>
+                      </div>
+                      <div style={{ fontSize:16, fontWeight:600, color:C.gray700 }}>{title}</div>
+                      <div style={{ display:"flex", gap:12, flexWrap:"wrap", justifyContent:"center" }}>
+                        <a href={fileUrl} target="_blank" rel="noopener noreferrer"
+                          style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"10px 22px", borderRadius:10, background:C.primary, color:"#fff", fontSize:14, fontWeight:700, textDecoration:"none" }}>
+                          <Icon name="arrow-square-out" size={16} color="#fff"/> Open File
+                        </a>
+                        <a href={fileUrl} download
+                          style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"10px 22px", borderRadius:10, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:14, fontWeight:600, textDecoration:"none" }}>
+                          <Icon name="download-simple" size={16} color={C.gray600}"/> Download
+                        </a>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ background:C.gray50, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"48px 32px", textAlign:"center", color:C.gray400, fontSize:15 }}>
+                      No file attached to this material.
+                    </div>
+                  )}
+                </div>
+              );
+            })()
           ) : (<>
 
             {/* Video with padding so card corners show */}
