@@ -9300,7 +9300,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           .lp-stat-card { padding:16px 14px !important; gap:12px !important; height:auto !important; min-height:unset !important; }
           .lp-stat-card-icon { width:40px !important; height:40px !important; border-radius:10px !important; flex-shrink:0 !important; }
           .lp-stat-card-text { font-size:13px !important; line-height:1.3 !important; }
-          .lp-sessions-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; padding:0 !important; box-sizing:border-box !important; }
+          .lp-sessions-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; padding:0 !important; gap:12px !important; box-sizing:border-box !important; }
           .lp-session-card { flex-direction:column !important; }
           .lp-session-card-img { width:100% !important; height:180px !important; flex-shrink:0 !important; }
           .lp-session-card > div:last-child { padding:12px 12px 14px !important; }
@@ -9339,7 +9339,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
         @media(max-width:480px){
           .lp-hero-h1 { font-size:26px !important; }
           .lp-hero-certified { font-size:38px !important; }
-          .lp-sessions-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; padding:0 !important; box-sizing:border-box !important; }
+          .lp-sessions-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; padding:0 !important; gap:12px !important; box-sizing:border-box !important; }
           .lp-session-card-img { height:160px !important; }
         }
       `}</style>
