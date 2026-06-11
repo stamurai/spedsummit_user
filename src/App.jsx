@@ -10111,7 +10111,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                 </button>
               </div>}
             </div>
-            <style>{`@media(max-width:900px){.giveaway-grid{grid-template-columns:repeat(2,1fr)!important}} @media(max-width:600px){.giveaway-grid{grid-template-columns:1fr!important}}`}</style>
+            <style>{`@media(max-width:900px){.giveaway-grid{grid-template-columns:repeat(2,1fr)!important}} @media(max-width:600px){.giveaway-grid{grid-template-columns:repeat(2,1fr)!important}}`}</style>
           </section>
         );
       })()}
