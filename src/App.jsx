@@ -2737,7 +2737,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
           .db-upcoming-desc { font-size:13px !important; }
           .db-continue-list { display:flex !important; flex-direction:row !important; overflow-x:scroll !important; overflow-y:hidden !important; gap:12px !important; padding-top:0 !important; padding-bottom:8px !important; padding-left:0 !important; padding-right:0 !important; margin-left:0 !important; margin-right:0 !important; width:100% !important; box-sizing:border-box !important; -webkit-overflow-scrolling:touch; scroll-snap-type:x mandatory; touch-action:pan-x pan-y; overscroll-behavior-x:contain; }
           .db-continue-list::-webkit-scrollbar { display:none; }
-          .db-continue-list > * { min-width:100% !important; max-width:100% !important; flex-shrink:0 !important; scroll-snap-align:start; scroll-snap-stop:always; }
+          .db-continue-list > * { min-width:280px !important; max-width:280px !important; flex-shrink:0 !important; scroll-snap-align:start; scroll-snap-stop:always; }
         }
       `}</style>
       {calendarItem && (
@@ -2772,7 +2772,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
             const typeLabel = schedItem ? schedItem.type.charAt(0) + schedItem.type.slice(1).toLowerCase() : "Session";
             return (
               <div key={s.id} className="db-course-row db-session-card-row"
-                style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, ...(isMobile ? { flexDirection:"column", minHeight:"unset", minWidth:"calc(100% - 24px)", maxWidth:"calc(100% - 24px)", flexShrink:0, scrollSnapAlign:"start" } : {}) }}
+                style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, ...(isMobile ? { flexDirection:"column", minHeight:"unset", minWidth:280, maxWidth:280, flexShrink:0, scrollSnapAlign:"start" } : {}) }}
                 onClick={() => onOpenSession(s)}>
                 <div className="db-session-card-thumb" style={isMobile ? { width:"100%", height:160, flexShrink:0 } : {}}>
                   {(s.instructorImage) && <img src={s.instructorImage} alt={s.instructor}/>}
