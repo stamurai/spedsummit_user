@@ -4286,7 +4286,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                     </button>
                     )}
                     {(!showHeader || !isCollapsed) && (
-                      <div style={{ padding:"0" }}>
+                      <div style={{ padding:"4px 0 8px" }}>
                         {sec.lessons.map(l => {
                           const i = l._index;
                           const isQuiz = l.type === "quiz";
@@ -4299,9 +4299,9 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                           const done = l.status === "completed" || quizDone;
                           return (
                             <div key={String(l.id)} onClick={() => switchLesson(i)}
-                              style={{ padding:"1px 10px", cursor: locked ? "default" : "pointer" }}>
+                              style={{ padding:"3px 10px", cursor: locked ? "default" : "pointer" }}>
                               <div style={{
-                                display:"flex", alignItems:"center", gap:12, padding:"7px 10px",
+                                display:"flex", alignItems:"center", gap:12, padding:"10px 12px",
                                 background: isActive || done ? "#eef2ff" : "transparent",
                                 borderRadius:10,
                                 transition:"background .15s"
