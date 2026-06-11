@@ -9273,7 +9273,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
         .lp-sessions-grid { grid-template-columns: repeat(4, minmax(0,1fr)); }
         /* ── Tablet (≤900px) ── */
         @media(max-width:900px){
-          .lp-sessions-grid { grid-template-columns:repeat(2, minmax(0,1fr)) !important; padding:0 8px !important; box-sizing:border-box !important; }
+          .lp-sessions-grid { grid-template-columns:repeat(2, minmax(0,1fr)) !important; padding:0 !important; box-sizing:border-box !important; }
         }
         /* ── Mobile (≤767px) ── */
         @media(max-width:767px){
