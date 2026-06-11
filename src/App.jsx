@@ -11076,8 +11076,9 @@ function ContactPage({ onNavigate }) {
 
   return (
     <div style={{ minHeight:"100vh", background:"#FEF5EC", fontFamily:"'Inter',-apple-system,sans-serif" }}>
+      <style>{`@media(max-width:767px){.contact-breadcrumb{padding:10px 16px!important}.contact-banner{padding:32px 16px 28px!important}.contact-cards-wrap{padding:24px 16px 48px!important}}`}</style>
       {/* Breadcrumb */}
-      <div style={{ background:"#fff", borderBottom:"1px solid #f0f0f0", padding:"10px 32px" }}>
+      <div className="contact-breadcrumb" style={{ background:"#fff", borderBottom:"1px solid #f0f0f0", padding:"10px 32px" }}>
         <div style={{ maxWidth:1200, margin:"0 auto", display:"flex", alignItems:"center", gap:6, fontSize:13, color:"#9ca3af" }}>
           <button onClick={()=>onNavigate&&onNavigate("dashboard")} style={{ background:"none", border:"none", cursor:"pointer", padding:0, fontSize:13, color:"#6490E8", fontWeight:500, fontFamily:"inherit" }}>Home</button>
           <span>/</span>
@@ -11086,7 +11087,7 @@ function ContactPage({ onNavigate }) {
       </div>
 
       {/* Header banner */}
-      <div style={{ background:"#6490E8", padding:"56px 32px 48px" }}>
+      <div className="contact-banner" style={{ background:"#6490E8", padding:"56px 32px 48px" }}>
         <div style={{ maxWidth:1200, margin:"0 auto" }}>
           <p style={{ margin:"0 0 10px", fontSize:13, fontWeight:700, color:"rgba(255,255,255,0.7)", letterSpacing:1.2, textTransform:"uppercase" }}>Get in touch</p>
           <h1 style={{ margin:"0 0 12px", fontSize:"clamp(28px,4vw,42px)", fontWeight:800, color:"#fff", lineHeight:1.15 }}>Have a question?<br/>We're here to help.</h1>
@@ -11095,7 +11096,7 @@ function ContactPage({ onNavigate }) {
       </div>
 
       {/* Cards */}
-      <div style={{ maxWidth:1200, margin:"0 auto", padding:"48px 32px 64px" }}>
+      <div className="contact-cards-wrap" style={{ maxWidth:1200, margin:"0 auto", padding:"48px 32px 64px" }}>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))", gap:24 }}>
           {cards.map(card => (
             <div key={card.title} style={{ background:"#fff", borderRadius:20, border:"1px solid rgba(0,0,0,0.07)", padding:"36px 32px", display:"flex", flexDirection:"column", gap:0 }}>
