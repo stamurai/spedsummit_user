@@ -4203,11 +4203,12 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
         <style>{`.sd-mobile-tabs::-webkit-scrollbar{display:none}`}</style>
         {session.lessons.filter(l => !(l.type === "quiz" && getSessionQuestions(session).length === 0)).map((l, i) => {
           const isQuiz = l.type === "quiz";
-          const isActive = isQuiz ? panelMode === "assessment" : (i === activeLesson && panelMode === "video");
+          const isMaterial = l.type === "material";
+          const isActive = isQuiz ? panelMode === "assessment" : isMaterial ? (i === activeLesson && panelMode === "material") : (i === activeLesson && panelMode === "video");
           const done = l.status === "completed";
           const label = isQuiz ? "Assessment" : (l.title || session.title);
           return (
-            <button key={String(l.id)} onClick={() => { if (isQuiz) { setPanelMode("assessment"); } else { switchLesson(i); setPanelMode("video"); } }}
+            <button key={String(l.id)} onClick={() => { if (isQuiz) { setPanelMode("assessment"); } else if (isMaterial) { setActiveLesson(i); setPanelMode("material"); } else { switchLesson(i); setPanelMode("video"); } }}
               style={{ flexShrink:0, maxWidth:140, minWidth:80, padding:"10px 12px", background: isActive ? C.white : C.gray50,
                        borderBottom: isActive ? `2px solid ${C.primary}` : "2px solid transparent",
                        borderTop:"none", borderLeft:"none", borderRight:`1px solid ${C.gray200}`,
