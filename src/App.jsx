@@ -1473,7 +1473,7 @@ function ReferFriendsModal({ onClose, userName }) {
   const isMobile = window.innerWidth <= 480;
 
   return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", zIndex:900, display:"flex", alignItems:isMobile?"flex-end":"center", justifyContent:"center", padding: isMobile ? 0 : 16 }}
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", zIndex:1200, display:"flex", alignItems:isMobile?"flex-end":"center", justifyContent:"center", padding: isMobile ? 0 : 16 }}
       onClick={onClose}>
       <div style={{ background: dark ? "#1e2647" : "#fff", borderRadius: isMobile ? "20px 20px 0 0" : 20, width:"100%", maxWidth: isMobile ? "100%" : 460, boxShadow:"0 24px 60px rgba(0,0,0,0.3)", overflow:"hidden", position:"relative" }}
         onClick={e => e.stopPropagation()}>
