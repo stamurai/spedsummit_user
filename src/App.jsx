@@ -9262,8 +9262,8 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           .lp-session-card > div:last-child { padding:12px 12px 14px !important; }
           .lp-apply-banner { flex-direction:column !important; align-items:flex-start !important; gap:14px !important; }
           .lp-apply-banner-btn { width:100% !important; justify-content:center !important; height:44px !important; }
-          .lp-section-pad { padding:40px 16px !important; }
-          .lp-section-pad-top { padding-top:40px !important; padding-left:16px !important; padding-right:16px !important; }
+          .lp-section-pad { padding:32px 16px !important; }
+          .lp-section-pad-top { padding-top:32px !important; padding-left:16px !important; padding-right:16px !important; }
           .lp-social-strip { gap:20px !important; justify-content:flex-start !important; overflow-x:auto !important; padding-bottom:4px !important; }
           .lp-hero-collage { position:relative !important; bottom:auto !important; left:0 !important; right:0 !important; height:auto !important; overflow:hidden !important; margin-top:24px !important; background:transparent !important; }
           .lp-hero-collage-inner { display:flex !important; flex-direction:column !important; gap:10px !important; height:auto !important; padding:0 !important; justify-content:flex-start !important; }
@@ -9615,7 +9615,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
         }
 
         return (
-          <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
+          <section style={{ padding:"64px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
             <div style={{ maxWidth:1100, margin:"0 auto" }}>
               {/* Section header */}
               <div style={{ textAlign:"center", marginBottom:52 }}>
@@ -9749,7 +9749,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       })()}
 
       {/* ── Bento Features ── */}
-      <section className="lp-section-pad" style={{ padding:"160px 24px 80px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
+      <section className="lp-section-pad" style={{ padding:"128px 24px 64px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
 
           {/* Header */}
@@ -9849,7 +9849,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       </section>
 
       {/* ── Instructors ── */}
-      <section id="instructors" style={{ padding:"80px 0", borderBottom:`1px solid ${T.border}`, overflowX:"clip", position:"relative" }}>
+      <section id="instructors" style={{ padding:"64px 0", borderBottom:`1px solid ${T.border}`, overflowX:"clip", position:"relative" }}>
         <style>{`
           @keyframes spk-marquee {
             from { transform: translateX(0); }
@@ -10068,7 +10068,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
         ];
 
         return (
-          <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
+          <section style={{ padding:"64px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
             <div style={{ maxWidth:1100, margin:"0 auto" }}>
               {/* Header */}
               <div style={{ textAlign:"center", marginBottom:64 }}>
@@ -10114,7 +10114,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       })()}
 
       {/* ── Featured Sessions ── */}
-      <section id="sessions" className="lp-section-pad" style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
+      <section id="sessions" className="lp-section-pad" style={{ padding:"64px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
         <div style={{ maxWidth:1200, margin:"0 auto" }}>
           {/* Header */}
           <div style={{ marginBottom:40 }}>
@@ -10235,7 +10235,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       </section>
 
       {/* ── Community ── */}
-      <section style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg, textAlign:"center" }}>
+      <section style={{ padding:"64px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg, textAlign:"center" }}>
         <div style={{ maxWidth:560, margin:"0 auto" }}>
           <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Community</p>
           <h2 style={{ margin:"0 0 12px", fontSize:"clamp(32px,4vw,48px)", fontWeight:800, color:T.text, letterSpacing:-1, lineHeight:1.2 }}>Connect with educators across the country</h2>
@@ -10262,7 +10262,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       </section>
 
       {/* ── Testimonials (V2 style) ── */}
-      <section style={{ background:T.bg, padding:"80px 24px 48px", borderBottom:`1px solid ${T.border}` }}>
+      <section style={{ background:T.bg, padding:"64px 24px 38px", borderBottom:`1px solid ${T.border}` }}>
         <style>{`
           .t1-col2{display:none}.t1-col3{display:none}
           @media(min-width:768px){.t1-col2{display:block}}
@@ -10311,7 +10311,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       {/* ── Pricing ── */}
 
       {/* ── FAQ ── */}
-      <section id="help" style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
+      <section id="help" style={{ padding:"64px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
         <div style={{ maxWidth:680, margin:"0 auto" }}>
           <div style={{ textAlign:"center", marginBottom:40 }}>
             <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>FAQ</p>
@@ -10341,7 +10341,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       <footer style={{ background:T.bg }}>
 
         {/* CTA band */}
-        <div style={{ padding:"80px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
+        <div style={{ padding:"64px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
           <div className="lp-footer-cta" style={{ maxWidth:1024, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-between", gap:40, flexWrap:"wrap" }}>
             <div style={{ flex:1, minWidth:280 }}>
               <h2 style={{ margin:"0 0 12px", fontSize:"clamp(32px,4vw,48px)", fontWeight:800, color:T.text, lineHeight:1.1, letterSpacing:-1.5 }}>
