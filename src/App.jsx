@@ -9293,10 +9293,11 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           .lp-stat-card { padding:16px 14px !important; gap:12px !important; height:auto !important; min-height:unset !important; }
           .lp-stat-card-icon { width:40px !important; height:40px !important; border-radius:10px !important; flex-shrink:0 !important; }
           .lp-stat-card-text { font-size:13px !important; line-height:1.3 !important; }
-          .lp-sessions-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; padding:0 8px !important; box-sizing:border-box !important; }
+          .lp-sessions-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; padding:0 !important; box-sizing:border-box !important; }
           .lp-session-card { flex-direction:column !important; }
           .lp-session-card-img { width:100% !important; height:180px !important; flex-shrink:0 !important; }
           .lp-session-card > div:last-child { padding:12px 12px 14px !important; }
+          .giveaway-card-body { padding:16px 14px 14px !important; }
           .lp-apply-banner { flex-direction:column !important; align-items:flex-start !important; gap:14px !important; }
           .lp-apply-banner-btn { width:100% !important; justify-content:center !important; height:44px !important; }
           .lp-section-pad { padding:32px 16px !important; }
@@ -9331,7 +9332,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
         @media(max-width:480px){
           .lp-hero-h1 { font-size:26px !important; }
           .lp-hero-certified { font-size:38px !important; }
-          .lp-sessions-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; padding:0 8px !important; box-sizing:border-box !important; }
+          .lp-sessions-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; padding:0 !important; box-sizing:border-box !important; }
           .lp-session-card-img { height:160px !important; }
         }
       `}</style>
@@ -10122,7 +10123,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16 }} className="giveaway-grid">
                 {prizes.map(({ icon, iconColor, iconBg, spotlight, title, desc, value }, i) => (
                   <SpotlightCard key={i} spotlightColor={spotlight}>
-                    <div style={{ padding:"28px 28px 24px" }}>
+                    <div className="giveaway-card-body" style={{ padding:"28px 28px 24px" }}>
                       <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:20 }}>
                         <div style={{ width:44, height:44, borderRadius:10, background:iconBg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                           <Icon name={icon} size={20} color={iconColor}/>
@@ -10145,7 +10146,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                 </button>
               </div>}
             </div>
-            <style>{`@media(max-width:900px){.giveaway-grid{grid-template-columns:repeat(2,1fr)!important}} @media(max-width:600px){.giveaway-grid{grid-template-columns:repeat(2,1fr)!important}}`}</style>
+            <style>{`@media(max-width:900px){.giveaway-grid{grid-template-columns:repeat(2,1fr)!important}} @media(max-width:767px){.giveaway-grid{gap:10px!important}}`}</style>
           </section>
         );
       })()}
