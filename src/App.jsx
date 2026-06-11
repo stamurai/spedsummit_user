@@ -4050,6 +4050,13 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const [sdReportOther, setSdReportOther] = useState("");
   const [sdReportSubmitting, setSdReportSubmitting] = useState(false);
   const [sdReportDone, setSdReportDone] = useState(false);
+  const sdMenuRef = React.useRef(null);
+  useEffect(() => {
+    if (!sdMenuOpen) return;
+    function handleClick(e) { if (sdMenuRef.current && !sdMenuRef.current.contains(e.target)) setSdMenuOpen(null); }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [sdMenuOpen]);
   const chatRef = useRef(null);
   const chatInputRef = useRef(null);
   const containerRef = useRef(null);
@@ -4701,7 +4708,6 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
     setReportDone(false);
   }
   const menuRef = React.useRef(null);
-  const sdMenuRef = React.useRef(null);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -4709,13 +4715,6 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [menuOpen]);
-
-  useEffect(() => {
-    if (!sdMenuOpen) return;
-    function handleClick(e) { if (sdMenuRef.current && !sdMenuRef.current.contains(e.target)) setSdMenuOpen(null); }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [sdMenuOpen]);
 
   async function deleteComment(id) {
     await supabase.from("session_comments").delete().eq("id", id);
