@@ -4396,10 +4396,10 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                     </div>
                   </div>
 
-                  {/* PDF inline preview */}
-                  {fileUrl && (fileType === "PDF" || fileUrl.toLowerCase().endsWith(".pdf")) ? (
-                    <div className="mat-iframe-wrap" style={{ flex:1, minHeight: isMob ? "calc(100vh - 280px)" : 500, borderRadius:12, overflow:"hidden", border:`1px solid ${C.gray200}` }}>
-                      <iframe src={`${fileUrl}#toolbar=1`} style={{ width:"100%", height:"100%", minHeight: isMob ? "calc(100vh - 280px)" : 500, border:"none", display:"block" }} title={title}/>
+                  {/* PDF inline preview — iframe on desktop, open/download on mobile */}
+                  {fileUrl && (fileType === "PDF" || fileUrl.toLowerCase().endsWith(".pdf")) && !isMob ? (
+                    <div className="mat-iframe-wrap" style={{ flex:1, minHeight:500, borderRadius:12, overflow:"hidden", border:`1px solid ${C.gray200}` }}>
+                      <iframe src={`${fileUrl}#toolbar=1`} style={{ width:"100%", height:"100%", minHeight:500, border:"none", display:"block" }} title={title}/>
                     </div>
                   ) : fileUrl ? (
                     /* Non-PDF: show preview card with open/download */
