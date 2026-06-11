@@ -1577,22 +1577,6 @@ function TopBar({ toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, 
 
       {/* Right actions */}
       <div style={{ flexShrink:0, display:"flex", alignItems:"center", gap:12 }}>
-        {/* Notification button + popover — hidden on mobile (bottom nav handles it) */}
-        <div className="topbar-notif" style={{ position:"relative" }} ref={notifBtnRef}>
-            <button
-              onClick={() => setShowNotif(v => !v)}
-              style={{ width:36, height:36, borderRadius:"50%", border:`1px solid ${C.gray200}`, background:C.white, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", transition:"background .15s" }}
-              onMouseEnter={e => { if (!showNotif) e.currentTarget.style.background = C.gray50; }}
-              onMouseLeave={e => { e.currentTarget.style.background = C.white; }}>
-              <Icon name="bell" size={17} color={C.gray700}/>
-              {unread > 0 && (
-                <span style={{ position:"absolute", top:-7, left:"100%", transform:"translateX(-50%)", minWidth:18, height:18, borderRadius:99, background:C.primary, color:"#fff", fontSize:11, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center", padding:"0 4px", lineHeight:1 }}>
-                  {unread > 99 ? "99+" : unread}
-                </span>
-              )}
-            </button>
-            {showNotif && <NotificationPopover onClose={() => setShowNotif(false)} anchorRef={notifBtnRef}/>}
-          </div>
 
 
         {showReferModal && <ReferFriendsModal onClose={() => setShowReferModal(false)} userName={userName}/>}
