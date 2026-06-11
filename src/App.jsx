@@ -4167,6 +4167,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           .sd-video-wrap { padding:0 !important; }
           .sd-video-wrap > div { border-radius:0 !important; }
           .sd-tab-content { padding:16px 14px !important; }
+          .sd-community-inner { padding:16px 14px !important; }
           .sd-community-layout { flex-direction:column !important; }
           .sd-community-layout > div:last-child { width:100% !important; }
           .sd-instructor-header { flex-direction:row !important; }
@@ -4175,6 +4176,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           .sd-tabs-bar { padding:0 12px !important; overflow-x:auto; -webkit-overflow-scrolling:touch; }
           .sd-tabs-bar button { padding:12px 12px !important; font-size:13px !important; flex-shrink:0; }
           .sd-tab-content { padding:16px 14px !important; }
+          .sd-community-inner { padding:16px 14px !important; }
           .sd-overview-stats { gap:16px !important; }
           .sd-overview-stats > div > div:first-child { font-size:18px !important; }
           .sd-instructor-header { flex-direction:column !important; align-items:flex-start !important; gap:12px !important; }
@@ -4186,14 +4188,14 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
       `}</style>
 
       {/* ── Breadcrumb bar ── */}
-      <div style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 20px", borderBottom:`1px solid ${C.gray200}`, background:C.white, fontSize:13, color:C.gray500 }}>
+      <div style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 16px", borderBottom:`1px solid ${C.gray200}`, background:C.white, fontSize:13, color:C.gray500, minWidth:0, overflow:"hidden" }}>
         <button onClick={onBack} style={{ background:"none", border:"none", cursor:"pointer", padding:0, fontSize:13, color:C.gray500, fontFamily:"inherit", fontWeight:500 }}
           onMouseEnter={e=>e.currentTarget.style.color=C.gray900}
           onMouseLeave={e=>e.currentTarget.style.color=C.gray500}>
           My Learnings
         </button>
         <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="m8 5 5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        <span style={{ color:C.gray900, fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:400 }}>{session.title}</span>
+        <span style={{ color:C.gray900, fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", minWidth:0, flex:1 }}>{session.title}</span>
       </div>
 
       {/* ── Mobile lesson tab strip (browser-tab style) ── */}
@@ -4548,8 +4550,8 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
 
         {/* Community */}
         {bottomTab === "community" && (
-          <div className="sd-tab-content" style={{ padding:0, minHeight:400 }}>
-            <div style={{ padding:"20px 24px" }}>
+          <div className="sd-tab-content sd-community-wrap" style={{ padding:0, minHeight:400 }}>
+            <div className="sd-community-inner" style={{ padding:"20px 24px" }}>
               {/* Post input */}
               <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"12px 14px", marginBottom:16, display:"flex", gap:10, alignItems:"center" }}>
                 <Avatar name={adminName||"You"} src={adminAvatar} size={32}/>
