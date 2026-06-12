@@ -4066,6 +4066,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const lastSavedPctRef = useRef(session.progress || 0);
   const saveThrottleRef = useRef(null);
   const latestPctRef = useRef(session.progress || 0);
+  const videoEndFiredRef = useRef((session.progress || 0) >= 100);
 
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
@@ -4455,15 +4456,22 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                   } else if (!saveThrottleRef.current) {
                     saveThrottleRef.current = setTimeout(() => {
                       saveThrottleRef.current = null;
-                      const cur = latestPctRef.current; // read latest, not stale closure value
+                      const cur = latestPctRef.current;
                       lastSavedPctRef.current = cur;
                       onUpdateProgress?.(session.id, cur, activeLesson);
                     }, 5000);
                   }
+                  if (pct >= 100 && !videoEndFiredRef.current) {
+                    videoEndFiredRef.current = true;
+                    onVideoEnd?.(session.id);
+                  }
                 }}
                 onEnded={() => {
                   onUpdateProgress?.(session.id, 100, activeLesson);
-                  onVideoEnd?.(session.id);
+                  if (!videoEndFiredRef.current) {
+                    videoEndFiredRef.current = true;
+                    onVideoEnd?.(session.id);
+                  }
                 }}/>
               ) : (
                 <>
