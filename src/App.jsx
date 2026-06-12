@@ -4410,7 +4410,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                         </a>
                         <a href={fileUrl} download
                           style={{ flex:1, minWidth:120, display:"inline-flex", alignItems:"center", justifyContent:"center", gap:8, padding:"10px 20px", borderRadius:10, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:14, fontWeight:600, textDecoration:"none" }}>
-                          <Icon name="download-simple" size={16} color={C.gray600}/> Download
+                          <Icon name="download" size={16} color={C.gray600}/> Download
                         </a>
                       </div>
                     </div>
