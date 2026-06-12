@@ -4173,7 +4173,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           .sd-video-card { border-radius:0 !important; box-shadow:none !important; height:auto !important; overflow:hidden !important; min-height:calc(100vh - 160px) !important; width:100% !important; }
           .sd-video-wrap { padding:0 !important; }
           .sd-video-wrap > div { border-radius:0 !important; }
-          .sd-tab-content { padding:16px 14px !important; }
+          .sd-tab-content { padding:8px 14px 16px !important; }
           .sd-community-inner { padding:16px 14px !important; width:100% !important; box-sizing:border-box !important; overflow:hidden !important; }
           .sd-community-wrap { overflow:hidden !important; width:100% !important; box-sizing:border-box !important; }
           .sd-community-layout { flex-direction:column !important; }
@@ -4183,7 +4183,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
         @media(max-width:640px){
           .sd-tabs-bar { padding:0 12px !important; overflow-x:auto; -webkit-overflow-scrolling:touch; }
           .sd-tabs-bar button { padding:12px 12px !important; font-size:13px !important; flex-shrink:0; }
-          .sd-tab-content { padding:16px 14px !important; }
+          .sd-tab-content { padding:8px 14px 16px !important; }
           .sd-community-inner { padding:16px 14px !important; width:100% !important; box-sizing:border-box !important; overflow:hidden !important; }
           .sd-overview-stats { gap:16px !important; }
           .sd-overview-stats > div > div:first-child { font-size:18px !important; }
@@ -4517,7 +4517,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
 
         {/* Overview */}
         {bottomTab === "overview" && (
-          <div className="sd-tab-content" style={{ padding:"20px 24px 24px" }}>
+          <div className="sd-tab-content" style={{ padding:"8px 24px 24px" }}>
             {session.duration && (
               <div className="sd-overview-stats" style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
                 <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:12, fontWeight:600, color:C.gray600, background:C.gray100, borderRadius:99, padding:"5px 12px" }}>
@@ -4535,7 +4535,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
 
         {/* Instructor */}
         {bottomTab === "instructor" && (
-          <div className="sd-tab-content" style={{ padding:"22px 24px" }}>
+          <div className="sd-tab-content" style={{ padding:"8px 24px 24px" }}>
             {session.instructor ? (
               <div className="sd-instructor-header" style={{ display:"flex", gap:16, alignItems:"flex-start" }}>
                 <Avatar name={session.instructor} src={session.instructorImage || undefined} size={68}/>
