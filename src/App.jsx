@@ -2735,9 +2735,9 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
           .db-upcoming-session-card .db-session-card-body { padding:14px !important; }
           .db-upcoming-title { font-size:16px !important; line-height:1.3 !important; }
           .db-upcoming-desc { font-size:13px !important; }
-          .db-continue-list { display:flex !important; flex-direction:row !important; overflow-x:scroll !important; overflow-y:hidden !important; gap:12px !important; padding-top:0 !important; padding-bottom:8px !important; padding-left:0 !important; padding-right:0 !important; margin-left:0 !important; margin-right:0 !important; width:100% !important; box-sizing:border-box !important; -webkit-overflow-scrolling:touch; scroll-snap-type:x mandatory; touch-action:pan-x pan-y; overscroll-behavior-x:contain; }
+          .db-continue-list { display:flex !important; flex-direction:row !important; overflow-x:scroll !important; overflow-y:hidden !important; gap:12px !important; padding-top:0 !important; padding-bottom:8px !important; -webkit-overflow-scrolling:touch; scroll-snap-type:x mandatory; touch-action:pan-x pan-y; overscroll-behavior-x:contain; }
           .db-continue-list::-webkit-scrollbar { display:none; }
-          .db-continue-list > * { min-width:100% !important; max-width:100% !important; flex-shrink:0 !important; scroll-snap-align:start; scroll-snap-stop:always; }
+          .db-continue-list > * { min-width:78vw !important; max-width:78vw !important; flex-shrink:0 !important; scroll-snap-align:start; scroll-snap-stop:always; }
         }
       `}</style>
       {calendarItem && (
@@ -2772,7 +2772,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
             const typeLabel = schedItem ? schedItem.type.charAt(0) + schedItem.type.slice(1).toLowerCase() : "Session";
             return (
               <div key={s.id} className="db-course-row db-session-card-row"
-                style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, ...(isMobile ? { flexDirection:"column", minHeight:"unset", minWidth:"calc(100% - 24px)", maxWidth:"calc(100% - 24px)", flexShrink:0, scrollSnapAlign:"start" } : {}) }}
+                style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, ...(isMobile ? { flexDirection:"column", minHeight:"unset", minWidth:"78vw", maxWidth:"78vw", flexShrink:0, scrollSnapAlign:"start" } : {}) }}
                 onClick={() => onOpenSession(s)}>
                 <div className="db-session-card-thumb" style={isMobile ? { width:"100%", height:160, flexShrink:0 } : {}}>
                   {(s.instructorImage) && <img src={s.instructorImage} alt={s.instructor}/>}
@@ -2885,7 +2885,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                     {Array(3).fill(0).map((_,i) => <SkeletonSessionCard key={i}/>)}
                   </div>
                 ) : (
-                  <div className="db-continue-list" style={isMobile ? { display:"flex", flexDirection:"row", overflowX:"scroll", overflowY:"hidden", gap:12, paddingTop:0, paddingBottom:8, width:"100%", boxSizing:"border-box", WebkitOverflowScrolling:"touch", scrollSnapType:"x mandatory", touchAction:"pan-x pan-y", overscrollBehaviorX:"contain" } : { display:"flex", flexDirection:"column", gap:12 }}>
+                  <div className="db-continue-list" style={isMobile ? { display:"flex", flexDirection:"row", overflowX:"scroll", overflowY:"hidden", gap:12, paddingLeft:16, paddingRight:16, paddingBottom:8, marginLeft:-16, marginRight:-16, WebkitOverflowScrolling:"touch", scrollSnapType:"x mandatory", touchAction:"pan-x pan-y", overscrollBehaviorX:"contain", msOverflowStyle:"none", scrollbarWidth:"none" } : { display:"flex", flexDirection:"column", gap:12 }}>
                     {filteredInProgress.map(s => {
                       const lbl = s.status==="in-progress" ? "Resume" : "Watch Now";
                       return renderSessionCard(s, lbl);
