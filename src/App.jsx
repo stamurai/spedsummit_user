@@ -4388,7 +4388,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                   ) : fileUrl ? (
                     <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                       {/* List row */}
-                      <div style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, flexWrap: isMob ? "wrap" : "nowrap" }}>
                         <div style={{ width:40, height:40, borderRadius:10, background:typeColor.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                           <Icon name="paperclip" size={18} color={typeColor.color}/>
                         </div>
@@ -4396,13 +4396,13 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                           <div style={{ fontSize:13, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{title}</div>
                           <div style={{ fontSize:11, fontWeight:600, color:typeColor.color, marginTop:2 }}>{fileType}</div>
                         </div>
-                        <div style={{ display:"flex", gap:8, flexShrink:0 }}>
+                        <div style={{ display:"flex", gap:8, flexShrink:0, ...(isMob ? { width:"100%", marginTop:4 } : {}) }}>
                           <a href={fileUrl} target="_blank" rel="noopener noreferrer"
-                            style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"7px 14px", borderRadius:8, background:C.primary, color:"#fff", fontSize:13, fontWeight:700, textDecoration:"none" }}>
+                            style={{ flex: isMob ? 1 : "none", display:"inline-flex", alignItems:"center", justifyContent:"center", gap:6, padding:"8px 14px", borderRadius:8, background:C.primary, color:"#fff", fontSize:13, fontWeight:700, textDecoration:"none" }}>
                             <Icon name="arrow-square-out" size={14} color="#fff"/> Open
                           </a>
                           <a href={fileUrl} download
-                            style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"7px 14px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:13, fontWeight:600, textDecoration:"none" }}>
+                            style={{ flex: isMob ? 1 : "none", display:"inline-flex", alignItems:"center", justifyContent:"center", gap:6, padding:"8px 14px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:13, fontWeight:600, textDecoration:"none" }}>
                             <Icon name="download" size={14} color={C.gray600}/> Save
                           </a>
                         </div>
