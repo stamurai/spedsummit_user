@@ -2129,27 +2129,28 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
         availableFrom: s.availableFrom,
       };
     });
-  const completed     = enrolledSessions.filter(s => s.status === "completed").length;
-  const certsEarned   = enrolledSessions.filter(s => {
+  const completed     = sessions.filter(s => s.status === "completed").length;
+  const certsEarned   = sessions.filter(s => {
     const hasQuiz = getSessionQuestions(s).length > 0;
     return hasQuiz ? quizStates?.[s.id]?.status === "passed" : s.status === "completed";
   }).length;
   const parseDurMins = (d) => { const m = String(d||"").match(/(\d+)/); return m ? parseInt(m[1]) : 0; };
-  const totalMins = enrolledSessions.filter(s => s.status === "completed").reduce((sum, s) => sum + parseDurMins(s.duration), 0);
+  const totalMins = sessions.filter(s => s.status === "completed").reduce((sum, s) => sum + parseDurMins(s.duration), 0);
   const hoursLearned = totalMins >= 60 ? `${Math.floor(totalMins/60)}h${totalMins%60>0?" "+totalMins%60+"m":""}` : totalMins > 0 ? `${totalMins}m` : "0h";
-  const totalEnrolled = enrolledSessions.length;
+  const totalEnrolled = sessions.length;
   const pct = totalEnrolled > 0 ? Math.round((completed / totalEnrolled) * 100) : 0;
-  const hasStarted = enrolledSessions.some(s => s.progress > 0 || s.status === "completed" || s.status === "in-progress");
-  const continueSession = enrolledSessions.find(s => s.progress > 0 && s.status !== "completed");
+  const hasStarted = sessions.some(s => s.progress > 0 || s.status === "completed" || s.status === "in-progress");
+  const continueSession = sessions.find(s => s.progress > 0 && s.status !== "completed");
   const featuredSession = sessions.find(s => getSessionState(s) === "live") || sessions[0] || null;
 
+  const pathOrder = { "in-progress": 0, "available": 1, "completed": 2, "locked": 3 };
   const LEARNING_PATH = sessions.map(s => {
     const enrolled = enrolledIds.has(s.id);
     if (!enrolled) return { ...s, pathStatus: "locked" };
     if (s.status === "completed") return { ...s, pathStatus: "completed" };
     if (s.status === "in-progress") return { ...s, pathStatus: "in-progress" };
     return { ...s, pathStatus: "available" };
-  });
+  }).sort((a, b) => (pathOrder[a.pathStatus] ?? 9) - (pathOrder[b.pathStatus] ?? 9));
 
   if (previewSession) {
     return (
@@ -2992,22 +2993,20 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                   </div>
                 </div>
               </div>
-              {certsEarned === 0 && (
-                <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                  {[
-                    { label:"Watch a session", done: completed > 0 },
-                    { label:"Pass the quiz",   done: certsEarned > 0 },
-                    { label:"Download certificate", done: false },
-                  ].map((step, i) => (
-                    <div key={i} style={{ display:"flex", alignItems:"center", gap:8 }}>
-                      <div style={{ width:16, height:16, borderRadius:"50%", background: step.done ? C.success : C.gray100, border:`1.5px solid ${step.done ? C.success : C.gray300}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                        {step.done && <Icon name="check" size={9} color="#fff"/>}
-                      </div>
-                      <span style={{ fontSize:12, color: step.done ? C.gray500 : C.gray700, fontWeight: step.done ? 400 : 500, textDecoration: step.done ? "line-through" : "none" }}>{step.label}</span>
+              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                {[
+                  { label:"Watch a session",     done: completed > 0 },
+                  { label:"Pass the quiz",        done: certsEarned > 0 },
+                  { label:"Download certificate", done: certsEarned > 0 },
+                ].map((step, i) => (
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:8 }}>
+                    <div style={{ width:16, height:16, borderRadius:"50%", background: step.done ? C.success : C.gray100, border:`1.5px solid ${step.done ? C.success : C.gray300}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                      {step.done && <Icon name="check" size={9} color="#fff"/>}
                     </div>
-                  ))}
-                </div>
-              )}
+                    <span style={{ fontSize:12, color: step.done ? C.gray500 : C.gray700, fontWeight: step.done ? 400 : 500, textDecoration: step.done ? "line-through" : "none" }}>{step.label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
           </div>{/* end db-right-panel-inner */}
@@ -3824,7 +3823,7 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress, initialProgress = 0, se
           insertView();
         }
         if (d.event === "pause") { onPause?.(); updateView(false); }
-        if (d.event === "ended") { watchedSeconds.current = totalSeconds.current; updateView(true); }
+        if (d.event === "ended") { watchedSeconds.current = totalSeconds.current; updateView(true); maxPctRef.current = 100; onProgressRef.current?.(100); }
         if (d.event === "timeupdate" && d.data?.seconds != null) {
           localStorage.setItem(storageKey, d.data.seconds);
           // Accumulate only forward progress (ignore seeks back)
@@ -4020,7 +4019,7 @@ function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFoot
   );
 }
 
-function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress, adminName = "", adminAvatar = null, isDark = false, quizState = {}, onFinishAssessment, userEmail = "", onCertificateClick }) {
+function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress, adminName = "", adminAvatar = null, isDark = false, quizState = {}, onFinishAssessment, userEmail = "", onCertificateClick, hasReviewed = false }) {
   const [playing, setPlaying] = useState(false);
   const [activeLesson, setActiveLesson] = useState(() => { const idx = session.lessons.findIndex(l=>l.status==="active" && l.type!=="quiz"); return idx >= 0 ? idx : 0; });
   const [progress, setProgress] = useState(session.progress || 0);
@@ -4093,6 +4092,10 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
       return;
     }
     if (l.type==="quiz") {
+      if (!hasReviewed) {
+        toast({ type:"warning", title:"Review required", message:"Please submit a session review before taking the assessment." });
+        return;
+      }
       setPanelMode("assessment"); return;
     }
     if (l.type==="material") {
@@ -6134,15 +6137,13 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
 /* ─────────────────────────────────────────────────────────────────────────────
    REVIEW MODAL
 ───────────────────────────────────────────────────────────────────────────── */
-function ReviewModal({ session, passed, score, onClose, onSubmit }) {
-  const [rating, setRating]   = useState(0);
-  const [hovered, setHovered] = useState(0);
+function ReviewModal({ session, onClose, onSubmit }) {
   const [review, setReview]   = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   function handleSubmit() {
-    if (rating === 0) return;
-    onSubmit({ sessionId: session.id, rating, review: review.trim() });
+    if (!review.trim()) return;
+    onSubmit({ sessionId: session.id, rating: 0, review: review.trim() });
     setSubmitted(true);
     setTimeout(onClose, 1800);
   }
@@ -6155,63 +6156,33 @@ function ReviewModal({ session, passed, score, onClose, onSubmit }) {
         {!submitted ? (<>
           {/* Header */}
           <div style={{ textAlign:"center", marginBottom:24 }}>
-            <div style={{ fontSize:36, marginBottom:10 }}>{passed ? "🏆" : "📚"}</div>
-            <h2 style={{ margin:"0 0 6px", fontSize:20, fontWeight:800, color:C.gray900 }}>
-              {passed ? "Assessment Passed!" : "Assessment Complete"}
-            </h2>
-            <p style={{ margin:0, fontSize:14, color:C.gray500 }}>
-              You scored <strong style={{ color: passed ? C.success : C.warning }}>{score}%</strong>
-              {passed ? " — great work!" : ". Keep going, you'll get it!"}
-            </p>
+            <div style={{ fontSize:36, marginBottom:10 }}>🎬</div>
+            <h2 style={{ margin:"0 0 6px", fontSize:20, fontWeight:800, color:C.gray900 }}>Session Complete!</h2>
+            <p style={{ margin:0, fontSize:14, color:C.gray500 }}>Share your thoughts to unlock the assessment.</p>
           </div>
 
           {/* Divider */}
           <div style={{ borderTop:`1px solid ${C.gray100}`, margin:"0 0 22px" }}/>
 
-          {/* Rate */}
-          <div style={{ textAlign:"center", marginBottom:20 }}>
-            <div style={{ fontSize:14, fontWeight:700, color:C.gray700, marginBottom:12 }}>How would you rate this session?</div>
-            <div style={{ display:"flex", justifyContent:"center", gap:8 }}>
-              {[1,2,3,4,5].map(n => (
-                <button key={n}
-                  onClick={() => setRating(n)}
-                  onMouseEnter={() => setHovered(n)}
-                  onMouseLeave={() => setHovered(0)}
-                  style={{ background:"none", border:"none", cursor:"pointer", padding:4, fontSize:32, lineHeight:1, transition:"transform .1s",
-                           transform: (hovered || rating) >= n ? "scale(1.15)" : "scale(1)",
-                           filter: (hovered || rating) >= n ? "none" : "grayscale(1) opacity(0.35)" }}>
-                  ★
-                </button>
-              ))}
-            </div>
-            {rating > 0 && (
-              <div style={{ fontSize:12, color:C.gray400, marginTop:6 }}>
-                {["","Poor","Fair","Good","Great","Excellent"][rating]}
-              </div>
-            )}
-          </div>
-
           {/* Text review */}
+          <div style={{ fontSize:14, fontWeight:700, color:C.gray700, marginBottom:10 }}>How would you rate this session?</div>
           <textarea
             value={review}
             onChange={e => setReview(e.target.value)}
-            placeholder="Share your thoughts (optional)..."
-            rows={3}
-            style={{ width:"100%", boxSizing:"border-box", border:`1px solid ${C.gray200}`, borderRadius:10, padding:"10px 14px", fontSize:14, color:C.gray700, resize:"none", outline:"none", fontFamily:"inherit", lineHeight:1.5 }}
+            placeholder="Share your thoughts..."
+            rows={4}
+            style={{ width:"100%", boxSizing:"border-box", border:`1px solid ${C.gray200}`, borderRadius:10, padding:"10px 14px", fontSize:14, color:C.gray700, background:"#fff", resize:"none", outline:"none", fontFamily:"inherit", lineHeight:1.5 }}
             onFocus={e => e.target.style.borderColor = C.primary}
             onBlur={e => e.target.style.borderColor = C.gray200}
           />
 
           {/* Actions */}
-          <div style={{ display:"flex", gap:10, marginTop:18 }}>
-            <button onClick={onClose}
-              style={{ flex:1, padding:"11px 0", borderRadius:10, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray500, fontSize:14, fontWeight:600, cursor:"pointer" }}>
-              Skip
+          <div style={{ marginTop:18 }}>
+            <button onClick={handleSubmit} disabled={!review.trim()}
+              style={{ width:"100%", padding:"13px 0", borderRadius:10, border:"none", background: !review.trim() ? C.gray200 : C.primary, color: !review.trim() ? C.gray400 : "#fff", fontSize:14, fontWeight:700, cursor: !review.trim() ? "default" : "pointer", transition:"background .15s" }}>
+              Submit &amp; Continue to Assessment
             </button>
-            <button onClick={handleSubmit} disabled={rating === 0}
-              style={{ flex:2, padding:"11px 0", borderRadius:10, border:"none", background: rating === 0 ? C.gray200 : C.primary, color: rating === 0 ? C.gray400 : "#fff", fontSize:14, fontWeight:700, cursor: rating === 0 ? "default" : "pointer", transition:"background .15s" }}>
-              Submit Review
-            </button>
+            <div style={{ textAlign:"center", fontSize:12, color:C.gray400, marginTop:8 }}>A review is required to unlock the assessment</div>
           </div>
         </>) : (
           <div style={{ textAlign:"center", padding:"16px 0 8px" }}>
@@ -11265,6 +11236,8 @@ export default function App() {
   const [certSession,       setCertSession]       = useState(null);
   const [reviewSession,     setReviewSession]     = useState(null);
   const [,                  setReviews]           = useState({});
+  const [reviewedSessions,  setReviewedSessions]  = useState(new Set());
+  const reviewedSessionsRef = useRef(new Set());
   const [testimonialsData,  setTestimonialsData]  = useState([]);
 
   useEffect(() => {
@@ -11567,8 +11540,6 @@ export default function App() {
 
   function handleAssessmentFinish(sessionId, score, passed) {
     updateQuizState(sessionId, { status: passed ? "passed" : "failed", score, currentQ: 0, answers: {} });
-    const session = sessions.find(s => s.id === sessionId) || SESSIONS.find(s => s.id === sessionId);
-    if (session) setReviewSession({ session, score, passed });
     if (passed) {
       toast({ type:"success", title:"🏆 Assessment Passed!", message:`You scored ${score}% — your certificate is ready!` });
       // Re-fetch to ensure certificates page is in sync
@@ -11658,6 +11629,10 @@ export default function App() {
       return updated;
     }));
     saveUserProgress(sessionId, { progress: pct, status: newStatus, enrolled: true });
+    if (pct >= 100 && !reviewedSessionsRef.current.has(sessionId)) {
+      const sess = sessions.find(s => s.id === sessionId) || SESSIONS.find(s => s.id === sessionId);
+      if (sess) setReviewSession(prev => prev ? prev : { session: sess, score: null, passed: null });
+    }
   }
 
   function openSession(s, source) {
@@ -11682,7 +11657,7 @@ export default function App() {
   function renderPage() {
     if (page==="session-detail" && activeSession) {
       const liveSession = sessions.find(s => s.id === activeSession.id) || activeSession;
-      return <SessionDetail session={liveSession} onBack={()=>nav(sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress} adminName={userName} adminAvatar={userAvatar} isDark={isDark} quizState={quizStates[liveSession.id]||{}} onFinishAssessment={handleAssessmentFinish} userEmail={userEmail} onCertificateClick={handleCertificateClick}/>;
+      return <SessionDetail session={liveSession} onBack={()=>nav(sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress} adminName={userName} adminAvatar={userAvatar} isDark={isDark} quizState={quizStates[liveSession.id]||{}} onFinishAssessment={handleAssessmentFinish} userEmail={userEmail} onCertificateClick={handleCertificateClick} hasReviewed={reviewedSessions.has(liveSession.id)}/>;
     }
     if (page==="past-season" && pastSeasonPageId) {
       const season = seasons.find(s => s.id === pastSeasonPageId);
@@ -11967,11 +11942,22 @@ export default function App() {
       {reviewSession && (
         <ReviewModal
           session={reviewSession.session}
-          passed={reviewSession.passed}
-          score={reviewSession.score}
           onClose={() => setReviewSession(null)}
-          onSubmit={({ sessionId, rating, review }) => {
+          onSubmit={async ({ sessionId, rating, review }) => {
             setReviews(r => ({ ...r, [sessionId]: { rating, review, date: new Date().toISOString() } }));
+            reviewedSessionsRef.current.add(sessionId);
+            setReviewedSessions(prev => new Set([...prev, sessionId]));
+            if (review) {
+              const sess = sessions.find(s => String(s.id) === String(sessionId));
+              const { data } = await supabase.from("session_comments").insert({
+                session_id: String(sessionId),
+                session_title: sess?.title || "",
+                author_name: adminName || "Anonymous",
+                body: review,
+                parent_id: null,
+              }).select().single();
+              if (data) setSdComments(prev => [data, ...prev]);
+            }
           }}
         />
       )}
