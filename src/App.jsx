@@ -5732,17 +5732,17 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
           }
         `}</style>
         {/* Breadcrumb */}
-        <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:20, flexWrap:"wrap" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:20, flexWrap:"nowrap", overflow:"hidden", minWidth:0 }}>
           {[
             { label:"My Certificates", onClick:()=>{ setActiveSession(null); setActiveSeason(null); } },
             { label:season.name,       onClick:()=>setActiveSession(null) },
             { label:session.title },
           ].map((crumb, i) => (
-            <span key={i} style={{ display:"inline-flex", alignItems:"center", gap:6 }}>
-              {i > 0 && <span style={{ color:C.gray300, fontSize:13 }}>›</span>}
+            <span key={i} style={{ display:"inline-flex", alignItems:"center", gap:6, whiteSpace:"nowrap", ...(i === 2 ? { overflow:"hidden", minWidth:0 } : { flexShrink:0 }) }}>
+              {i > 0 && <span style={{ color:C.gray300, fontSize:13, flexShrink:0 }}>›</span>}
               {crumb.onClick ? (
                 <button onClick={crumb.onClick}
-                  style={{ background:"none", border:"none", padding:0, cursor:"pointer", fontSize:13, fontWeight:500, color:C.gray500, fontFamily:"inherit" }}
+                  style={{ background:"none", border:"none", padding:0, cursor:"pointer", fontSize:13, fontWeight:500, color:C.gray500, fontFamily:"inherit", whiteSpace:"nowrap" }}
                   onMouseEnter={e=>e.currentTarget.style.color=C.gray700}
                   onMouseLeave={e=>e.currentTarget.style.color=C.gray500}>
                   {crumb.label}
