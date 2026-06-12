@@ -3994,8 +3994,7 @@ function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFoot
     <div style={{ display:"flex", flexDirection:"column", height:"100%" }}>
       <style>{`
         @media(max-width:767px){
-          .assess-scroll-body { padding:16px 14px 80px !important; }
-          .assess-cta-footer { position:fixed !important; bottom:0 !important; left:0 !important; right:0 !important; border-radius:0 !important; border-top:1px solid #e5e7eb !important; z-index:100 !important; }
+          .assess-scroll-body { padding:16px 14px 16px !important; }
         }
       `}</style>
       {/* Scrollable content */}
@@ -4003,7 +4002,7 @@ function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFoot
         {questionBody}
       </div>
       {/* Sticky CTA footer */}
-      <div className="assess-cta-footer" style={{ flexShrink:0, borderTop:"1px solid #e5e7eb", padding:16, background:C.white }}>
+      <div className="assess-cta-footer" style={{ flexShrink:0, borderTop:"1px solid #e5e7eb", padding:16, background:C.white, marginTop:"auto" }}>
         <button onClick={handleNext} disabled={answers[currentQ] === undefined}
           style={{ width:"100%", padding:"13px", background: answers[currentQ] === undefined ? C.gray200 : C.primary, color: answers[currentQ] === undefined ? C.gray400 : "#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:700, cursor: answers[currentQ] === undefined ? "not-allowed" : "pointer", transition:"background .15s" }}>
           {currentQ < total - 1 ? "Next Question" : "Submit Assessment"}
@@ -4163,7 +4162,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           .sd-layout { flex-direction:column !important; height:auto !important; overflow:visible !important; }
           .sd-sidebar { display:none !important; }
           .sd-video-panel { padding:0 !important; height:auto !important; overflow:visible !important; }
-          .sd-video-card { border-radius:0 !important; box-shadow:none !important; height:auto !important; overflow:visible !important; }
+          .sd-video-card { border-radius:0 !important; box-shadow:none !important; height:auto !important; overflow:visible !important; min-height:calc(100vh - 160px) !important; }
           .sd-video-wrap { padding:0 !important; }
           .sd-video-wrap > div { border-radius:0 !important; }
           .sd-tab-content { padding:16px 14px !important; }
