@@ -4173,7 +4173,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           .sd-video-wrap { padding:0 !important; }
           .sd-video-wrap > div { border-radius:0 !important; }
           .sd-tab-content { padding:16px 14px !important; }
-          .sd-community-inner { padding:12px 10px !important; width:100% !important; box-sizing:border-box !important; overflow:hidden !important; }
+          .sd-community-inner { padding:16px 14px !important; width:100% !important; box-sizing:border-box !important; overflow:hidden !important; }
           .sd-community-wrap { overflow:hidden !important; width:100% !important; box-sizing:border-box !important; }
           .sd-community-layout { flex-direction:column !important; }
           .sd-community-layout > div:last-child { width:100% !important; }
@@ -4183,7 +4183,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           .sd-tabs-bar { padding:0 12px !important; overflow-x:auto; -webkit-overflow-scrolling:touch; }
           .sd-tabs-bar button { padding:12px 12px !important; font-size:13px !important; flex-shrink:0; }
           .sd-tab-content { padding:16px 14px !important; }
-          .sd-community-inner { padding:12px 10px !important; width:100% !important; box-sizing:border-box !important; overflow:hidden !important; }
+          .sd-community-inner { padding:16px 14px !important; width:100% !important; box-sizing:border-box !important; overflow:hidden !important; }
           .sd-overview-stats { gap:16px !important; }
           .sd-overview-stats > div > div:first-child { font-size:18px !important; }
           .sd-instructor-header { flex-direction:column !important; align-items:flex-start !important; gap:12px !important; }
