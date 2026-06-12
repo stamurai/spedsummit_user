@@ -4173,7 +4173,8 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           .sd-video-wrap { padding:0 !important; }
           .sd-video-wrap > div { border-radius:0 !important; }
           .sd-tab-content { padding:16px 14px !important; }
-          .sd-community-inner { padding:16px 14px !important; }
+          .sd-community-inner { padding:16px 14px !important; width:100% !important; box-sizing:border-box !important; overflow:hidden !important; }
+          .sd-community-wrap { overflow:hidden !important; width:100% !important; box-sizing:border-box !important; }
           .sd-community-layout { flex-direction:column !important; }
           .sd-community-layout > div:last-child { width:100% !important; }
           .sd-instructor-header { flex-direction:row !important; }
@@ -4557,7 +4558,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           <div className="sd-tab-content sd-community-wrap" style={{ padding:0, minHeight:400 }}>
             <div className="sd-community-inner" style={{ padding:"20px 24px" }}>
               {/* Post input */}
-              <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"12px 14px", marginBottom:16, display:"flex", gap:10, alignItems:"center" }}>
+              <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"12px 14px", marginBottom:16, display:"flex", gap:10, alignItems:"center", boxSizing:"border-box", width:"100%", overflow:"hidden" }}>
                 <Avatar name={adminName||"You"} src={adminAvatar} size={32}/>
                 <input ref={chatInputRef} value={sdNewComment} onChange={e=>setSdNewComment(e.target.value)}
                   onKeyDown={async e=>{ if(e.key==="Enter" && sdNewComment.trim() && !sdPosting) { const body=sdNewComment.trim(); const tempId="tmp-"+Date.now(); const optimistic={id:tempId,session_id:String(session.id),session_title:session.title,author_name:adminName||"You",body,likes:0,created_at:new Date().toISOString()}; setSdComments(prev=>[optimistic,...prev]); setSdNewComment(""); setSdPosting(true); const { data, error } = await supabase.from("session_comments").insert({ session_id:String(session.id), session_title:session.title, author_name:adminName||"Anonymous", body }).select().single(); if(!error && data) setSdComments(prev=>prev.map(c=>c.id===tempId?data:c)); else if(error) toast({ type:"error", message:"Could not save comment. Please create the session_comments table in Supabase." }); setSdPosting(false); toast({ type:"success", message:"Comment posted!" }); }}}
