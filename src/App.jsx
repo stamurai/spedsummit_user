@@ -3921,7 +3921,7 @@ function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFoot
     return (
       <div style={{ display:"flex", alignItems:"center", justifyContent:"center",
                     minHeight:"calc(100vh - 160px)", padding:"40px 24px",
-                    background:C.white, flex:1 }}>
+                    flex:1 }}>
         <div style={{ maxWidth:480, width:"100%", textAlign:"center" }}>
           <div style={{ width:72, height:72, borderRadius:"50%", background: passed ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.1)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px" }}>
             <Icon name={passed ? "medal" : "x"} size={32} color={passed ? C.success : "#ef4444"}/>
@@ -4149,7 +4149,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   );
 
   return (
-    <div ref={containerRef} style={{ background: panelMode === "assessment" ? C.white : "#f5f5f5", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+    <div ref={containerRef} style={{ background:"#f5f5f5", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
       <style>{`
         .sd-mobile-tabs { display:none; }
         @media(max-width:767px){
