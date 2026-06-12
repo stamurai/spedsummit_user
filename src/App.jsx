@@ -5348,7 +5348,7 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
         <div style={{ marginBottom:20 }}>
           <div style={{ fontSize:13, fontWeight:600, color:C.gray600, marginBottom:6 }}>Timezone</div>
           <select value={userTimezone} onChange={async e=>{ const tz=e.target.value; onTimezoneChange && onTimezoneChange(tz); await supabase.auth.updateUser({ data:{ timezone:tz } }); toast({type:"success",message:"Timezone updated."}); }}
-            style={{ ...inputSt, appearance:"none", cursor:"pointer" }}>
+            style={{ ...inputSt, appearance:"auto", cursor:"pointer", paddingRight:36 }}>
             {COMMON_TIMEZONES.map(t=><option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
           <p style={{ fontSize:12, color:C.gray400, margin:"4px 0 0" }}>All session times are shown in your selected timezone. Sessions run on Pacific Time (PST/PDT).</p>
@@ -6356,7 +6356,7 @@ function TimezoneModal({ detectedTz, onConfirm }) {
 
         <label style={{ fontSize:13, fontWeight:600, color:"#374151", display:"block", marginBottom:6 }}>Your timezone</label>
         <select value={selected} onChange={e=>setSelected(e.target.value)}
-          style={{ width:"100%", padding:"10px 12px", border:"1px solid #e5e7eb", borderRadius:10, fontSize:14, color:"#111827", background:"#fff", outline:"none", marginBottom:8, cursor:"pointer", boxSizing:"border-box" }}>
+          style={{ width:"100%", padding:"10px 36px 10px 12px", border:"1px solid #e5e7eb", borderRadius:10, fontSize:14, color:"#111827", background:"#fff", outline:"none", marginBottom:8, cursor:"pointer", boxSizing:"border-box", appearance:"auto" }}>
           {tzOptions.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
         </select>
         <div style={{ fontSize:12, color:"#9ca3af", marginBottom:24 }}>Current time in selected zone: <strong style={{ color:"#374151" }}>{fmtNow(selected)}</strong></div>
