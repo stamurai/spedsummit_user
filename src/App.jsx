@@ -2735,7 +2735,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
           .db-upcoming-session-card .db-session-card-body { padding:14px !important; }
           .db-upcoming-title { font-size:16px !important; line-height:1.3 !important; }
           .db-upcoming-desc { font-size:13px !important; }
-          .db-continue-list { display:flex !important; flex-direction:row !important; overflow-x:scroll !important; overflow-y:hidden !important; gap:12px !important; padding-top:0 !important; padding-bottom:8px !important; -webkit-overflow-scrolling:touch; scroll-snap-type:x mandatory; touch-action:pan-x pan-y; overscroll-behavior-x:contain; }
+          .db-continue-list { display:flex !important; flex-direction:row !important; overflow-x:scroll !important; overflow-y:hidden !important; gap:12px !important; padding-top:0 !important; padding-bottom:8px !important; padding-left:16px !important; padding-right:16px !important; margin-left:-16px !important; margin-right:-16px !important; -webkit-overflow-scrolling:touch; scroll-snap-type:x mandatory; touch-action:pan-x pan-y; overscroll-behavior-x:contain; }
           .db-continue-list::-webkit-scrollbar { display:none; }
           .db-continue-list > * { min-width:78vw !important; max-width:78vw !important; flex-shrink:0 !important; scroll-snap-align:start; scroll-snap-stop:always; }
         }
