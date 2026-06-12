@@ -4232,7 +4232,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               {done && <span style={{ fontSize:10, color:"#16a34a", fontWeight:600 }}>✓ Done</span>}
               {!done && isQuiz && <span style={{ fontSize:10, color:C.gray400 }}>{getSessionQuestions(session).length}q</span>}
               {!done && !isQuiz && isMaterial && null}
-              {!done && !isQuiz && !isMaterial && l.duration && <span style={{ fontSize:10, color:C.gray400 }}>{l.duration}</span>}
+              {!done && !isQuiz && !isMaterial && <span style={{ fontSize:10, color:C.gray400 }}><LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/></span>}
             </button>
           );
         })}
