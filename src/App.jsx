@@ -3994,15 +3994,22 @@ function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFoot
     <div style={{ display:"flex", flexDirection:"column", height:"100%" }}>
       <style>{`
         @media(max-width:767px){
-          .assess-scroll-body { padding:16px 14px 16px !important; }
+          .assess-scroll-body { padding:16px 14px 88px !important; }
+          .assess-cta-footer {
+            position:fixed !important;
+            bottom:0 !important; left:0 !important; right:0 !important;
+            z-index:300 !important;
+            border-radius:0 !important;
+            padding:12px 16px env(safe-area-inset-bottom,0) !important;
+          }
         }
       `}</style>
       {/* Scrollable content */}
       <div style={{ flex:1, overflowY:"auto", padding:"32px 28px 16px" }} className="assess-scroll-body">
         {questionBody}
       </div>
-      {/* Sticky CTA footer */}
-      <div className="assess-cta-footer" style={{ flexShrink:0, borderTop:"1px solid #e5e7eb", padding:16, background:C.white, marginTop:"auto" }}>
+      {/* CTA footer — fixed on mobile, sticky on desktop */}
+      <div className="assess-cta-footer" style={{ flexShrink:0, borderTop:"1px solid #e5e7eb", padding:16, background:C.white }}>
         <button onClick={handleNext} disabled={answers[currentQ] === undefined}
           style={{ width:"100%", padding:"13px", background: answers[currentQ] === undefined ? C.gray200 : C.primary, color: answers[currentQ] === undefined ? C.gray400 : "#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:700, cursor: answers[currentQ] === undefined ? "not-allowed" : "pointer", transition:"background .15s" }}>
           {currentQ < total - 1 ? "Next Question" : "Submit Assessment"}
