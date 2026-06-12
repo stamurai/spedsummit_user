@@ -6342,7 +6342,7 @@ function TimezoneModal({ detectedTz, onConfirm }) {
 
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", zIndex:9999, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
-      <div style={{ background:"#fff", borderRadius:20, padding:"36px 32px 28px", width:"100%", maxWidth:460, boxShadow:"0 20px 60px rgba(0,0,0,0.18)", fontFamily:"'Inter',-apple-system,sans-serif" }}>
+      <div style={{ background:"#fff", borderRadius:20, padding:"36px 28px 28px", width:"100%", maxWidth:460, boxShadow:"0 20px 60px rgba(0,0,0,0.18)", fontFamily:"'Inter',-apple-system,sans-serif", overflow:"visible" }}>
         {/* Icon */}
         <div style={{ width:48, height:48, borderRadius:14, background:"#eff6ff", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:20 }}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6490E8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -6355,10 +6355,15 @@ function TimezoneModal({ detectedTz, onConfirm }) {
         </p>
 
         <label style={{ fontSize:13, fontWeight:600, color:"#374151", display:"block", marginBottom:6 }}>Your timezone</label>
-        <select value={selected} onChange={e=>setSelected(e.target.value)}
-          style={{ width:"100%", padding:"10px 36px 10px 12px", border:"1px solid #e5e7eb", borderRadius:10, fontSize:14, color:"#111827", background:"#fff", outline:"none", marginBottom:8, cursor:"pointer", boxSizing:"border-box", appearance:"auto" }}>
-          {tzOptions.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-        </select>
+        <div style={{ position:"relative", marginBottom:8 }}>
+          <select value={selected} onChange={e=>setSelected(e.target.value)}
+            style={{ width:"100%", padding:"11px 40px 11px 14px", border:"1px solid #e5e7eb", borderRadius:10, fontSize:14, color:"#111827", background:"#fff", outline:"none", cursor:"pointer", boxSizing:"border-box", appearance:"none", WebkitAppearance:"none" }}>
+            {tzOptions.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+          </select>
+          <svg style={{ position:"absolute", right:14, top:"50%", transform:"translateY(-50%)", pointerEvents:"none" }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </div>
         <div style={{ fontSize:12, color:"#9ca3af", marginBottom:24 }}>Current time in selected zone: <strong style={{ color:"#374151" }}>{fmtNow(selected)}</strong></div>
 
         <button onClick={()=>onConfirm(selected)}
