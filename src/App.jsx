@@ -4379,17 +4379,6 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               return (
                 <div style={{ padding: isMob ? "16px 14px" : "32px 28px", display:"flex", flexDirection:"column", gap: isMob ? 14 : 24, flex:1, boxSizing:"border-box" }}>
                   <style>{`@media(max-width:767px){.mat-iframe-wrap{min-height:calc(100vh - 280px) !important;}}`}</style>
-                  {/* Header */}
-                  <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-                    <div style={{ width: isMob ? 40 : 52, height: isMob ? 40 : 52, borderRadius:12, background:typeColor.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                      <Icon name="paperclip" size={isMob ? 18 : 24} color={typeColor.color}/>
-                    </div>
-                    <div>
-                      <div style={{ fontSize:11, fontWeight:700, color:typeColor.color, background:typeColor.bg, borderRadius:4, padding:"2px 8px", display:"inline-block", marginBottom:4, letterSpacing:.4 }}>{fileType}</div>
-                      <div style={{ fontSize: isMob ? 16 : 20, fontWeight:700, color:C.gray900, lineHeight:1.3 }}>{title}</div>
-                    </div>
-                  </div>
-
                   {/* PDF inline preview — iframe on desktop, list row on mobile */}
                   {fileUrl && (fileType === "PDF" || fileUrl.toLowerCase().endsWith(".pdf")) && !isMob ? (
                     <div className="mat-iframe-wrap" style={{ flex:1, minHeight:500, borderRadius:12, overflow:"hidden", border:`1px solid ${C.gray200}` }}>
