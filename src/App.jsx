@@ -4161,12 +4161,12 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   );
 
   return (
-    <div ref={containerRef} style={{ background:"#f5f5f5", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+    <div ref={containerRef} style={{ background:"#f5f5f5", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", overflowX:"hidden", width:"100%" }}>
       <style>{`
         .sd-mobile-tabs { display:none; }
         @media(max-width:767px){
           .sd-mobile-tabs { display:flex !important; }
-          .sd-layout { flex-direction:column !important; height:auto !important; overflow:visible !important; }
+          .sd-layout { flex-direction:column !important; height:auto !important; overflow:hidden !important; width:100% !important; }
           .sd-sidebar { display:none !important; }
           .sd-video-panel { padding:0 !important; height:auto !important; overflow:visible !important; }
           .sd-video-card { border-radius:0 !important; box-shadow:none !important; height:auto !important; overflow:hidden !important; min-height:calc(100vh - 160px) !important; width:100% !important; }
