@@ -11840,7 +11840,7 @@ export default function App() {
       </div>
 
       {/* Mobile bottom nav — hidden when drilling into sub-pages */}
-      {!(page === "profile" || page === "session-detail" || page === "contact" || page === "privacy-policy" || page === "terms-of-service" || activeSession || sessionsDeepLink) && (
+      {!(page === "profile" || page === "session-detail" || page === "contact" || page === "privacy-policy" || page === "terms-of-service" || activeSession || sessionsDeepLink || showReferModal) && (
         <div className="app-bottom-nav" style={{ display:"none" }}>
           <LimelightBottomNav
             active={page === "past-season" ? "past-sessions" : activePage}
