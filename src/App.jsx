@@ -4173,7 +4173,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           .sd-video-wrap { padding:0 !important; }
           .sd-video-wrap > div { border-radius:0 !important; }
           .sd-tab-content { padding:16px 14px !important; }
-          .sd-community-inner { padding:16px 14px !important; width:100% !important; box-sizing:border-box !important; overflow:hidden !important; }
+          .sd-community-inner { padding:12px 10px !important; width:100% !important; box-sizing:border-box !important; overflow:hidden !important; }
           .sd-community-wrap { overflow:hidden !important; width:100% !important; box-sizing:border-box !important; }
           .sd-community-layout { flex-direction:column !important; }
           .sd-community-layout > div:last-child { width:100% !important; }
@@ -4183,7 +4183,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           .sd-tabs-bar { padding:0 12px !important; overflow-x:auto; -webkit-overflow-scrolling:touch; }
           .sd-tabs-bar button { padding:12px 12px !important; font-size:13px !important; flex-shrink:0; }
           .sd-tab-content { padding:16px 14px !important; }
-          .sd-community-inner { padding:16px 14px !important; }
+          .sd-community-inner { padding:12px 10px !important; width:100% !important; box-sizing:border-box !important; overflow:hidden !important; }
           .sd-overview-stats { gap:16px !important; }
           .sd-overview-stats > div > div:first-child { font-size:18px !important; }
           .sd-instructor-header { flex-direction:column !important; align-items:flex-start !important; gap:12px !important; }
@@ -4636,10 +4636,14 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                   ) : (
                     <div style={{ fontSize:14, color:isDark?"rgba(255,255,255,0.75)":C.gray700, lineHeight:1.6, marginLeft:36, marginBottom:8 }}>{c.body}</div>
                   )}
-                  <div style={{ marginLeft:36 }}>
+                  <div style={{ marginLeft:36, display:"flex", alignItems:"center", gap:8 }}>
                     <button onClick={async ()=>{ const liked=sdLiked[c.id]; const newLikes=liked?Math.max(0,(c.likes||0)-1):(c.likes||0)+1; setSdLiked(prev=>({...prev,[c.id]:!liked})); await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id); setSdComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x)); }}
                       style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${sdLiked[c.id]?"rgba(239,68,68,0.3)":(isDark?"rgba(255,255,255,0.1)":C.gray200)}`, background:sdLiked[c.id]?"rgba(239,68,68,0.08)":"transparent", color:sdLiked[c.id]?"#ef4444":(isDark?"rgba(255,255,255,0.5)":C.gray500), cursor:"pointer", fontSize:12, fontWeight:600 }}>
                       <Icon name="heart" size={12} color={sdLiked[c.id]?"#ef4444":C.gray400} weight={sdLiked[c.id]?"fill":"regular"}/>{c.likes||0}
+                    </button>
+                    <button onClick={()=>{ setSdNewComment(`@${c.author_name} `); chatInputRef.current?.focus(); }}
+                      style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, background:"transparent", color:isDark?"rgba(255,255,255,0.5)":C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
+                      ↩ Reply
                     </button>
                   </div>
                 </div>
