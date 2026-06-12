@@ -4391,27 +4391,32 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                     </div>
                   </div>
 
-                  {/* PDF inline preview — iframe on desktop, open/download on mobile */}
+                  {/* PDF inline preview — iframe on desktop, list row on mobile */}
                   {fileUrl && (fileType === "PDF" || fileUrl.toLowerCase().endsWith(".pdf")) && !isMob ? (
                     <div className="mat-iframe-wrap" style={{ flex:1, minHeight:500, borderRadius:12, overflow:"hidden", border:`1px solid ${C.gray200}` }}>
                       <iframe src={`${fileUrl}#toolbar=1`} style={{ width:"100%", height:"100%", minHeight:500, border:"none", display:"block" }} title={title}/>
                     </div>
                   ) : fileUrl ? (
-                    /* Non-PDF: show preview card with open/download */
-                    <div style={{ background:C.gray50, borderRadius:16, border:`1px solid ${C.gray200}`, padding: isMob ? "32px 20px" : "48px 32px", display:"flex", flexDirection:"column", alignItems:"center", gap:16, textAlign:"center" }}>
-                      <div style={{ width:64, height:64, borderRadius:16, background:typeColor.bg, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                        <Icon name="paperclip" size={28} color={typeColor.color}/>
-                      </div>
-                      <div style={{ fontSize:15, fontWeight:600, color:C.gray700 }}>{title}</div>
-                      <div style={{ display:"flex", gap:10, flexWrap:"wrap", justifyContent:"center", width:"100%" }}>
-                        <a href={fileUrl} target="_blank" rel="noopener noreferrer"
-                          style={{ flex:1, minWidth:120, display:"inline-flex", alignItems:"center", justifyContent:"center", gap:8, padding:"10px 20px", borderRadius:10, background:C.primary, color:"#fff", fontSize:14, fontWeight:700, textDecoration:"none" }}>
-                          <Icon name="arrow-square-out" size={16} color="#fff"/> Open File
-                        </a>
-                        <a href={fileUrl} download
-                          style={{ flex:1, minWidth:120, display:"inline-flex", alignItems:"center", justifyContent:"center", gap:8, padding:"10px 20px", borderRadius:10, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:14, fontWeight:600, textDecoration:"none" }}>
-                          <Icon name="download" size={16} color={C.gray600}/> Download
-                        </a>
+                    <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                      {/* List row */}
+                      <div style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12 }}>
+                        <div style={{ width:40, height:40, borderRadius:10, background:typeColor.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                          <Icon name="paperclip" size={18} color={typeColor.color}/>
+                        </div>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ fontSize:13, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{title}</div>
+                          <div style={{ fontSize:11, fontWeight:600, color:typeColor.color, marginTop:2 }}>{fileType}</div>
+                        </div>
+                        <div style={{ display:"flex", gap:8, flexShrink:0 }}>
+                          <a href={fileUrl} target="_blank" rel="noopener noreferrer"
+                            style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"7px 14px", borderRadius:8, background:C.primary, color:"#fff", fontSize:13, fontWeight:700, textDecoration:"none" }}>
+                            <Icon name="arrow-square-out" size={14} color="#fff"/> Open
+                          </a>
+                          <a href={fileUrl} download
+                            style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"7px 14px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:13, fontWeight:600, textDecoration:"none" }}>
+                            <Icon name="download" size={14} color={C.gray600}/> Save
+                          </a>
+                        </div>
                       </div>
                     </div>
                   ) : (
