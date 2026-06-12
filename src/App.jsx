@@ -6555,11 +6555,22 @@ function PublicCertificatePage({ data }) {
     <div style={{ minHeight:"100vh", background:"#fff", fontFamily:"'Inter',-apple-system,sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
-        @media(max-width:768px){ .pub-two-col { grid-template-columns:1fr !important; } }
+        @media(max-width:768px){
+          .pub-two-col { grid-template-columns:1fr !important; padding:0 16px 24px !important; }
+          .pub-header { padding:0 16px !important; }
+          .pub-breadcrumb { padding:0 16px !important; }
+          .pub-title-wrap { padding:20px 16px 0 !important; }
+          .pub-session-card-img { width:120px !important; }
+          .pub-breadcrumb-title { max-width:200px !important; }
+        }
+        @media(max-width:480px){
+          .pub-session-card-img { width:100% !important; height:160px !important; position:relative !important; }
+          .pub-session-card-inner { flex-direction:column !important; }
+        }
       `}</style>
 
       {/* Nav — matches landing page */}
-      <header style={{ background:"#fff", borderBottom:"1px solid rgba(0,0,0,0.08)", padding:"0 32px", height:56, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:100 }}>
+      <header className="pub-header" style={{ background:"#fff", borderBottom:"1px solid rgba(0,0,0,0.08)", padding:"0 32px", height:56, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:100 }}>
         <img src="/Container.png" alt="SPED Summit" style={{ height:26, cursor:"pointer" }}
           onClick={()=>{ sessionStorage.setItem("showLanding","1"); window.location.href=window.location.origin; }}/>
         {isLoggedIn ? (
@@ -6579,7 +6590,7 @@ function PublicCertificatePage({ data }) {
       {/* Breadcrumb bar — shown when logged in */}
       {isLoggedIn && (
         <div style={{ background:"#fff", borderBottom:"1px solid #f0f0f0", padding:"0 28px" }}>
-          <div style={{ maxWidth:1100, margin:"0 auto", height:44, display:"flex", alignItems:"center", gap:6, fontSize:13, color:"#6b7280" }}>
+          <div className="pub-breadcrumb" style={{ maxWidth:1100, margin:"0 auto", height:44, display:"flex", alignItems:"center", gap:6, fontSize:13, color:"#6b7280" }}>
             <a href="#" onClick={e=>{ e.preventDefault(); sessionStorage.setItem("page","certifications"); sessionStorage.setItem("showLanding","0"); window.location.href=window.location.origin; }}
               style={{ color:"#6b7280", textDecoration:"none", fontWeight:500, transition:"color .12s" }}
               onMouseEnter={e=>e.currentTarget.style.color="#1a1a1a"}
@@ -6587,7 +6598,7 @@ function PublicCertificatePage({ data }) {
               My Certificates
             </a>
             <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="m8 5 5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            <span style={{ color:"#1a1a1a", fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{sessionTitle}</span>
+            <span className="pub-breadcrumb-title" style={{ color:"#1a1a1a", fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{sessionTitle}</span>
           </div>
         </div>
       )}
@@ -6595,7 +6606,7 @@ function PublicCertificatePage({ data }) {
       {/* Content section */}
       <div style={{ background:"#F9FBF8" }}>
       {/* Breadcrumb */}
-      <div style={{ padding:"28px 32px 0", maxWidth:1100, margin:"0 auto" }}>
+      <div className="pub-title-wrap" style={{ padding:"28px 32px 0", maxWidth:1100, margin:"0 auto" }}>
         <div style={{ fontSize:12, color:"#6b7280", fontWeight:600, marginBottom:8, textTransform:"uppercase", letterSpacing:.8 }}>Course Certificate</div>
         <h1 style={{ margin:"0 0 32px", fontSize:"clamp(22px,3vw,34px)", fontWeight:800, color:"#1a1a1a", lineHeight:1.2 }}>{sessionTitle}</h1>
       </div>
@@ -6627,9 +6638,9 @@ function PublicCertificatePage({ data }) {
 
           {/* Session card — landing page style, fills remaining height */}
           <div style={{ background:"#fff", border:"1px solid rgba(0,0,0,0.08)", borderRadius:14, overflow:"hidden", boxShadow:"0 2px 8px rgba(0,0,0,0.06)", flex:1, display:"flex", flexDirection:"column" }}>
-            <div style={{ display:"flex", gap:0, flex:1 }}>
+            <div className="pub-session-card-inner" style={{ display:"flex", gap:0, flex:1 }}>
               {/* Instructor photo */}
-              <div style={{ width:200, flexShrink:0, position:"relative", background:"#1f2937", overflow:"hidden", alignSelf:"stretch" }}>
+              <div className="pub-session-card-img" style={{ width:200, flexShrink:0, position:"relative", background:"#1f2937", overflow:"hidden", alignSelf:"stretch" }}>
                 {instructorImage
                   ? <img src={instructorImage} alt={instructorName} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top center", display:"block", position:"absolute", inset:0 }} onError={e=>{ e.target.style.display="none"; }}/>
                   : <div style={{ position:"absolute", inset:0, background:"linear-gradient(135deg,#1e3a5f,#2d5a9e)" }}/>
