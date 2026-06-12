@@ -4556,7 +4556,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
 
         {/* Community */}
         {bottomTab === "community" && (
-          <div className="sd-tab-content sd-community-wrap" style={{ padding:0, minHeight:400 }}>
+          <div className="sd-community-wrap" style={{ padding:0, minHeight:400 }}>
             <div className="sd-community-inner" style={{ padding:"20px 24px" }}>
               {/* Post input */}
               <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"12px 14px", marginBottom:16, display:"flex", gap:10, alignItems:"center", boxSizing:"border-box", width:"100%", overflow:"hidden" }}>
@@ -4588,7 +4588,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                 const sdEs = sdEditState[c.id] || {};
                 const rs = sdReplyState[c.id] || {};
                 return (
-                <div key={c.id} style={{ borderBottom:`1px solid ${C.gray100}`, padding:"14px 0 10px" }}>
+                <div key={c.id} style={{ borderBottom:`1px solid ${C.gray100}`, padding:"14px 0 10px", boxSizing:"border-box" }}>
                   <div style={{ display:"grid", gridTemplateColumns:"34px 1fr", gap:"0 10px" }}>
                     {/* Left col: avatar + thread line */}
                     <div style={{ display:"flex", flexDirection:"column", alignItems:"center" }}>
