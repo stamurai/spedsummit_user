@@ -1538,10 +1538,9 @@ function ReferFriendsModal({ onClose, userName }) {
   );
 }
 
-function TopBar({ toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, onOpenSession, onNavigate, userName = "", userAvatar, onBrowseSelect, seasons = SEASONS, sessions = [], onOpenInstructor, onGoHome, isLoggedIn = true, onShowAuth }) {
+function TopBar({ toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, onOpenSession, onNavigate, userName = "", userAvatar, onBrowseSelect, seasons = SEASONS, sessions = [], onOpenInstructor, onGoHome, isLoggedIn = true, onShowAuth, showReferModal, setShowReferModal }) {
   const [showNotif, setShowNotif] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showReferModal, setShowReferModal] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showBrowse, setShowBrowse] = useState(false);
   const browseRef = useRef(null);
@@ -11189,6 +11188,7 @@ export default function App() {
   const [pastSeasonPageId, setPastSeasonPageId] = useState(null);
   const [pastSeasonOrigin, setPastSeasonOrigin] = useState("browse");
   const [showPricingOverlay, setShowPricingOverlay] = useState(false);
+  const [showReferModal, setShowReferModal] = useState(false);
   const [dashFilter, setDashFilter] = useState({ season:"all", year:"all" });
   const [sessions, setSessions] = useState([]);
   const [sessionsLoading, setSessionsLoading] = useState(true);
@@ -11790,6 +11790,8 @@ export default function App() {
         onShowAuth={() => setShowAuth(true)}
         onGoHome={() => { setPage("dashboard"); setShowLanding(true); }}
         onOpenInstructor={(name) => { setOpenInstructorName(name); setShowLanding(true); }}
+        showReferModal={showReferModal}
+        setShowReferModal={setShowReferModal}
         onBrowseSelect={(season, year) => {
           if (season === "all") {
             // Year filter — find first season matching that year
@@ -11878,6 +11880,8 @@ export default function App() {
                 onNavigate={nav}
                 userName={userName}
                 userAvatar={userAvatar}
+                showReferModal={showReferModal}
+                setShowReferModal={setShowReferModal}
               />
               <div style={{ flex:1, overflowY:"auto" }}>
                 <V1PricingCardOnly onGetStarted={() => setShowPricingOverlay(false)} onClose={() => setShowPricingOverlay(false)} />
