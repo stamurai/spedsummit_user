@@ -4522,13 +4522,6 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
         {/* Overview */}
         {bottomTab === "overview" && (
           <div className="sd-tab-content" style={{ padding:"8px 24px 24px" }}>
-            {session.duration && (
-              <div className="sd-overview-stats" style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
-                <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:12, fontWeight:600, color:C.gray600, background:C.gray100, borderRadius:99, padding:"5px 12px" }}>
-                  <Icon name="clock" size={12} color={C.gray500}/>{session.duration}
-                </span>
-              </div>
-            )}
             {session.description ? (
               <p style={{ margin:0, fontSize:14, color:C.gray600, lineHeight:1.85 }}>{session.description}</p>
             ) : (
