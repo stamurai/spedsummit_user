@@ -12,15 +12,15 @@ const C = {
 const FAQS = [
   {
     q: 'Is SPED Summit completely free?',
-    a: 'Yes! SPED Summit is completely free to attend. Registered attendees can access all summit sessions during the event and earn free PD certificates by completing the required assessments.\n\nA Plus Plan also includes access to PD certificates from previous years\' SPED Summit sessions, along with premium content, extended access to recordings, and additional resources.',
+    a: 'Yes! SPED Summit is completely free to attend. Registered attendees can access all summit sessions during the event and earn free PD certificates by completing the required assessments.',
   },
   {
     q: 'Can I rewatch if I am unable to attend live?',
-    a: 'Absolutely! All summit sessions remain available to watch on-demand throughout the event period, so you can learn at a time that works best for you.\n\nIf you\'d like extended access beyond the summit dates, a Plus Plan includes access to session recordings after the event concludes.',
+    a: 'Absolutely! All summit sessions remain available to watch on-demand throughout the event period, so you can learn at a time that works best for you.',
   },
   {
     q: 'How will I get the Completion Certificate?',
-    a: 'After completing a session and successfully passing the accompanying assessment, your PD certificate will be available directly within your SPED Summit account.\n\nPlus Plan members can also access certificates from eligible sessions in previous years\' SPED Summit libraries.',
+    a: 'After completing a session and successfully passing the accompanying assessment, your PD certificate will be available directly within your SPED Summit account.',
   },
   {
     q: 'Can I retake quizzes if I don\'t pass?',
