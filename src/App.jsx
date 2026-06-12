@@ -2916,11 +2916,6 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                             </div>
                           </div>
                           <div className="db-session-card-body" style={{ flex:1, minWidth:0, padding: isMobile ? "12px 14px" : "24px 28px", display:"flex", flexDirection:"column" }}>
-                            <div style={{ marginBottom:12 }}>
-                              <span style={{ display:"inline-block", fontSize:11, fontWeight:600, padding:"3px 9px", borderRadius:4, background:catBadge.bg, color:catBadge.color, letterSpacing:.2, textTransform:"uppercase" }}>
-                                {catBadge.label}
-                              </span>
-                            </div>
                             <div className="db-upcoming-title" style={{ fontSize:18, fontWeight:700, color:C.gray900, lineHeight:1.35, marginBottom:10 }}>{item.title}</div>
                             <div className="db-upcoming-desc" style={{ fontSize:13, color:C.gray600, lineHeight:1.6, marginBottom:10, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
                               {session?.description || ""}
