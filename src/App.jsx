@@ -3741,12 +3741,13 @@ const SESSION_RESOURCES = {
 /* ─────────────────────────────────────────────────────────────────────────────
    SESSION DETAIL (VIDEO EXPERIENCE)
 ───────────────────────────────────────────────────────────────────────────── */
-function VimeoPlayer({ url, onPlay, onPause, onProgress, initialProgress = 0, sessionId, userId }) {
+function VimeoPlayer({ url, onPlay, onPause, onProgress, onEnded, initialProgress = 0, sessionId, userId }) {
   const videoId = extractVimeoId(url);
   const iframeRef = useRef(null);
   const storageKey = videoId ? `vimeo_pos_${videoId}` : null;
   const savedTime = storageKey ? (parseFloat(localStorage.getItem(storageKey)) || 0) : 0;
   const onProgressRef = useRef(onProgress);
+  const onEndedRef = useRef(onEnded);
   const maxPctRef = useRef(initialProgress);
   const [embedError, setEmbedError] = useState(null);
 
@@ -3758,6 +3759,7 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress, initialProgress = 0, se
   const saveThrottle = useRef(null);
 
   useEffect(() => { onProgressRef.current = onProgress; }, [onProgress]);
+  useEffect(() => { onEndedRef.current = onEnded; }, [onEnded]);
 
   const prevVideoIdRef = useRef(videoId);
   useEffect(() => {
@@ -3823,7 +3825,7 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress, initialProgress = 0, se
           insertView();
         }
         if (d.event === "pause") { onPause?.(); updateView(false); }
-        if (d.event === "ended") { watchedSeconds.current = totalSeconds.current; updateView(true); maxPctRef.current = 100; onProgressRef.current?.(100); }
+        if (d.event === "ended") { watchedSeconds.current = totalSeconds.current; updateView(true); maxPctRef.current = 100; onProgressRef.current?.(100); onEndedRef.current?.(); }
         if (d.event === "timeupdate" && d.data?.seconds != null) {
           localStorage.setItem(storageKey, d.data.seconds);
           // Accumulate only forward progress (ignore seeks back)
@@ -4019,7 +4021,7 @@ function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFoot
   );
 }
 
-function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress, adminName = "", adminAvatar = null, isDark = false, quizState = {}, onFinishAssessment, userEmail = "", onCertificateClick, hasReviewed = false }) {
+function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress, onVideoEnd, adminName = "", adminAvatar = null, isDark = false, quizState = {}, onFinishAssessment, userEmail = "", onCertificateClick, hasReviewed = false }) {
   const [playing, setPlaying] = useState(false);
   const [activeLesson, setActiveLesson] = useState(() => { const idx = session.lessons.findIndex(l=>l.status==="active" && l.type!=="quiz"); return idx >= 0 ? idx : 0; });
   const [progress, setProgress] = useState(session.progress || 0);
@@ -4458,6 +4460,10 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                       onUpdateProgress?.(session.id, cur, activeLesson);
                     }, 5000);
                   }
+                }}
+                onEnded={() => {
+                  onUpdateProgress?.(session.id, 100, activeLesson);
+                  onVideoEnd?.(session.id);
                 }}/>
               ) : (
                 <>
@@ -11622,10 +11628,6 @@ export default function App() {
       return updated;
     }));
     saveUserProgress(sessionId, { progress: pct, status: newStatus, enrolled: true });
-    if (pct >= 100 && !reviewedSessionsRef.current.has(sessionId)) {
-      const sess = sessions.find(s => s.id === sessionId) || SESSIONS.find(s => s.id === sessionId);
-      if (sess) setReviewSession(prev => prev ? prev : { session: sess, score: null, passed: null });
-    }
   }
 
   function openSession(s, source) {
@@ -11650,7 +11652,12 @@ export default function App() {
   function renderPage() {
     if (page==="session-detail" && activeSession) {
       const liveSession = sessions.find(s => s.id === activeSession.id) || activeSession;
-      return <SessionDetail session={liveSession} onBack={()=>nav(sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress} adminName={userName} adminAvatar={userAvatar} isDark={isDark} quizState={quizStates[liveSession.id]||{}} onFinishAssessment={handleAssessmentFinish} userEmail={userEmail} onCertificateClick={handleCertificateClick} hasReviewed={reviewedSessions.has(liveSession.id)}/>;
+      return <SessionDetail session={liveSession} onBack={()=>nav(sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress} onVideoEnd={(sessionId) => {
+        if (!reviewedSessionsRef.current.has(sessionId)) {
+          const sess = sessions.find(s => String(s.id) === String(sessionId));
+          if (sess) setReviewSession({ session: sess, score: null, passed: null });
+        }
+      }} adminName={userName} adminAvatar={userAvatar} isDark={isDark} quizState={quizStates[liveSession.id]||{}} onFinishAssessment={handleAssessmentFinish} userEmail={userEmail} onCertificateClick={handleCertificateClick} hasReviewed={reviewedSessions.has(liveSession.id)}/>;
     }
     if (page==="past-season" && pastSeasonPageId) {
       const season = seasons.find(s => s.id === pastSeasonPageId);
