@@ -4169,7 +4169,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           .sd-layout { flex-direction:column !important; height:auto !important; overflow:visible !important; }
           .sd-sidebar { display:none !important; }
           .sd-video-panel { padding:0 !important; height:auto !important; overflow:visible !important; }
-          .sd-video-card { border-radius:0 !important; box-shadow:none !important; height:auto !important; overflow:visible !important; min-height:calc(100vh - 160px) !important; }
+          .sd-video-card { border-radius:0 !important; box-shadow:none !important; height:auto !important; overflow:hidden !important; min-height:calc(100vh - 160px) !important; width:100% !important; }
           .sd-video-wrap { padding:0 !important; }
           .sd-video-wrap > div { border-radius:0 !important; }
           .sd-tab-content { padding:16px 14px !important; }
@@ -4389,7 +4389,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               const typeColor = fileType==="PDF" ? { bg:"#fef2f2", color:"#dc2626" } : fileType==="PPTX" ? { bg:"#fff7ed", color:"#ea580c" } : fileType==="DOCX" ? { bg:"#eff6ff", color:"#2563eb" } : { bg:C.primaryLight, color:C.primary };
               const isMob = window.innerWidth <= 767;
               return (
-                <div style={{ padding: isMob ? "16px 14px" : "32px 28px", display:"flex", flexDirection:"column", gap: isMob ? 14 : 24, flex:1, boxSizing:"border-box" }}>
+                <div style={{ padding: isMob ? "16px 14px" : "32px 28px", display:"flex", flexDirection:"column", gap: isMob ? 14 : 24, flex:1, boxSizing:"border-box", width:"100%", overflow:"hidden" }}>
                   <style>{`@media(max-width:767px){.mat-iframe-wrap{min-height:calc(100vh - 280px) !important;}}`}</style>
                   {/* PDF inline preview — iframe on desktop, list row on mobile */}
                   {fileUrl && (fileType === "PDF" || fileUrl.toLowerCase().endsWith(".pdf")) && !isMob ? (
