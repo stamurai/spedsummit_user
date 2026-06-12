@@ -4000,7 +4000,8 @@ function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFoot
             bottom:0 !important; left:0 !important; right:0 !important;
             z-index:300 !important;
             border-radius:0 !important;
-            padding:12px 16px env(safe-area-inset-bottom,0) !important;
+            padding:16px !important;
+            padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px)) !important;
           }
         }
       `}</style>
