@@ -4792,7 +4792,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
 /* ─────────────────────────────────────────────────────────────────────────────
    COMMUNITY PAGE
 ───────────────────────────────────────────────────────────────────────────── */
-function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] }) {
+function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [], refreshKey = 0 }) {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterSession, setFilterSession] = useState("all");
@@ -4870,7 +4870,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [] 
     setLoading(true);
     supabase.from("session_comments").select("*").order("created_at", { ascending: false })
       .then(({ data }) => { setComments(data || []); setLoading(false); });
-  }, []);
+  }, [refreshKey]);
 
   async function submitPost() {
     if (!newBody.trim()) return;
@@ -11254,6 +11254,7 @@ export default function App() {
   const [,                  setReviews]           = useState({});
   const [reviewedSessions,  setReviewedSessions]  = useState(new Set());
   const reviewedSessionsRef = useRef(new Set());
+  const [commentsRefreshKey, setCommentsRefreshKey] = useState(0);
   const [testimonialsData,  setTestimonialsData]  = useState([]);
 
   useEffect(() => {
@@ -11806,7 +11807,7 @@ export default function App() {
     if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} seasons={seasons} sessionsLoading={sessionsLoading}/>;
     if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} schedule={scheduleData.length > 0 ? scheduleData : SCHEDULE}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
-    if (page==="community") return <CommunityPage toast={toast} userName={userName} userAvatar={userAvatar} sessions={sessions}/>;
+    if (page==="community") return <CommunityPage toast={toast} userName={userName} userAvatar={userAvatar} sessions={sessions} refreshKey={commentsRefreshKey}/>;
     if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick} userName={userName} sessions={sessions} seasons={seasons}/>;
     if (page==="past-sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} seasons={seasons} sessionsLoading={sessionsLoading}/>;
     if (page==="notifications")  return <NotificationsPage />;
@@ -11996,7 +11997,10 @@ export default function App() {
                 body: review,
                 parent_id: null,
               }).select().single();
-              if (data) setSdComments(prev => [data, ...prev]);
+              if (data) {
+                setSdComments(prev => [data, ...prev]);
+                setCommentsRefreshKey(k => k + 1);
+              }
             }
           }}
         />
