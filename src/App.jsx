@@ -4329,7 +4329,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                                   {l.type === "material"
                                     ? <div style={{ width:18, height:18, borderRadius:4, background:"#fef2f2", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="paperclip" size={11} color="#dc2626"/></div>
                                     : done
-                                      ? <div style={{ width:18, height:18, borderRadius:"50%", background:"#16a34a", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="check" size={11} color="#fff"/></div>
+                                      ? <div style={{ width:18, height:18, borderRadius:"50%", background:"rgba(16,185,129,0.12)", border:"2px solid #10b981", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="check" size={11} color="#10b981"/></div>
                                       : <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${locked ? C.gray200 : isActive ? C.primary : C.gray300}`, background:"transparent" }}/>
                                   }
                                 </div>
