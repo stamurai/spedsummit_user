@@ -4344,7 +4344,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                                     {isQuiz ? "Assessment" : l.type === "material" ? (l.title || "Material") : session.title}
                                   </div>
                                   <div style={{ fontSize:12, color: C.gray400, marginTop:2 }}>
-                                    {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : l.type === "material" ? "Material" : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
+                                    {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : l.type === "material" ? (() => { const rc = (SESSION_RESOURCES[session.id] || {})[sec.title]?.length || 0; return `${rc} document${rc!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
                                   </div>
                                 </div>
                                 {locked && <Icon name="lock" size={13} color={C.gray300}/>}
