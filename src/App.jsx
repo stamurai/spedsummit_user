@@ -11396,9 +11396,10 @@ export default function App() {
         if (event === "SIGNED_IN" && sessionStorage.getItem("loggedIn") !== "1") { setPage("dashboard"); setShowLanding(false); }
         sessionStorage.setItem("loggedIn", "1");
         fetchSessions();
-        fetchUserProgress().then(() => migrateLocalStorageToSupabase());
+        clearLocalQuizCache(); fetchUserProgress();
       }
       if (event === "SIGNED_OUT") {
+        clearLocalQuizCache();
         setIsLoggedIn(false);
         setShowLanding(true);
         setPage("dashboard");
@@ -11430,7 +11431,7 @@ export default function App() {
         setIsLoggedIn(true);
         sessionStorage.setItem("loggedIn", "1");
         fetchSessions();
-        fetchUserProgress().then(() => migrateLocalStorageToSupabase());
+        clearLocalQuizCache(); fetchUserProgress();
       } else if (!session && isLoggedIn) {
         // Another tab logged out — sync this tab
         setIsLoggedIn(false);
@@ -11479,12 +11480,6 @@ export default function App() {
       data.forEach(row => {
         if (row.quiz_state && Object.keys(row.quiz_state).length > 0) {
           next[row.session_id] = row.quiz_state;
-        } else {
-          // Fallback: check localStorage
-          try {
-            const local = localStorage.getItem(`qs_${row.session_id}`);
-            if (local) { const parsed = JSON.parse(local); if (parsed?.status) next[row.session_id] = parsed; }
-          } catch(_) {}
         }
       });
       return next;
@@ -11521,20 +11516,10 @@ export default function App() {
     }
   }
 
-  // On login, migrate any quiz states sitting in localStorage up to Supabase
-  async function migrateLocalStorageToSupabase() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const keys = Object.keys(localStorage).filter(k => k.startsWith("qs_"));
-    for (const key of keys) {
-      try {
-        const sessionId = Number(key.replace("qs_", ""));
-        const parsed = JSON.parse(localStorage.getItem(key));
-        if (parsed?.status) {
-          await saveUserProgress(sessionId, { quiz_state: parsed });
-        }
-      } catch(_) {}
-    }
+  // Clear any quiz state from localStorage on login so a new account on the
+  // same device doesn't inherit a previous user's progress
+  function clearLocalQuizCache() {
+    Object.keys(localStorage).filter(k => k.startsWith("qs_")).forEach(k => localStorage.removeItem(k));
   }
 
 
