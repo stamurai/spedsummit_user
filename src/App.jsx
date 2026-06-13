@@ -4508,8 +4508,8 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
             </div>{/* end video padding wrapper */}
 
             {/* Title row */}
-            <div style={{ padding:"16px 24px 0", flexShrink:0, display:"flex", alignItems:"flex-start", gap:12 }}>
-              <h2 style={{ margin:0, fontSize:18, fontWeight:700, color:C.gray900, lineHeight:1.4, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", flex:1 }}>{session.title}</h2>
+            <div style={{ padding:"16px 24px 0", flexShrink:0, display:"flex", flexDirection: narrow ? "column" : "row", alignItems: narrow ? "flex-start" : "flex-start", gap: narrow ? 10 : 12 }}>
+              <h2 style={{ margin:0, fontSize:18, fontWeight:700, color:C.gray900, lineHeight:1.4, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", flex: narrow ? undefined : 1 }}>{session.title}</h2>
               {hasReviewed ? (
                 <div style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:12, fontWeight:700, color:C.success, background:"rgba(16,185,129,0.10)", border:"1.5px solid rgba(16,185,129,0.25)", borderRadius:8, padding:"6px 12px", flexShrink:0, whiteSpace:"nowrap" }}>
                   <Icon name="check-circle" size={13} color={C.success}/>Completed
