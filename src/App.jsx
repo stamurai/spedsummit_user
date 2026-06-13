@@ -11368,7 +11368,7 @@ export default function App() {
         if (event === "SIGNED_IN" && sessionStorage.getItem("loggedIn") !== "1") { setPage("dashboard"); setShowLanding(false); }
         sessionStorage.setItem("loggedIn", "1");
         fetchSessions();
-        fetchUserProgress();
+        fetchUserProgress().then(() => migrateLocalStorageToSupabase());
       }
       if (event === "SIGNED_OUT") {
         setIsLoggedIn(false);
@@ -11402,7 +11402,7 @@ export default function App() {
         setIsLoggedIn(true);
         sessionStorage.setItem("loggedIn", "1");
         fetchSessions();
-        fetchUserProgress();
+        fetchUserProgress().then(() => migrateLocalStorageToSupabase());
       } else if (!session && isLoggedIn) {
         // Another tab logged out — sync this tab
         setIsLoggedIn(false);
@@ -11481,7 +11481,29 @@ export default function App() {
       { user_id: user.id, session_id: sessionId, updated_at: new Date().toISOString(), ...fields },
       { onConflict: "user_id,session_id" }
     );
-    if (error) console.error("[Supabase] saveUserProgress error:", error.message);
+    if (error) {
+      console.error("[Supabase] saveUserProgress error:", error.message);
+      // Surface schema errors so they're not silently swallowed
+      if (error.message?.includes("column") || error.message?.includes("schema")) {
+        toast({ type:"error", title:"Sync error", message:"Progress could not be saved to cloud. Contact support." });
+      }
+    }
+  }
+
+  // On login, migrate any quiz states sitting in localStorage up to Supabase
+  async function migrateLocalStorageToSupabase() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const keys = Object.keys(localStorage).filter(k => k.startsWith("qs_"));
+    for (const key of keys) {
+      try {
+        const sessionId = Number(key.replace("qs_", ""));
+        const parsed = JSON.parse(localStorage.getItem(key));
+        if (parsed?.status) {
+          await saveUserProgress(sessionId, { quiz_state: parsed });
+        }
+      } catch(_) {}
+    }
   }
 
 
