@@ -458,17 +458,10 @@ async function downloadCertificate({ recipientName = "", sessionTitle, instructo
   el.innerHTML = `
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
     <div style="position:relative;width:${W}px;height:${H}px;font-family:'Poppins','Arial',sans-serif;box-sizing:border-box;overflow:hidden;">
-      <img src="${window.location.origin}/Certificate Background.png" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;"/>
+      <img src="${window.location.origin}/Bg.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;"/>
 
       <!-- Content -->
       <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:960px;padding:40px 48px 36px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;">
-
-        <!-- Stars -->
-        <div style="display:flex;gap:12px;justify-content:center;margin-bottom:20px;">
-          <span style="font-size:28px;color:#3b82f6;line-height:1;">★</span>
-          <span style="font-size:28px;color:#3b82f6;line-height:1;">★</span>
-          <span style="font-size:28px;color:#3b82f6;line-height:1;">★</span>
-        </div>
 
         <!-- Certificate title -->
         <div style="text-align:center;font-size:32px;font-weight:700;color:#1a1a1a;line-height:1.2;margin-bottom:6px;font-family:'Poppins',sans-serif;letter-spacing:-0.3px;">Certificate of Professional Development Hours</div>
@@ -6837,14 +6830,10 @@ function CertificateModal({ session, quizState, onClose, userName = "" }) {
 
         {/* ── Certificate Document — 11:8.5 aspect ratio ── */}
         <div style={{ margin:"16px 16px 0", borderRadius:12, overflow:"hidden", border:`1px solid ${C.gray200}`, position:"relative", aspectRatio:"11/8.5" }}>
-          <img src="/Certificate Background.png" alt="" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", display:"block", pointerEvents:"none" }}/>
+          <img src="/Bg.jpg" alt="" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", display:"block", pointerEvents:"none" }}/>
 
           <div style={{ position:"absolute", inset:0, padding:"3% 5%", display:"flex", flexDirection:"column", alignItems:"center", fontFamily:"'Poppins','Arial',sans-serif", zIndex:1, boxSizing:"border-box", overflow:"hidden" }}>
             <style>{`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');`}</style>
-            {/* Stars */}
-            <div style={{ display:"flex", gap:8, marginBottom:"2%" }}>
-              {[0,1,2].map(i => <span key={i} style={{ fontSize:"clamp(12px,2vw,20px)", color:"#3b82f6", lineHeight:1 }}>★</span>)}
-            </div>
             <div style={{ textAlign:"center", fontSize:"clamp(9px,1.4vw,14px)", fontWeight:700, color:"#1a1a1a", lineHeight:1.25, marginBottom:"1%" }}>Certificate of Professional Development Hours</div>
             <div style={{ fontSize:"clamp(7px,1vw,10px)", fontWeight:400, color:"#555", marginBottom:"1%" }}>is presented to</div>
             <div style={{ fontSize:"clamp(18px,3.5vw,36px)", fontWeight:800, color:"#1a1a1a", letterSpacing:-0.5, lineHeight:1.1, textAlign:"center", marginBottom:"2%" }}>{userName}</div>
