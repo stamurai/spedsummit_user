@@ -4606,10 +4606,10 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               <div style={{ background:isDark?"rgba(255,255,255,0.05)":C.white, borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.1)":C.gray200}`, padding:"12px 14px", marginBottom:16, display:"flex", gap:10, alignItems:"center", boxSizing:"border-box", width:"100%", overflow:"hidden" }}>
                 <Avatar name={adminName||"You"} src={adminAvatar} size={32}/>
                 <input ref={chatInputRef} value={sdNewComment} onChange={e=>setSdNewComment(e.target.value)}
-                  onKeyDown={async e=>{ if(e.key==="Enter" && sdNewComment.trim() && !sdPosting) { const body=sdNewComment.trim(); const tempId="tmp-"+Date.now(); const optimistic={id:tempId,session_id:String(session.id),session_title:session.title,author_name:adminName||"You",body,likes:0,created_at:new Date().toISOString()}; setSdComments(prev=>[optimistic,...prev]); setSdNewComment(""); setSdPosting(true); const { data, error } = await supabase.from("session_comments").insert({ session_id:String(session.id), session_title:session.title, author_name:adminName||"Anonymous", body }).select().single(); if(!error && data) setSdComments(prev=>prev.map(c=>c.id===tempId?data:c)); else if(error) toast({ type:"error", message:"Could not save comment. Please create the session_comments table in Supabase." }); setSdPosting(false); toast({ type:"success", message:"Comment posted!" }); }}}
+                  onKeyDown={async e=>{ if(e.key==="Enter" && sdNewComment.trim() && !sdPosting) { const body=sdNewComment.trim(); const tempId="tmp-"+Date.now(); const optimistic={id:tempId,session_id:String(session.id),session_title:session.title,author_name:adminName||"You",author_avatar:adminAvatar||null,body,likes:0,created_at:new Date().toISOString()}; setSdComments(prev=>[optimistic,...prev]); setSdNewComment(""); setSdPosting(true); const { data, error } = await supabase.from("session_comments").insert({ session_id:String(session.id), session_title:session.title, author_name:adminName||"Anonymous", author_avatar:adminAvatar||null, body }).select().single(); if(!error && data) setSdComments(prev=>prev.map(c=>c.id===tempId?data:c)); else if(error) toast({ type:"error", message:"Could not save comment. Please create the session_comments table in Supabase." }); setSdPosting(false); toast({ type:"success", message:"Comment posted!" }); }}}
                   placeholder="Share a thought about this session…"
                   style={{ flex:1, minWidth:0, padding:"8px 12px", border:"none", borderRadius:8, fontSize:14, outline:"none", color:isDark?"#fff":C.gray700, background:"transparent" }}/>
-                <button onClick={async ()=>{ if(!sdNewComment.trim()||sdPosting) return; const body=sdNewComment.trim(); const tempId="tmp-"+Date.now(); const optimistic={id:tempId,session_id:String(session.id),session_title:session.title,author_name:adminName||"You",body,likes:0,created_at:new Date().toISOString()}; setSdComments(prev=>[optimistic,...prev]); setSdNewComment(""); setSdPosting(true); const { data, error } = await supabase.from("session_comments").insert({ session_id:String(session.id), session_title:session.title, author_name:adminName||"Anonymous", body }).select().single(); if(!error && data) setSdComments(prev=>prev.map(c=>c.id===tempId?data:c)); else if(error) toast({ type:"error", message:"Could not save comment. Please create the session_comments table in Supabase." }); setSdPosting(false); }}
+                <button onClick={async ()=>{ if(!sdNewComment.trim()||sdPosting) return; const body=sdNewComment.trim(); const tempId="tmp-"+Date.now(); const optimistic={id:tempId,session_id:String(session.id),session_title:session.title,author_name:adminName||"You",author_avatar:adminAvatar||null,body,likes:0,created_at:new Date().toISOString()}; setSdComments(prev=>[optimistic,...prev]); setSdNewComment(""); setSdPosting(true); const { data, error } = await supabase.from("session_comments").insert({ session_id:String(session.id), session_title:session.title, author_name:adminName||"Anonymous", author_avatar:adminAvatar||null, body }).select().single(); if(!error && data) setSdComments(prev=>prev.map(c=>c.id===tempId?data:c)); else if(error) toast({ type:"error", message:"Could not save comment. Please create the session_comments table in Supabase." }); setSdPosting(false); }}
                   style={{ flexShrink:0, padding:"8px 18px", borderRadius:8, background:sdNewComment.trim()&&!sdPosting?C.primary:C.gray200, border:"none", cursor:sdNewComment.trim()&&!sdPosting?"pointer":"default", fontSize:13, fontWeight:700, color:"#fff", transition:"background 0.15s", whiteSpace:"nowrap" }}>
                   {sdPosting ? "Posting…" : "Post"}
                 </button>
@@ -4636,7 +4636,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                   <div style={{ display:"grid", gridTemplateColumns:"34px 1fr", gap:"0 10px" }}>
                     {/* Left col: avatar + thread line */}
                     <div style={{ display:"flex", flexDirection:"column", alignItems:"center" }}>
-                      <Avatar name={c.author_name} src={c.author_name===adminName?adminAvatar:undefined} size={34}/>
+                      <Avatar name={c.author_name} src={c.author_avatar||undefined} size={34}/>
                       {(replies.length > 0 || rs.open) && <div style={{ width:2, flex:1, background:C.gray200, marginTop:6, borderRadius:1, minHeight:12 }}/>}
                     </div>
                     {/* Right col: content */}
@@ -4702,7 +4702,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                       const isLast = ri === replies.length - 1 && !rs.open;
                       return ([
                         <div key={`rl-${r.id}`} style={{ display:"flex", flexDirection:"column", alignItems:"center", paddingTop:8 }}>
-                          <Avatar name={r.author_name} src={r.author_name===adminName?adminAvatar:undefined} size={34}/>
+                          <Avatar name={r.author_name} src={r.author_avatar||undefined} size={34}/>
                           {!isLast && <div style={{ width:2, flex:1, background:C.gray200, marginTop:6, borderRadius:1, minHeight:12 }}/>}
                         </div>,
                         <div key={`rc-${r.id}`} style={{ paddingBottom: isLast ? 2 : 12, paddingTop:8 }}>
@@ -4731,10 +4731,10 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                             <button onClick={async ()=>{
                               const body=rs.body?.trim(); if(!body) return;
                               const tempId="tmp-reply-"+Date.now();
-                              const optimistic={id:tempId,session_id:String(session.id),session_title:session.title,author_name:adminName||"You",body,likes:0,parent_id:c.id,created_at:new Date().toISOString()};
+                              const optimistic={id:tempId,session_id:String(session.id),session_title:session.title,author_name:adminName||"You",author_avatar:adminAvatar||null,body,likes:0,parent_id:c.id,created_at:new Date().toISOString()};
                               setSdComments(prev=>[...prev,optimistic]);
                               setSdReplyState(prev=>({...prev,[c.id]:{open:false,body:""}}));
-                              const {data,error}=await supabase.from("session_comments").insert({session_id:String(session.id),session_title:session.title,author_name:adminName||"Anonymous",body,parent_id:c.id}).select().single();
+                              const {data,error}=await supabase.from("session_comments").insert({session_id:String(session.id),session_title:session.title,author_name:adminName||"Anonymous",author_avatar:adminAvatar||null,body,parent_id:c.id}).select().single();
                               if(!error&&data) setSdComments(prev=>prev.map(x=>x.id===tempId?data:x));
                               else if(error) toast({type:"error",message:"Could not save reply."});
                             }} disabled={!rs.body?.trim()} style={{ padding:"4px 14px", borderRadius:99, border:"none", background:rs.body?.trim()?C.primary:C.gray200, color:"#fff", fontSize:12, fontWeight:700, cursor:rs.body?.trim()?"pointer":"default" }}>Reply</button>
@@ -4905,7 +4905,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
     setComments(prev => [optimistic, ...prev]);
     setNewBody("");
     setPosting(true);
-    const { data, error } = await supabase.from("session_comments").insert({ session_id:selectedSession||null, session_title:session?.title||"", author_name:userName||"Anonymous", body, parent_id:null }).select().single();
+    const { data, error } = await supabase.from("session_comments").insert({ session_id:selectedSession||null, session_title:session?.title||"", author_name:userName||"Anonymous", author_avatar:userAvatar||null, body, parent_id:null }).select().single();
     if (!error && data) setComments(prev => prev.map(c => c.id === tempId ? data : c));
     else if (error) toast({ type:"error", message:"Could not save — check Supabase table." });
     setPosting(false);
@@ -4920,7 +4920,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
     const optimistic = { id:tempId, session_id:sessionId, session_title:sessionTitle, author_name:userName||"You", body, likes:0, parent_id:parentId, created_at:new Date().toISOString() };
     setComments(prev => [...prev, optimistic]);
     setReplyState(prev => ({ ...prev, [parentId]: { open:false, body:"", posting:false } }));
-    const { data, error } = await supabase.from("session_comments").insert({ session_id:sessionId, session_title:sessionTitle, author_name:userName||"Anonymous", body, parent_id:parentId }).select().single();
+    const { data, error } = await supabase.from("session_comments").insert({ session_id:sessionId, session_title:sessionTitle, author_name:userName||"Anonymous", author_avatar:userAvatar||null, body, parent_id:parentId }).select().single();
     if (!error && data) setComments(prev => prev.map(c => c.id === tempId ? data : c));
     else if (error) toast({ type:"error", message:"Could not save reply." });
   }
@@ -4957,7 +4957,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
 
           {/* ── Row 0 left: parent avatar + line down to first reply ── */}
           <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gridRow:1 }}>
-            <Avatar name={c.author_name} src={c.author_name===userName?userAvatar:undefined} size={34}/>
+            <Avatar name={c.author_name} src={c.author_avatar||undefined} size={34}/>
             {(replies.length > 0 || rs.open) && (
               <div style={{ width:2, flex:1, background:C.gray200, marginTop:6, borderRadius:1, minHeight:12 }}/>
             )}
@@ -5026,7 +5026,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
             const isLast = ri === replies.length - 1 && !rs.open;
             return ([
               <div key={`rl-${r.id}`} style={{ display:"flex", flexDirection:"column", alignItems:"center", paddingTop:8 }}>
-                <Avatar name={r.author_name} src={r.author_name===userName?userAvatar:undefined} size={34}/>
+                <Avatar name={r.author_name} src={r.author_avatar||undefined} size={34}/>
                 {!isLast && <div style={{ width:2, flex:1, background:C.gray200, marginTop:6, borderRadius:1, minHeight:12 }}/>}
               </div>,
               <div key={`rc-${r.id}`} style={{ paddingBottom: isLast ? 2 : 12, paddingTop:8 }}>
@@ -12121,6 +12121,7 @@ export default function App() {
                 session_id: String(sessionId),
                 session_title: sess?.title || "",
                 author_name: userName || "Anonymous",
+                author_avatar: userAvatar || null,
                 user_id: _cu?.id || null,
                 body: review,
                 parent_id: null,
