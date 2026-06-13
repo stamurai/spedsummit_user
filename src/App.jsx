@@ -4060,10 +4060,15 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const lastSavedPctRef = useRef(session.progress || 0);
   const saveThrottleRef = useRef(null);
   const latestPctRef = useRef(session.progress || 0);
-  const watchedKey = `sped_watched_${session.id}`;
-  const [videoFullyWatched, setVideoFullyWatched] = useState(() =>
-    session.status === "completed" || (session.progress || 0) >= 100 || !!localStorage.getItem(watchedKey)
+  const [videoFullyWatched, setVideoFullyWatched] = useState(
+    session.status === "completed" || (session.progress || 0) >= 100
   );
+  // React to Supabase-loaded session prop updates in real-time
+  useEffect(() => {
+    if (session.status === "completed" || (session.progress || 0) >= 100) {
+      setVideoFullyWatched(true);
+    }
+  }, [session.progress, session.status]);
 
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
@@ -4458,15 +4463,11 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                       onUpdateProgress?.(session.id, cur, activeLesson);
                     }, 5000);
                   }
-                  if (pct >= 100) {
-                    setVideoFullyWatched(true);
-                    localStorage.setItem(watchedKey, "1");
-                  }
+                  if (pct >= 100) setVideoFullyWatched(true);
                 }}
                 onEnded={() => {
                   onUpdateProgress?.(session.id, 100, activeLesson);
                   setVideoFullyWatched(true);
-                  localStorage.setItem(watchedKey, "1");
                 }}/>
               ) : (
                 <>
