@@ -11642,6 +11642,19 @@ export default function App() {
   function handleAssessmentClick(session) { setAssessmentSession(session); }
   async function handleCertificateClick(session) {
     const qs = quizStates[session.id] || {};
+    const hasQuiz = getSessionQuestions(session).length > 0;
+    const quizPassed = qs.status === "passed";
+    const sessionCompleted = session.status === "completed" || (session.progress || 0) >= 100 || reviewedSessions.has(session.id) || reviewedSessions.has(String(session.id));
+
+    if (hasQuiz && !quizPassed) {
+      toast({ type:"warning", title:"Assessment required", message:"You need to pass the assessment to earn this certificate." });
+      return;
+    }
+    if (!hasQuiz && !sessionCompleted) {
+      toast({ type:"warning", title:"Session not completed", message:"Please complete and review the session to earn your certificate." });
+      return;
+    }
+
     const score = qs.score ?? 0;
     const today = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
     // Use stored cert_id from Supabase if it exists, otherwise generate and persist a new one
