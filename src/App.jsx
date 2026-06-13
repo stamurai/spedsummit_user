@@ -6707,15 +6707,15 @@ function PublicCertificatePage({ data }) {
       {/* Breadcrumb bar — shown when logged in */}
       {isLoggedIn && (
         <div style={{ background:"#fff", borderBottom:"1px solid #f0f0f0", padding:"0 28px" }}>
-          <div className="pub-breadcrumb" style={{ maxWidth:1100, margin:"0 auto", height:44, display:"flex", alignItems:"center", gap:6, fontSize:13, color:"#6b7280" }}>
+          <div className="pub-breadcrumb" style={{ maxWidth:1100, margin:"0 auto", height:44, display:"flex", alignItems:"center", gap:6, fontSize:13, color:"#6b7280", minWidth:0 }}>
             <a href="#" onClick={e=>{ e.preventDefault(); sessionStorage.setItem("page","certifications"); sessionStorage.setItem("showLanding","0"); window.location.href=window.location.origin; }}
-              style={{ color:"#6b7280", textDecoration:"none", fontWeight:500, transition:"color .12s" }}
+              style={{ color:"#6b7280", textDecoration:"none", fontWeight:500, transition:"color .12s", whiteSpace:"nowrap", flexShrink:0 }}
               onMouseEnter={e=>e.currentTarget.style.color="#1a1a1a"}
               onMouseLeave={e=>e.currentTarget.style.color="#6b7280"}>
               My Certificates
             </a>
-            <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="m8 5 5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            <span className="pub-breadcrumb-title" style={{ color:"#1a1a1a", fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{sessionTitle}</span>
+            <svg style={{ flexShrink:0 }} width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="m8 5 5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <span className="pub-breadcrumb-title" style={{ color:"#1a1a1a", fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", minWidth:0 }}>{sessionTitle}</span>
           </div>
         </div>
       )}
