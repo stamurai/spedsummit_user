@@ -6167,11 +6167,11 @@ function ReviewModal({ session, onClose, onSubmit }) {
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000, padding:20 }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ background:C.white, borderRadius:20, width:"100%", maxWidth:440, padding:"36px 32px 28px", position:"relative", boxShadow:"0 24px 64px rgba(0,0,0,0.18)", animation:"fadeIn .2s ease" }}>
+      <div style={{ background:C.white, borderRadius:20, width:"100%", maxWidth:440, padding:"20px 20px 20px", position:"relative", boxShadow:"0 24px 64px rgba(0,0,0,0.18)", animation:"fadeIn .2s ease" }}>
 
         {!submitted ? (<>
           {/* Header */}
-          <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12, marginBottom:28 }}>
+          <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12, marginBottom:16 }}>
             <h2 style={{ margin:0, fontSize:18, fontWeight:800, color:C.gray900, lineHeight:1.35 }}>{session.title}</h2>
             <button onClick={onClose} style={{ flexShrink:0, width:32, height:32, borderRadius:8, border:`1px solid ${C.gray200}`, background:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:C.gray400, fontSize:18, lineHeight:1 }}>×</button>
           </div>
