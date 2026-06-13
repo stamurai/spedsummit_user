@@ -11641,19 +11641,33 @@ export default function App() {
 
   function handleAssessmentClick(session) { setAssessmentSession(session); }
   async function handleCertificateClick(session) {
-    const qs = quizStates[session.id] || {};
-    const hasQuiz = getSessionQuestions(session).length > 0;
-    const quizPassed = qs.status === "passed";
-    const sessionCompleted = session.status === "completed" || (session.progress || 0) >= 100 || reviewedSessions.has(session.id) || reviewedSessions.has(String(session.id));
+    // Fetch authoritative progress from Supabase — never trust local state alone
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { toast({ type:"warning", title:"Sign in required", message:"Please sign in to access your certificates." }); return; }
 
-    if (hasQuiz && !quizPassed) {
+    const { data: row } = await supabase
+      .from("user_progress")
+      .select("status, progress, quiz_state, reviewed")
+      .eq("user_id", user.id)
+      .eq("session_id", session.id)
+      .single();
+
+    const dbQuizState  = row?.quiz_state || {};
+    const dbQuizPassed = dbQuizState.status === "passed";
+    const dbCompleted  = row?.status === "completed" || (row?.progress || 0) >= 100 || row?.reviewed === true;
+
+    const hasQuiz = getSessionQuestions(session).length > 0;
+
+    if (hasQuiz && !dbQuizPassed) {
       toast({ type:"warning", title:"Assessment required", message:"You need to pass the assessment to earn this certificate." });
       return;
     }
-    if (!hasQuiz && !sessionCompleted) {
+    if (!hasQuiz && !dbCompleted) {
       toast({ type:"warning", title:"Session not completed", message:"Please complete and review the session to earn your certificate." });
       return;
     }
+
+    const qs = dbQuizState;
 
     const score = qs.score ?? 0;
     const today = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
