@@ -11991,17 +11991,16 @@ export default function App() {
             saveUserProgress(sessionId, { reviewed: true });
             if (review) {
               const sess = sessions.find(s => String(s.id) === String(sessionId));
-              const { data } = await supabase.from("session_comments").insert({
+              const { data, error } = await supabase.from("session_comments").insert({
                 session_id: String(sessionId),
                 session_title: sess?.title || "",
-                author_name: adminName || "Anonymous",
+                author_name: userName || "Anonymous",
                 body: review,
                 parent_id: null,
               }).select().single();
-              if (data) {
-                setSdComments(prev => [data, ...prev]);
-                setCommentsRefreshKey(k => k + 1);
-              }
+              if (error) console.error("Review insert error:", error);
+              if (data) setSdComments(prev => [data, ...prev]);
+              setCommentsRefreshKey(k => k + 1);
             }
           }}
         />
