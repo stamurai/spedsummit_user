@@ -4549,7 +4549,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
 
         {/* Overview */}
         {bottomTab === "overview" && (
-          <div className="sd-tab-content" style={{ padding:"8px 24px 24px" }}>
+          <div className="sd-tab-content" style={{ padding:"12px 24px 24px" }}>
             {session.description ? (
               <p style={{ margin:0, fontSize:14, color:C.gray600, lineHeight:1.85 }}>{session.description}</p>
             ) : (
