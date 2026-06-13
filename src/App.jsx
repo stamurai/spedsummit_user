@@ -6675,7 +6675,7 @@ function PublicCertificatePage({ data }) {
         @media(max-width:768px){
           .pub-two-col { grid-template-columns:1fr !important; padding:0 16px 24px !important; }
           .pub-header { padding:0 16px !important; }
-          .pub-breadcrumb { padding:0 16px !important; }
+          .pub-breadcrumb { padding:0 !important; }
           .pub-title-wrap { padding:20px 16px 0 !important; }
           .pub-session-card-img { width:120px !important; }
           .pub-breadcrumb-title { max-width:200px !important; }
@@ -6706,7 +6706,7 @@ function PublicCertificatePage({ data }) {
 
       {/* Breadcrumb bar — shown when logged in */}
       {isLoggedIn && (
-        <div style={{ background:"#fff", borderBottom:"1px solid #f0f0f0", padding:"0 28px" }}>
+        <div style={{ background:"#fff", borderBottom:"1px solid #f0f0f0", padding:"0 16px" }}>
           <div className="pub-breadcrumb" style={{ maxWidth:1100, margin:"0 auto", height:44, display:"flex", alignItems:"center", gap:6, fontSize:13, color:"#6b7280", minWidth:0 }}>
             <a href="#" onClick={e=>{ e.preventDefault(); sessionStorage.setItem("page","certifications"); sessionStorage.setItem("showLanding","0"); window.location.href=window.location.origin; }}
               style={{ color:"#6b7280", textDecoration:"none", fontWeight:500, transition:"color .12s", whiteSpace:"nowrap", flexShrink:0 }}
