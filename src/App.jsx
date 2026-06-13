@@ -2129,13 +2129,14 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
         availableFrom: s.availableFrom,
       };
     });
-  const completed     = sessions.filter(s => s.status === "completed").length;
+  const isSessionCompleted = (s) => s.status === "completed" || (s.progress || 0) >= 100;
+  const completed     = sessions.filter(isSessionCompleted).length;
   const certsEarned   = sessions.filter(s => {
     const hasQuiz = getSessionQuestions(s).length > 0;
-    return hasQuiz ? quizStates?.[s.id]?.status === "passed" : s.status === "completed";
+    return hasQuiz ? quizStates?.[s.id]?.status === "passed" : isSessionCompleted(s);
   }).length;
   const parseDurMins = (d) => { const m = String(d||"").match(/(\d+)/); return m ? parseInt(m[1]) : 0; };
-  const totalMins = sessions.filter(s => s.status === "completed").reduce((sum, s) => sum + parseDurMins(s.duration), 0);
+  const totalMins = sessions.filter(isSessionCompleted).reduce((sum, s) => sum + parseDurMins(s.duration), 0);
   const hoursLearned = totalMins >= 60 ? `${Math.floor(totalMins/60)}h${totalMins%60>0?" "+totalMins%60+"m":""}` : totalMins > 0 ? `${totalMins}m` : "0h";
   const totalEnrolled = sessions.length;
   const pct = totalEnrolled > 0 ? Math.round((completed / totalEnrolled) * 100) : 0;
