@@ -435,7 +435,8 @@ function makeCertId(sessionId, userEmail) {
 }
 
 async function saveCertToSupabase(certData) {
-  const { data, error } = await supabase.from("certificates").insert({ cert_data: certData }).select("id").single();
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data, error } = await supabase.from("certificates").insert({ cert_data: certData, user_id: user?.id || null }).select("id").single();
   if (error) throw error;
   return data.id;
 }
@@ -5678,10 +5679,11 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
               // Delete all user data in parallel
               await Promise.all([
                 supabase.from("user_progress").delete().eq("user_id", user.id),
-                supabase.from("certificates").delete().eq("cert_data->>recipientName", userName),
-                // Delete by user_id if column exists, fall back to author_name
+                supabase.from("certificates").delete().eq("user_id", user.id),
                 supabase.from("session_comments").delete().or(`user_id.eq.${user.id},author_name.eq.${userName}`),
               ]);
+              // Delete the Supabase Auth user itself (requires delete_user RPC — see SQL below)
+              await supabase.rpc("delete_user");
             }
           } catch(e) { console.error("Account deletion error:", e); }
           await supabase.auth.signOut();
