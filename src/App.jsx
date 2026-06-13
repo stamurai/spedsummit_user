@@ -6179,11 +6179,12 @@ function ReviewModal({ session, onClose, onSubmit }) {
           {/* Text review */}
           <div style={{ fontSize:14, fontWeight:700, color:C.gray700, marginBottom:10 }}>How would you rate this session?</div>
           <textarea
+            autoFocus
             value={review}
             onChange={e => setReview(e.target.value)}
             placeholder="Share your thoughts..."
             rows={4}
-            style={{ width:"100%", boxSizing:"border-box", border:`1px solid ${C.gray200}`, borderRadius:10, padding:"10px 14px", fontSize:14, color:C.gray700, background:"#fff", resize:"none", outline:"none", fontFamily:"inherit", lineHeight:1.5 }}
+            style={{ width:"100%", boxSizing:"border-box", border:`1px solid ${C.primary}`, borderRadius:10, padding:"10px 14px", fontSize:14, color:C.gray700, background:"#fff", resize:"none", outline:"none", fontFamily:"inherit", lineHeight:1.5 }}
             onFocus={e => e.target.style.borderColor = C.primary}
             onBlur={e => e.target.style.borderColor = C.gray200}
           />
