@@ -427,6 +427,13 @@ async function loadSealAsPng(url, size = 220) {
   });
 }
 
+function makeCertId(sessionId, userName) {
+  const str = `${userName}||${sessionId}`;
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+  return `SS-${String(sessionId).padStart(3,"0")}-${Math.abs(h).toString(36).toUpperCase().slice(0,6)}-2024`;
+}
+
 async function saveCertToSupabase(certData) {
   const { data, error } = await supabase.from("certificates").insert({ cert_data: certData }).select("id").single();
   if (error) throw error;
@@ -6822,7 +6829,7 @@ function PublicCertificatePage({ data }) {
 function CertificateModal({ session, quizState, onClose, userName = "" }) {
   const score = quizState?.score ?? 0;
   const today = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
-  const certId = `SS-${session.id}${score}-2024`;
+  const certId = makeCertId(session.id, userName);
   // Generate shareable cert URL with encoded data
   const certData = { recipientName:userName, sessionTitle:session.title, instructor:session.instructor, instructorImage:session.instructorImage||"", duration:session.duration, score, description:session.certDescription||"", certId, date:today };
   const certUrl = `${window.location.origin}${window.location.pathname}?cert=${btoa(JSON.stringify(certData))}`;
@@ -11613,7 +11620,7 @@ export default function App() {
     const qs = quizStates[session.id] || {};
     const score = qs.score ?? 0;
     const today = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
-    const certId = `SS-${session.id}${score}-2024`;
+    const certId = makeCertId(session.id, userName);
     const certData = { recipientName:userName, sessionTitle:session.title, instructor:session.instructor, instructorImage:session.instructorImage||"", duration:session.duration, score, description:session.certDescription || session.description, certId, date:today };
     try {
       const dbId = await saveCertToSupabase(certData);
