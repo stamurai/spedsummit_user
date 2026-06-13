@@ -11251,11 +11251,8 @@ export default function App() {
   const [certSession,       setCertSession]       = useState(null);
   const [reviewSession,     setReviewSession]     = useState(null);
   const [,                  setReviews]           = useState({});
-  const [reviewedSessions,  setReviewedSessions]  = useState(() => {
-    try { return new Set(JSON.parse(localStorage.getItem("sped_reviewed_sessions") || "[]")); } catch { return new Set(); }
-  });
-  const reviewedSessionsRef = useRef(null);
-  if (!reviewedSessionsRef.current) reviewedSessionsRef.current = reviewedSessions;
+  const [reviewedSessions,  setReviewedSessions]  = useState(new Set());
+  const reviewedSessionsRef = useRef(new Set());
   const [testimonialsData,  setTestimonialsData]  = useState([]);
 
   useEffect(() => {
@@ -11410,13 +11407,19 @@ export default function App() {
     if (!data || data.length === 0) return;
     const newEnrolled = new Set();
     const newRegs = {};
+    const newReviewed = new Set();
     setSessions(prev => prev.map(s => {
       const row = data.find(r => r.session_id === s.id);
       if (!row) return s;
       if (row.enrolled) newEnrolled.add(s.id);
       if (row.registered) newRegs[s.id] = true;
+      if (row.reviewed) { newReviewed.add(s.id); newReviewed.add(String(s.id)); }
       return { ...s, progress: row.progress ?? s.progress, status: row.status ?? s.status };
     }));
+    if (newReviewed.size > 0) {
+      reviewedSessionsRef.current = new Set([...reviewedSessionsRef.current, ...newReviewed]);
+      setReviewedSessions(prev => new Set([...prev, ...newReviewed]));
+    }
     setEnrolledIds(newEnrolled);
     setScheduleRegistrations(newRegs);
     setQuizStates(prev => {
@@ -11436,7 +11439,7 @@ export default function App() {
     });
   }
 
-  // Auto-mark sessions as reviewed if already completed/passed, and persist reviewedSessions
+  // Auto-mark sessions as reviewed if already completed/passed (for backwards compat)
   useEffect(() => {
     const autoReviewed = new Set(reviewedSessionsRef.current);
     sessions.forEach(s => {
@@ -11448,7 +11451,6 @@ export default function App() {
     });
     reviewedSessionsRef.current = autoReviewed;
     setReviewedSessions(autoReviewed);
-    try { localStorage.setItem("sped_reviewed_sessions", JSON.stringify([...autoReviewed].map(String))); } catch(_) {}
   }, [sessions, quizStates]);
 
   async function saveUserProgress(sessionId, fields) {
@@ -11981,11 +11983,9 @@ export default function App() {
             setReviews(r => ({ ...r, [sessionId]: { rating, review, date: new Date().toISOString() } }));
             reviewedSessionsRef.current.add(String(sessionId));
             reviewedSessionsRef.current.add(sessionId);
-            setReviewedSessions(prev => {
-              const next = new Set([...prev, sessionId, String(sessionId)]);
-              try { localStorage.setItem("sped_reviewed_sessions", JSON.stringify([...next].map(String))); } catch(_) {}
-              return next;
-            });
+            setReviewedSessions(prev => new Set([...prev, sessionId, String(sessionId)]));
+            // Persist reviewed=true to Supabase user_progress
+            saveUserProgress(sessionId, { reviewed: true });
             if (review) {
               const sess = sessions.find(s => String(s.id) === String(sessionId));
               const { data } = await supabase.from("session_comments").insert({
