@@ -4036,6 +4036,11 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const [sdPosting, setSdPosting] = useState(false);
   const [sdDeleteConfirm, setSdDeleteConfirm] = useState(null);
   const [sdMenuOpen, setSdMenuOpen] = useState(null);
+  const [supabaseResourceCount, setSupabaseResourceCount] = useState(null);
+  useEffect(() => {
+    supabase.from("session_resources").select("id", { count:"exact", head:true }).eq("session_id", String(session.id))
+      .then(({ count }) => { if (count !== null) setSupabaseResourceCount(count); });
+  }, [session.id]);
   const [sdEditState, setSdEditState] = useState({});
   const [sdReplyState, setSdReplyState] = useState({});
   const [sdReportModal, setSdReportModal] = useState(null);
@@ -4344,7 +4349,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                                     {isQuiz ? "Assessment" : l.type === "material" ? (l.title || "Material") : session.title}
                                   </div>
                                   <div style={{ fontSize:12, color: C.gray400, marginTop:2 }}>
-                                    {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : l.type === "material" ? (() => { const rc = (SESSION_RESOURCES[session.id] || {})[sec.title]?.length || 0; return `${rc} document${rc!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
+                                    {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : l.type === "material" ? (() => { const rc = supabaseResourceCount !== null ? supabaseResourceCount : Object.values(SESSION_RESOURCES[session.id] || {}).flat().length; return `${rc} document${rc!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
                                   </div>
                                 </div>
                                 {locked && <Icon name="lock" size={13} color={C.gray300}/>}
