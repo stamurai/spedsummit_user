@@ -6655,7 +6655,7 @@ function PublicCertificatePageById({ certId }) {
    PUBLIC CERTIFICATE PAGE
 ───────────────────────────────────────────────────────────────────────────── */
 function PublicCertificatePage({ data }) {
-  const { recipientName, sessionTitle, instructor, instructorImage, duration, score, description, certId, date } = data;
+  const { recipientName, sessionTitle, sessionId, instructor, instructorImage, duration, score, description, certId, date } = data;
   const instructorName = instructor ? instructor.split("|")[0].trim() : "";
   const instructorRole = instructor?.includes("|") ? instructor.split("|")[1].trim() : "";
   const descText = description || "";
@@ -6781,6 +6781,7 @@ function PublicCertificatePage({ data }) {
                 </div>
                 {isLoggedIn ? (
                   <a href={window.location.origin}
+                    onClick={() => { if (sessionId) { sessionStorage.setItem("open_session_id", String(sessionId)); sessionStorage.setItem("showLanding","0"); } }}
                     style={{ marginTop:12, padding:"8px 16px", background:"#6490E8", color:"#fff", borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer", alignSelf:"flex-start", textDecoration:"none", display:"inline-block" }}>
                     Watch Now
                   </a>
@@ -11342,6 +11343,19 @@ export default function App() {
 
       setSessionsLoading(false);
 
+      // Auto-open a session if redirected from the public certificate "Watch Now"
+      const openId = sessionStorage.getItem("open_session_id");
+      if (openId) {
+        sessionStorage.removeItem("open_session_id");
+        const target = rows.find(s => String(s.id) === String(openId));
+        if (target) {
+          const sess = { ...toSession(target), progress: 0, status: "not-started" };
+          setActiveSession(sess);
+          setSessionSource("sessions");
+          setPage("session-detail");
+        }
+      }
+
       setSpring2026Ids(prev => {
         const supabaseIds = new Set(rows.map(s => s.id));
         const surviving = prev.filter(id => supabaseIds.has(id));
@@ -11626,7 +11640,7 @@ export default function App() {
     const today = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
     // Use stored cert_id from Supabase if it exists, otherwise generate and persist a new one
     const certId = certIds[session.id] || makeCertId(session.id, userName);
-    const certData = { recipientName:userName, sessionTitle:session.title, instructor:session.instructor, instructorImage:session.instructorImage||"", duration:session.duration, score, description:session.certDescription || session.description, certId, date:today };
+    const certData = { recipientName:userName, sessionTitle:session.title, sessionId:session.id, instructor:session.instructor, instructorImage:session.instructorImage||"", duration:session.duration, score, description:session.certDescription || session.description, certId, date:today };
     try {
       const dbId = await saveCertToSupabase(certData);
       // Save the cert_id back to user_progress so the same ID is reused on any device
