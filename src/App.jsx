@@ -4059,6 +4059,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const lesson = session.lessons[activeLesson] || session.lessons[0];
   const lastSavedPctRef = useRef(session.progress || 0);
   const saveThrottleRef = useRef(null);
+  const assessmentToastRef = useRef(0);
   const latestPctRef = useRef(session.progress || 0);
   const [videoFullyWatched, setVideoFullyWatched] = useState(
     session.status === "completed" || (session.progress || 0) >= 100
@@ -4098,7 +4099,11 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
     }
     if (l.type==="quiz") {
       if (!hasReviewed) {
-        toast({ type:"warning", title:"Complete the session first", message:"Please mark the session as completed to access the assessment." });
+        const now = Date.now();
+        if (now - assessmentToastRef.current > 2000) {
+          assessmentToastRef.current = now;
+          toast({ type:"warning", title:"Complete the session first", message:"Please mark the session as completed to access the assessment." });
+        }
         return;
       }
       setPanelMode("assessment"); return;
