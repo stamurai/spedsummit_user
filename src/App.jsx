@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useReducer } from "react";
 import ReactDOM from "react-dom/client";
 import { supabase } from "./supabase";
+import certBg from "../public/Bg.jpg";
 import { createPortal } from "react-dom";
 import * as PhosphorIcons from "@phosphor-icons/react";
 import jsPDF from "jspdf";
@@ -452,12 +453,7 @@ async function downloadCertificate({ recipientName = "", sessionTitle, instructo
   } catch(e) { /* fallback to homepage */ }
 
   // Pre-load background as base64 so html2canvas can render it
-  let bgDataUrl = "";
-  try {
-    const resp = await fetch(`${window.location.origin}/Bg.jpg`);
-    const blob = await resp.blob();
-    bgDataUrl = await new Promise(res => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsDataURL(blob); });
-  } catch(e) { bgDataUrl = ""; }
+  const bgDataUrl = certBg;
 
   // Industry standard: Letter landscape 11" × 8.5" at 96dpi
   const W = 1056, H = 816;
@@ -6741,7 +6737,7 @@ function PublicCertificatePage({ data }) {
 
         {/* RIGHT: Certificate + actions below */}
         <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-        <div style={{ width:"100%", aspectRatio:"11/8.5", borderRadius:16, overflow:"hidden", boxShadow:"0 4px 24px rgba(0,0,0,0.10)", position:"relative", border:"1px solid #e5e7eb", backgroundImage:"url('/Bg.jpg')", backgroundSize:"cover", backgroundPosition:"center" }}>
+        <div style={{ width:"100%", aspectRatio:"11/8.5", borderRadius:16, overflow:"hidden", boxShadow:"0 4px 24px rgba(0,0,0,0.10)", position:"relative", border:"1px solid #e5e7eb", backgroundImage:`url(${certBg})`, backgroundSize:"cover", backgroundPosition:"center" }}>
 
           <div style={{ position:"absolute", inset:0, padding:"24px 32px 20px", display:"flex", flexDirection:"column", alignItems:"center", fontFamily:"'Poppins','Arial',sans-serif", zIndex:1, boxSizing:"border-box", overflow:"hidden" }}>
             <div style={{ fontSize:13, fontWeight:700, color:"#1a1a1a", textAlign:"center", lineHeight:1.3, marginBottom:4 }}>Certificate of Professional Development Hours</div>
@@ -6832,7 +6828,7 @@ function CertificateModal({ session, quizState, onClose, userName = "" }) {
         </div>
 
         {/* ── Certificate Document — 11:8.5 aspect ratio ── */}
-        <div style={{ margin:"16px 16px 0", borderRadius:12, overflow:"hidden", border:`1px solid ${C.gray200}`, position:"relative", aspectRatio:"11/8.5", backgroundImage:"url('/Bg.jpg')", backgroundSize:"cover", backgroundPosition:"center" }}>
+        <div style={{ margin:"16px 16px 0", borderRadius:12, overflow:"hidden", border:`1px solid ${C.gray200}`, position:"relative", aspectRatio:"11/8.5", backgroundImage:`url(${certBg})`, backgroundSize:"cover", backgroundPosition:"center" }}>
 
           <div style={{ position:"absolute", inset:0, padding:"3% 5%", display:"flex", flexDirection:"column", alignItems:"center", fontFamily:"'Poppins','Arial',sans-serif", zIndex:1, boxSizing:"border-box", overflow:"hidden" }}>
             <style>{`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');`}</style>
