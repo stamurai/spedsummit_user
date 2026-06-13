@@ -2875,6 +2875,32 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                 );
               })()}
 
+              {/* ── MY PROGRESS (mobile/tablet only) ── */}
+              {isMobile && (
+                <div style={{ marginBottom:24 }}>
+                  <div style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:"14px 16px", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", marginBottom:10 }}>
+                    <div style={{ fontSize:14, fontWeight:800, color:C.gray900, marginBottom:2 }}>My Progress</div>
+                    <div style={{ fontSize:12, color:C.gray500, marginBottom:8 }}>{completed} of {totalEnrolled} sessions</div>
+                    <div style={{ width:"100%", height:5, background:C.gray200, borderRadius:99, overflow:"hidden" }}>
+                      <div style={{ width:`${pct}%`, height:"100%", background: pct===100?"#10b981":C.primary, borderRadius:99, transition:"width 0.8s cubic-bezier(0.23,1,0.32,1)" }}/>
+                    </div>
+                    <div style={{ fontSize:12, fontWeight:700, color: pct===100?"#10b981":C.primary, marginTop:5 }}>{pct}% complete</div>
+                  </div>
+                  <div style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, overflow:"hidden", boxShadow:"0 1px 4px rgba(0,0,0,0.04)", display:"grid", gridTemplateColumns:"1fr 1fr 1fr" }}>
+                    {[
+                      { label:"Sessions Watched",    val: completed },
+                      { label:"Certificates Earned", val: certsEarned },
+                      { label:"PD Hours Learned",    val: hoursLearned },
+                    ].map((row, i, arr) => (
+                      <div key={i} style={{ padding:"12px 14px", borderRight: i < arr.length-1 ? `1px solid ${C.gray100}` : "none", textAlign:"center" }}>
+                        <div style={{ fontSize:22, fontWeight:900, color:C.gray900, lineHeight:1, letterSpacing:"-0.5px" }}>{row.val}</div>
+                        <div style={{ fontSize:10, fontWeight:600, color:C.gray500, marginTop:3, lineHeight:1.3 }}>{row.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* ── CONTINUE LEARNING ── */}
               {(sessionsLoading || filteredInProgress.length > 0) && <div style={{ marginBottom:32 }}>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16, gap:10 }}>
