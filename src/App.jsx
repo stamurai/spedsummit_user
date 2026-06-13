@@ -11547,6 +11547,18 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
+  // Realtime subscription on user_progress — stats update instantly when progress is saved
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const channel = supabase
+      .channel("user-progress-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_progress" }, () => {
+        fetchUserProgress();
+      })
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [isLoggedIn]);
+
   function enroll(sessionId) {
     setEnrolledIds(prev => new Set([...prev, sessionId]));
     saveUserProgress(sessionId, { enrolled: true });
