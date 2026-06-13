@@ -11692,6 +11692,8 @@ export default function App() {
     if (page==="session-detail" && activeSession) {
       const liveSession = sessions.find(s => s.id === activeSession.id) || activeSession;
       return <SessionDetail session={liveSession} onBack={()=>nav(sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress} onVideoEnd={(sessionId) => {
+        // Mark session as completed in state + Supabase immediately
+        updateProgress(sessionId, 100, null);
         if (!reviewedSessionsRef.current.has(sessionId)) {
           const sess = sessions.find(s => String(s.id) === String(sessionId));
           if (sess) setReviewSession({ session: sess, score: null, passed: null });
