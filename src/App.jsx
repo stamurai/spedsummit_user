@@ -2976,38 +2976,6 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
               ))}
             </div>
 
-            {/* Certificate encouragement */}
-            <div style={{ marginTop:12, background:C.white, border:`1px solid ${C.gray200}`, borderRadius:14, padding:"16px 18px" }}>
-              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10 }}>
-                <div style={{ width:36, height:36, borderRadius:10, background: certsEarned > 0 ? "rgba(245,158,11,0.12)" : "rgba(99,144,232,0.12)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                  <Icon name="certificate" size={18} color={certsEarned > 0 ? "#f59e0b" : C.blue}/>
-                </div>
-                <div>
-                  <div style={{ fontSize:13, fontWeight:700, color:C.text, lineHeight:1.3 }}>
-                    {certsEarned > 0 ? `${certsEarned} Certificate${certsEarned > 1 ? "s" : ""} Earned 🎉` : "Earn Your Certificate"}
-                  </div>
-                  <div style={{ fontSize:11, color:C.gray500, marginTop:1 }}>
-                    {certsEarned > 0
-                      ? `${totalEnrolled - completed} session${totalEnrolled - completed !== 1 ? "s" : ""} left to complete the full summit`
-                      : "Complete sessions & pass quizzes to get certified"}
-                  </div>
-                </div>
-              </div>
-              <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                {[
-                  { label:"Watch a session",     done: completed > 0 },
-                  { label:"Pass the quiz",        done: certsEarned > 0 },
-                  { label:"Download certificate", done: certsEarned > 0 },
-                ].map((step, i) => (
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:8 }}>
-                    <div style={{ width:16, height:16, borderRadius:"50%", background: step.done ? C.success : C.gray100, border:`1.5px solid ${step.done ? C.success : C.gray300}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                      {step.done && <Icon name="check" size={9} color="#fff"/>}
-                    </div>
-                    <span style={{ fontSize:12, color: step.done ? C.gray500 : C.gray700, fontWeight: step.done ? 400 : 500, textDecoration: step.done ? "line-through" : "none" }}>{step.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
 
           </div>{/* end db-right-panel-inner */}
           </div>
