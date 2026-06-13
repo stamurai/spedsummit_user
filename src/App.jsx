@@ -6192,7 +6192,7 @@ function ReviewModal({ session, onClose, onSubmit }) {
           <div style={{ marginTop:18 }}>
             <button onClick={handleSubmit} disabled={!review.trim()}
               style={{ width:"100%", padding:"13px 0", borderRadius:10, border:"none", background: !review.trim() ? C.gray200 : C.primary, color: !review.trim() ? C.gray400 : "#fff", fontSize:14, fontWeight:700, cursor: !review.trim() ? "default" : "pointer", transition:"background .15s" }}>
-              Submit &amp; Continue to Assessment
+              Submit
             </button>
           </div>
         </>) : (
