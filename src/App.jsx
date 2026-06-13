@@ -4098,7 +4098,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
     }
     if (l.type==="quiz") {
       if (!hasReviewed) {
-        toast({ type:"warning", title:"Review required", message:"Please submit a session review before taking the assessment." });
+        toast({ type:"warning", title:"Complete the session first", message:"Please mark the session as completed to access the assessment." });
         return;
       }
       setPanelMode("assessment"); return;
@@ -4516,11 +4516,11 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                 </div>
               ) : (
                 <button
-                  disabled={!videoFullyWatched}
                   onClick={() => onVideoEnd?.(session.id)}
-                  style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:12, fontWeight:700, color: videoFullyWatched ? "#fff" : C.gray400, background: videoFullyWatched ? C.primary : C.gray100, border:"none", borderRadius:8, padding:"6px 12px", flexShrink:0, whiteSpace:"nowrap", cursor: videoFullyWatched ? "pointer" : "not-allowed", transition:"background .15s" }}>
-                  <Icon name="check" size={12} color={videoFullyWatched ? "#fff" : C.gray400}/>
-                  {videoFullyWatched ? "Mark as Completed" : "Watch to Complete"}
+                  style={{ display:"inline-flex", alignItems:"center", fontSize:12, fontWeight:700, color:"#fff", background:C.primary, border:"none", borderRadius:8, padding:"6px 14px", flexShrink:0, whiteSpace:"nowrap", cursor:"pointer", transition:"opacity .15s" }}
+                  onMouseEnter={e => e.currentTarget.style.opacity=".85"}
+                  onMouseLeave={e => e.currentTarget.style.opacity="1"}>
+                  Mark as Completed
                 </button>
               )}
             </div>
