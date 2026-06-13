@@ -2807,11 +2807,20 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                       onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
                       {btnLabel}
                     </button>
-                    {s.status==="completed" && (
-                      <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, color:C.success }}>
-                        <Icon name="check-circle" size={13} color={C.success}/> Certificate earned
-                      </span>
-                    )}
+                    {s.status==="completed" && (() => {
+                      const hasQuiz = getSessionQuestions(s).length > 0;
+                      const quizPassed = quizStates?.[s.id]?.status === "passed";
+                      const certEarned = hasQuiz ? quizPassed : true;
+                      return certEarned ? (
+                        <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, color:C.success }}>
+                          <Icon name="check-circle" size={13} color={C.success}/> Certificate earned
+                        </span>
+                      ) : (
+                        <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, color:C.warning }}>
+                          <Icon name="warning" size={13} color={C.warning}/> Assessment pending
+                        </span>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
