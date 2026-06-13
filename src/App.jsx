@@ -6780,11 +6780,17 @@ function PublicCertificatePage({ data }) {
                   )}
                 </div>
                 {isLoggedIn ? (
-                  <a href={window.location.origin}
-                    onClick={() => { if (sessionId) { sessionStorage.setItem("open_session_id", String(sessionId)); sessionStorage.setItem("showLanding","0"); } }}
-                    style={{ marginTop:12, padding:"8px 16px", background:"#6490E8", color:"#fff", borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer", alignSelf:"flex-start", textDecoration:"none", display:"inline-block" }}>
+                  <button
+                    onClick={() => {
+                      if (sessionId) sessionStorage.setItem("open_session_id", String(sessionId));
+                      sessionStorage.setItem("showLanding","0");
+                      sessionStorage.setItem("page","sessions");
+                      // Navigate to origin with no query params so cert_id doesn't re-trigger cert page
+                      window.location.href = window.location.origin + window.location.pathname;
+                    }}
+                    style={{ marginTop:12, padding:"8px 16px", background:"#6490E8", color:"#fff", border:"none", borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer", alignSelf:"flex-start", display:"inline-block" }}>
                     Watch Now
-                  </a>
+                  </button>
                 ) : (
                   <button onClick={()=>setShowAuth(true)}
                     style={{ marginTop:12, padding:"8px 16px", background:"#6490E8", color:"#fff", border:"none", borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer", alignSelf:"flex-start" }}>
