@@ -451,6 +451,14 @@ async function downloadCertificate({ recipientName = "", sessionTitle, instructo
     }
   } catch(e) { /* fallback to homepage */ }
 
+  // Pre-load background as base64 so html2canvas can render it
+  let bgDataUrl = "";
+  try {
+    const resp = await fetch(`${window.location.origin}/Bg.jpg`);
+    const blob = await resp.blob();
+    bgDataUrl = await new Promise(res => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsDataURL(blob); });
+  } catch(e) { bgDataUrl = ""; }
+
   // Industry standard: Letter landscape 11" × 8.5" at 96dpi
   const W = 1056, H = 816;
   const el = document.createElement("div");
@@ -458,7 +466,7 @@ async function downloadCertificate({ recipientName = "", sessionTitle, instructo
   el.innerHTML = `
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
     <div style="position:relative;width:${W}px;height:${H}px;font-family:'Poppins','Arial',sans-serif;box-sizing:border-box;overflow:hidden;">
-      <img src="${window.location.origin}/Bg.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;"/>
+      ${bgDataUrl ? `<img src="${bgDataUrl}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;"/>` : `<div style="position:absolute;inset:0;background:#fffef8;"></div>`}
 
       <!-- Content -->
       <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:960px;padding:40px 48px 36px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;">
