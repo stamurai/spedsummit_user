@@ -6739,7 +6739,7 @@ function PublicCertificatePage({ data }) {
         <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
         <div style={{ width:"100%", aspectRatio:"11/8.5", borderRadius:16, overflow:"hidden", boxShadow:"0 4px 24px rgba(0,0,0,0.10)", position:"relative", border:"1px solid #e5e7eb", backgroundImage:`url(${certBg})`, backgroundSize:"cover", backgroundPosition:"center" }}>
 
-          <div style={{ position:"absolute", inset:0, padding:"16px 32px 16px", display:"flex", flexDirection:"column", alignItems:"center", fontFamily:"'Poppins','Arial',sans-serif", zIndex:1, boxSizing:"border-box", overflow:"hidden" }}>
+          <div style={{ position:"absolute", inset:0, padding:"16px 32px 16px", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", fontFamily:"'Poppins','Arial',sans-serif", zIndex:1, boxSizing:"border-box", overflow:"hidden" }}>
             <div style={{ fontSize:13, fontWeight:700, color:"#1a1a1a", textAlign:"center", lineHeight:1.3, marginBottom:4 }}>Certificate of Professional Development Hours</div>
             <div style={{ fontSize:10, fontWeight:400, color:"#555", marginBottom:6 }}>is presented to</div>
             <div style={{ fontSize:28, fontWeight:800, color:"#1a1a1a", letterSpacing:-0.5, lineHeight:1.1, textAlign:"center", marginBottom:10 }}>{recipientName}</div>
