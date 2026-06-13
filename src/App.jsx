@@ -4066,7 +4066,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const lastSavedPctRef = useRef(session.progress || 0);
   const saveThrottleRef = useRef(null);
   const latestPctRef = useRef(session.progress || 0);
-  const videoEndFiredRef = useRef((session.progress || 0) >= 100);
+  const videoEndFiredRef = useRef(false);
 
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
@@ -11243,8 +11243,11 @@ export default function App() {
   const [certSession,       setCertSession]       = useState(null);
   const [reviewSession,     setReviewSession]     = useState(null);
   const [,                  setReviews]           = useState({});
-  const [reviewedSessions,  setReviewedSessions]  = useState(new Set());
-  const reviewedSessionsRef = useRef(new Set());
+  const [reviewedSessions,  setReviewedSessions]  = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem("sped_reviewed_sessions") || "[]")); } catch { return new Set(); }
+  });
+  const reviewedSessionsRef = useRef(null);
+  if (!reviewedSessionsRef.current) reviewedSessionsRef.current = reviewedSessions;
   const [testimonialsData,  setTestimonialsData]  = useState([]);
 
   useEffect(() => {
@@ -11424,6 +11427,21 @@ export default function App() {
       return next;
     });
   }
+
+  // Auto-mark sessions as reviewed if already completed/passed, and persist reviewedSessions
+  useEffect(() => {
+    const autoReviewed = new Set(reviewedSessionsRef.current);
+    sessions.forEach(s => {
+      const qs = quizStates[s.id];
+      if (s.status === "completed" || qs?.status === "passed") {
+        autoReviewed.add(String(s.id));
+        autoReviewed.add(s.id);
+      }
+    });
+    reviewedSessionsRef.current = autoReviewed;
+    setReviewedSessions(autoReviewed);
+    try { localStorage.setItem("sped_reviewed_sessions", JSON.stringify([...autoReviewed].map(String))); } catch(_) {}
+  }, [sessions, quizStates]);
 
   async function saveUserProgress(sessionId, fields) {
     const { data: { user } } = await supabase.auth.getUser();
@@ -11665,7 +11683,7 @@ export default function App() {
           const sess = sessions.find(s => String(s.id) === String(sessionId));
           if (sess) setReviewSession({ session: sess, score: null, passed: null });
         }
-      }} adminName={userName} adminAvatar={userAvatar} isDark={isDark} quizState={quizStates[liveSession.id]||{}} onFinishAssessment={handleAssessmentFinish} userEmail={userEmail} onCertificateClick={handleCertificateClick} hasReviewed={reviewedSessions.has(liveSession.id)}/>;
+      }} adminName={userName} adminAvatar={userAvatar} isDark={isDark} quizState={quizStates[liveSession.id]||{}} onFinishAssessment={handleAssessmentFinish} userEmail={userEmail} onCertificateClick={handleCertificateClick} hasReviewed={reviewedSessions.has(liveSession.id) || reviewedSessions.has(String(liveSession.id))}/>;
     }
     if (page==="past-season" && pastSeasonPageId) {
       const season = seasons.find(s => s.id === pastSeasonPageId);
@@ -11953,8 +11971,13 @@ export default function App() {
           onClose={() => setReviewSession(null)}
           onSubmit={async ({ sessionId, rating, review }) => {
             setReviews(r => ({ ...r, [sessionId]: { rating, review, date: new Date().toISOString() } }));
+            reviewedSessionsRef.current.add(String(sessionId));
             reviewedSessionsRef.current.add(sessionId);
-            setReviewedSessions(prev => new Set([...prev, sessionId]));
+            setReviewedSessions(prev => {
+              const next = new Set([...prev, sessionId, String(sessionId)]);
+              try { localStorage.setItem("sped_reviewed_sessions", JSON.stringify([...next].map(String))); } catch(_) {}
+              return next;
+            });
             if (review) {
               const sess = sessions.find(s => String(s.id) === String(sessionId));
               const { data } = await supabase.from("session_comments").insert({
