@@ -6118,7 +6118,6 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
                   <div style={{ position:"absolute", bottom:-20, left:60, width:100, height:100, borderRadius:"50%", background:"rgba(255,210,120,0.18)", pointerEvents:"none" }}/>
                   <div style={{ position:"absolute", bottom:-20, right:20, width:90, height:90, borderRadius:"50%", background:"rgba(255,160,100,0.15)", pointerEvents:"none" }}/>
                   <div style={{ position:"relative", zIndex:1, textAlign:"center" }}>
-                    <div style={{ fontSize:14, color:"#3b82f6", letterSpacing:2, marginBottom:4 }}>★ ★ ★</div>
                     <div style={{ fontSize:11, fontWeight:700, color:"#1a1a1a", lineHeight:1.4 }}>Certificate of Professional Development Hours</div>
                   </div>
                   <div style={{ position:"relative", zIndex:1, textAlign:"center" }}>
@@ -6743,12 +6742,9 @@ function PublicCertificatePage({ data }) {
         {/* RIGHT: Certificate + actions below */}
         <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
         <div style={{ width:"100%", aspectRatio:"11/8.5", borderRadius:16, overflow:"hidden", boxShadow:"0 4px 24px rgba(0,0,0,0.10)", position:"relative", border:"1px solid #e5e7eb" }}>
-          <img src="/Certificate Background.png" alt="" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", display:"block", pointerEvents:"none" }}/>
+          <img src="/Bg.jpg" alt="" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", display:"block", pointerEvents:"none" }}/>
 
           <div style={{ position:"absolute", inset:0, padding:"24px 32px 20px", display:"flex", flexDirection:"column", alignItems:"center", fontFamily:"'Poppins','Arial',sans-serif", zIndex:1, boxSizing:"border-box", overflow:"hidden" }}>
-            <div style={{ display:"flex", gap:8, marginBottom:10 }}>
-              {[0,1,2].map(i => <span key={i} style={{ fontSize:18, color:"#3b82f6" }}>★</span>)}
-            </div>
             <div style={{ fontSize:13, fontWeight:700, color:"#1a1a1a", textAlign:"center", lineHeight:1.3, marginBottom:4 }}>Certificate of Professional Development Hours</div>
             <div style={{ fontSize:10, fontWeight:400, color:"#555", marginBottom:6 }}>is presented to</div>
             <div style={{ fontSize:28, fontWeight:800, color:"#1a1a1a", letterSpacing:-0.5, lineHeight:1.1, textAlign:"center", marginBottom:10 }}>{recipientName}</div>
