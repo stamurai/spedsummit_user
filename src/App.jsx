@@ -6171,14 +6171,9 @@ function ReviewModal({ session, onClose, onSubmit }) {
 
         {!submitted ? (<>
           {/* Header */}
-          <div style={{ textAlign:"center", marginBottom:24 }}>
-            <div style={{ fontSize:36, marginBottom:10 }}>🎬</div>
-            <h2 style={{ margin:"0 0 6px", fontSize:20, fontWeight:800, color:C.gray900 }}>Session Complete!</h2>
-            <p style={{ margin:0, fontSize:14, color:C.gray500 }}>Share your thoughts to unlock the assessment.</p>
+          <div style={{ marginBottom:18 }}>
+            <h2 style={{ margin:"0 0 4px", fontSize:18, fontWeight:800, color:C.gray900 }}>{session.title}</h2>
           </div>
-
-          {/* Divider */}
-          <div style={{ borderTop:`1px solid ${C.gray100}`, margin:"0 0 22px" }}/>
 
           {/* Text review */}
           <div style={{ fontSize:14, fontWeight:700, color:C.gray700, marginBottom:10 }}>How would you rate this session?</div>
@@ -6198,7 +6193,6 @@ function ReviewModal({ session, onClose, onSubmit }) {
               style={{ width:"100%", padding:"13px 0", borderRadius:10, border:"none", background: !review.trim() ? C.gray200 : C.primary, color: !review.trim() ? C.gray400 : "#fff", fontSize:14, fontWeight:700, cursor: !review.trim() ? "default" : "pointer", transition:"background .15s" }}>
               Submit &amp; Continue to Assessment
             </button>
-            <div style={{ textAlign:"center", fontSize:12, color:C.gray400, marginTop:8 }}>A review is required to unlock the assessment</div>
           </div>
         </>) : (
           <div style={{ textAlign:"center", padding:"16px 0 8px" }}>
