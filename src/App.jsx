@@ -4060,7 +4060,10 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const lastSavedPctRef = useRef(session.progress || 0);
   const saveThrottleRef = useRef(null);
   const latestPctRef = useRef(session.progress || 0);
-  const videoEndFiredRef = useRef(false);
+  const watchedKey = `sped_watched_${session.id}`;
+  const [videoFullyWatched, setVideoFullyWatched] = useState(() =>
+    session.status === "completed" || (session.progress || 0) >= 100 || !!localStorage.getItem(watchedKey)
+  );
 
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
@@ -4455,17 +4458,15 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                       onUpdateProgress?.(session.id, cur, activeLesson);
                     }, 5000);
                   }
-                  if (pct >= 100 && !videoEndFiredRef.current) {
-                    videoEndFiredRef.current = true;
-                    onVideoEnd?.(session.id);
+                  if (pct >= 100) {
+                    setVideoFullyWatched(true);
+                    localStorage.setItem(watchedKey, "1");
                   }
                 }}
                 onEnded={() => {
                   onUpdateProgress?.(session.id, 100, activeLesson);
-                  if (!videoEndFiredRef.current) {
-                    videoEndFiredRef.current = true;
-                    onVideoEnd?.(session.id);
-                  }
+                  setVideoFullyWatched(true);
+                  localStorage.setItem(watchedKey, "1");
                 }}/>
               ) : (
                 <>
@@ -4506,8 +4507,21 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
             </div>{/* end video padding wrapper */}
 
             {/* Title row */}
-            <div style={{ padding:"16px 24px 0", flexShrink:0 }}>
-              <h2 style={{ margin:0, fontSize:18, fontWeight:700, color:C.gray900, lineHeight:1.4, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>{session.title}</h2>
+            <div style={{ padding:"16px 24px 0", flexShrink:0, display:"flex", alignItems:"flex-start", gap:12 }}>
+              <h2 style={{ margin:0, fontSize:18, fontWeight:700, color:C.gray900, lineHeight:1.4, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", flex:1 }}>{session.title}</h2>
+              {hasReviewed ? (
+                <div style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:12, fontWeight:700, color:C.success, background:"rgba(16,185,129,0.10)", border:"1.5px solid rgba(16,185,129,0.25)", borderRadius:8, padding:"6px 12px", flexShrink:0, whiteSpace:"nowrap" }}>
+                  <Icon name="check-circle" size={13} color={C.success}/>Completed
+                </div>
+              ) : (
+                <button
+                  disabled={!videoFullyWatched}
+                  onClick={() => onVideoEnd?.(session.id)}
+                  style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:12, fontWeight:700, color: videoFullyWatched ? "#fff" : C.gray400, background: videoFullyWatched ? C.primary : C.gray100, border:"none", borderRadius:8, padding:"6px 12px", flexShrink:0, whiteSpace:"nowrap", cursor: videoFullyWatched ? "pointer" : "not-allowed", transition:"background .15s" }}>
+                  <Icon name="check" size={12} color={videoFullyWatched ? "#fff" : C.gray400}/>
+                  {videoFullyWatched ? "Mark as Completed" : "Watch to Complete"}
+                </button>
+              )}
             </div>
 
             {/* Tab bar — sticky within card */}
