@@ -5672,8 +5672,20 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
         onClose={() => setShowDeactivateModal(false)}
         onConfirm={async () => {
           setShowDeactivateModal(false);
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              // Delete all user data in parallel
+              await Promise.all([
+                supabase.from("user_progress").delete().eq("user_id", user.id),
+                supabase.from("certificates").delete().eq("cert_data->>recipientName", userName),
+                // Delete by user_id if column exists, fall back to author_name
+                supabase.from("session_comments").delete().or(`user_id.eq.${user.id},author_name.eq.${userName}`),
+              ]);
+            }
+          } catch(e) { console.error("Account deletion error:", e); }
           await supabase.auth.signOut();
-          toast({ type:"success", title:"Account deactivated", message:"Your account has been removed." });
+          toast({ type:"success", title:"Account deleted", message:"Your account and all associated data have been removed." });
           onBack();
         }}
       />
@@ -12093,10 +12105,12 @@ export default function App() {
             saveUserProgress(sessionId, { reviewed: true });
             if (review) {
               const sess = sessions.find(s => String(s.id) === String(sessionId));
+              const { data: { user: _cu } } = await supabase.auth.getUser();
               const { data, error } = await supabase.from("session_comments").insert({
                 session_id: String(sessionId),
                 session_title: sess?.title || "",
                 author_name: userName || "Anonymous",
+                user_id: _cu?.id || null,
                 body: review,
                 parent_id: null,
               }).select().single();
