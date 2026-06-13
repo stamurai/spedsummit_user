@@ -2890,11 +2890,11 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                     {[
                       { label:"Sessions Watched",    val: completed },
                       { label:"Certificates Earned", val: certsEarned },
-                      { label:"PD Hours Learned",    val: hoursLearned },
+                      { label:"PD Hours\nLearned",    val: hoursLearned },
                     ].map((row, i, arr) => (
                       <div key={i} style={{ padding:"12px 14px", borderRight: i < arr.length-1 ? `1px solid ${C.gray100}` : "none", textAlign:"center" }}>
                         <div style={{ fontSize:22, fontWeight:900, color:C.gray900, lineHeight:1, letterSpacing:"-0.5px" }}>{row.val}</div>
-                        <div style={{ fontSize:10, fontWeight:600, color:C.gray500, marginTop:3, lineHeight:1.3 }}>{row.label}</div>
+                        <div style={{ fontSize:10, fontWeight:600, color:C.gray500, marginTop:3, lineHeight:1.3, whiteSpace:"pre-line" }}>{row.label}</div>
                       </div>
                     ))}
                   </div>
