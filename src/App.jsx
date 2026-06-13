@@ -427,8 +427,8 @@ async function loadSealAsPng(url, size = 220) {
   });
 }
 
-function makeCertId(sessionId, userName) {
-  const str = `${userName}||${sessionId}`;
+function makeCertId(sessionId, userEmail) {
+  const str = `${userEmail}||${sessionId}`;
   let h = 0;
   for (let i = 0; i < str.length; i++) h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
   return `SS-${String(sessionId).padStart(3,"0")}-${Math.abs(h).toString(36).toUpperCase().slice(0,6)}-2024`;
@@ -6833,10 +6833,10 @@ function PublicCertificatePage({ data }) {
 /* ─────────────────────────────────────────────────────────────────────────────
    CERTIFICATE MODAL
 ───────────────────────────────────────────────────────────────────────────── */
-function CertificateModal({ session, quizState, onClose, userName = "" }) {
+function CertificateModal({ session, quizState, onClose, userName = "", userEmail = "" }) {
   const score = quizState?.score ?? 0;
   const today = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
-  const certId = makeCertId(session.id, userName);
+  const certId = makeCertId(session.id, userEmail || userName);
   // Generate shareable cert URL with encoded data
   const certData = { recipientName:userName, sessionTitle:session.title, instructor:session.instructor, instructorImage:session.instructorImage||"", duration:session.duration, score, description:session.certDescription||"", certId, date:today };
   const certUrl = `${window.location.origin}${window.location.pathname}?cert=${btoa(JSON.stringify(certData))}`;
@@ -11658,7 +11658,7 @@ export default function App() {
     const score = qs.score ?? 0;
     const today = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
     // Use stored cert_id from Supabase if it exists, otherwise generate and persist a new one
-    const certId = certIds[session.id] || makeCertId(session.id, userName);
+    const certId = certIds[session.id] || makeCertId(session.id, userEmail);
     const certData = { recipientName:userName, sessionTitle:session.title, sessionId:session.id, instructor:session.instructor, instructorImage:session.instructorImage||"", duration:session.duration, score, description:session.certDescription || session.description, certId, date:today };
     try {
       const dbId = await saveCertToSupabase(certData);
