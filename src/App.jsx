@@ -6170,9 +6170,12 @@ function ReviewModal({ session, onClose, onSubmit }) {
       <div style={{ background:C.white, borderRadius:20, width:"100%", maxWidth:440, padding:"36px 32px 28px", position:"relative", boxShadow:"0 24px 64px rgba(0,0,0,0.18)", animation:"fadeIn .2s ease" }}>
 
         {!submitted ? (<>
+          {/* Close button */}
+          <button onClick={onClose} style={{ position:"absolute", top:16, right:16, width:32, height:32, borderRadius:8, border:`1px solid ${C.gray200}`, background:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:C.gray400, fontSize:18, lineHeight:1 }}>×</button>
+
           {/* Header */}
-          <div style={{ marginBottom:18 }}>
-            <h2 style={{ margin:"0 0 4px", fontSize:18, fontWeight:800, color:C.gray900 }}>{session.title}</h2>
+          <div style={{ marginBottom:28 }}>
+            <h2 style={{ margin:0, fontSize:18, fontWeight:800, color:C.gray900, paddingRight:36 }}>{session.title}</h2>
           </div>
 
           {/* Text review */}
