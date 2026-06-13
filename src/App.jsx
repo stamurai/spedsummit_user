@@ -4317,7 +4317,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                           const isActive = (i === activeLesson && l.type === "material" && panelMode === "material") || (i === activeLesson && l.type !== "quiz" && l.type !== "material" && panelMode === "video") || (l.type === "quiz" && panelMode === "assessment");
                           const locked = !unlockedIndices.has(i) && l.type !== "material";
                           const quizDone = isQuiz && (l.status === "completed" || quizState?.status === "passed");
-                          const videoDone = !isQuiz && l.type !== "material" && (l.status === "completed" || session.status === "completed" || (session.progress || 0) >= 100);
+                          const videoDone = !isQuiz && l.type !== "material" && (l.status === "completed" || session.status === "completed" || (session.progress || 0) >= 100 || hasReviewed);
                           const isPreview = i === 0 || l.status === "available";
                           const done = l.status === "completed" || quizDone || videoDone;
                           return (
