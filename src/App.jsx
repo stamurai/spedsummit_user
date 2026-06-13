@@ -11254,6 +11254,7 @@ export default function App() {
   const [sessionBackLabel, setSessionBackLabel] = useState(null);
   const { toasts, toast, remove } = useToast();
   const [quizStates, setQuizStates] = useState({});
+  const [certIds, setCertIds] = useState({}); // sessionId → cert_id stored in Supabase
   const [enrolledIds, setEnrolledIds] = useState(new Set());
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
@@ -11450,6 +11451,9 @@ export default function App() {
     }
     setEnrolledIds(newEnrolled);
     setScheduleRegistrations(newRegs);
+    const newCertIds = {};
+    data.forEach(row => { if (row.cert_id) newCertIds[row.session_id] = row.cert_id; });
+    setCertIds(newCertIds);
     setQuizStates(prev => {
       const next = { ...prev };
       data.forEach(row => {
@@ -11620,13 +11624,18 @@ export default function App() {
     const qs = quizStates[session.id] || {};
     const score = qs.score ?? 0;
     const today = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
-    const certId = makeCertId(session.id, userName);
+    // Use stored cert_id from Supabase if it exists, otherwise generate and persist a new one
+    const certId = certIds[session.id] || makeCertId(session.id, userName);
     const certData = { recipientName:userName, sessionTitle:session.title, instructor:session.instructor, instructorImage:session.instructorImage||"", duration:session.duration, score, description:session.certDescription || session.description, certId, date:today };
     try {
       const dbId = await saveCertToSupabase(certData);
+      // Save the cert_id back to user_progress so the same ID is reused on any device
+      if (!certIds[session.id]) {
+        saveUserProgress(session.id, { cert_id: certId });
+        setCertIds(prev => ({ ...prev, [session.id]: certId }));
+      }
       window.open(`${window.location.origin}/?cert_id=${dbId}`, "_blank");
     } catch(e) {
-      // Fallback to base64 URL if Supabase fails
       window.open(`${window.location.origin}/?cert=${btoa(JSON.stringify(certData))}`, "_blank");
     }
   }
