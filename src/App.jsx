@@ -6830,7 +6830,7 @@ function CertificateModal({ session, quizState, onClose, userName = "" }) {
         {/* ── Certificate Document — 11:8.5 aspect ratio ── */}
         <div style={{ margin:"16px 16px 0", borderRadius:12, overflow:"hidden", border:`1px solid ${C.gray200}`, position:"relative", aspectRatio:"11/8.5", backgroundImage:`url(${certBg})`, backgroundSize:"cover", backgroundPosition:"center" }}>
 
-          <div style={{ position:"absolute", inset:0, padding:"3% 5%", display:"flex", flexDirection:"column", alignItems:"center", fontFamily:"'Poppins','Arial',sans-serif", zIndex:1, boxSizing:"border-box", overflow:"hidden" }}>
+          <div style={{ position:"absolute", inset:0, padding:"3% 5%", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", fontFamily:"'Poppins','Arial',sans-serif", zIndex:1, boxSizing:"border-box", overflow:"hidden" }}>
             <style>{`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');`}</style>
             <div style={{ textAlign:"center", fontSize:"clamp(9px,1.4vw,14px)", fontWeight:700, color:"#1a1a1a", lineHeight:1.25, marginBottom:"1%" }}>Certificate of Professional Development Hours</div>
             <div style={{ fontSize:"clamp(7px,1vw,10px)", fontWeight:400, color:"#555", marginBottom:"1%" }}>is presented to</div>
@@ -6844,7 +6844,7 @@ function CertificateModal({ session, quizState, onClose, userName = "" }) {
               <div>Session time: {session.duration || "1 Hour"}</div>
               <div>{today}</div>
             </div>
-            <div style={{ fontSize:"clamp(6px,0.85vw,9px)", fontWeight:400, color:"#374151", lineHeight:1.65, textAlign:"center", marginBottom:"1.5%", flex:1, overflow:"hidden" }}>
+            <div style={{ fontSize:"clamp(6px,0.85vw,9px)", fontWeight:400, color:"#374151", lineHeight:1.65, textAlign:"center", marginBottom:"1.5%" }}>
               {session.description
                 ? `This session was presented by ${session.instructor?.split("|")[0]?.trim()}. ${session.description} Participants receiving this certificate completed this session, including the subsequent assessments.`
                 : `This session was presented by ${session.instructor?.split("|")[0]?.trim()}. Participants receiving this certificate completed this session, including the subsequent assessments.`}
