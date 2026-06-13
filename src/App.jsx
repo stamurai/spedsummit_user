@@ -4325,7 +4325,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                               style={{ padding:"3px 10px", cursor: locked ? "default" : "pointer" }}>
                               <div style={{
                                 display:"flex", alignItems:"center", gap:12, padding:"10px 12px",
-                                background: isActive || done ? "#eef2ff" : "transparent",
+                                background: isActive ? "#eef2ff" : done ? "rgba(16,185,129,0.07)" : "transparent",
                                 borderRadius:10,
                                 transition:"background .15s"
                               }}
