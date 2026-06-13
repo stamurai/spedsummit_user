@@ -437,9 +437,7 @@ async function downloadCertificate({ recipientName = "", sessionTitle, instructo
   const certId = existingCertId || `${Math.random().toString(36).slice(2,8).toUpperCase()}-CE${String(Date.now()).slice(-6)}`;
   const sessionTime = duration || "1 Hour";
   const instructorName = instructor ? instructor.split("|")[0].trim() : "";
-  const descText = description
-    ? `This session was presented by ${instructorName}. ${description} Participants receiving this certificate completed this session, including the subsequent assessments.`
-    : `This session was presented by ${instructorName}. Participants receiving this certificate completed this session, including the subsequent assessments.`;
+  const descText = description || "";
 
   // Save to Supabase only for new certs; re-downloads use existing verify URL
   let verifyUrl = window.location.origin;
@@ -6603,9 +6601,7 @@ function PublicCertificatePage({ data }) {
   const { recipientName, sessionTitle, instructor, instructorImage, duration, score, description, certId, date } = data;
   const instructorName = instructor ? instructor.split("|")[0].trim() : "";
   const instructorRole = instructor?.includes("|") ? instructor.split("|")[1].trim() : "";
-  const descText = description
-    ? `This session was presented by ${instructorName}. ${description} Participants receiving this certificate completed this session, including the subsequent assessments.`
-    : `This session was presented by ${instructorName}. Participants receiving this certificate completed this session, including the subsequent assessments.`;
+  const descText = description || "";
   const certUrl = `${window.location.origin}${window.location.pathname}?cert=${btoa(JSON.stringify(data))}`;
   const [copied, setCopied] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
