@@ -4511,13 +4511,13 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
             <div style={{ padding:"16px 24px 0", flexShrink:0, display:"flex", flexDirection: narrow ? "column" : "row", alignItems: narrow ? "flex-start" : "flex-start", gap: narrow ? 10 : 12 }}>
               <h2 style={{ margin:0, fontSize:18, fontWeight:700, color:C.gray900, lineHeight:1.4, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", flex: narrow ? undefined : 1 }}>{session.title}</h2>
               {hasReviewed ? (
-                <div style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", gap:5, fontSize:12, fontWeight:700, color:C.success, background:"rgba(16,185,129,0.10)", border:"1.5px solid rgba(16,185,129,0.25)", borderRadius:8, height:34, minWidth:148, flexShrink:0, whiteSpace:"nowrap", boxSizing:"border-box" }}>
-                  <Icon name="check-circle" size={13} color={C.success}/>Completed
+                <div style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:C.success, background:"rgba(16,185,129,0.10)", border:"1.5px solid rgba(16,185,129,0.25)", borderRadius:8, height:34, padding:"0 14px", flexShrink:0, whiteSpace:"nowrap", boxSizing:"border-box" }}>
+                  Completed
                 </div>
               ) : (
                 <button
                   onClick={() => onVideoEnd?.(session.id)}
-                  style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:"#fff", background:C.primary, border:"none", borderRadius:8, height:34, minWidth:148, flexShrink:0, whiteSpace:"nowrap", cursor:"pointer", transition:"opacity .15s", boxSizing:"border-box" }}
+                  style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:"#fff", background:C.primary, border:"none", borderRadius:8, height:34, padding:"0 14px", flexShrink:0, whiteSpace:"nowrap", cursor:"pointer", transition:"opacity .15s", boxSizing:"border-box" }}
                   onMouseEnter={e => e.currentTarget.style.opacity=".85"}
                   onMouseLeave={e => e.currentTarget.style.opacity="1"}>
                   Mark as Completed
