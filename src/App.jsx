@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useReducer } from "react";
 import ReactDOM from "react-dom/client";
 import { supabase } from "./supabase";
-import certBg from "../public/Bg.jpg";
+import certBg from "./assets/Bg.jpg";
 import { createPortal } from "react-dom";
 import * as PhosphorIcons from "@phosphor-icons/react";
 import jsPDF from "jspdf";
