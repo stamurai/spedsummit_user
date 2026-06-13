@@ -4028,7 +4028,7 @@ function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFoot
   );
 }
 
-function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress, onVideoEnd, adminName = "", adminAvatar = null, isDark = false, quizState = {}, onFinishAssessment, userEmail = "", onCertificateClick, hasReviewed = false }) {
+function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress, onVideoEnd, adminName = "", adminAvatar = null, isDark = false, quizState = {}, onFinishAssessment, userEmail = "", onCertificateClick, hasReviewed = false, currentUserId = null }) {
   const [playing, setPlaying] = useState(false);
   const [activeLesson, setActiveLesson] = useState(() => { const idx = session.lessons.findIndex(l=>l.status==="active" && l.type!=="quiz"); return idx >= 0 ? idx : 0; });
   const [progress, setProgress] = useState(session.progress || 0);
@@ -4628,7 +4628,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               )}
               {sdComments.filter(c => !c.parent_id).map(c => {
                 const replies = sdComments.filter(r => r.parent_id === c.id);
-                const isOwn = c.author_name === adminName || c.author_name === "You" || c.author_name === "Anonymous";
+                const isOwn = c.user_id ? c.user_id === currentUserId : (c.author_name === adminName || c.author_name === "You" || c.author_name === "Anonymous");
                 const sdEs = sdEditState[c.id] || {};
                 const rs = sdReplyState[c.id] || {};
                 return (
@@ -4816,7 +4816,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
 /* ─────────────────────────────────────────────────────────────────────────────
    COMMUNITY PAGE
 ───────────────────────────────────────────────────────────────────────────── */
-function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [], refreshKey = 0 }) {
+function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [], refreshKey = 0, currentUserId = null }) {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterSession, setFilterSession] = useState("all");
@@ -4948,7 +4948,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
   function renderComment(c) {
     const replies = comments.filter(r => r.parent_id === c.id);
     const rs = replyState[c.id] || {};
-    const isOwn = c.author_name === userName;
+    const isOwn = c.user_id ? c.user_id === currentUserId : c.author_name === userName;
     const es = editState[c.id] || {};
     return (
       <div key={c.id} className="comm-comment-pad" style={{ padding:"14px 18px 10px", borderBottom:`1px solid ${C.gray100}` }}>
@@ -11288,6 +11288,7 @@ export default function App() {
   const [enrolledIds, setEnrolledIds] = useState(new Set());
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
+  const [userId, setUserId] = useState(null);
   const [userAvatar, setUserAvatar] = useState(null);
   const [userTimezone, setUserTimezone] = useState(() => Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [showTimezoneModal, setShowTimezoneModal] = useState(false);
@@ -11412,6 +11413,7 @@ export default function App() {
         const name = meta.full_name || meta.name || session.user.email || "User";
         setUserName(name);
         setUserEmail(session.user.email || "");
+        setUserId(session.user.id || null);
         setUserAvatar(meta.avatar_url || meta.picture || null);
         if (meta.timezone) { setUserTimezone(meta.timezone); } else if (event === "SIGNED_IN") { setShowTimezoneModal(true); }
         setIsLoggedIn(true);
@@ -11426,7 +11428,7 @@ export default function App() {
         setIsLoggedIn(false);
         setShowLanding(true);
         setPage("dashboard");
-        setUserName(""); setUserEmail(""); setUserAvatar(null);
+        setUserName(""); setUserEmail(""); setUserId(null); setUserAvatar(null);
         setEnrolledIds(new Set()); setScheduleRegistrations({}); setQuizStates({});
         setSessions(prev => prev.map(s => ({ ...s, progress: 0, status: "not-started" })));
         sessionStorage.removeItem("loggedIn");
@@ -11449,6 +11451,7 @@ export default function App() {
         const meta = session.user.user_metadata || {};
         setUserName(meta.full_name || meta.name || session.user.email || "User");
         setUserEmail(session.user.email || "");
+        setUserId(session.user.id || null);
         setUserAvatar(meta.avatar_url || meta.picture || null);
         if (meta.timezone) setUserTimezone(meta.timezone);
         setIsLoggedIn(true);
@@ -11460,7 +11463,7 @@ export default function App() {
         setIsLoggedIn(false);
         setShowLanding(true);
         setPage("dashboard");
-        setUserName(""); setUserEmail(""); setUserAvatar(null);
+        setUserName(""); setUserEmail(""); setUserId(null); setUserAvatar(null);
         setEnrolledIds(new Set()); setScheduleRegistrations({}); setQuizStates({});
         setSessions(prev => prev.map(s => ({ ...s, progress: 0, status: "not-started" })));
         sessionStorage.removeItem("loggedIn");
@@ -11567,6 +11570,7 @@ export default function App() {
         const name = meta.full_name || meta.name || session.user.email || "User";
         setUserName(name);
         setUserEmail(session.user.email || "");
+        setUserId(session.user.id || null);
         setUserAvatar(meta.avatar_url || meta.picture || null);
         if (meta.timezone) setUserTimezone(meta.timezone);
         setIsLoggedIn(true);
@@ -11819,7 +11823,7 @@ export default function App() {
           const sess = sessions.find(s => String(s.id) === String(sessionId));
           if (sess) setReviewSession({ session: sess, score: null, passed: null });
         }
-      }} adminName={userName} adminAvatar={userAvatar} isDark={isDark} quizState={quizStates[liveSession.id]||{}} onFinishAssessment={handleAssessmentFinish} userEmail={userEmail} onCertificateClick={handleCertificateClick} hasReviewed={reviewedSessions.has(liveSession.id) || reviewedSessions.has(String(liveSession.id))}/>;
+      }} adminName={userName} adminAvatar={userAvatar} isDark={isDark} quizState={quizStates[liveSession.id]||{}} onFinishAssessment={handleAssessmentFinish} userEmail={userEmail} onCertificateClick={handleCertificateClick} hasReviewed={reviewedSessions.has(liveSession.id) || reviewedSessions.has(String(liveSession.id))} currentUserId={userId}/>;
     }
     if (page==="past-season" && pastSeasonPageId) {
       const season = seasons.find(s => s.id === pastSeasonPageId);
@@ -11931,7 +11935,7 @@ export default function App() {
     if (page==="sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} seasons={seasons} sessionsLoading={sessionsLoading}/>;
     if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} schedule={scheduleData.length > 0 ? scheduleData : SCHEDULE}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
-    if (page==="community") return <CommunityPage toast={toast} userName={userName} userAvatar={userAvatar} sessions={sessions} refreshKey={commentsRefreshKey}/>;
+    if (page==="community") return <CommunityPage toast={toast} userName={userName} userAvatar={userAvatar} sessions={sessions} refreshKey={commentsRefreshKey} currentUserId={userId}/>;
     if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick} userName={userName} sessions={sessions} seasons={seasons}/>;
     if (page==="past-sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} seasons={seasons} sessionsLoading={sessionsLoading}/>;
     if (page==="notifications")  return <NotificationsPage />;
@@ -11978,7 +11982,7 @@ export default function App() {
           sessionStorage.setItem("page", "dashboard");
           await supabase.auth.signOut();
           setIsLoggedIn(false); setShowLanding(true); setPage("dashboard");
-          setUserName(""); setUserEmail(""); setUserAvatar(null);
+          setUserName(""); setUserEmail(""); setUserId(null); setUserAvatar(null);
           setEnrolledIds(new Set()); setQuizStates({});
         }}
         onNavigateProfile={() => nav("profile")}
