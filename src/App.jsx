@@ -6573,6 +6573,60 @@ function ShareCertificateModal({ certUrl, sessionTitle, onClose }) {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
+   CERTIFICATE PREVIEW — renders at full PDF size then scales to container
+───────────────────────────────────────────────────────────────────────────── */
+function CertPreview({ recipientName, sessionTitle, duration, date, descText, certId, certUrl }) {
+  const containerRef = useRef(null);
+  const [scale, setScale] = useState(0.5);
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(entries => {
+      setScale(entries[0].contentRect.width / 1056);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const W = 1056, H = 816;
+  return (
+    <div ref={containerRef} style={{ width:"100%", aspectRatio:"11/8.5", borderRadius:16, overflow:"hidden", boxShadow:"0 4px 24px rgba(0,0,0,0.10)", border:"1px solid #e5e7eb", position:"relative" }}>
+      <div style={{ position:"absolute", top:0, left:0, width:W, height:H, transformOrigin:"top left", transform:`scale(${scale})`, fontFamily:"'Poppins','Arial',sans-serif" }}>
+        {/* Background */}
+        <img src={certBg} alt="" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
+        {/* Centered content — mirrors downloadCertificate layout */}
+        <div style={{ position:"absolute", left:"50%", top:"50%", transform:"translate(-50%,-50%)", width:960, padding:"40px 48px 36px", boxSizing:"border-box", display:"flex", flexDirection:"column", alignItems:"center" }}>
+          <div style={{ textAlign:"center", fontSize:32, fontWeight:700, color:"#1a1a1a", lineHeight:1.2, marginBottom:6, letterSpacing:"-0.3px" }}>Certificate of Professional Development Hours</div>
+          <div style={{ fontSize:15, fontWeight:400, color:"#6b7280", marginBottom:12, letterSpacing:"0.4px" }}>is presented to</div>
+          <div style={{ fontSize:56, fontWeight:800, color:"#111827", letterSpacing:-2, lineHeight:1, textAlign:"center", marginBottom:20 }}>{recipientName}</div>
+          <div style={{ width:640, height:1, background:"linear-gradient(90deg,transparent,#d1d5db,transparent)", marginBottom:20 }}/>
+          <div style={{ textAlign:"center", marginBottom:24 }}>
+            <div style={{ fontSize:14, fontWeight:400, color:"#6b7280", marginBottom:6 }}>For their participation in the session titled:</div>
+            <div style={{ fontSize:24, fontWeight:600, color:"#1a1a1a", lineHeight:1.3 }}>{sessionTitle}</div>
+          </div>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", width:"100%", marginBottom:20, padding:"14px 0", borderTop:"1px solid #e5e7eb", borderBottom:"1px solid #e5e7eb" }}>
+            <div style={{ fontSize:17, fontWeight:600, color:"#1a1a1a" }}>Session time: {duration || "1 Hour"}</div>
+            <div style={{ fontSize:17, fontWeight:600, color:"#1a1a1a" }}>{date}</div>
+          </div>
+          <div style={{ fontSize:14, fontWeight:400, color:"#4b5563", lineHeight:1.9, textAlign:"center", maxWidth:860 }}>{descText}</div>
+        </div>
+        {/* Footer */}
+        <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"16px 56px", display:"flex", justifyContent:"space-between", alignItems:"center", fontSize:13, fontWeight:400, color:"#374151" }}>
+          <div>
+            <div>Certificate ID: <strong style={{ fontWeight:600 }}>{certId}</strong></div>
+            <div style={{ marginTop:3 }}>Contact at <strong style={{ fontWeight:600 }}>support@spedsummit.com</strong></div>
+          </div>
+          <div style={{ textAlign:"right" }}>
+            <div style={{ marginBottom:2 }}>Verify at:</div>
+            <a href={certUrl} target="_blank" rel="noopener noreferrer" style={{ color:"#6490E8", fontWeight:600, textDecoration:"underline" }}>{window.location.hostname}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
    PUBLIC CERTIFICATE PAGE (Supabase ID-based)
 ───────────────────────────────────────────────────────────────────────────── */
 function PublicCertificatePageById({ certId }) {
@@ -6737,34 +6791,7 @@ function PublicCertificatePage({ data }) {
 
         {/* RIGHT: Certificate + actions below */}
         <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-        <div style={{ width:"100%", aspectRatio:"11/8.5", borderRadius:16, overflow:"hidden", boxShadow:"0 4px 24px rgba(0,0,0,0.10)", position:"relative", border:"1px solid #e5e7eb", backgroundImage:`url(${certBg})`, backgroundSize:"cover", backgroundPosition:"center" }}>
-
-          <div style={{ position:"absolute", inset:0, padding:"16px 32px 16px", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", fontFamily:"'Poppins','Arial',sans-serif", zIndex:1, boxSizing:"border-box", overflow:"hidden" }}>
-            <div style={{ fontSize:13, fontWeight:700, color:"#1a1a1a", textAlign:"center", lineHeight:1.3, marginBottom:4 }}>Certificate of Professional Development Hours</div>
-            <div style={{ fontSize:10, fontWeight:400, color:"#555", marginBottom:6 }}>is presented to</div>
-            <div style={{ fontSize:28, fontWeight:800, color:"#1a1a1a", letterSpacing:-0.5, lineHeight:1.1, textAlign:"center", marginBottom:10 }}>{recipientName}</div>
-            <div style={{ width:"100%", height:1, background:"#d1d5db", marginBottom:8 }}/>
-            <div style={{ textAlign:"center", fontSize:10, fontWeight:400, color:"#333", lineHeight:1.55, marginBottom:10 }}>
-              <div>For their participation in the session titled:</div>
-              <strong style={{ fontWeight:600, color:"#1a1a1a", fontSize:11 }}>{sessionTitle}</strong>
-            </div>
-            <div style={{ width:"100%", display:"flex", justifyContent:"space-between", fontSize:11, fontWeight:600, color:"#1a1a1a", marginBottom:8 }}>
-              <div>Session time: {duration || "1 Hour"}</div>
-              <div>{date}</div>
-            </div>
-            <div style={{ fontSize:9, fontWeight:400, color:"#374151", lineHeight:1.65, textAlign:"center", flex:1, overflow:"hidden", marginBottom:8 }}>{descText}</div>
-            <div style={{ width:"100%", display:"flex", justifyContent:"space-between", alignItems:"flex-end", fontSize:9, fontWeight:400, color:"#555", paddingTop:8, borderTop:"1px solid #e5e7eb", flexShrink:0 }}>
-              <div>
-                <div>Certificate ID: <strong style={{ fontWeight:600 }}>{certId}</strong></div>
-                <div style={{ marginTop:3 }}>Contact at <strong style={{ fontWeight:600 }}>support@spedsummit.com</strong></div>
-              </div>
-              <div style={{ textAlign:"right" }}>
-                <div style={{ marginBottom:2 }}>Verify at:</div>
-                <a href={certUrl} target="_blank" rel="noopener noreferrer" style={{ color:"#6490E8", fontWeight:600, textDecoration:"underline", display:"block" }}>{window.location.hostname}</a>
-              </div>
-            </div>
-          </div>
-        </div>
+        <CertPreview recipientName={recipientName} sessionTitle={sessionTitle} duration={duration} date={date} descText={descText} certId={certId} certUrl={certUrl} />
 
           {/* Share + Download — below certificate */}
           <div style={{ display:"flex", gap:10 }}>
