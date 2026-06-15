@@ -1048,7 +1048,7 @@ const SEARCH_PAGES = [
 /* ─────────────────────────────────────────────────────────────────────────────
    FOOTER
 ───────────────────────────────────────────────────────────────────────────── */
-function Footer({ onNavigate }) {
+function Footer({ onNavigate, showLanding = false }) {
   const bg     = "#ffffff";
   const muted  = "#5D636F";
   const text   = "#2B2E33";
@@ -1081,9 +1081,9 @@ function Footer({ onNavigate }) {
             <div style={{ fontSize:11, fontWeight:700, color:text, letterSpacing:.8, textTransform:"uppercase", marginBottom:16 }}>About</div>
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
               {[
-                { label:"Sessions",  action: ()=>{ sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("landingScroll","sessions"); window.location.href=window.location.origin; } },
-                { label:"Speakers",  action: ()=>{ sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("landingScroll","instructors"); window.location.href=window.location.origin; } },
-                { label:"FAQ",       action: ()=>{ sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("landingScroll","faq-v2"); window.location.href=window.location.origin; } },
+                { label:"Sessions",  action: ()=>{ if(showLanding){ document.getElementById("sessions")?.scrollIntoView({behavior:"smooth"}); } else { sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("landingScroll","sessions"); window.location.href=window.location.origin; } } },
+                { label:"Speakers",  action: ()=>{ if(showLanding){ document.getElementById("instructors")?.scrollIntoView({behavior:"smooth"}); } else { sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("landingScroll","instructors"); window.location.href=window.location.origin; } } },
+                { label:"FAQ",       action: ()=>{ if(showLanding){ document.getElementById("faq-v2")?.scrollIntoView({behavior:"smooth"}); } else { sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("landingScroll","faq-v2"); window.location.href=window.location.origin; } } },
                 { label:"Contact",   action: ()=>{ onNavigate && onNavigate("contact"); } },
               ].map(({ label, action }) => (
                 <a key={label} href="#"
@@ -12177,7 +12177,7 @@ export default function App() {
           />}
         </div>
 
-        <div ref={scrollContainerRef} className={`app-scroll-area${(page==="profile"||page==="session-detail"||page==="past-season"||activeSession||sessionsDeepLink)?" no-bottom-nav":""}`} style={{ flex:1, overflowY:"auto", overflowX:"clip", background:C.gray50 }}>{renderPage()}{page !== "profile" && page !== "session-detail" && !activeSession && <Footer onNavigate={nav}/>}</div>
+        <div ref={scrollContainerRef} className={`app-scroll-area${(page==="profile"||page==="session-detail"||page==="past-season"||activeSession||sessionsDeepLink)?" no-bottom-nav":""}`} style={{ flex:1, overflowY:"auto", overflowX:"clip", background:C.gray50 }}>{renderPage()}{page !== "profile" && page !== "session-detail" && !activeSession && <Footer onNavigate={nav} showLanding={showLanding}/>}</div>
       </div>
 
       {/* Mobile bottom nav — hidden when drilling into sub-pages */}
@@ -12225,7 +12225,7 @@ export default function App() {
               />
               <div style={{ flex:1, overflowY:"auto" }}>
                 <V1PricingCardOnly onGetStarted={() => setShowPricingOverlay(false)} onClose={() => setShowPricingOverlay(false)} />
-                <Footer onNavigate={nav} />
+                <Footer onNavigate={nav} showLanding={showLanding}/>
               </div>
             </div>
           : /* Desktop: modal overlay */
