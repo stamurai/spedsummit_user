@@ -108,3 +108,54 @@ ALTER TABLE schedule ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "seasons_public_read"  ON seasons  FOR SELECT USING (true);
 CREATE POLICY "schedule_public_read" ON schedule FOR SELECT USING (true);
+
+-- ── 6. Add completed_at to user_progress ─────────────────────
+ALTER TABLE user_progress ADD COLUMN IF NOT EXISTS completed_at timestamptz;
+
+-- ── 7. Create comment_likes table ────────────────────────────
+CREATE TABLE IF NOT EXISTS comment_likes (
+  id         uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  comment_id uuid REFERENCES session_comments(id) ON DELETE CASCADE,
+  user_id    uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at timestamptz DEFAULT now(),
+  UNIQUE(comment_id, user_id)
+);
+
+ALTER TABLE comment_likes ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users manage own likes" ON comment_likes;
+CREATE POLICY "Users manage own likes" ON comment_likes
+  FOR ALL USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Anyone can read likes" ON comment_likes;
+CREATE POLICY "Anyone can read likes" ON comment_likes
+  FOR SELECT USING (true);
+
+-- Reset inflated like counts from before per-user tracking
+UPDATE session_comments SET likes = 0;
+
+-- ── 8. Create avatars storage bucket ─────────────────────────
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('avatars', 'avatars', true)
+ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "Users upload own avatar"  ON storage.objects;
+DROP POLICY IF EXISTS "Users update own avatar"  ON storage.objects;
+DROP POLICY IF EXISTS "Users delete own avatar"  ON storage.objects;
+DROP POLICY IF EXISTS "Public read avatars"      ON storage.objects;
+
+CREATE POLICY "Users upload own avatar" ON storage.objects
+  FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
+
+CREATE POLICY "Users update own avatar" ON storage.objects
+  FOR UPDATE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
+
+CREATE POLICY "Users delete own avatar" ON storage.objects
+  FOR DELETE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
+
+CREATE POLICY "Public read avatars" ON storage.objects
+  FOR SELECT USING (bucket_id = 'avatars');
+
+-- ── 9. Send-referral Edge Function reminder ───────────────────
+-- Deploy via: supabase functions deploy send-referral
+-- Set secret:  supabase secrets set RESEND_API_KEY=re_your_key_here
