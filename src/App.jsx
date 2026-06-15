@@ -11766,7 +11766,7 @@ export default function App() {
 
     const { data: row } = await supabase
       .from("user_progress")
-      .select("status, progress, quiz_state, reviewed, completed_at")
+      .select("status, progress, quiz_state, reviewed, completed_at, updated_at")
       .eq("user_id", user.id)
       .eq("session_id", session.id)
       .single();
@@ -11791,7 +11791,13 @@ export default function App() {
     const score = qs.score ?? 0;
     const certId = certIds[session.id] || makeCertId(session.id, userEmail);
 
-    // Check if certificate already exists in Supabase — reuse it to preserve the original date
+    // Best available completion date: completed_at > updated_at > created_at of existing cert
+    const bestDate = row?.completed_at || row?.updated_at;
+    const certDate = bestDate
+      ? new Date(bestDate).toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" })
+      : new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
+
+    // Check if certificate already exists in Supabase
     const { data: existingCert } = await supabase
       .from("certificates")
       .select("id, cert_data")
@@ -11800,13 +11806,16 @@ export default function App() {
       .maybeSingle();
 
     if (existingCert) {
+      // If the stored date looks wrong (same as today but we have a real completion date), patch it
+      const storedDate = existingCert.cert_data?.date;
+      const today = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
+      if (storedDate === today && bestDate && certDate !== today) {
+        const patched = { ...existingCert.cert_data, date: certDate };
+        await supabase.from("certificates").update({ cert_data: patched }).eq("id", existingCert.id);
+      }
       window.open(`${window.location.origin}/?cert_id=${existingCert.id}`, "_blank");
       return;
     }
-
-    // First time — use completion date, not today
-    const completedAt = row?.completed_at ? new Date(row.completed_at) : new Date();
-    const certDate = completedAt.toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
     const certData = { recipientName:userName, sessionTitle:session.title, sessionId:session.id, instructor:session.instructor, instructorImage:session.instructorImage||"", duration:session.duration, score, description:session.certDescription || session.description, certId, date:certDate };
     try {
       const dbId = await saveCertToSupabase(certData);

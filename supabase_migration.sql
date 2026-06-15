@@ -109,8 +109,20 @@ ALTER TABLE schedule ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "seasons_public_read"  ON seasons  FOR SELECT USING (true);
 CREATE POLICY "schedule_public_read" ON schedule FOR SELECT USING (true);
 
--- ── 6. Add completed_at to user_progress ─────────────────────
+-- ── 6. Add completed_at and updated_at to user_progress ──────
 ALTER TABLE user_progress ADD COLUMN IF NOT EXISTS completed_at timestamptz;
+ALTER TABLE user_progress ADD COLUMN IF NOT EXISTS updated_at   timestamptz DEFAULT now();
+
+-- Auto-update updated_at on every row change
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN NEW.updated_at = now(); RETURN NEW; END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS user_progress_updated_at ON user_progress;
+CREATE TRIGGER user_progress_updated_at
+  BEFORE UPDATE ON user_progress
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 -- ── 7. Create comment_likes table ────────────────────────────
 CREATE TABLE IF NOT EXISTS comment_likes (
