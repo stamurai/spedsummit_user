@@ -5399,7 +5399,7 @@ function DeactivateModal({ onClose, onConfirm }) {
   );
 }
 
-function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, onNameChange, onBack, userTimezone = "", onTimezoneChange }) {
+function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, onNameChange, onAvatarChange, onBack, userTimezone = "", onTimezoneChange }) {
   const [activeSection, setActiveSection] = useState("personal");
   const [form, setForm] = useState({ name:userName, title:"", email:userEmail, phone:"" });
   const [notifEmail,   setNotifEmail]   = useState(true);
@@ -5432,7 +5432,13 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
     if (!file.type.startsWith("image/")) { toast({ type:"error", title:"Invalid file", message:"Please select a PNG, JPG, or GIF image." }); return; }
     if (file.size > 5 * 1024 * 1024) { toast({ type:"error", title:"File too large", message:"Image must be under 5MB." }); return; }
     const reader = new FileReader();
-    reader.onload = e => { setPhotoUrl(e.target.result); toast({ type:"success", title:"Photo updated", message:"Your profile photo has been changed." }); };
+    reader.onload = async e => {
+      const dataUrl = e.target.result;
+      setPhotoUrl(dataUrl);
+      await supabase.auth.updateUser({ data: { avatar_url: dataUrl } });
+      onAvatarChange?.(dataUrl);
+      toast({ type:"success", title:"Photo updated", message:"Your profile photo has been changed." });
+    };
     reader.readAsDataURL(file);
   }
 
@@ -5489,7 +5495,7 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
           </div>
           <div style={{ display:"flex", gap:8 }}>
             <button onClick={()=>photoInputRef.current?.click()} style={{ padding:"7px 14px", background:C.gray100, border:"none", borderRadius:8, fontSize:13, fontWeight:600, color:C.gray700, cursor:"pointer" }}>Upload</button>
-            {photoUrl && <button onClick={()=>{setPhotoUrl(null);toast({type:"warning",message:"Photo removed."});}} style={{ padding:"7px 14px", background:"none", border:`1px solid ${C.errorBorder}`, borderRadius:8, fontSize:13, fontWeight:600, color:C.error, cursor:"pointer" }}>Remove</button>}
+            {photoUrl && <button onClick={async ()=>{ setPhotoUrl(null); await supabase.auth.updateUser({ data:{ avatar_url: null } }); onAvatarChange?.(null); toast({type:"warning",message:"Photo removed."}); }} style={{ padding:"7px 14px", background:"none", border:`1px solid ${C.errorBorder}`, borderRadius:8, fontSize:13, fontWeight:600, color:C.error, cursor:"pointer" }}>Remove</button>}
           </div>
         </div>
 
@@ -12013,7 +12019,7 @@ export default function App() {
     if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick} userName={userName} sessions={sessions} seasons={seasons}/>;
     if (page==="past-sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} seasons={seasons} sessionsLoading={sessionsLoading}/>;
     if (page==="notifications")  return <NotificationsPage />;
-    if (page==="profile")   return <ProfilePage toast={toast} userName={userName} userEmail={userEmail} userAvatar={userAvatar} onNameChange={setUserName} onBack={() => nav("dashboard")} userTimezone={userTimezone} onTimezoneChange={setUserTimezone}/>;
+    if (page==="profile")   return <ProfilePage toast={toast} userName={userName} userEmail={userEmail} userAvatar={userAvatar} onNameChange={setUserName} onAvatarChange={setUserAvatar} onBack={() => nav("dashboard")} userTimezone={userTimezone} onTimezoneChange={setUserTimezone}/>;
     if (page==="contact")   return <ContactPage onNavigate={nav}/>;
     if (page==="privacy-policy") return <PrivacyPolicyPage onBack={()=>{ const from=sessionStorage.getItem("legalReturnTo")||"landing"; sessionStorage.removeItem("legalReturnTo"); if(from==="dashboard"){ sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("page","dashboard"); setShowLanding(false); setPage("dashboard"); } else { sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("page","dashboard"); setShowLanding(true); setPage("dashboard"); } }}/>;
     if (page==="terms-of-service") return <TermsOfServicePage onBack={()=>{ const from=sessionStorage.getItem("legalReturnTo")||"landing"; sessionStorage.removeItem("legalReturnTo"); if(from==="dashboard"){ sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("page","dashboard"); setShowLanding(false); setPage("dashboard"); } else { sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("page","dashboard"); setShowLanding(true); setPage("dashboard"); } }}/>;
