@@ -5427,19 +5427,22 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
     if (userAvatar) setPhotoUrl(userAvatar);
   }, [userName, userEmail, userAvatar]);
 
-  function handlePhotoFile(file) {
+  async function handlePhotoFile(file) {
     if (!file) return;
     if (!file.type.startsWith("image/")) { toast({ type:"error", title:"Invalid file", message:"Please select a PNG, JPG, or GIF image." }); return; }
     if (file.size > 5 * 1024 * 1024) { toast({ type:"error", title:"File too large", message:"Image must be under 5MB." }); return; }
-    const reader = new FileReader();
-    reader.onload = async e => {
-      const dataUrl = e.target.result;
-      setPhotoUrl(dataUrl);
-      await supabase.auth.updateUser({ data: { avatar_url: dataUrl } });
-      onAvatarChange?.(dataUrl);
-      toast({ type:"success", title:"Photo updated", message:"Your profile photo has been changed." });
-    };
-    reader.readAsDataURL(file);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `${user.id}/avatar.${ext}`;
+    const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+    if (upErr) { toast({ type:"error", title:"Upload failed", message: upErr.message }); return; }
+    const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
+    const cacheBusted = `${publicUrl}?t=${Date.now()}`;
+    setPhotoUrl(cacheBusted);
+    await supabase.auth.updateUser({ data: { avatar_url: cacheBusted } });
+    onAvatarChange?.(cacheBusted);
+    toast({ type:"success", title:"Photo updated", message:"Your profile photo has been changed." });
   }
 
   async function save() {
@@ -5495,7 +5498,16 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
           </div>
           <div style={{ display:"flex", gap:8 }}>
             <button onClick={()=>photoInputRef.current?.click()} style={{ padding:"7px 14px", background:C.gray100, border:"none", borderRadius:8, fontSize:13, fontWeight:600, color:C.gray700, cursor:"pointer" }}>Upload</button>
-            {photoUrl && <button onClick={async ()=>{ setPhotoUrl(null); await supabase.auth.updateUser({ data:{ avatar_url: null } }); onAvatarChange?.(null); toast({type:"warning",message:"Photo removed."}); }} style={{ padding:"7px 14px", background:"none", border:`1px solid ${C.errorBorder}`, borderRadius:8, fontSize:13, fontWeight:600, color:C.error, cursor:"pointer" }}>Remove</button>}
+            {photoUrl && <button onClick={async ()=>{
+              setPhotoUrl(null);
+              const { data: { user } } = await supabase.auth.getUser();
+              if (user) {
+                await supabase.storage.from("avatars").remove([`${user.id}/avatar.jpg`, `${user.id}/avatar.png`, `${user.id}/avatar.jpeg`, `${user.id}/avatar.webp`]);
+              }
+              await supabase.auth.updateUser({ data:{ avatar_url: null } });
+              onAvatarChange?.(null);
+              toast({type:"warning",message:"Photo removed."});
+            }} style={{ padding:"7px 14px", background:"none", border:`1px solid ${C.errorBorder}`, borderRadius:8, fontSize:13, fontWeight:600, color:C.error, cursor:"pointer" }}>Remove</button>}
           </div>
         </div>
 
