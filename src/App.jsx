@@ -11789,14 +11789,27 @@ export default function App() {
     const qs = dbQuizState;
 
     const score = qs.score ?? 0;
-    const completedAt = row?.completed_at ? new Date(row.completed_at) : new Date();
-    const today = completedAt.toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
-    // Use stored cert_id from Supabase if it exists, otherwise generate and persist a new one
     const certId = certIds[session.id] || makeCertId(session.id, userEmail);
-    const certData = { recipientName:userName, sessionTitle:session.title, sessionId:session.id, instructor:session.instructor, instructorImage:session.instructorImage||"", duration:session.duration, score, description:session.certDescription || session.description, certId, date:today };
+
+    // Check if certificate already exists in Supabase — reuse it to preserve the original date
+    const { data: existingCert } = await supabase
+      .from("certificates")
+      .select("id, cert_data")
+      .eq("user_id", user.id)
+      .eq("cert_data->>certId", certId)
+      .maybeSingle();
+
+    if (existingCert) {
+      window.open(`${window.location.origin}/?cert_id=${existingCert.id}`, "_blank");
+      return;
+    }
+
+    // First time — use completion date, not today
+    const completedAt = row?.completed_at ? new Date(row.completed_at) : new Date();
+    const certDate = completedAt.toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
+    const certData = { recipientName:userName, sessionTitle:session.title, sessionId:session.id, instructor:session.instructor, instructorImage:session.instructorImage||"", duration:session.duration, score, description:session.certDescription || session.description, certId, date:certDate };
     try {
       const dbId = await saveCertToSupabase(certData);
-      // Save the cert_id back to user_progress so the same ID is reused on any device
       if (!certIds[session.id]) {
         saveUserProgress(session.id, { cert_id: certId });
         setCertIds(prev => ({ ...prev, [session.id]: certId }));
