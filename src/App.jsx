@@ -5525,7 +5525,7 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
         <div style={{ marginBottom:20 }}>
           <div style={{ fontSize:13, fontWeight:600, color:C.gray600, marginBottom:6 }}>Timezone</div>
           <select value={userTimezone} onChange={async e=>{ const tz=e.target.value; onTimezoneChange && onTimezoneChange(tz); await supabase.auth.updateUser({ data:{ timezone:tz } }); toast({type:"success",message:"Timezone updated."}); }}
-            style={{ ...inputSt, appearance:"auto", cursor:"pointer", paddingRight:36 }}>
+            style={{ ...inputSt, appearance:"auto", cursor:"pointer", paddingRight:48 }}>
             {COMMON_TIMEZONES.map(t=><option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
           <p style={{ fontSize:12, color:C.gray400, margin:"4px 0 0" }}>All session times are shown in your selected timezone. Sessions run on Pacific Time (PST/PDT).</p>
