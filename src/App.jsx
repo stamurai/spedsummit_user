@@ -11791,8 +11791,8 @@ export default function App() {
     const score = qs.score ?? 0;
     const certId = certIds[session.id] || makeCertId(session.id, userEmail);
 
-    // Best available completion date: completed_at > updated_at > created_at of existing cert
-    const bestDate = row?.completed_at || row?.updated_at;
+    // Best available completion date: quiz_state.completedAt > completed_at column > updated_at
+    const bestDate = dbQuizState.completedAt || row?.completed_at || row?.updated_at;
     const certDate = bestDate
       ? new Date(bestDate).toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" })
       : new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
@@ -11834,9 +11834,10 @@ export default function App() {
   }
 
   function handleAssessmentFinish(sessionId, score, passed) {
-    updateQuizState(sessionId, { status: passed ? "passed" : "failed", score, currentQ: 0, answers: {} });
+    const completedAt = new Date().toISOString();
+    updateQuizState(sessionId, { status: passed ? "passed" : "failed", score, currentQ: 0, answers: {}, ...(passed ? { completedAt } : {}) });
     if (passed) {
-      saveUserProgress(sessionId, { completed_at: new Date().toISOString() });
+      saveUserProgress(sessionId, { completed_at: completedAt });
       toast({ type:"success", title:"🏆 Assessment Passed!", message:`You scored ${score}% — your certificate is ready!` });
       // Re-fetch to ensure certificates page is in sync
       setTimeout(() => fetchUserProgress(), 1000);
