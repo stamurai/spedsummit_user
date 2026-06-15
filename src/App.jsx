@@ -1493,7 +1493,7 @@ function ReferFriendsModal({ onClose, userName }) {
           </div>
           <div style={{ fontSize: isMobile ? 18 : 20, fontWeight:800, color: dark ? "#fff" : C.gray900, marginBottom:6 }}>Refer Friends, Get Pro Free</div>
           <div style={{ fontSize:13, color: dark ? "rgba(255,255,255,0.55)" : C.gray500, lineHeight:1.55, maxWidth:300, margin:"0 auto" }}>
-            Invite a friend to SPED Summit. When they join, <strong style={{ color:C.primary }}>you both get 6 months of Pro</strong> — or refer 3+ friends for a full year free.
+            Refer a colleague and help them discover free PD, expert sessions, and practical special education strategies.
           </div>
         </div>
 
