@@ -5412,6 +5412,7 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
   const [pwForm, setPwForm] = useState({ current:"", newPw:"", confirm:"" });
   const [mobileDrilled, setMobileDrilled] = useState(false);
   const [nameAlreadyChanged, setNameAlreadyChanged] = useState(false);
+  const [showTzModal, setShowTzModal] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -5542,11 +5543,25 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
         {/* Timezone */}
         <div style={{ marginBottom:20 }}>
           <div style={{ fontSize:13, fontWeight:600, color:C.gray600, marginBottom:6 }}>Timezone</div>
-          <select value={userTimezone} onChange={async e=>{ const tz=e.target.value; onTimezoneChange && onTimezoneChange(tz); await supabase.auth.updateUser({ data:{ timezone:tz } }); toast({type:"success",message:"Timezone updated."}); }}
-            style={{ ...inputSt, appearance:"auto", cursor:"pointer", paddingRight:48 }}>
-            {COMMON_TIMEZONES.map(t=><option key={t.value} value={t.value}>{t.label}</option>)}
-          </select>
+          <button onClick={()=>setShowTzModal(true)}
+            style={{ ...inputSt, display:"flex", alignItems:"center", justifyContent:"space-between", cursor:"pointer", background:C.white, textAlign:"left" }}>
+            <span style={{ color: userTimezone ? C.gray900 : C.gray400 }}>
+              {COMMON_TIMEZONES.find(t=>t.value===userTimezone)?.label || userTimezone || "Select timezone"}
+            </span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
           <p style={{ fontSize:12, color:C.gray400, margin:"4px 0 0" }}>All session times are shown in your selected timezone. Sessions run on Pacific Time (PST/PDT).</p>
+          {showTzModal && (
+            <TimezoneModal
+              detectedTz={userTimezone}
+              onConfirm={async (tz) => {
+                setShowTzModal(false);
+                onTimezoneChange?.(tz);
+                await supabase.auth.updateUser({ data: { timezone: tz } });
+                toast({ type:"success", message:"Timezone updated." });
+              }}
+            />
+          )}
         </div>
 
         <div style={{ paddingTop:20, display:"flex", justifyContent:"flex-end" }}>
