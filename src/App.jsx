@@ -4057,7 +4057,18 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const [sdComments, setSdComments] = useState([]);
   const [sdCommentsLoading, setSdCommentsLoading] = useState(false);
   const [sdNewComment, setSdNewComment] = useState("");
-  const [sdLiked, setSdLiked] = useState({});
+  const sdLikedKey = currentUserId ? `liked_comments_${currentUserId}` : null;
+  const [sdLiked, setSdLikedRaw] = useState(() => {
+    if (!sdLikedKey) return {};
+    try { return JSON.parse(localStorage.getItem(sdLikedKey) || "{}"); } catch { return {}; }
+  });
+  function setSdLiked(updater) {
+    setSdLikedRaw(prev => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      if (sdLikedKey) localStorage.setItem(sdLikedKey, JSON.stringify(next));
+      return next;
+    });
+  }
   const [sdPosting, setSdPosting] = useState(false);
   const [sdDeleteConfirm, setSdDeleteConfirm] = useState(null);
   const [sdMenuOpen, setSdMenuOpen] = useState(null);
@@ -4839,7 +4850,18 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
   const sessionDropRef = React.useRef(null);
   // reply state: { [commentId]: { open, body, posting } }
   const [replyState, setReplyState] = useState({});
-  const [liked, setLiked] = useState({});
+  const likedKey = currentUserId ? `liked_comments_${currentUserId}` : null;
+  const [liked, setLikedRaw] = useState(() => {
+    if (!likedKey) return {};
+    try { return JSON.parse(localStorage.getItem(likedKey) || "{}"); } catch { return {}; }
+  });
+  function setLiked(updater) {
+    setLikedRaw(prev => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      if (likedKey) localStorage.setItem(likedKey, JSON.stringify(next));
+      return next;
+    });
+  }
   const [menuOpen, setMenuOpen] = useState(null); // commentId
   const [editState, setEditState] = useState({}); // { [commentId]: { open, body } }
   const [reportModal, setReportModal] = useState(null); // { commentId, authorName }
