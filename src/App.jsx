@@ -1454,23 +1454,35 @@ function SearchBar({ onOpenSession, onNavigate, sessions = [] }) {
   );
 }
 
-function ReferFriendsModal({ onClose, userName }) {
+function ReferFriendsModal({ onClose, userName, userEmail }) {
   const dark = document.querySelector("[data-theme='dark']") !== null;
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
   const [copied, setCopied] = useState(false);
   const [referrals] = useState(0);
-  const [credits] = useState(0);
   const refLink = `https://spedsummit.com/invite/${(userName || "user").toLowerCase().replace(/\s+/,"")}2026`;
 
   function copyLink() {
     navigator.clipboard.writeText(refLink).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
   }
-  function sendInvite() {
-    if (!email.trim()) return;
-    setSent(true);
-    setEmail("");
-    setTimeout(() => setSent(false), 2500);
+  async function sendInvite() {
+    const trimmed = email.trim();
+    if (!trimmed || sending) return;
+    setSending(true);
+    try {
+      const { error } = await supabase.functions.invoke("send-referral", {
+        body: { inviterName: userName, inviterEmail: userEmail, inviteeEmail: trimmed, refLink },
+      });
+      if (error) throw error;
+      setSent(true);
+      setEmail("");
+      setTimeout(() => setSent(false), 3000);
+    } catch (e) {
+      console.error("Invite error:", e);
+    } finally {
+      setSending(false);
+    }
   }
 
   const isMobile = window.innerWidth <= 480;
@@ -1521,10 +1533,10 @@ function ReferFriendsModal({ onClose, userName }) {
               onChange={e => setEmail(e.target.value)}
               onKeyDown={e => e.key === "Enter" && sendInvite()}
               style={{ flex:1, padding:"11px 12px", background: dark ? "rgba(255,255,255,0.06)" : C.gray50, border:`1px solid ${dark?"rgba(255,255,255,0.1)":C.gray200}`, borderRadius:10, fontSize:14, color: dark ? "#fff" : C.gray900, outline:"none", minHeight:44 }}/>
-            <button onClick={sendInvite}
-              style={{ padding:"11px 16px", background: sent ? C.success : C.primary, color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:700, cursor:"pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, transition:"background .2s", minHeight:44 }}>
+            <button onClick={sendInvite} disabled={sending}
+              style={{ padding:"11px 16px", background: sent ? C.success : C.primary, color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:700, cursor: sending ? "default" : "pointer", flexShrink:0, display:"flex", alignItems:"center", gap:6, transition:"background .2s", minHeight:44, opacity: sending ? 0.7 : 1 }}>
               <Icon name={sent ? "check" : "paper-plane-tilt"} size={13} color="#fff"/>
-              {sent ? "Sent!" : "Send"}
+              {sending ? "Sending…" : sent ? "Sent!" : "Send"}
             </button>
           </div>
 
@@ -1541,7 +1553,7 @@ function ReferFriendsModal({ onClose, userName }) {
   );
 }
 
-function TopBar({ toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, onOpenSession, onNavigate, userName = "", userAvatar, onBrowseSelect, seasons = SEASONS, sessions = [], onOpenInstructor, onGoHome, isLoggedIn = true, onShowAuth, showReferModal, setShowReferModal }) {
+function TopBar({ toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, onOpenSession, onNavigate, userName = "", userEmail = "", userAvatar, onBrowseSelect, seasons = SEASONS, sessions = [], onOpenInstructor, onGoHome, isLoggedIn = true, onShowAuth, showReferModal, setShowReferModal }) {
   const [showNotif, setShowNotif] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
@@ -1581,7 +1593,7 @@ function TopBar({ toast, isDark, onToggleDarkMode, onLogout, onNavigateProfile, 
       <div style={{ flexShrink:0, display:"flex", alignItems:"center", gap:12 }}>
 
 
-        {showReferModal && <ReferFriendsModal onClose={() => setShowReferModal(false)} userName={userName}/>}
+        {showReferModal && <ReferFriendsModal onClose={() => setShowReferModal(false)} userName={userName} userEmail={userEmail}/>}
 
         {/* Avatar / Sign In */}
         {!isLoggedIn ? (
@@ -11989,6 +12001,7 @@ export default function App() {
         onOpenSession={openSession}
         onNavigate={nav}
         userName={userName}
+        userEmail={userEmail}
         userAvatar={userAvatar}
         seasons={seasons}
         sessions={sessions}
@@ -12085,6 +12098,7 @@ export default function App() {
                 onOpenSession={openSession}
                 onNavigate={nav}
                 userName={userName}
+                userEmail={userEmail}
                 userAvatar={userAvatar}
                 showReferModal={showReferModal}
                 setShowReferModal={setShowReferModal}
