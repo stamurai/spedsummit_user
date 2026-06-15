@@ -9832,7 +9832,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
           { icon:"certificate", label:"Certificate Issued", sub:"Tara Roehl · Mindfulness session", grad:"linear-gradient(135deg,#6490E8,#a78bfa)", time:"2m ago" },
           { icon:"play-circle",  label:"New Session Live",  sub:"AAC Implementation · Dr. Sarah Kim", grad:"linear-gradient(135deg,#10B981,#6490E8)", time:"5m ago" },
           { icon:"star",         label:"Quiz Passed",       sub:"Behavior Strategies · 92% score",   grad:"linear-gradient(135deg,#F59E0B,#ef4444)", time:"11m ago" },
-          { icon:"users",        label:"Community Post",    sub:"4,200+ educators are now enrolled",  grad:"linear-gradient(135deg,#e83e8c,#6490E8)", time:"18m ago" },
+          { icon:"users",        label:"Community Post",    sub:"30,000+ educators are now enrolled",  grad:"linear-gradient(135deg,#e83e8c,#6490E8)", time:"18m ago" },
           { icon:"trophy",       label:"Giveaway Entry",    sub:"You're entered to win Ablespace Pro", grad:"linear-gradient(135deg,#F59E0B,#10B981)", time:"24m ago" },
         ];
 
@@ -10591,7 +10591,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                 Connect with educators<br/>across the country?
               </h2>
               <p style={{ margin:0, fontSize:16, color:T.muted, lineHeight:1.6 }}>
-                Join 4,200+ educators. Free sessions, real certificates, expert instructors.
+                Join 30,000+ educators. Free sessions, real certificates, expert instructors.
               </p>
             </div>
             <div className="lp-footer-cta-btns" style={{ display:"flex", gap:10, flexShrink:0 }}>
@@ -10731,7 +10731,7 @@ function LandingPageV2({ onGetStarted, sessions = [] }) {
     { icon:"users",        size:34, bg:"linear-gradient(135deg,#8a46ff,#e83e8c)", top:"8%",  right:"18%", dur:6.0, del:1.8  },
   ];
 
-  const MARQUEE = ["9 Expert Sessions","Free Certificates","Win Ablespace Pro","Interactive Quizzes","SPED Specialists","4,200+ Educators","IEP Strategies","AAC Implementation","Behavior Support","Structured Literacy"];
+  const MARQUEE = ["9 Expert Sessions","Free Certificates","Win Ablespace Pro","Interactive Quizzes","SPED Specialists","30,000+ Educators","IEP Strategies","AAC Implementation","Behavior Support","Structured Literacy"];
 
   const FEATURES = [
     { icon:"play-circle",  title:"9 Expert Sessions",       desc:"Live and on-demand video from certified SPED specialists you can rewatch anytime." },
@@ -10839,7 +10839,7 @@ function LandingPageV2({ onGetStarted, sessions = [] }) {
                 </div>
               ))}
             </div>
-            <span style={{ fontSize:14, color:T2.muted, fontWeight:500 }}>4,200+ educators enrolled</span>
+            <span style={{ fontSize:14, color:T2.muted, fontWeight:500 }}>30,000+ educators enrolled</span>
           </div>
         </div>
       </section>
@@ -10906,7 +10906,7 @@ function LandingPageV2({ onGetStarted, sessions = [] }) {
       {/* ── STATS ── */}
       <section style={{ ...S.section({ padding:"60px 24px" }), background:T2.bg, borderTop:`1px solid ${T2.border}`, borderBottom:`1px solid ${T2.border}` }}>
         <div style={{ ...S.inner(), display:"flex", justifyContent:"center", gap:80, flexWrap:"wrap" }}>
-          {[{n:"4,200+",l:"educators enrolled"},{n:"9",l:"expert sessions"},{n:"100%",l:"free to attend"},{n:"$10k+",l:"in prizes"}].map((s,i)=>(
+          {[{n:"30,000+",l:"educators enrolled"},{n:"9",l:"expert sessions"},{n:"100%",l:"free to attend"},{n:"$10k+",l:"in prizes"}].map((s,i)=>(
             <div key={i} style={{ textAlign:"center" }}>
               <div style={{ fontSize:48, fontWeight:900, color:T2.text, letterSpacing:-2, lineHeight:1 }}>{s.n}</div>
               <div style={{ fontSize:14, color:T2.muted, marginTop:6 }}>{s.l}</div>
@@ -11045,7 +11045,7 @@ function LandingPageV2({ onGetStarted, sessions = [] }) {
             <Icon name="certificate" size={36} color="#fff"/>
           </div>
           <h2 style={{ margin:"0 0 16px", fontSize:"clamp(32px,4vw,52px)", fontWeight:900, color:"#fff", letterSpacing:-1.5 }}>Your SPED journey starts here.</h2>
-          <p style={{ margin:"0 0 36px", fontSize:17, color:"rgba(255,255,255,0.55)", lineHeight:1.65 }}>Join 4,200+ educators. Watch, learn, earn your certificate — and maybe win Ablespace Pro.</p>
+          <p style={{ margin:"0 0 36px", fontSize:17, color:"rgba(255,255,255,0.55)", lineHeight:1.65 }}>Join 30,000+ educators. Watch, learn, earn your certificate — and maybe win Ablespace Pro.</p>
           <button onClick={()=>setShowAuth(true)}
             style={{ padding:"0 40px", height:54, background:T2.accent, color:"#fff", border:"none", borderRadius:12, fontSize:16, fontWeight:700, cursor:"pointer", transition:"all .15s", boxShadow:"0 4px 0 0 #5b21b6" }}
             onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.boxShadow="0 6px 0 0 #5b21b6"; }}
