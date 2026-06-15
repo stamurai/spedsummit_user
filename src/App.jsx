@@ -1503,7 +1503,7 @@ function ReferFriendsModal({ onClose, userName, userEmail }) {
           <div style={{ width:48, height:48, borderRadius:14, background:"rgba(54,153,255,0.12)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 12px" }}>
             <Icon name="gift" size={24} color={C.primary}/>
           </div>
-          <div style={{ fontSize: isMobile ? 18 : 20, fontWeight:800, color: dark ? "#fff" : C.gray900, marginBottom:6 }}>Refer Friends, Get Pro Free</div>
+          <div style={{ fontSize: isMobile ? 18 : 20, fontWeight:800, color: dark ? "#fff" : C.gray900, marginBottom:6 }}>Refer Friends</div>
           <div style={{ fontSize:13, color: dark ? "rgba(255,255,255,0.55)" : C.gray500, lineHeight:1.55, maxWidth:300, margin:"0 auto" }}>
             Refer a colleague and help them discover free PD, expert sessions, and practical special education strategies.
           </div>
