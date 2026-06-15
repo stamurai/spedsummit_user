@@ -11766,7 +11766,7 @@ export default function App() {
 
     const { data: row } = await supabase
       .from("user_progress")
-      .select("status, progress, quiz_state, reviewed")
+      .select("status, progress, quiz_state, reviewed, completed_at")
       .eq("user_id", user.id)
       .eq("session_id", session.id)
       .single();
@@ -11789,7 +11789,8 @@ export default function App() {
     const qs = dbQuizState;
 
     const score = qs.score ?? 0;
-    const today = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
+    const completedAt = row?.completed_at ? new Date(row.completed_at) : new Date();
+    const today = completedAt.toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
     // Use stored cert_id from Supabase if it exists, otherwise generate and persist a new one
     const certId = certIds[session.id] || makeCertId(session.id, userEmail);
     const certData = { recipientName:userName, sessionTitle:session.title, sessionId:session.id, instructor:session.instructor, instructorImage:session.instructorImage||"", duration:session.duration, score, description:session.certDescription || session.description, certId, date:today };
@@ -11813,6 +11814,7 @@ export default function App() {
   function handleAssessmentFinish(sessionId, score, passed) {
     updateQuizState(sessionId, { status: passed ? "passed" : "failed", score, currentQ: 0, answers: {} });
     if (passed) {
+      saveUserProgress(sessionId, { completed_at: new Date().toISOString() });
       toast({ type:"success", title:"🏆 Assessment Passed!", message:`You scored ${score}% — your certificate is ready!` });
       // Re-fetch to ensure certificates page is in sync
       setTimeout(() => fetchUserProgress(), 1000);
@@ -11900,7 +11902,7 @@ export default function App() {
       }
       return updated;
     }));
-    saveUserProgress(sessionId, { progress: pct, status: newStatus, enrolled: true });
+    saveUserProgress(sessionId, { progress: pct, status: newStatus, enrolled: true, ...(newStatus === "completed" ? { completed_at: new Date().toISOString() } : {}) });
   }
 
   function openSession(s, source) {
