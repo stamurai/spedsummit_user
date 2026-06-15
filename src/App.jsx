@@ -4122,8 +4122,14 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
       setSdCommentsLoading(true);
       supabase.from("session_comments").select("*").eq("session_id", String(session.id)).order("created_at", { ascending: false })
         .then(({ data }) => { setSdComments(data || []); setSdCommentsLoading(false); });
+      if (currentUserId) {
+        supabase.from("comment_likes").select("comment_id").eq("user_id", currentUserId)
+          .then(({ data }) => {
+            if (data) { const m = {}; data.forEach(r => { m[r.comment_id] = true; }); setSdLiked(m); }
+          });
+      }
     }
-  }, [bottomTab, session.id]);
+  }, [bottomTab, session.id, currentUserId]);
 
   function sendMessage() {
     if (!message.trim()) return;
@@ -4709,7 +4715,19 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                         <div style={{ fontSize:14, color:isDark?"rgba(255,255,255,0.75)":C.gray700, lineHeight:1.6, marginBottom:8 }}>{c.body}</div>
                       )}
                       <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-                        <button onClick={async ()=>{ const liked=sdLiked[c.id]; const newLikes=liked?Math.max(0,(c.likes||0)-1):(c.likes||0)+1; setSdLiked(prev=>({...prev,[c.id]:!liked})); await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id); setSdComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x)); }}
+                        <button onClick={async ()=>{
+                          if (!currentUserId) return;
+                          const isLiked = sdLiked[c.id];
+                          setSdLiked(prev=>({...prev,[c.id]:!isLiked}));
+                          const newLikes = isLiked ? Math.max(0,(c.likes||0)-1) : (c.likes||0)+1;
+                          setSdComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x));
+                          if (isLiked) {
+                            await supabase.from("comment_likes").delete().eq("comment_id",c.id).eq("user_id",currentUserId);
+                          } else {
+                            await supabase.from("comment_likes").upsert({comment_id:c.id,user_id:currentUserId},{onConflict:"comment_id,user_id"});
+                          }
+                          await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id);
+                        }}
                           style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${sdLiked[c.id]?"rgba(239,68,68,0.3)":(isDark?"rgba(255,255,255,0.1)":C.gray200)}`, background:sdLiked[c.id]?"rgba(239,68,68,0.08)":"transparent", color:sdLiked[c.id]?"#ef4444":(isDark?"rgba(255,255,255,0.5)":C.gray500), cursor:"pointer", fontSize:12, fontWeight:600 }}>
                           <Icon name="heart" size={12} color={sdLiked[c.id]?"#ef4444":C.gray400} weight={sdLiked[c.id]?"fill":"regular"}/>{c.likes||0}
                         </button>
@@ -4928,7 +4946,17 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
     setLoading(true);
     supabase.from("session_comments").select("*").order("created_at", { ascending: false })
       .then(({ data }) => { setComments(data || []); setLoading(false); });
-  }, [refreshKey]);
+    if (currentUserId) {
+      supabase.from("comment_likes").select("comment_id").eq("user_id", currentUserId)
+        .then(({ data }) => {
+          if (data) {
+            const map = {};
+            data.forEach(r => { map[r.comment_id] = true; });
+            setLiked(map);
+          }
+        });
+    }
+  }, [refreshKey, currentUserId]);
 
   async function submitPost() {
     if (!newBody.trim()) return;
@@ -5044,7 +5072,19 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
               <div style={{ fontSize:14, color:C.gray700, lineHeight:1.6, marginBottom:10 }}>{c.body}</div>
             )}
             <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-              <button onClick={async ()=>{ const isLiked=liked[c.id]; const newLikes=isLiked?Math.max(0,(c.likes||0)-1):(c.likes||0)+1; setLiked(prev=>({...prev,[c.id]:!isLiked})); await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id); setComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x)); }}
+              <button onClick={async ()=>{
+                if (!currentUserId) return;
+                const isLiked = liked[c.id];
+                setLiked(prev=>({...prev,[c.id]:!isLiked}));
+                const newLikes = isLiked ? Math.max(0,(c.likes||0)-1) : (c.likes||0)+1;
+                setComments(prev=>prev.map(x=>x.id===c.id?{...x,likes:newLikes}:x));
+                if (isLiked) {
+                  await supabase.from("comment_likes").delete().eq("comment_id",c.id).eq("user_id",currentUserId);
+                } else {
+                  await supabase.from("comment_likes").upsert({comment_id:c.id,user_id:currentUserId},{onConflict:"comment_id,user_id"});
+                }
+                await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id);
+              }}
                 style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${liked[c.id]?"rgba(239,68,68,0.3)":C.gray200}`, background:liked[c.id]?"rgba(239,68,68,0.08)":"transparent", color:liked[c.id]?"#ef4444":C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
                 <Icon name="heart" size={12} color={liked[c.id]?"#ef4444":C.gray400} weight={liked[c.id]?"fill":"regular"}/>{c.likes||0}
               </button>
