@@ -11527,6 +11527,18 @@ export default function App() {
         }
       }
 
+      // Restore session-detail page on refresh
+      const activeId = sessionStorage.getItem("active_session_id");
+      const activeSrc = sessionStorage.getItem("active_session_source") || "dashboard";
+      if (activeId && sessionStorage.getItem("page") === "session-detail") {
+        const target = rows.find(s => String(s.id) === String(activeId));
+        if (target) {
+          setActiveSession(toSession(target));
+          setSessionSource(activeSrc);
+          setPage("session-detail");
+        }
+      }
+
       setSpring2026Ids(prev => {
         const supabaseIds = new Set(rows.map(s => s.id));
         const surviving = prev.filter(id => supabaseIds.has(id));
@@ -11914,7 +11926,7 @@ export default function App() {
 
   function _applyPage(p, keepSession = false) {
     setPage(p); sessionStorage.setItem("page", p);
-    if (!keepSession) { setActiveSession(null); }
+    if (!keepSession) { setActiveSession(null); sessionStorage.removeItem("active_session_id"); sessionStorage.removeItem("active_session_source"); }
     if (p === "sessions") setSessionsDeepLink(null);
     if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0;
   }
@@ -11972,6 +11984,8 @@ export default function App() {
     const src = (source === "landing" ? "dashboard" : source) || page;
     setActiveSession(s);
     setSessionSource(src);
+    sessionStorage.setItem("active_session_id", String(s.id));
+    sessionStorage.setItem("active_session_source", src);
     const season = seasons.find(season => season.sessionIds.includes(s.id));
     setSessionBackLabel(season ? season.name : null);
     // Push session-detail to browser history so back returns to the source page
