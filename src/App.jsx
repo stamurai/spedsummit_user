@@ -4391,7 +4391,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                                     {isQuiz ? "Assessment" : l.type === "material" ? (l.title || "Material") : session.title}
                                   </div>
                                   <div style={{ fontSize:12, color: C.gray400, marginTop:2 }}>
-                                    {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : l.type === "material" ? (() => { const rc = supabaseResourceCount !== null ? supabaseResourceCount : Object.values(SESSION_RESOURCES[session.id] || {}).flat().length; return `${rc} document${rc!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
+                                    {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : l.type === "material" ? (() => { const hasFile = !!(l.url || l.file_url || l.resource_url || l.fileUrl); const rc = supabaseResourceCount !== null ? supabaseResourceCount : Object.values(SESSION_RESOURCES[session.id] || {}).flat().length; const count = rc > 0 ? rc : hasFile ? 1 : 0; return `${count} document${count!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
                                   </div>
                                 </div>
                                 {locked && <Icon name="lock" size={13} color={C.gray300}/>}
