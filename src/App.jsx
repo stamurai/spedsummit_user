@@ -12015,6 +12015,7 @@ export default function App() {
     setSessionSource(src);
     sessionStorage.setItem("active_session_id", String(s.id));
     sessionStorage.setItem("active_session_source", src);
+    sessionStorage.setItem("page", "session-detail");
     const season = seasons.find(season => season.sessionIds.includes(s.id));
     setSessionBackLabel(season ? season.name : null);
     // Push session-detail to browser history so back returns to the source page
