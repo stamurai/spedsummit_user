@@ -4486,10 +4486,11 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                         </div>
                         {fileUrl && (
                           <div style={{ display:"flex", gap:8, flexShrink:0, ...(isMob ? { width:"100%", marginTop:4 } : {}) }}>
-                            <a href={fileUrl} target="_blank" rel="noopener noreferrer"
-                              style={{ flex: isMob ? 1 : "none", display:"inline-flex", alignItems:"center", justifyContent:"center", gap:6, padding:"8px 14px", borderRadius:8, background:C.primary, color:"#fff", fontSize:13, fontWeight:700, textDecoration:"none" }}>
+                            <button
+                              onClick={async()=>{ try { const res=await fetch(fileUrl); const blob=await res.blob(); const url=URL.createObjectURL(blob); window.open(url,"_blank"); setTimeout(()=>URL.revokeObjectURL(url),60000); } catch{ window.open(fileUrl,"_blank"); } }}
+                              style={{ flex: isMob ? 1 : "none", display:"inline-flex", alignItems:"center", justifyContent:"center", gap:6, padding:"8px 14px", borderRadius:8, background:C.primary, color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer", border:"none", fontFamily:"inherit" }}>
                               <Icon name="arrow-square-out" size={14} color="#fff"/> Open
-                            </a>
+                            </button>
                             <button
                               onClick={async()=>{ try { const res=await fetch(fileUrl); const blob=await res.blob(); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=title||(fileUrl.split("/").pop()||"material"); document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); } catch{ window.open(fileUrl,"_blank"); } }}
                               style={{ flex: isMob ? 1 : "none", display:"inline-flex", alignItems:"center", justifyContent:"center", gap:6, padding:"8px 14px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
