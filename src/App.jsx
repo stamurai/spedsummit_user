@@ -4476,10 +4476,11 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                             style={{ flex: isMob ? 1 : "none", display:"inline-flex", alignItems:"center", justifyContent:"center", gap:6, padding:"8px 14px", borderRadius:8, background:C.primary, color:"#fff", fontSize:13, fontWeight:700, textDecoration:"none" }}>
                             <Icon name="arrow-square-out" size={14} color="#fff"/> Open
                           </a>
-                          <a href={fileUrl} download
-                            style={{ flex: isMob ? 1 : "none", display:"inline-flex", alignItems:"center", justifyContent:"center", gap:6, padding:"8px 14px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:13, fontWeight:600, textDecoration:"none" }}>
+                          <button
+                            onClick={async()=>{ try { const res=await fetch(fileUrl); const blob=await res.blob(); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=title||(fileUrl.split("/").pop()||"material"); document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); } catch{ window.open(fileUrl,"_blank"); } }}
+                            style={{ flex: isMob ? 1 : "none", display:"inline-flex", alignItems:"center", justifyContent:"center", gap:6, padding:"8px 14px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
                             <Icon name="download" size={14} color={C.gray600}/> Save
-                          </a>
+                          </button>
                         </div>
                       </div>
                     </div>
