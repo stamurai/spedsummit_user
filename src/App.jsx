@@ -4671,7 +4671,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
 
         {/* Instructor */}
         {bottomTab === "instructor" && (
-          <div className="sd-tab-content" style={{ padding:"8px 24px 24px" }}>
+          <div className="sd-tab-content" style={{ padding:"24px 24px 24px" }}>
             {session.instructor ? (
               <div className="sd-instructor-header" style={{ display:"flex", gap:16, alignItems:"flex-start" }}>
                 <Avatar name={session.instructor} src={session.instructorImage || undefined} size={68}/>
