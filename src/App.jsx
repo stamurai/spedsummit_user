@@ -1048,7 +1048,7 @@ const SEARCH_PAGES = [
 /* ─────────────────────────────────────────────────────────────────────────────
    FOOTER
 ───────────────────────────────────────────────────────────────────────────── */
-function Footer({ onNavigate, showLanding = false }) {
+function Footer({ onNavigate, showLanding = false, legalReturnTo = "dashboard" }) {
   const bg     = "#ffffff";
   const muted  = "#5D636F";
   const text   = "#2B2E33";
@@ -1121,7 +1121,7 @@ function Footer({ onNavigate, showLanding = false }) {
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
               {["Privacy Policy","Terms of Service"].map(l => (
                 <a key={l} href="#"
-                  onClick={e=>{ e.preventDefault(); if(l==="Privacy Policy"){ sessionStorage.setItem("page","privacy-policy"); sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("legalReturnTo","dashboard"); window.location.href=window.location.origin; } if(l==="Terms of Service"){ sessionStorage.setItem("page","terms-of-service"); sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("legalReturnTo","dashboard"); window.location.href=window.location.origin; } }}
+                  onClick={e=>{ e.preventDefault(); if(l==="Privacy Policy"){ sessionStorage.setItem("page","privacy-policy"); sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("legalReturnTo",legalReturnTo); window.location.href=window.location.origin; } if(l==="Terms of Service"){ sessionStorage.setItem("page","terms-of-service"); sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("legalReturnTo",legalReturnTo); window.location.href=window.location.origin; } }}
                   style={{ fontSize:14, color:muted, textDecoration:"none", transition:"color .12s" }}
                   onMouseEnter={e=>e.currentTarget.style.color=text}
                   onMouseLeave={e=>e.currentTarget.style.color=muted}>{l}</a>
@@ -6955,7 +6955,7 @@ function PublicCertificatePage({ data }) {
       </div>{/* end content section */}
 
       {/* Footer — same as dashboard footer */}
-      <Footer onNavigate={(page)=>{ sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("page", page); window.location.href=window.location.origin; }} />
+      <Footer legalReturnTo="landing" onNavigate={(page)=>{ sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("page", page); window.location.href=window.location.origin; }} />
     </div>
   );
 }
