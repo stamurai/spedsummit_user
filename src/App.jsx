@@ -12,21 +12,6 @@ import * as XLSX from "xlsx";
 import { GradientWave } from "./components/GradientWave";
 import { motion, useMotionValue, useMotionTemplate, useAnimationFrame, useInView, AnimatePresence } from "framer-motion";
 
-// Module-level timezone ref — updated by App on login/change, read by any component
-let _userTz = Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Los_Angeles";
-function getUserTz() { return _userTz; }
-function setUserTzGlobal(tz) { if (tz) _userTz = tz; }
-// Format an ISO date string using the user's selected timezone
-function fmtSessionDateTime(iso) {
-  if (!iso) return { date: "", time: "" };
-  const d = new Date(iso);
-  if (isNaN(d)) return { date: "", time: "" };
-  const tz = getUserTz();
-  const date = d.toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric", timeZone:tz });
-  const rawTime = d.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit", hour12:true, timeZone:tz, timeZoneName:"short" });
-  return { date, time: rawTime };
-}
-
 /* ─────────────────────────────────────────────────────────────────────────────
    PHOSPHOR ICONS  (inline SVG, consistent 20px/24px strokes)
 ───────────────────────────────────────────────────────────────────────────── */
@@ -2079,7 +2064,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
             (() => {
               const af = session.availableFrom || session.available_from;
               const dateLabel = af
-                ? (({ date, time }) => [date, time].filter(Boolean).join(", "))(fmtSessionDateTime(af))
+                ? new Date(af).toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZone:"America/Los_Angeles", timeZoneName:"short" }).replace("PDT","PST")
                 : null;
               return (
                 <div style={{ width:"100%", height:44, padding:"0 11px", borderRadius:10, border:`1px solid ${C.gray200}`,
@@ -2993,7 +2978,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                                   const af = session?.availableFrom || session?.available_from;
                                   if (af) {
                                     const d = parseLocalDate(af);
-                                    const { date, time } = fmtSessionDateTime(af); return "Available " + [date, time].filter(Boolean).join(", ");
+                                    return "Available " + d.toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZone:"America/Los_Angeles", timeZoneName:"short" }).replace("PDT","PST");
                                   }
                                   return `Available ${item.date}${item.time ? ` · ${item.time}` : ""}`;
                                 })()}
@@ -8517,7 +8502,7 @@ function LandingSessionCard({ s, imgSrc, onClick, availableFrom, sessionState })
   const hasRec     = SESSION_AVAILABILITY[s.id]?.hasRecording;
 
   const availLabel = isUpcoming && availableFrom
-    ? (({ date, time }) => [date, time].filter(Boolean).join(", "))(fmtSessionDateTime(availableFrom))
+    ? new Date(availableFrom).toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZone:"America/Los_Angeles", timeZoneName:"short" }).replace("PDT","PST")
     : null;
 
   const clickable = state === "live" || (isPast && hasRec);
@@ -9458,7 +9443,8 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               const af = instrSession?.availableFrom || instrSession?.available_from;
               if (!af) return null;
               const d = new Date(af);
-              const { date, time } = fmtSessionDateTime(af);
+              const date = d.toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric", timeZone:"America/Los_Angeles" });
+              const time = d.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit", hour12:true, timeZone:"America/Los_Angeles", timeZoneName:"short" }).replace("PDT","PST");
               return (
                 <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"rgba(245,158,11,0.10)", border:"1px solid rgba(245,158,11,0.25)", borderRadius:7, padding:"5px 12px", fontSize:13, fontWeight:600, color:"#b45309", marginBottom:12 }}>
                   <Icon name="calendar" size={13} color="#b45309"/>
@@ -10425,7 +10411,15 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               "TEAMWORK":      { label:"Teamwork",      bg:"rgba(168,85,247,0.15)",  color:"#c084fc" },
             };
 
-            const fmtDateTime = fmtSessionDateTime;
+            // Format availableFrom date/time for display (Pacific time)
+            const fmtDateTime = (iso) => {
+              if (!iso) return { date: "", time: "" };
+              const d = parseLocalDate(iso);
+              if (!d) return { date: "", time: "" };
+              const date = d.toLocaleDateString("en-US", { month:"short", day:"numeric", timeZone:"America/Los_Angeles" });
+              const time = d.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit", hour12:true, timeZone:"America/Los_Angeles", timeZoneName:"short" }).replace("PDT","PST");
+              return { date, time };
+            };
 
             const now = new Date();
             // Show all admin-uploaded sessions. The availableFrom date controls button
@@ -11404,8 +11398,7 @@ export default function App() {
   const [userEmail, setUserEmail] = useState("");
   const [userId, setUserId] = useState(null);
   const [userAvatar, setUserAvatar] = useState(null);
-  const [userTimezone, setUserTimezone] = useState(() => { const tz = Intl.DateTimeFormat().resolvedOptions().timeZone; setUserTzGlobal(tz); return tz; });
-  useEffect(() => { setUserTzGlobal(userTimezone); }, [userTimezone]);
+  const [userTimezone, setUserTimezone] = useState(() => Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [showTimezoneModal, setShowTimezoneModal] = useState(false);
   const [scheduleRegistrations, setScheduleRegistrations] = useState({});
   const [sessionsDeepLink, setSessionsDeepLink] = useState(null);
