@@ -4040,9 +4040,38 @@ function InlineAssessment({ session, quizState = {}, onFinish, toast, stickyFoot
   );
 }
 
-function MaterialFileMeta({ fileUrl, fileType, typeColor }) {
+function detectFileType(url, contentType) {
+  const ct = (contentType || "").toLowerCase();
+  const ext = (url || "").split("?")[0].split(".").pop().toLowerCase();
+  if (ct.includes("pdf") || ext === "pdf") return "PDF";
+  if (ct.includes("wordprocessingml") || ct.includes("msword") || ext === "docx" || ext === "doc") return "DOCX";
+  if (ct.includes("presentationml") || ct.includes("powerpoint") || ext === "pptx" || ext === "ppt") return "PPTX";
+  if (ct.includes("spreadsheetml") || ct.includes("excel") || ext === "xlsx" || ext === "xls") return "XLSX";
+  if (ct.includes("jpeg") || ct.includes("jpg") || ext === "jpg" || ext === "jpeg") return "JPEG";
+  if (ct.includes("png") || ext === "png") return "PNG";
+  if (ct.includes("gif") || ext === "gif") return "GIF";
+  if (ct.includes("webp") || ext === "webp") return "WEBP";
+  if (ct.includes("svg") || ext === "svg") return "SVG";
+  if (ct.includes("zip") || ct.includes("x-zip") || ext === "zip") return "ZIP";
+  if (ct.includes("video") || ["mp4","mov","avi","mkv","webm"].includes(ext)) return "VIDEO";
+  if (ct.includes("audio") || ["mp3","wav","m4a","ogg"].includes(ext)) return "AUDIO";
+  if (ct.includes("text/plain") || ext === "txt") return "TXT";
+  if (ct.includes("text/csv") || ext === "csv") return "CSV";
+  return null;
+}
+function typeColorFor(t) {
+  if (t==="PDF")   return { bg:"#fef2f2", color:"#dc2626" };
+  if (t==="DOCX")  return { bg:"#eff6ff", color:"#2563eb" };
+  if (t==="PPTX")  return { bg:"#fff7ed", color:"#ea580c" };
+  if (t==="XLSX")  return { bg:"#f0fdf4", color:"#16a34a" };
+  if (t==="ZIP")   return { bg:"#f5f3ff", color:"#7c3aed" };
+  if (t==="VIDEO") return { bg:"#fdf4ff", color:"#9333ea" };
+  if (["JPEG","PNG","GIF","WEBP","SVG"].includes(t)) return { bg:"#fef9c3", color:"#a16207" };
+  return { bg:"#eff6ff", color:"#6490E8" };
+}
+function MaterialFileMeta({ fileUrl }) {
   const [size, setSize] = React.useState(null);
-  const [detectedType, setDetectedType] = React.useState(fileType);
+  const [detectedType, setDetectedType] = React.useState(() => detectFileType(fileUrl, ""));
   React.useEffect(() => {
     if (!fileUrl) return;
     fetch(fileUrl, { method:"HEAD" }).then(r => {
@@ -4052,13 +4081,13 @@ function MaterialFileMeta({ fileUrl, fileType, typeColor }) {
         const bytes = parseInt(cl, 10);
         setSize(bytes < 1024*1024 ? `${(bytes/1024).toFixed(0)} KB` : `${(bytes/1024/1024).toFixed(1)} MB`);
       }
-      if (ct.includes("pdf")) setDetectedType("PDF");
-      else if (ct.includes("wordprocessingml") || ct.includes("msword")) setDetectedType("DOCX");
-      else if (ct.includes("presentationml") || ct.includes("powerpoint")) setDetectedType("PPTX");
+      const t = detectFileType(fileUrl, ct);
+      if (t) setDetectedType(t);
     }).catch(()=>{});
   }, [fileUrl]);
-  const tc = detectedType==="PDF" ? { bg:"#fef2f2", color:"#dc2626" } : detectedType==="PPTX" ? { bg:"#fff7ed", color:"#ea580c" } : detectedType==="DOCX" ? { bg:"#eff6ff", color:"#2563eb" } : typeColor;
-  return <div style={{ fontSize:11, fontWeight:600, color:tc.color, marginTop:2 }}>{detectedType}{size ? ` · ${size}` : ""}</div>;
+  const label = detectedType || "FILE";
+  const tc = typeColorFor(label);
+  return <div style={{ fontSize:11, fontWeight:600, color:tc.color, marginTop:2 }}>{label}{size ? ` · ${size}` : ""}</div>;
 }
 
 function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress, onVideoEnd, adminName = "", adminAvatar = null, isDark = false, quizState = {}, onFinishAssessment, userEmail = "", onCertificateClick, hasReviewed = false, currentUserId = null }) {
@@ -4503,7 +4532,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                         </div>
                         <div style={{ flex:1, minWidth:0 }}>
                           <div style={{ fontSize:13, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{title}</div>
-                          {fileUrl ? <MaterialFileMeta fileUrl={fileUrl} fileType={fileType} typeColor={typeColor}/> : <div style={{ fontSize:11, color:C.gray400, marginTop:2 }}>No file</div>}
+                          {fileUrl ? <MaterialFileMeta fileUrl={fileUrl}/> : <div style={{ fontSize:11, color:C.gray400, marginTop:2 }}>No file</div>}
                         </div>
                         {fileUrl && (
                           <div style={{ display:"flex", gap:8, flexShrink:0, ...(isMob ? { width:"100%", marginTop:4 } : {}) }}>
