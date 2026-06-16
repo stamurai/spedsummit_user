@@ -9442,8 +9442,8 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               const af = instrSession?.availableFrom || instrSession?.available_from;
               if (!af) return null;
               const d = new Date(af);
-              const date = d.toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
-              const time = d.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit", hour12:true });
+              const date = d.toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric", timeZone:"America/Los_Angeles" });
+              const time = d.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit", hour12:true, timeZone:"America/Los_Angeles", timeZoneName:"short" }).replace("PDT","PST");
               return (
                 <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"rgba(245,158,11,0.10)", border:"1px solid rgba(245,158,11,0.25)", borderRadius:7, padding:"5px 12px", fontSize:13, fontWeight:600, color:"#b45309", marginBottom:12 }}>
                   <Icon name="calendar" size={13} color="#b45309"/>
