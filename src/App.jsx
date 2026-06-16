@@ -16,11 +16,26 @@ import { motion, useMotionValue, useMotionTemplate, useAnimationFrame, useInView
 let _userTz = Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Los_Angeles";
 function getUserTz() { return _userTz; }
 function setUserTzGlobal(tz) { if (tz) _userTz = tz; }
-// Format an ISO date string using the user's selected timezone
+// Parse a PST-based datetime string (no tz suffix) as America/Los_Angeles, return a UTC Date
+function parsePstDate(iso) {
+  if (!iso) return null;
+  // If already has timezone info (Z or +offset), parse directly
+  if (/Z|[+-]\d{2}:?\d{2}$/.test(iso)) return new Date(iso);
+  // No tz suffix — treat as Pacific Time by formatting via Intl and resolving offset
+  // Trick: parse naively, then shift by the PST offset at that moment
+  const naive = new Date(iso.replace(" ", "T"));
+  if (isNaN(naive)) return null;
+  // Get what Pacific Time thinks "naive" is as UTC
+  const pstStr = naive.toLocaleString("en-US", { timeZone:"America/Los_Angeles" });
+  const pstAsLocal = new Date(pstStr);
+  const offsetMs = naive - pstAsLocal;
+  return new Date(naive.getTime() + offsetMs);
+}
+// Format a PST-stored ISO date string displayed in the user's selected timezone
 function fmtSessionDateTime(iso) {
   if (!iso) return { date: "", time: "" };
-  const d = new Date(iso);
-  if (isNaN(d)) return { date: "", time: "" };
+  const d = parsePstDate(iso);
+  if (!d || isNaN(d)) return { date: "", time: "" };
   const tz = getUserTz();
   const date = d.toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric", timeZone:tz });
   const rawTime = d.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit", hour12:true, timeZone:tz, timeZoneName:"short" });
