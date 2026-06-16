@@ -2786,10 +2786,13 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
             const instrRole = s.instructorDesignation || INST_ROLES[s.instructor] || "Instructor";
             const schedItem = schedule.find(i => i.id === s.id);
             const typeLabel = schedItem ? schedItem.type.charAt(0) + schedItem.type.slice(1).toLowerCase() : "Session";
+            const _hasQuiz = getSessionQuestions(s).length > 0;
+            const _quizPassed = quizStates?.[s.id]?.status === "passed";
+            const _assessmentPending = s.status === "completed" && _hasQuiz && !_quizPassed;
             return (
               <div key={s.id} className="db-course-row db-session-card-row"
                 style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, ...(isMobile ? { flexDirection:"column", minHeight:"unset", minWidth:"78vw", maxWidth:"78vw", flexShrink:0, scrollSnapAlign:"start" } : {}) }}
-                onClick={() => onOpenSession(s)}>
+                onClick={() => onOpenSession(s, undefined, { toAssessment: _assessmentPending })}>
                 <div className="db-session-card-thumb" style={isMobile ? { width:"100%", height:160, flexShrink:0 } : {}}>
                   {(s.instructorImage) && <img src={s.instructorImage} alt={s.instructor}/>}
                   <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.25) 45%, transparent 75%)" }}/>
@@ -2813,7 +2816,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                   )}
                   <div style={{ display:"flex", alignItems:"center", gap:12, marginTop:"auto", paddingTop:16 }}>
                     <button
-                      onClick={e=>{ e.stopPropagation(); onOpenSession(s); }}
+                      onClick={e=>{ e.stopPropagation(); onOpenSession(s, undefined, { toAssessment: _assessmentPending }); }}
                       style={{ display:"inline-flex", alignItems:"center", padding:"7px 13px", background:C.primary, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", transition:"opacity 0.15s" }}
                       onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
                       onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
@@ -4090,7 +4093,7 @@ function MaterialFileMeta({ fileUrl }) {
   return <div style={{ fontSize:11, fontWeight:600, color:tc.color, marginTop:2 }}>{label}{size ? ` · ${size}` : ""}</div>;
 }
 
-function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress, onVideoEnd, adminName = "", adminAvatar = null, isDark = false, quizState = {}, onFinishAssessment, userEmail = "", onCertificateClick, hasReviewed = false, currentUserId = null }) {
+function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress, onVideoEnd, adminName = "", adminAvatar = null, isDark = false, quizState = {}, onFinishAssessment, userEmail = "", onCertificateClick, hasReviewed = false, currentUserId = null, onRegisterGoToAssessment = null }) {
   const [playing, setPlaying] = useState(false);
   const [activeLesson, setActiveLesson] = useState(() => { const idx = session.lessons.findIndex(l=>l.status==="active" && l.type!=="quiz"); return idx >= 0 ? idx : 0; });
   const [progress, setProgress] = useState(session.progress || 0);
@@ -4103,6 +4106,13 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const [downloaded, setDownloaded] = useState({});
   const [bottomTab, setBottomTab] = useState("overview");
   const [panelMode, setPanelMode] = useState("video"); // "video" | "assessment"
+  React.useEffect(() => {
+    onRegisterGoToAssessment?.(() => setPanelMode("assessment"));
+    if (sessionStorage.getItem("open_to_assessment") === "1") {
+      sessionStorage.removeItem("open_to_assessment");
+      setPanelMode("assessment");
+    }
+  }, []);
   const [collapsedSections, setCollapsedSections] = useState({});
   const [sdComments, setSdComments] = useState([]);
   const [sdCommentsLoading, setSdCommentsLoading] = useState(false);
@@ -5985,7 +5995,7 @@ function PastSessionsTab({ onOpenSeason, sessions = [], seasons = SEASONS }) {
   );
 }
 
-function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertificateClick, userName = "", sessions = [], seasons = SEASONS }) {
+function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertificateClick, userName = "", sessions = [], seasons = SEASONS, certIds = {} }) {
   const [activeSeason,  setActiveSeason]  = useState(null);
   const [activeSession, setActiveSession] = useState(null);
   const [shareCert, setShareCert] = useState(null); // { certUrl, sessionTitle }
@@ -6277,7 +6287,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
                       {passed ? (
                         <div className="cert-row-actions" style={{ display:"flex", gap:8, flexShrink:0 }}>
                           <button
-                            onClick={() => { const certId = `SS-${s.id}-${qs?.score}-2026`; setShareCert({ certUrl:`spedsummit.com/cert/${certId.toLowerCase()}`, sessionTitle:s.title }); }}
+                            onClick={() => { const dbId = certIds[s.id]; const shareUrl = dbId ? `${window.location.origin}/cert?cert_id=${dbId}` : `${window.location.origin}/?cert_id=${s.id}`; setShareCert({ certUrl: shareUrl.replace(/^https?:\/\//, ""), sessionTitle:s.title }); }}
                             style={{ padding:"6px 12px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap", fontFamily:"inherit" }}>
                             <Icon name="share-network" size={13} color={C.gray600}/> Share
                           </button>
@@ -6694,77 +6704,96 @@ function ShareCertificateModal({ certUrl, sessionTitle, onClose }) {
   }
 
   return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", zIndex:800,
-                  display:"flex", alignItems:"flex-end", justifyContent:"center" }}
-         onClick={onClose}>
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.52)", zIndex:800, display:"flex", alignItems:"flex-end", justifyContent:"center" }} onClick={onClose}>
       <style>{`
         .share-modal-card {
-          background: ${dark ? "#1e2647" : "#fff"};
-          border-radius: 20px 20px 0 0;
+          background: #fff;
+          border-radius: 24px 24px 0 0;
           width: 100%;
-          max-width: 440px;
-          box-shadow: 0 -8px 40px rgba(0,0,0,0.2);
-          padding: 8px 24px 32px;
+          max-width: 480px;
+          box-shadow: 0 -12px 48px rgba(0,0,0,0.18);
+          padding: 0 0 32px;
           position: relative;
+          animation: slideUp .22s cubic-bezier(.32,1.2,.5,1);
         }
+        @keyframes slideUp { from { transform: translateY(40px); opacity:0; } to { transform: translateY(0); opacity:1; } }
         @media(min-width: 600px) {
-          .share-modal-wrap {
-            align-items: center !important;
-            padding: 24px;
-          }
-          .share-modal-card {
-            border-radius: 16px;
-            padding: 28px 28px 24px;
-            max-width: 440px;
-          }
+          .share-modal-wrap { align-items: center !important; padding: 24px; }
+          .share-modal-card { border-radius: 20px; max-width: 460px; animation: fadeInScale .18s ease; }
           .share-modal-handle { display: none !important; }
         }
+        @keyframes fadeInScale { from { transform: scale(.96); opacity:0; } to { transform: scale(1); opacity:1; } }
+        .share-social-btn:hover .share-social-icon { transform: translateY(-3px); }
+        .share-copy-btn:hover { background: #f0f4ff !important; }
       `}</style>
       <div className="share-modal-wrap" style={{ display:"flex", alignItems:"flex-end", justifyContent:"center", width:"100%", position:"fixed", inset:0 }} onClick={onClose}>
         <div className="share-modal-card" onClick={e => e.stopPropagation()}>
-          {/* Drag handle (mobile) */}
-          <div className="share-modal-handle" style={{ width:36, height:4, borderRadius:2, background:"#e5e7eb", margin:"0 auto 20px" }}/>
 
-          {/* Close */}
-          <button onClick={onClose}
-            style={{ position:"absolute", top:16, right:16, width:28, height:28, borderRadius:8,
-                     border:`1px solid ${dark ? "rgba(255,255,255,0.12)" : C.gray200}`, background:"none", cursor:"pointer",
-                     display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <Icon name="x" size={14} color={dark ? "rgba(255,255,255,0.5)" : C.gray500}/>
-          </button>
+          {/* Drag handle */}
+          <div className="share-modal-handle" style={{ width:40, height:4, borderRadius:2, background:"#e5e7eb", margin:"12px auto 0" }}/>
 
-          <div style={{ fontSize:20, fontWeight:700, color: dark ? "#fff" : "#181c32", marginBottom:6 }}>Share this certificate</div>
-          <div style={{ fontSize:13, color: dark ? "rgba(255,255,255,0.5)" : C.gray400, marginBottom:24 }}>Show your network what you've accomplished</div>
+          {/* Header */}
+          <div style={{ padding:"20px 24px 0", display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+              <div style={{ width:44, height:44, borderRadius:12, background:"linear-gradient(135deg,#6490E8 0%,#4f6fd4 100%)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 15l-3.5 2.1.9-4-3-2.6 4-.35L12 6.5l1.6 3.65 4 .35-3 2.6.9 4z" fill="white"/>
+                  <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.5" fill="none"/>
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontSize:17, fontWeight:800, color:"#181c32", lineHeight:1.2 }}>Share Certificate</div>
+                <div style={{ fontSize:12, color:C.gray400, marginTop:2, lineHeight:1.4, maxWidth:260, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{sessionTitle}</div>
+              </div>
+            </div>
+            <button onClick={onClose}
+              style={{ width:32, height:32, borderRadius:10, border:`1px solid ${C.gray200}`, background:"none", cursor:"pointer",
+                       display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:2 }}>
+              <Icon name="x" size={15} color={C.gray400}/>
+            </button>
+          </div>
 
-          {/* Social icons */}
-          <div style={{ display:"flex", gap:0, justifyContent:"space-between", marginBottom:28 }}>
+          {/* Divider */}
+          <div style={{ height:1, background:C.gray100, margin:"16px 0" }}/>
+
+          {/* Share via label */}
+          <div style={{ padding:"0 24px", fontSize:11, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:14 }}>Share via</div>
+
+          {/* Social buttons */}
+          <div style={{ display:"flex", gap:8, padding:"0 24px", marginBottom:20, overflowX:"auto", scrollbarWidth:"none" }}>
             {socials.map(s => (
-              <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
-                 style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:8, textDecoration:"none", flex:1 }}>
-                <div style={{ width:52, height:52, borderRadius:"50%", background:s.color,
+              <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="share-social-btn"
+                 style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:7, textDecoration:"none", flex:"0 0 auto", minWidth:64 }}>
+                <div className="share-social-icon" style={{ width:52, height:52, borderRadius:16, background:s.color,
                               display:"flex", alignItems:"center", justifyContent:"center",
-                              boxShadow:"0 2px 8px rgba(0,0,0,0.2)", transition:"transform .15s" }}
-                     onMouseEnter={e => e.currentTarget.style.transform = "scale(1.08)"}
-                     onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
+                              boxShadow:`0 4px 12px ${s.color}40`, transition:"transform .18s cubic-bezier(.32,1.2,.5,1)" }}>
                   {s.icon}
                 </div>
-                <span style={{ fontSize:11, color: dark ? "rgba(255,255,255,0.5)" : C.gray500, fontWeight:500 }}>{s.label}</span>
+                <span style={{ fontSize:11, color:C.gray500, fontWeight:600 }}>{s.label}</span>
               </a>
             ))}
           </div>
 
-          {/* Copy link row */}
-          <div style={{ display:"flex", alignItems:"center", border:`1px solid ${dark ? "rgba(255,255,255,0.1)" : C.gray200}`,
-                        borderRadius:12, overflow:"hidden", background: dark ? "rgba(255,255,255,0.06)" : C.gray50 }}>
-            <div style={{ flex:1, padding:"12px 14px", fontSize:13, color: dark ? "rgba(255,255,255,0.45)" : C.gray500,
-                          overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-              {fullUrl}
+          {/* Copy link section */}
+          <div style={{ padding:"0 24px" }}>
+            <div style={{ fontSize:11, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:10 }}>Certificate link</div>
+            <div style={{ display:"flex", alignItems:"center", gap:10, background:C.gray50, border:`1.5px solid ${copied ? C.success : C.gray200}`, borderRadius:14, padding:"10px 10px 10px 14px", transition:"border-color .2s" }}>
+              <div style={{ flex:1, fontSize:13, color:C.gray600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", fontFamily:"monospace" }}>
+                {fullUrl}
+              </div>
+              <button onClick={copyLink} className="share-copy-btn"
+                style={{ flexShrink:0, display:"inline-flex", alignItems:"center", gap:6, padding:"8px 14px",
+                         background: copied ? "rgba(16,185,129,0.1)" : "#fff",
+                         border:`1.5px solid ${copied ? C.success : C.gray200}`,
+                         borderRadius:10, cursor:"pointer", transition:"all .18s",
+                         fontSize:12, fontWeight:700, color: copied ? C.success : C.primary, whiteSpace:"nowrap" }}>
+                {copied ? (
+                  <><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg> Copied!</>
+                ) : (
+                  <><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" strokeWidth="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" strokeWidth="2"/></svg> Copy link</>
+                )}
+              </button>
             </div>
-            <button onClick={copyLink}
-              style={{ padding:"12px 18px", background:"none", border:"none", borderLeft:`1px solid ${dark ? "rgba(255,255,255,0.1)" : C.gray200}`,
-                       color: copied ? C.success : C.primary, fontSize:13, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap" }}>
-              {copied ? "COPIED!" : "COPY"}
-            </button>
           </div>
         </div>
       </div>
@@ -6841,18 +6870,21 @@ function PublicCertificatePageById({ certId }) {
   }, [certId]);
   if (error) return <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"sans-serif", color:"#6b7280" }}>Certificate not found.</div>;
   if (!data) return <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"sans-serif", color:"#6b7280" }}>Loading certificate…</div>;
-  return <PublicCertificatePage data={data}/>;
+  return <PublicCertificatePage data={data} dbCertId={certId}/>;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PUBLIC CERTIFICATE PAGE
 ───────────────────────────────────────────────────────────────────────────── */
-function PublicCertificatePage({ data }) {
+function PublicCertificatePage({ data, dbCertId = null }) {
   const { recipientName, sessionTitle, sessionId, instructor, instructorImage, duration, score, description, certId, date } = data;
   const instructorName = instructor ? instructor.split("|")[0].trim() : "";
   const instructorRole = instructor?.includes("|") ? instructor.split("|")[1].trim() : "";
   const descText = description || "";
-  const certUrl = `${window.location.origin}${window.location.pathname}?cert=${btoa(JSON.stringify(data))}`;
+  // Use the OG-friendly /cert route when we have a real Supabase cert ID, otherwise fall back to encoded URL
+  const certUrl = dbCertId
+    ? `${window.location.origin}/cert?cert_id=${dbCertId}`
+    : `${window.location.origin}${window.location.pathname}?cert=${btoa(JSON.stringify(data))}`;
   const [copied, setCopied] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [showShare, setShowShare] = useState(false);
@@ -9094,9 +9126,9 @@ function SpAccordionFeature({ T }) {
       <div style={{ maxWidth:1100, margin:"0 auto" }}>
         {/* Header */}
         <div style={{ textAlign:"center", marginBottom:52 }}>
-          <p style={{ margin:"0 0 10px", fontSize:13, fontWeight:700, color:"rgba(255,255,255,0.6)", letterSpacing:1, textTransform:"uppercase" }}>AbleSpace Features</p>
+          <p style={{ margin:"0 0 10px", fontSize:13, fontWeight:700, color:"rgba(255,255,255,0.6)", letterSpacing:1, textTransform:"uppercase" }}>Sponsored by AbleSpace</p>
           <h2 style={{ margin:"0 0 14px", fontSize:"clamp(28px,4vw,42px)", fontWeight:800, color:"#fff", letterSpacing:-1.2, lineHeight:1.15 }}>
-            AI-Powered IEP Goal Tracking
+            AbleSpace Features
           </h2>
           <p style={{ margin:"0 auto", fontSize:16, color:"rgba(255,255,255,0.7)", lineHeight:1.7, maxWidth:480 }}>
             Track IEP goals, services, and accommodations in one place - with AI-powered speed and accuracy.
@@ -9686,7 +9718,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                 style={{ marginLeft:8, padding:"0 16px", height:36, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
                 onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
                 onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-                Sign in
+                Get Started
               </button>
             )}
           </div>
@@ -9736,7 +9768,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               style={{ width:"100%", padding:"14px", fontSize:15, fontWeight:700, background:T.blue, color:"#fff", border:"none", borderRadius:12, cursor:"pointer", transition:"background .15s" }}
               onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
               onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-              Sign in
+              Get Started
             </button>
           )}
         </div>,
@@ -9791,7 +9823,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               style={{ padding:"0 26px", height:44, minWidth:200, background:T.blue, color:"#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
               onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
               onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-              {isLoggedIn ? "Go to Dashboard" : "Sign in"}
+              {isLoggedIn ? "Go to Dashboard" : "Get Started"}
             </button>
             <button onClick={()=>document.getElementById("sessions")?.scrollIntoView({ behavior:"smooth" })}
               style={{ padding:"0 26px", height:44, minWidth:200, background:"transparent", color:T.text, border:"1.5px solid #c8cacc", borderRadius:10, fontSize:15, fontWeight:500, cursor:"pointer", transition:"background .15s, border-color .15s" }}
@@ -9958,9 +9990,9 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
             <div style={{ maxWidth:1100, margin:"0 auto" }}>
               {/* Section header */}
               <div style={{ textAlign:"center", marginBottom:52 }}>
-                <p style={{ margin:"0 0 10px", fontSize:13, fontWeight:700, color:T.muted, letterSpacing:1, textTransform:"uppercase" }}>AbleSpace Features</p>
+                <p style={{ margin:"0 0 10px", fontSize:13, fontWeight:700, color:T.muted, letterSpacing:1, textTransform:"uppercase" }}>Sponsored by AbleSpace</p>
                 <h2 style={{ margin:"0 0 14px", fontSize:"clamp(28px,4vw,42px)", fontWeight:800, color:T.text, letterSpacing:-1.2, lineHeight:1.15 }}>
-                  AI-Powered IEP Goal Tracking
+                  AbleSpace Features
                 </h2>
                 <p style={{ margin:"0 auto", fontSize:16, color:T.muted, lineHeight:1.7, maxWidth:480 }}>
                   Track IEP goals, services, and accommodations in one place - with AI-powered speed and accuracy.
@@ -10443,7 +10475,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                   style={{ padding:"12px 32px", background:T.blue, color:"#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:700, cursor:"pointer", transition:"background .12s" }}
                   onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
                   onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-                  Sign in
+                  Get Started
                 </button>
               </div>}
             </div>
@@ -10695,7 +10727,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                 style={{ padding:"0 24px", height:42, background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", transition:"background .12s" }}
                 onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
                 onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-                {isLoggedIn ? "Go to Dashboard" : "Sign in"}
+                {isLoggedIn ? "Go to Dashboard" : "Get Started"}
               </button>
               <button onClick={()=>document.getElementById("sessions")?.scrollIntoView({ behavior:"smooth" })}
                 style={{ padding:"0 24px", height:42, background:"transparent", color:T.text, border:"1px solid #c8cacc", borderRadius:8, fontSize:14, fontWeight:500, cursor:"pointer", transition:"background .15s, border-color .15s" }}
@@ -11481,6 +11513,7 @@ export default function App() {
   const [,                  setReviews]           = useState({});
   const [reviewedSessions,  setReviewedSessions]  = useState(new Set());
   const reviewedSessionsRef = useRef(new Set());
+  const goToAssessmentRef = useRef(null);
   const [commentsRefreshKey, setCommentsRefreshKey] = useState(0);
   const [testimonialsData,  setTestimonialsData]  = useState([]);
 
@@ -11600,7 +11633,12 @@ export default function App() {
         if (meta.timezone) { setUserTimezone(meta.timezone); } else if (event === "SIGNED_IN") { setShowTimezoneModal(true); }
         setIsLoggedIn(true);
         // Only redirect to dashboard on fresh sign-in (not token refresh on tab focus)
-        if (event === "SIGNED_IN" && sessionStorage.getItem("loggedIn") !== "1") { setPage("dashboard"); setShowLanding(false); }
+        // Preserve an explicit page stored in sessionStorage (e.g. redirect from public cert breadcrumb)
+        if (event === "SIGNED_IN" && sessionStorage.getItem("loggedIn") !== "1") {
+          const storedPage = sessionStorage.getItem("page");
+          const targetPage = (storedPage && storedPage !== "session-detail") ? storedPage : "dashboard";
+          setPage(targetPage); setShowLanding(false);
+        }
         sessionStorage.setItem("loggedIn", "1");
         fetchSessions();
         clearLocalQuizCache(); fetchUserProgress();
@@ -12009,13 +12047,15 @@ export default function App() {
     saveUserProgress(sessionId, { progress: pct, status: newStatus, enrolled: true, ...(newStatus === "completed" ? { completed_at: new Date().toISOString() } : {}) });
   }
 
-  function openSession(s, source) {
+  function openSession(s, source, opts = {}) {
     const src = (source === "landing" ? "dashboard" : source) || page;
     setActiveSession(s);
     setSessionSource(src);
     sessionStorage.setItem("active_session_id", String(s.id));
     sessionStorage.setItem("active_session_source", src);
     sessionStorage.setItem("page", "session-detail");
+    if (opts.toAssessment) sessionStorage.setItem("open_to_assessment", "1");
+    else sessionStorage.removeItem("open_to_assessment");
     const season = seasons.find(season => season.sessionIds.includes(s.id));
     setSessionBackLabel(season ? season.name : null);
     // Push session-detail to browser history so back returns to the source page
@@ -12034,7 +12074,7 @@ export default function App() {
   function renderPage() {
     if (page==="session-detail" && activeSession) {
       const liveSession = sessions.find(s => s.id === activeSession.id) || activeSession;
-      return <SessionDetail session={liveSession} onBack={()=>nav(sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress} onVideoEnd={(sessionId) => {
+      return <SessionDetail session={liveSession} onBack={()=>nav(sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress} onRegisterGoToAssessment={fn => { goToAssessmentRef.current = fn; }} onVideoEnd={(sessionId) => {
         if (!reviewedSessionsRef.current.has(sessionId)) {
           const sess = sessions.find(s => String(s.id) === String(sessionId));
           if (sess) setReviewSession({ session: sess, score: null, passed: null });
@@ -12152,7 +12192,7 @@ export default function App() {
     if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} schedule={scheduleData.length > 0 ? scheduleData : SCHEDULE}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
     if (page==="community") return <CommunityPage toast={toast} userName={userName} userAvatar={userAvatar} sessions={sessions} refreshKey={commentsRefreshKey} currentUserId={userId}/>;
-    if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick} userName={userName} sessions={sessions} seasons={seasons}/>;
+    if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick} userName={userName} sessions={sessions} seasons={seasons} certIds={certIds}/>;
     if (page==="past-sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} seasons={seasons} sessionsLoading={sessionsLoading}/>;
     if (page==="notifications")  return <NotificationsPage />;
     if (page==="profile")   return <ProfilePage toast={toast} userName={userName} userEmail={userEmail} userAvatar={userAvatar} onNameChange={setUserName} onAvatarChange={setUserAvatar} onBack={() => nav("dashboard")} userTimezone={userTimezone} onTimezoneChange={setUserTimezone}/>;
@@ -12352,6 +12392,7 @@ export default function App() {
               if (data) setSdComments(prev => [data, ...prev]);
               setCommentsRefreshKey(k => k + 1);
             }
+            setTimeout(() => goToAssessmentRef.current?.(), 1900);
           }}
         />
       )}
