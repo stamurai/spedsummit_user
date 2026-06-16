@@ -5815,25 +5815,22 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
       `}</style>
 
       {/* ── Breadcrumbs bar ── */}
-      <div style={{ width:"100%", borderBottom:`1px solid ${C.gray200}`, background:C.white }}>
-        <div style={{ maxWidth:960, margin:"0 auto", padding:"14px 24px", boxSizing:"border-box", display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
-          <button onClick={onBack} style={{ background:"none", border:"none", padding:0, cursor:"pointer", fontSize:14, fontWeight:500, color:C.primary, fontFamily:"inherit" }}>
-            Home
-          </button>
-          <span style={{ fontSize:14, color:C.gray400 }}>/</span>
-          {mobileDrilled ? (
-            <>
-              <button onClick={()=>setMobileDrilled(false)} style={{ background:"none", border:"none", padding:0, cursor:"pointer", fontSize:14, fontWeight:500, color:C.primary, fontFamily:"inherit" }}>
-                Account Centre
-              </button>
-              <span style={{ fontSize:14, color:C.gray400 }}>/</span>
-              <span style={{ fontSize:14, fontWeight:500, color:C.gray900 }}>{sectionLabels[activeSection]}</span>
-            </>
-          ) : (
-            <span style={{ fontSize:14, fontWeight:500, color:C.gray900 }}>Account Centre</span>
-          )}
-        </div>
-        <div style={{ height:4, background:C.primary, width:"100%" }}/>
+      <div style={{ width:"100%", borderBottom:`1px solid ${C.gray200}`, background:C.white, padding:"12px 32px", boxSizing:"border-box", display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+        <button onClick={onBack} style={{ background:"none", border:"none", padding:0, cursor:"pointer", fontSize:14, fontWeight:500, color:C.primary, fontFamily:"inherit" }}>
+          Home
+        </button>
+        <span style={{ fontSize:14, color:C.gray400 }}>/</span>
+        {mobileDrilled ? (
+          <>
+            <button onClick={()=>setMobileDrilled(false)} style={{ background:"none", border:"none", padding:0, cursor:"pointer", fontSize:14, fontWeight:500, color:C.primary, fontFamily:"inherit" }}>
+              Account Centre
+            </button>
+            <span style={{ fontSize:14, color:C.gray400 }}>/</span>
+            <span style={{ fontSize:14, fontWeight:500, color:C.gray900 }}>{sectionLabels[activeSection]}</span>
+          </>
+        ) : (
+          <span style={{ fontSize:14, fontWeight:500, color:C.gray900 }}>Account Centre</span>
+        )}
       </div>
 
       {/* ── Mobile: Hub (section list) ── */}
