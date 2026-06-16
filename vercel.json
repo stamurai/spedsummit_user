@@ -2,6 +2,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/cert", "destination": "/api/cert" }
+    { "source": "/cert", "destination": "/api/cert" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

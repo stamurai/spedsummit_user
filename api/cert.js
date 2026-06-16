@@ -23,41 +23,46 @@ export default async function handler(req, res) {
     if (rows?.[0]?.cert_data) certData = rows[0].cert_data;
   } catch (_) {}
 
-  const name    = certData?.recipientName  || "A Special Educator";
-  const title   = certData?.sessionTitle   || "SPED Summit Session";
-  const date    = certData?.date           || "";
+  const name     = certData?.recipientName || "A Special Educator";
+  const title    = certData?.sessionTitle  || "SPED Summit Session";
+  const date     = certData?.date          || "";
   const duration = certData?.duration      || "";
 
   const ogTitle = `${name} earned a certificate – ${title}`;
   const ogDesc  = `${name} successfully completed "${title}"${duration ? ` (${duration})` : ""}${date ? ` on ${date}` : ""} at SPED Summit — a professional development program for special educators.`;
-  const ogImage = `${origin}/Certificate%20Background.png`;
+  // Use LandingPage.png (no spaces in filename, always accessible)
+  const ogImage = `${origin}/LandingPage.png`;
+
+  // Escape any quotes in dynamic content to prevent HTML injection
+  const safe = (s) => String(s).replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <title>${ogTitle}</title>
+  <title>${safe(ogTitle)}</title>
 
-  <!-- Open Graph -->
-  <meta property="og:type"        content="website"/>
-  <meta property="og:url"         content="${appUrl}"/>
-  <meta property="og:title"       content="${ogTitle}"/>
-  <meta property="og:description" content="${ogDesc}"/>
-  <meta property="og:image"       content="${ogImage}"/>
+  <!-- Open Graph (LinkedIn, Facebook, WhatsApp, Slack) -->
+  <meta property="og:type"         content="website"/>
+  <meta property="og:url"          content="${appUrl}"/>
+  <meta property="og:title"        content="${safe(ogTitle)}"/>
+  <meta property="og:description"  content="${safe(ogDesc)}"/>
+  <meta property="og:image"        content="${ogImage}"/>
+  <meta property="og:image:secure_url" content="${ogImage}"/>
+  <meta property="og:image:type"   content="image/png"/>
   <meta property="og:image:width"  content="1200"/>
   <meta property="og:image:height" content="630"/>
-  <meta property="og:site_name"   content="SPED Summit"/>
+  <meta property="og:site_name"    content="SPED Summit"/>
 
-  <!-- Twitter Card -->
+  <!-- Twitter / X Card -->
   <meta name="twitter:card"        content="summary_large_image"/>
-  <meta name="twitter:title"       content="${ogTitle}"/>
-  <meta name="twitter:description" content="${ogDesc}"/>
+  <meta name="twitter:title"       content="${safe(ogTitle)}"/>
+  <meta name="twitter:description" content="${safe(ogDesc)}"/>
   <meta name="twitter:image"       content="${ogImage}"/>
 
-  <!-- LinkedIn / WhatsApp fallback -->
-  <meta name="description" content="${ogDesc}"/>
+  <meta name="description" content="${safe(ogDesc)}"/>
 
-  <!-- Redirect real users instantly -->
+  <!-- Redirect real users to the app immediately -->
   <meta http-equiv="refresh" content="0; url=${appUrl}"/>
   <script>window.location.replace("${appUrl}");</script>
 </head>
