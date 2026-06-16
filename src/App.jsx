@@ -665,12 +665,30 @@ const SESSION_AVAILABILITY = {
 // Accepts either a sessionId (looks up SESSION_AVAILABILITY) or a session object with availableFrom/availableTo
 function parseLocalDate(str) {
   if (!str) return null;
-  // Treat all datetime strings as PST (America/Los_Angeles, UTC-8) so times are
-  // consistent regardless of the viewer's local timezone.
-  // Append PST offset if there is no existing timezone suffix.
+  // For bare datetime strings (no timezone suffix), treat as America/Los_Angeles local time.
+  // Try PDT (-07:00) then PST (-08:00); pick the offset that round-trips correctly when
+  // the resulting UTC instant is displayed back in the America/Los_Angeles timezone.
   if (/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?)?$/.test(str)) {
-    const d = new Date(str + (str.includes("T") ? ":00-08:00" : "T00:00:00-08:00"));
-    return isNaN(d) ? null : d;
+    const base = str.includes("T") ? str : str + "T00:00:00";
+    const target = base.slice(0, 16); // "YYYY-MM-DDTHH:MM"
+    for (const offset of ["-07:00", "-08:00"]) {
+      const candidate = new Date(base + offset);
+      if (isNaN(candidate)) continue;
+      const parts = candidate.toLocaleString("en-US", {
+        timeZone: "America/Los_Angeles", hour12: false,
+        year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit"
+      }).match(/(\d+)\/(\d+)\/(\d+),\s*(\d+):(\d+)/);
+      if (parts) {
+        const [, m, d, y, h, min] = parts;
+        const check = `${y}-${m.padStart(2,"0")}-${d.padStart(2,"0")}T${String(h === "24" ? "00" : h).padStart(2,"0")}:${min}`;
+        if (check === target) return candidate;
+      }
+    }
+    // Fallback: summer months → PDT (-07:00), winter → PST (-08:00)
+    const month = parseInt(base.slice(5, 7), 10);
+    const fallback = new Date(base + ((month >= 3 && month <= 11) ? "-07:00" : "-08:00"));
+    return isNaN(fallback) ? null : fallback;
   }
   const d = new Date(str);
   return isNaN(d) ? null : d;
