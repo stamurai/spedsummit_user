@@ -12349,7 +12349,7 @@ export default function App() {
       {reviewSession && (
         <ReviewModal
           session={reviewSession.session}
-          onClose={() => setReviewSession(null)}
+          onClose={() => { setReviewSession(null); setAssessmentTrigger(n => n + 1); }}
           onSubmit={async ({ sessionId, rating, review }) => {
             // Mark session as completed only on review submit
             updateProgress(sessionId, 100, null);
@@ -12386,7 +12386,6 @@ export default function App() {
               if (data) setSdComments(prev => [data, ...prev]);
               setCommentsRefreshKey(k => k + 1);
             }
-            setTimeout(() => setAssessmentTrigger(n => n + 1), 1900);
           }}
         />
       )}
