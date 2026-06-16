@@ -1081,9 +1081,9 @@ function Footer({ onNavigate, showLanding = false }) {
             <div style={{ fontSize:11, fontWeight:700, color:text, letterSpacing:.8, textTransform:"uppercase", marginBottom:16 }}>About</div>
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
               {[
-                { label:"Sessions",  action: ()=>{ if(showLanding){ document.getElementById("sessions")?.scrollIntoView({behavior:"smooth"}); } else { sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("landingScroll","sessions"); window.location.href=window.location.origin; } } },
-                { label:"Speakers",  action: ()=>{ if(showLanding){ document.getElementById("instructors")?.scrollIntoView({behavior:"smooth"}); } else { sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("landingScroll","instructors"); window.location.href=window.location.origin; } } },
-                { label:"FAQ",       action: ()=>{ if(showLanding){ document.getElementById("faq-v2")?.scrollIntoView({behavior:"smooth"}); } else { sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("landingScroll","faq-v2"); window.location.href=window.location.origin; } } },
+                { label:"Sessions",  action: ()=>{ const el=document.getElementById("sessions"); if(showLanding && el){ el.scrollIntoView({behavior:"smooth"}); } else { sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("landingScroll","sessions"); window.location.href=window.location.origin; } } },
+                { label:"Speakers",  action: ()=>{ const el=document.getElementById("instructors"); if(showLanding && el){ el.scrollIntoView({behavior:"smooth"}); } else { sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("landingScroll","instructors"); window.location.href=window.location.origin; } } },
+                { label:"FAQ",       action: ()=>{ const el=document.getElementById("faq-v2"); if(showLanding && el){ el.scrollIntoView({behavior:"smooth"}); } else { sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("landingScroll","faq-v2"); window.location.href=window.location.origin; } } },
                 { label:"Contact",   action: ()=>{ onNavigate && onNavigate("contact"); } },
               ].map(({ label, action }) => (
                 <a key={label} href="#"
