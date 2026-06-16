@@ -4093,7 +4093,7 @@ function MaterialFileMeta({ fileUrl }) {
   return <div style={{ fontSize:11, fontWeight:600, color:tc.color, marginTop:2 }}>{label}{size ? ` · ${size}` : ""}</div>;
 }
 
-function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress, onVideoEnd, adminName = "", adminAvatar = null, isDark = false, quizState = {}, onFinishAssessment, userEmail = "", onCertificateClick, hasReviewed = false, currentUserId = null, onRegisterGoToAssessment = null }) {
+function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAssessmentClick, onUpdateProgress, onVideoEnd, adminName = "", adminAvatar = null, isDark = false, quizState = {}, onFinishAssessment, userEmail = "", onCertificateClick, hasReviewed = false, currentUserId = null, assessmentTrigger = 0 }) {
   const [playing, setPlaying] = useState(false);
   const [activeLesson, setActiveLesson] = useState(() => { const idx = session.lessons.findIndex(l=>l.status==="active" && l.type!=="quiz"); return idx >= 0 ? idx : 0; });
   const [progress, setProgress] = useState(session.progress || 0);
@@ -4107,12 +4107,14 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
   const [bottomTab, setBottomTab] = useState("overview");
   const [panelMode, setPanelMode] = useState("video"); // "video" | "assessment"
   React.useEffect(() => {
-    onRegisterGoToAssessment?.(() => setPanelMode("assessment"));
     if (sessionStorage.getItem("open_to_assessment") === "1") {
       sessionStorage.removeItem("open_to_assessment");
       setPanelMode("assessment");
     }
   }, []);
+  React.useEffect(() => {
+    if (assessmentTrigger > 0) setPanelMode("assessment");
+  }, [assessmentTrigger]);
   const [collapsedSections, setCollapsedSections] = useState({});
   const [sdComments, setSdComments] = useState([]);
   const [sdCommentsLoading, setSdCommentsLoading] = useState(false);
@@ -11494,7 +11496,7 @@ export default function App() {
   const [,                  setReviews]           = useState({});
   const [reviewedSessions,  setReviewedSessions]  = useState(new Set());
   const reviewedSessionsRef = useRef(new Set());
-  const goToAssessmentRef = useRef(null);
+  const [assessmentTrigger, setAssessmentTrigger] = useState(0);
   const [commentsRefreshKey, setCommentsRefreshKey] = useState(0);
   const [testimonialsData,  setTestimonialsData]  = useState([]);
 
@@ -12055,7 +12057,7 @@ export default function App() {
   function renderPage() {
     if (page==="session-detail" && activeSession) {
       const liveSession = sessions.find(s => s.id === activeSession.id) || activeSession;
-      return <SessionDetail session={liveSession} onBack={()=>nav(sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress} onRegisterGoToAssessment={fn => { goToAssessmentRef.current = fn; }} onVideoEnd={(sessionId) => {
+      return <SessionDetail session={liveSession} onBack={()=>nav(sessionSource)} backLabel={sessionBackLabel} sessionSource={sessionSource} toast={toast} onAssessmentClick={handleAssessmentClick} onUpdateProgress={updateProgress} assessmentTrigger={assessmentTrigger} onVideoEnd={(sessionId) => {
         if (!reviewedSessionsRef.current.has(sessionId)) {
           const sess = sessions.find(s => String(s.id) === String(sessionId));
           if (sess) setReviewSession({ session: sess, score: null, passed: null });
@@ -12360,6 +12362,17 @@ export default function App() {
             if (review) {
               const sess = sessions.find(s => String(s.id) === String(sessionId));
               const { data: { user: _cu } } = await supabase.auth.getUser();
+              // Save to session_reviews (completion reviews table)
+              const { error: rvErr } = await supabase.from("session_reviews").insert({
+                session_id: String(sessionId),
+                session_title: sess?.title || "",
+                user_id: _cu?.id || null,
+                author_name: userName || "Anonymous",
+                author_avatar: userAvatar || null,
+                review,
+              });
+              if (rvErr) console.error("Review save error:", rvErr);
+              // Also post to community comments so it appears in the Community tab
               const { data, error } = await supabase.from("session_comments").insert({
                 session_id: String(sessionId),
                 session_title: sess?.title || "",
@@ -12369,11 +12382,11 @@ export default function App() {
                 body: review,
                 parent_id: null,
               }).select().single();
-              if (error) console.error("Review insert error:", error);
+              if (error) console.error("Comment insert error:", error);
               if (data) setSdComments(prev => [data, ...prev]);
               setCommentsRefreshKey(k => k + 1);
             }
-            setTimeout(() => goToAssessmentRef.current?.(), 1900);
+            setTimeout(() => setAssessmentTrigger(n => n + 1), 1900);
           }}
         />
       )}

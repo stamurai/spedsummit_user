@@ -171,3 +171,33 @@ CREATE POLICY "Public read avatars" ON storage.objects
 -- ── 9. Send-referral Edge Function reminder ───────────────────
 -- Deploy via: supabase functions deploy send-referral
 -- Set secret:  supabase secrets set RESEND_API_KEY=re_your_key_here
+
+-- ── 10. Create session_reviews table ─────────────────────────
+-- Stores reviews submitted by users after marking a session as completed.
+CREATE TABLE IF NOT EXISTS session_reviews (
+  id            uuid        DEFAULT gen_random_uuid() PRIMARY KEY,
+  session_id    text        NOT NULL,
+  session_title text        NOT NULL DEFAULT '',
+  user_id       uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
+  author_name   text        NOT NULL DEFAULT 'Anonymous',
+  author_avatar text,
+  review        text        NOT NULL,
+  created_at    timestamptz DEFAULT now()
+);
+
+ALTER TABLE session_reviews ENABLE ROW LEVEL SECURITY;
+
+-- Users can insert their own reviews
+DROP POLICY IF EXISTS "Users insert own reviews" ON session_reviews;
+CREATE POLICY "Users insert own reviews" ON session_reviews
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Users can read all reviews
+DROP POLICY IF EXISTS "Anyone can read reviews" ON session_reviews;
+CREATE POLICY "Anyone can read reviews" ON session_reviews
+  FOR SELECT USING (true);
+
+-- Users can update/delete their own reviews
+DROP POLICY IF EXISTS "Users manage own reviews" ON session_reviews;
+CREATE POLICY "Users manage own reviews" ON session_reviews
+  FOR ALL USING (auth.uid() = user_id);
