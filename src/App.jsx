@@ -12310,21 +12310,20 @@ export default function App() {
           }
         `}</style>
 
-        <div className="app-tabbar-wrap">
-          {activePage !== "profile" && page !== "session-detail" && page !== "past-season" && page !== "contact" && page !== "privacy-policy" && page !== "terms-of-service" && <TabBar
-            active={activePage}
-            onChange={nav}
-          />}
-          {page === "past-season" && pastSeasonPageId && <TabBar
-            active={activePage}
-            onChange={nav}
-            breadcrumbs={[
-              { label: "My Learnings", onClick:() => { setPastSeasonPageId(null); nav("dashboard"); } },
-              { label: "Past Sessions", onClick:() => { setPastSeasonPageId(null); nav("past-sessions"); } },
-              { label: seasons.find(s => s.id === pastSeasonPageId)?.name || "Past Season" },
-            ]}
-          />}
-        </div>
+        {activePage !== "profile" && page !== "session-detail" && page !== "contact" && page !== "privacy-policy" && page !== "terms-of-service" && (
+          <div className="app-tabbar-wrap">
+            {page !== "past-season" && <TabBar active={activePage} onChange={nav}/>}
+            {page === "past-season" && pastSeasonPageId && <TabBar
+              active={activePage}
+              onChange={nav}
+              breadcrumbs={[
+                { label: "My Learnings", onClick:() => { setPastSeasonPageId(null); nav("dashboard"); } },
+                { label: "Past Sessions", onClick:() => { setPastSeasonPageId(null); nav("past-sessions"); } },
+                { label: seasons.find(s => s.id === pastSeasonPageId)?.name || "Past Season" },
+              ]}
+            />}
+          </div>
+        )}
 
         <div ref={scrollContainerRef} className={`app-scroll-area${(page==="profile"||page==="session-detail"||page==="past-season"||activeSession||sessionsDeepLink)?" no-bottom-nav":""}`} style={{ flex:1, overflowY:"auto", overflowX:"clip", background:C.gray50 }}>{renderPage()}{page !== "profile" && page !== "session-detail" && !activeSession && <Footer onNavigate={nav} showLanding={showLanding}/>}</div>
       </div>
