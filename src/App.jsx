@@ -11870,7 +11870,8 @@ export default function App() {
     setTimeout(() => {
       document.getElementById(sectionId)?.scrollIntoView({ behavior:"smooth" });
     }, 400);
-  }, [showLanding]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function _applyPage(p, keepSession = false) {
     setPage(p); sessionStorage.setItem("page", p);
