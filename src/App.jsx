@@ -5814,23 +5814,26 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
         }
       `}</style>
 
-      {/* ── Breadcrumbs ── */}
-      <div style={{ maxWidth:960, width:"100%", margin:"0 auto", padding:"18px 24px 0", boxSizing:"border-box", display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
-        <button onClick={onBack} style={{ background:"none", border:"none", padding:0, cursor:"pointer", fontSize:13, fontWeight:500, color:C.gray500, fontFamily:"inherit" }}>
-          Dashboard
-        </button>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={C.gray400} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        {mobileDrilled ? (
-          <>
-            <button onClick={()=>setMobileDrilled(false)} style={{ background:"none", border:"none", padding:0, cursor:"pointer", fontSize:13, fontWeight:500, color:C.gray500, fontFamily:"inherit" }}>
-              Account Centre
-            </button>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={C.gray400} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            <span style={{ fontSize:13, fontWeight:600, color:C.gray900 }}>{sectionLabels[activeSection]}</span>
-          </>
-        ) : (
-          <span style={{ fontSize:13, fontWeight:600, color:C.gray900 }}>Account Centre</span>
-        )}
+      {/* ── Breadcrumbs bar ── */}
+      <div style={{ width:"100%", borderBottom:`1px solid ${C.gray200}`, background:C.white }}>
+        <div style={{ maxWidth:960, margin:"0 auto", padding:"14px 24px", boxSizing:"border-box", display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+          <button onClick={onBack} style={{ background:"none", border:"none", padding:0, cursor:"pointer", fontSize:14, fontWeight:500, color:C.primary, fontFamily:"inherit" }}>
+            Home
+          </button>
+          <span style={{ fontSize:14, color:C.gray400 }}>/</span>
+          {mobileDrilled ? (
+            <>
+              <button onClick={()=>setMobileDrilled(false)} style={{ background:"none", border:"none", padding:0, cursor:"pointer", fontSize:14, fontWeight:500, color:C.primary, fontFamily:"inherit" }}>
+                Account Centre
+              </button>
+              <span style={{ fontSize:14, color:C.gray400 }}>/</span>
+              <span style={{ fontSize:14, fontWeight:500, color:C.gray900 }}>{sectionLabels[activeSection]}</span>
+            </>
+          ) : (
+            <span style={{ fontSize:14, fontWeight:500, color:C.gray900 }}>Account Centre</span>
+          )}
+        </div>
+        <div style={{ height:4, background:C.primary, width:"100%" }}/>
       </div>
 
       {/* ── Mobile: Hub (section list) ── */}
@@ -5895,17 +5898,6 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
 
         {/* ── Content ── */}
         <div className="profile-content">
-          <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:20, flexWrap:"wrap" }}>
-            <button onClick={onBack} style={{ background:"none", border:"none", padding:0, cursor:"pointer", fontSize:13, fontWeight:500, color:C.gray500, fontFamily:"inherit" }}>
-              Dashboard
-            </button>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={C.gray400} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            <button onClick={()=>setActiveSection("personal")} style={{ background:"none", border:"none", padding:0, cursor:"pointer", fontSize:13, fontWeight:500, color:C.gray500, fontFamily:"inherit" }}>
-              Account Centre
-            </button>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={C.gray400} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            <span style={{ fontSize:13, fontWeight:600, color:C.gray900 }}>{sectionLabels[activeSection]}</span>
-          </div>
           {renderContent()}
         </div>
 
