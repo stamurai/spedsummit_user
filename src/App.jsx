@@ -11867,9 +11867,14 @@ export default function App() {
     const sectionId = sessionStorage.getItem("landingScroll");
     if (!sectionId) return;
     sessionStorage.removeItem("landingScroll");
-    setTimeout(() => {
-      document.getElementById(sectionId)?.scrollIntoView({ behavior:"smooth" });
-    }, 400);
+    // Retry until the element is in the DOM (landing page may still be rendering)
+    let attempts = 0;
+    const tryScroll = () => {
+      const el = document.getElementById(sectionId);
+      if (el) { el.scrollIntoView({ behavior:"smooth" }); return; }
+      if (++attempts < 10) setTimeout(tryScroll, 200);
+    };
+    setTimeout(tryScroll, 400);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
