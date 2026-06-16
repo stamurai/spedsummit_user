@@ -4356,49 +4356,66 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                     )}
                     {(!showHeader || !isCollapsed) && (
                       <div style={{ padding:"4px 0 8px" }}>
-                        {sec.lessons.map(l => {
-                          const i = l._index;
-                          const isQuiz = l.type === "quiz";
-                          // Hide assessment row if no real questions exist for this session
-                          if (isQuiz && getSessionQuestions(session).length === 0) return null;
-                          const isActive = (i === activeLesson && l.type === "material" && panelMode === "material") || (i === activeLesson && l.type !== "quiz" && l.type !== "material" && panelMode === "video") || (l.type === "quiz" && panelMode === "assessment");
-                          const locked = !unlockedIndices.has(i) && l.type !== "material";
-                          const quizDone = isQuiz && (l.status === "completed" || quizState?.status === "passed");
-                          const videoDone = !isQuiz && l.type !== "material" && (l.status === "completed" || session.status === "completed" || (session.progress || 0) >= 100 || hasReviewed);
-                          const isPreview = i === 0 || l.status === "available";
-                          const done = l.status === "completed" || quizDone || videoDone;
-                          return (
-                            <div key={String(l.id)} onClick={() => switchLesson(i)}
-                              style={{ padding:"3px 10px", cursor: locked ? "default" : "pointer" }}>
-                              <div style={{
-                                display:"flex", alignItems:"center", gap:12, padding:"10px 12px",
-                                background: isActive ? "#eef2ff" : "transparent",
-                                borderRadius:10,
-                                transition:"background .15s"
-                              }}
-                                onMouseEnter={e => { if (!locked && !isActive && !done) e.currentTarget.style.background = C.gray50; }}
-                                onMouseLeave={e => { if (!isActive && !done) e.currentTarget.style.background = "transparent"; }}>
-                                <div style={{ flexShrink:0 }}>
-                                  {l.type === "material"
-                                    ? <div style={{ width:18, height:18, borderRadius:4, background:"#fef2f2", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="paperclip" size={11} color="#dc2626"/></div>
-                                    : done
-                                      ? <div style={{ width:18, height:18, borderRadius:"50%", background:"rgba(16,185,129,0.12)", border:"2px solid #10b981", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="check" size={11} color="#10b981"/></div>
-                                      : <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${locked ? C.gray200 : isActive ? C.primary : C.gray300}`, background:"transparent" }}/>
-                                  }
-                                </div>
-                                <div style={{ flex:1, minWidth:0 }}>
-                                  <div style={{ fontSize:13, fontWeight: isActive || done ? 600 : 400, color: locked ? C.gray400 : C.gray900, lineHeight:1.4 }}>
-                                    {isQuiz ? "Assessment" : l.type === "material" ? (l.title || "Material") : session.title}
+                        {(() => {
+                          const allMaterials = sec.lessons.filter(l => l.type === "material");
+                          const nonMaterials = sec.lessons.filter(l => l.type !== "material");
+                          const isResourcesActive = panelMode === "material";
+                          const resourceCount = allMaterials.filter(l => !!(l.url || l.file_url || l.resource_url || l.fileUrl)).length || allMaterials.length;
+                          return <>
+                            {nonMaterials.map(l => {
+                              const i = l._index;
+                              const isQuiz = l.type === "quiz";
+                              if (isQuiz && getSessionQuestions(session).length === 0) return null;
+                              const isActive = (i === activeLesson && l.type !== "quiz" && panelMode === "video") || (l.type === "quiz" && panelMode === "assessment");
+                              const locked = !unlockedIndices.has(i);
+                              const quizDone = isQuiz && (l.status === "completed" || quizState?.status === "passed");
+                              const videoDone = !isQuiz && (l.status === "completed" || session.status === "completed" || (session.progress || 0) >= 100 || hasReviewed);
+                              const done = l.status === "completed" || quizDone || videoDone;
+                              return (
+                                <div key={String(l.id)} onClick={() => switchLesson(i)}
+                                  style={{ padding:"3px 10px", cursor: locked ? "default" : "pointer" }}>
+                                  <div style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 12px", background: isActive ? "#eef2ff" : "transparent", borderRadius:10, transition:"background .15s" }}
+                                    onMouseEnter={e => { if (!locked && !isActive && !done) e.currentTarget.style.background = C.gray50; }}
+                                    onMouseLeave={e => { if (!isActive && !done) e.currentTarget.style.background = "transparent"; }}>
+                                    <div style={{ flexShrink:0 }}>
+                                      {done
+                                        ? <div style={{ width:18, height:18, borderRadius:"50%", background:"rgba(16,185,129,0.12)", border:"2px solid #10b981", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="check" size={11} color="#10b981"/></div>
+                                        : <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${locked ? C.gray200 : isActive ? C.primary : C.gray300}`, background:"transparent" }}/>
+                                      }
+                                    </div>
+                                    <div style={{ flex:1, minWidth:0 }}>
+                                      <div style={{ fontSize:13, fontWeight: isActive || done ? 600 : 400, color: locked ? C.gray400 : C.gray900, lineHeight:1.4 }}>
+                                        {isQuiz ? "Assessment" : session.title}
+                                      </div>
+                                      <div style={{ fontSize:12, color: C.gray400, marginTop:2 }}>
+                                        {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
+                                      </div>
+                                    </div>
+                                    {locked && <Icon name="lock" size={13} color={C.gray300}/>}
                                   </div>
-                                  <div style={{ fontSize:12, color: C.gray400, marginTop:2 }}>
-                                    {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : l.type === "material" ? (() => { const hasFile = !!(l.url || l.file_url || l.resource_url || l.fileUrl); const rc = supabaseResourceCount !== null ? supabaseResourceCount : Object.values(SESSION_RESOURCES[session.id] || {}).flat().length; const count = rc > 0 ? rc : hasFile ? 1 : 0; return `${count} document${count!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
+                                </div>
+                              );
+                            })}
+                            {allMaterials.length > 0 && (
+                              <div onClick={() => { setPanelMode("material"); setActiveLesson(allMaterials[0]._index); }}
+                                style={{ padding:"3px 10px", cursor:"pointer" }}>
+                                <div style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 12px", background: isResourcesActive ? "#eef2ff" : "transparent", borderRadius:10, transition:"background .15s" }}
+                                  onMouseEnter={e => { if (!isResourcesActive) e.currentTarget.style.background = C.gray50; }}
+                                  onMouseLeave={e => { if (!isResourcesActive) e.currentTarget.style.background = "transparent"; }}>
+                                  <div style={{ flexShrink:0 }}>
+                                    <div style={{ width:18, height:18, borderRadius:4, background:"#fef2f2", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                                      <Icon name="paperclip" size={11} color="#dc2626"/>
+                                    </div>
+                                  </div>
+                                  <div style={{ flex:1, minWidth:0 }}>
+                                    <div style={{ fontSize:13, fontWeight: isResourcesActive ? 600 : 400, color:C.gray900, lineHeight:1.4 }}>Resources</div>
+                                    <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{resourceCount} document{resourceCount!==1?"s":""}</div>
                                   </div>
                                 </div>
-                                {locked && <Icon name="lock" size={13} color={C.gray300}/>}
                               </div>
-                            </div>
-                          );
-                        })}
+                            )}
+                          </>;
+                        })()}
                         {(SESSION_RESOURCES[session.id] || {})[sec.title]?.map(r => {
                           const isDone = !!downloaded[r.id];
                           const typeColor = r.type==="PDF" ? { bg:"#fef2f2", color:"#dc2626" } : r.type==="PPTX" ? { bg:"#fff7ed", color:"#ea580c" } : r.type==="ZIP" ? { bg:"#f5f3ff", color:"#7c3aed" } : { bg:C.primaryLight, color:C.primary };
@@ -4444,51 +4461,47 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
             /* ── Assessment Panel ── */
             <InlineAssessment session={session} quizState={quizState} onFinish={onFinishAssessment} toast={toast} onCertificateClick={onCertificateClick}/>
           ) : panelMode === "material" ? (
-            /* ── Material Panel ── */
+            /* ── Resources Panel — lists all material lessons ── */
             (() => {
-              const mat = session.lessons[activeLesson];
-              const fileUrl = mat?.url || mat?.file_url || mat?.resource_url || mat?.fileUrl || "";
-              const title = mat?.title || "Material";
-              const fileType = mat?.file_type || mat?.type_label || (fileUrl.toLowerCase().includes(".pdf") ? "PDF" : fileUrl.toLowerCase().includes(".pptx") || fileUrl.toLowerCase().includes(".ppt") ? "PPTX" : fileUrl.toLowerCase().includes(".doc") ? "DOCX" : "FILE");
-              const typeColor = fileType==="PDF" ? { bg:"#fef2f2", color:"#dc2626" } : fileType==="PPTX" ? { bg:"#fff7ed", color:"#ea580c" } : fileType==="DOCX" ? { bg:"#eff6ff", color:"#2563eb" } : { bg:C.primaryLight, color:C.primary };
+              const materials = session.lessons.filter(l => l.type === "material");
               const isMob = window.innerWidth <= 767;
               return (
-                <div style={{ padding: isMob ? "16px 14px" : "32px 28px", display:"flex", flexDirection:"column", gap: isMob ? 14 : 24, flex:1, boxSizing:"border-box", width:"100%", overflow:"hidden" }}>
-                  <style>{`@media(max-width:767px){.mat-iframe-wrap{min-height:calc(100vh - 280px) !important;}}`}</style>
-                  {/* PDF inline preview — iframe on desktop, list row on mobile */}
-                  {fileUrl && (fileType === "PDF" || fileUrl.toLowerCase().endsWith(".pdf")) && !isMob ? (
-                    <div className="mat-iframe-wrap" style={{ flex:1, minHeight:500, borderRadius:12, overflow:"hidden", border:`1px solid ${C.gray200}` }}>
-                      <iframe src={`${fileUrl}#toolbar=1`} style={{ width:"100%", height:"100%", minHeight:500, border:"none", display:"block" }} title={title}/>
+                <div style={{ padding: isMob ? "16px 14px" : "32px 28px", display:"flex", flexDirection:"column", gap:12, flex:1, boxSizing:"border-box", width:"100%", overflowY:"auto" }}>
+                  <div style={{ fontSize:15, fontWeight:700, color:C.gray900, marginBottom:4 }}>Resources</div>
+                  {materials.length === 0 ? (
+                    <div style={{ background:C.gray50, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"48px 32px", textAlign:"center", color:C.gray400, fontSize:15 }}>
+                      No resources attached to this session.
                     </div>
-                  ) : fileUrl ? (
-                    <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                      {/* List row */}
-                      <div style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, flexWrap: isMob ? "wrap" : "nowrap" }}>
+                  ) : materials.map((mat, idx) => {
+                    const fileUrl = mat?.url || mat?.file_url || mat?.resource_url || mat?.fileUrl || "";
+                    const title = mat?.title || `Material ${idx + 1}`;
+                    const fileType = mat?.file_type || mat?.type_label || (fileUrl.toLowerCase().includes(".pdf") ? "PDF" : fileUrl.toLowerCase().includes(".pptx") || fileUrl.toLowerCase().includes(".ppt") ? "PPTX" : fileUrl.toLowerCase().includes(".doc") ? "DOCX" : "FILE");
+                    const typeColor = fileType==="PDF" ? { bg:"#fef2f2", color:"#dc2626" } : fileType==="PPTX" ? { bg:"#fff7ed", color:"#ea580c" } : fileType==="DOCX" ? { bg:"#eff6ff", color:"#2563eb" } : { bg:C.primaryLight, color:C.primary };
+                    return (
+                      <div key={String(mat.id || idx)} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, flexWrap: isMob ? "wrap" : "nowrap" }}>
                         <div style={{ width:40, height:40, borderRadius:10, background:typeColor.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                           <Icon name="paperclip" size={18} color={typeColor.color}/>
                         </div>
                         <div style={{ flex:1, minWidth:0 }}>
                           <div style={{ fontSize:13, fontWeight:700, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{title}</div>
-                          <div style={{ fontSize:11, fontWeight:600, color:typeColor.color, marginTop:2 }}>{fileType}</div>
+                          <div style={{ fontSize:11, fontWeight:600, color:typeColor.color, marginTop:2 }}>{fileUrl ? fileType : "No file"}</div>
                         </div>
-                        <div style={{ display:"flex", gap:8, flexShrink:0, ...(isMob ? { width:"100%", marginTop:4 } : {}) }}>
-                          <a href={fileUrl} target="_blank" rel="noopener noreferrer"
-                            style={{ flex: isMob ? 1 : "none", display:"inline-flex", alignItems:"center", justifyContent:"center", gap:6, padding:"8px 14px", borderRadius:8, background:C.primary, color:"#fff", fontSize:13, fontWeight:700, textDecoration:"none" }}>
-                            <Icon name="arrow-square-out" size={14} color="#fff"/> Open
-                          </a>
-                          <button
-                            onClick={async()=>{ try { const res=await fetch(fileUrl); const blob=await res.blob(); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=title||(fileUrl.split("/").pop()||"material"); document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); } catch{ window.open(fileUrl,"_blank"); } }}
-                            style={{ flex: isMob ? 1 : "none", display:"inline-flex", alignItems:"center", justifyContent:"center", gap:6, padding:"8px 14px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
-                            <Icon name="download" size={14} color={C.gray600}/> Save
-                          </button>
-                        </div>
+                        {fileUrl && (
+                          <div style={{ display:"flex", gap:8, flexShrink:0, ...(isMob ? { width:"100%", marginTop:4 } : {}) }}>
+                            <a href={fileUrl} target="_blank" rel="noopener noreferrer"
+                              style={{ flex: isMob ? 1 : "none", display:"inline-flex", alignItems:"center", justifyContent:"center", gap:6, padding:"8px 14px", borderRadius:8, background:C.primary, color:"#fff", fontSize:13, fontWeight:700, textDecoration:"none" }}>
+                              <Icon name="arrow-square-out" size={14} color="#fff"/> Open
+                            </a>
+                            <button
+                              onClick={async()=>{ try { const res=await fetch(fileUrl); const blob=await res.blob(); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=title||(fileUrl.split("/").pop()||"material"); document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); } catch{ window.open(fileUrl,"_blank"); } }}
+                              style={{ flex: isMob ? 1 : "none", display:"inline-flex", alignItems:"center", justifyContent:"center", gap:6, padding:"8px 14px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
+                              <Icon name="download" size={14} color={C.gray600}/> Save
+                            </button>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ) : (
-                    <div style={{ background:C.gray50, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"48px 32px", textAlign:"center", color:C.gray400, fontSize:15 }}>
-                      No file attached to this material.
-                    </div>
-                  )}
+                    );
+                  })}
                 </div>
               );
             })()
