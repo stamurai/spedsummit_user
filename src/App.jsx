@@ -6955,7 +6955,7 @@ function PublicCertificatePage({ data }) {
       </div>{/* end content section */}
 
       {/* Footer — same as dashboard footer */}
-      <Footer onNavigate={()=>{}} />
+      <Footer onNavigate={(page)=>{ sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("page", page); window.location.href=window.location.origin; }} />
     </div>
   );
 }
@@ -10410,13 +10410,13 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               "TEAMWORK":      { label:"Teamwork",      bg:"rgba(168,85,247,0.15)",  color:"#c084fc" },
             };
 
-            // Format availableFrom date/time for display (local timezone)
+            // Format availableFrom date/time for display (Pacific time)
             const fmtDateTime = (iso) => {
               if (!iso) return { date: "", time: "" };
               const d = parseLocalDate(iso);
               if (!d) return { date: "", time: "" };
-              const date = d.toLocaleDateString("en-US", { month:"short", day:"numeric" });
-              const time = d.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit", hour12:true });
+              const date = d.toLocaleDateString("en-US", { month:"short", day:"numeric", timeZone:"America/Los_Angeles" });
+              const time = d.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit", hour12:true, timeZone:"America/Los_Angeles", timeZoneName:"short" });
               return { date, time };
             };
 
