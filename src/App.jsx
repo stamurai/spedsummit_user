@@ -10416,7 +10416,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               const d = parseLocalDate(iso);
               if (!d) return { date: "", time: "" };
               const date = d.toLocaleDateString("en-US", { month:"short", day:"numeric", timeZone:"America/Los_Angeles" });
-              const time = d.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit", hour12:true, timeZone:"America/Los_Angeles", timeZoneName:"short" });
+              const time = d.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit", hour12:true, timeZone:"America/Los_Angeles", timeZoneName:"short" }).replace("PDT","PST");
               return { date, time };
             };
 
