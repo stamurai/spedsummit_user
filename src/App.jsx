@@ -665,14 +665,15 @@ const SESSION_AVAILABILITY = {
 // Accepts either a sessionId (looks up SESSION_AVAILABILITY) or a session object with availableFrom/availableTo
 function parseLocalDate(str) {
   if (!str) return null;
-  // "2026-05-29" → treat as local midnight, not UTC midnight
-  const d = new Date(str);
-  if (isNaN(d)) return null;
-  // If it's a date-only string (no time component), adjust for UTC offset
-  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
-    return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0);
+  // Treat all datetime strings as PST (America/Los_Angeles, UTC-8) so times are
+  // consistent regardless of the viewer's local timezone.
+  // Append PST offset if there is no existing timezone suffix.
+  if (/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?)?$/.test(str)) {
+    const d = new Date(str + (str.includes("T") ? ":00-08:00" : "T00:00:00-08:00"));
+    return isNaN(d) ? null : d;
   }
-  return d;
+  const d = new Date(str);
+  return isNaN(d) ? null : d;
 }
 
 function getSessionState(sessionIdOrObj) {
@@ -2064,7 +2065,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
             (() => {
               const af = session.availableFrom || session.available_from;
               const dateLabel = af
-                ? new Date(af).toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZone:"America/Los_Angeles", timeZoneName:"short" }).replace("PDT","PST")
+                ? parseLocalDate(af).toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZone:"America/Los_Angeles", timeZoneName:"short" }).replace("PDT","PST")
                 : null;
               return (
                 <div style={{ width:"100%", height:44, padding:"0 11px", borderRadius:10, border:`1px solid ${C.gray200}`,
@@ -8579,7 +8580,7 @@ function LandingSessionCard({ s, imgSrc, onClick, availableFrom, sessionState })
   const hasRec     = SESSION_AVAILABILITY[s.id]?.hasRecording;
 
   const availLabel = isUpcoming && availableFrom
-    ? new Date(availableFrom).toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZone:"America/Los_Angeles", timeZoneName:"short" }).replace("PDT","PST")
+    ? parseLocalDate(availableFrom).toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZone:"America/Los_Angeles", timeZoneName:"short" }).replace("PDT","PST")
     : null;
 
   const clickable = state === "live" || (isPast && hasRec);
@@ -9519,7 +9520,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
             {(() => {
               const af = instrSession?.availableFrom || instrSession?.available_from;
               if (!af) return null;
-              const d = new Date(af);
+              const d = parseLocalDate(af);
               const date = d.toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric", timeZone:"America/Los_Angeles" });
               const time = d.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit", hour12:true, timeZone:"America/Los_Angeles", timeZoneName:"short" }).replace("PDT","PST");
               return (
