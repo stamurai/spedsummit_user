@@ -2064,7 +2064,7 @@ function SessionCard({ session, onClick, quizState = {}, onAssessmentClick, onCe
             (() => {
               const af = session.availableFrom || session.available_from;
               const dateLabel = af
-                ? new Date(af).toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit" })
+                ? new Date(af).toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZone:"America/Los_Angeles", timeZoneName:"short" }).replace("PDT","PST")
                 : null;
               return (
                 <div style={{ width:"100%", height:44, padding:"0 11px", borderRadius:10, border:`1px solid ${C.gray200}`,
@@ -2978,7 +2978,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                                   const af = session?.availableFrom || session?.available_from;
                                   if (af) {
                                     const d = parseLocalDate(af);
-                                    return "Available " + d.toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
+                                    return "Available " + d.toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZone:"America/Los_Angeles", timeZoneName:"short" }).replace("PDT","PST");
                                   }
                                   return `Available ${item.date}${item.time ? ` · ${item.time}` : ""}`;
                                 })()}
@@ -8501,7 +8501,7 @@ function LandingSessionCard({ s, imgSrc, onClick, availableFrom, sessionState })
   const hasRec     = SESSION_AVAILABILITY[s.id]?.hasRecording;
 
   const availLabel = isUpcoming && availableFrom
-    ? new Date(availableFrom).toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit" })
+    ? new Date(availableFrom).toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZone:"America/Los_Angeles", timeZoneName:"short" }).replace("PDT","PST")
     : null;
 
   const clickable = state === "live" || (isPast && hasRec);
