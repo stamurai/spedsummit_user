@@ -4322,7 +4322,10 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
             {(() => {
               const sections = [];
               let currentSection = null;
+              // Collect ALL material lessons globally so they render as one Resources entry
+              const allMaterialLessons = [];
               session.lessons.forEach((l, i) => {
+                if (l.type === "material") { allMaterialLessons.push({ ...l, _index: i }); return; }
                 if (l.sectionTitle) {
                   currentSection = { title: l.sectionTitle, lessons: [] };
                   sections.push(currentSection);
@@ -4336,7 +4339,9 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
               const distinctTitles = new Set(sections.map(s => s.title).filter(Boolean));
               const showHeaders = distinctTitles.size >= 2;
               let namedSectionCount = 0;
-              return sections.map((sec, si) => {
+              const isResourcesActive = panelMode === "material";
+              const resourceCount = allMaterialLessons.filter(l => !!(l.url || l.file_url || l.resource_url || l.fileUrl)).length || allMaterialLessons.length;
+              return <>{sections.map((sec, si) => {
                 const secKey = `sec-${si}`;
                 const isCollapsed = collapsedSections[secKey];
                 const completedCount = sec.lessons.filter(l => l.status === "completed").length;
@@ -4356,66 +4361,40 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                     )}
                     {(!showHeader || !isCollapsed) && (
                       <div style={{ padding:"4px 0 8px" }}>
-                        {(() => {
-                          const allMaterials = sec.lessons.filter(l => l.type === "material");
-                          const nonMaterials = sec.lessons.filter(l => l.type !== "material");
-                          const isResourcesActive = panelMode === "material";
-                          const resourceCount = allMaterials.filter(l => !!(l.url || l.file_url || l.resource_url || l.fileUrl)).length || allMaterials.length;
-                          return <>
-                            {nonMaterials.map(l => {
-                              const i = l._index;
-                              const isQuiz = l.type === "quiz";
-                              if (isQuiz && getSessionQuestions(session).length === 0) return null;
-                              const isActive = (i === activeLesson && l.type !== "quiz" && panelMode === "video") || (l.type === "quiz" && panelMode === "assessment");
-                              const locked = !unlockedIndices.has(i);
-                              const quizDone = isQuiz && (l.status === "completed" || quizState?.status === "passed");
-                              const videoDone = !isQuiz && (l.status === "completed" || session.status === "completed" || (session.progress || 0) >= 100 || hasReviewed);
-                              const done = l.status === "completed" || quizDone || videoDone;
-                              return (
-                                <div key={String(l.id)} onClick={() => switchLesson(i)}
-                                  style={{ padding:"3px 10px", cursor: locked ? "default" : "pointer" }}>
-                                  <div style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 12px", background: isActive ? "#eef2ff" : "transparent", borderRadius:10, transition:"background .15s" }}
-                                    onMouseEnter={e => { if (!locked && !isActive && !done) e.currentTarget.style.background = C.gray50; }}
-                                    onMouseLeave={e => { if (!isActive && !done) e.currentTarget.style.background = "transparent"; }}>
-                                    <div style={{ flexShrink:0 }}>
-                                      {done
-                                        ? <div style={{ width:18, height:18, borderRadius:"50%", background:"rgba(16,185,129,0.12)", border:"2px solid #10b981", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="check" size={11} color="#10b981"/></div>
-                                        : <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${locked ? C.gray200 : isActive ? C.primary : C.gray300}`, background:"transparent" }}/>
-                                      }
-                                    </div>
-                                    <div style={{ flex:1, minWidth:0 }}>
-                                      <div style={{ fontSize:13, fontWeight: isActive || done ? 600 : 400, color: locked ? C.gray400 : C.gray900, lineHeight:1.4 }}>
-                                        {isQuiz ? "Assessment" : session.title}
-                                      </div>
-                                      <div style={{ fontSize:12, color: C.gray400, marginTop:2 }}>
-                                        {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
-                                      </div>
-                                    </div>
-                                    {locked && <Icon name="lock" size={13} color={C.gray300}/>}
+                        {sec.lessons.map(l => {
+                          const i = l._index;
+                          const isQuiz = l.type === "quiz";
+                          if (isQuiz && getSessionQuestions(session).length === 0) return null;
+                          const isActive = (i === activeLesson && l.type !== "quiz" && panelMode === "video") || (l.type === "quiz" && panelMode === "assessment");
+                          const locked = !unlockedIndices.has(i);
+                          const quizDone = isQuiz && (l.status === "completed" || quizState?.status === "passed");
+                          const videoDone = !isQuiz && (l.status === "completed" || session.status === "completed" || (session.progress || 0) >= 100 || hasReviewed);
+                          const done = l.status === "completed" || quizDone || videoDone;
+                          return (
+                            <div key={String(l.id)} onClick={() => switchLesson(i)}
+                              style={{ padding:"3px 10px", cursor: locked ? "default" : "pointer" }}>
+                              <div style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 12px", background: isActive ? "#eef2ff" : "transparent", borderRadius:10, transition:"background .15s" }}
+                                onMouseEnter={e => { if (!locked && !isActive && !done) e.currentTarget.style.background = C.gray50; }}
+                                onMouseLeave={e => { if (!isActive && !done) e.currentTarget.style.background = "transparent"; }}>
+                                <div style={{ flexShrink:0 }}>
+                                  {done
+                                    ? <div style={{ width:18, height:18, borderRadius:"50%", background:"rgba(16,185,129,0.12)", border:"2px solid #10b981", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="check" size={11} color="#10b981"/></div>
+                                    : <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${locked ? C.gray200 : isActive ? C.primary : C.gray300}`, background:"transparent" }}/>
+                                  }
+                                </div>
+                                <div style={{ flex:1, minWidth:0 }}>
+                                  <div style={{ fontSize:13, fontWeight: isActive || done ? 600 : 400, color: locked ? C.gray400 : C.gray900, lineHeight:1.4 }}>
+                                    {isQuiz ? "Assessment" : session.title}
+                                  </div>
+                                  <div style={{ fontSize:12, color: C.gray400, marginTop:2 }}>
+                                    {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
                                   </div>
                                 </div>
-                              );
-                            })}
-                            {allMaterials.length > 0 && (
-                              <div onClick={() => { setPanelMode("material"); setActiveLesson(allMaterials[0]._index); }}
-                                style={{ padding:"3px 10px", cursor:"pointer" }}>
-                                <div style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 12px", background: isResourcesActive ? "#eef2ff" : "transparent", borderRadius:10, transition:"background .15s" }}
-                                  onMouseEnter={e => { if (!isResourcesActive) e.currentTarget.style.background = C.gray50; }}
-                                  onMouseLeave={e => { if (!isResourcesActive) e.currentTarget.style.background = "transparent"; }}>
-                                  <div style={{ flexShrink:0 }}>
-                                    <div style={{ width:18, height:18, borderRadius:4, background:"#fef2f2", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                                      <Icon name="paperclip" size={11} color="#dc2626"/>
-                                    </div>
-                                  </div>
-                                  <div style={{ flex:1, minWidth:0 }}>
-                                    <div style={{ fontSize:13, fontWeight: isResourcesActive ? 600 : 400, color:C.gray900, lineHeight:1.4 }}>Resources</div>
-                                    <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{resourceCount} document{resourceCount!==1?"s":""}</div>
-                                  </div>
-                                </div>
+                                {locked && <Icon name="lock" size={13} color={C.gray300}/>}
                               </div>
-                            )}
-                          </>;
-                        })()}
+                            </div>
+                          );
+                        })}
                         {(SESSION_RESOURCES[session.id] || {})[sec.title]?.map(r => {
                           const isDone = !!downloaded[r.id];
                           const typeColor = r.type==="PDF" ? { bg:"#fef2f2", color:"#dc2626" } : r.type==="PPTX" ? { bg:"#fff7ed", color:"#ea580c" } : r.type==="ZIP" ? { bg:"#f5f3ff", color:"#7c3aed" } : { bg:C.primaryLight, color:C.primary };
@@ -4446,7 +4425,26 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                     )}
                   </div>
                 );
-              });
+              })}
+              {allMaterialLessons.length > 0 && (
+                <div onClick={() => { setPanelMode("material"); setActiveLesson(allMaterialLessons[0]._index); }}
+                  style={{ padding:"3px 10px", cursor:"pointer" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 12px", background: isResourcesActive ? "#eef2ff" : "transparent", borderRadius:10, transition:"background .15s" }}
+                    onMouseEnter={e => { if (!isResourcesActive) e.currentTarget.style.background = C.gray50; }}
+                    onMouseLeave={e => { if (!isResourcesActive) e.currentTarget.style.background = "transparent"; }}>
+                    <div style={{ flexShrink:0 }}>
+                      <div style={{ width:18, height:18, borderRadius:4, background:"#fef2f2", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        <Icon name="paperclip" size={11} color="#dc2626"/>
+                      </div>
+                    </div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontSize:13, fontWeight: isResourcesActive ? 600 : 400, color:C.gray900, lineHeight:1.4 }}>Resources</div>
+                      <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{resourceCount} document{resourceCount!==1?"s":""}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              </>;
             })()}
           </div>
           </div>{/* end floating panel */}
