@@ -6704,96 +6704,77 @@ function ShareCertificateModal({ certUrl, sessionTitle, onClose }) {
   }
 
   return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.52)", zIndex:800, display:"flex", alignItems:"flex-end", justifyContent:"center" }} onClick={onClose}>
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", zIndex:800,
+                  display:"flex", alignItems:"flex-end", justifyContent:"center" }}
+         onClick={onClose}>
       <style>{`
         .share-modal-card {
-          background: #fff;
-          border-radius: 24px 24px 0 0;
+          background: ${dark ? "#1e2647" : "#fff"};
+          border-radius: 20px 20px 0 0;
           width: 100%;
-          max-width: 480px;
-          box-shadow: 0 -12px 48px rgba(0,0,0,0.18);
-          padding: 0 0 32px;
+          max-width: 440px;
+          box-shadow: 0 -8px 40px rgba(0,0,0,0.2);
+          padding: 8px 24px 32px;
           position: relative;
-          animation: slideUp .22s cubic-bezier(.32,1.2,.5,1);
         }
-        @keyframes slideUp { from { transform: translateY(40px); opacity:0; } to { transform: translateY(0); opacity:1; } }
         @media(min-width: 600px) {
-          .share-modal-wrap { align-items: center !important; padding: 24px; }
-          .share-modal-card { border-radius: 20px; max-width: 460px; animation: fadeInScale .18s ease; }
+          .share-modal-wrap {
+            align-items: center !important;
+            padding: 24px;
+          }
+          .share-modal-card {
+            border-radius: 16px;
+            padding: 28px 28px 24px;
+            max-width: 440px;
+          }
           .share-modal-handle { display: none !important; }
         }
-        @keyframes fadeInScale { from { transform: scale(.96); opacity:0; } to { transform: scale(1); opacity:1; } }
-        .share-social-btn:hover .share-social-icon { transform: translateY(-3px); }
-        .share-copy-btn:hover { background: #f0f4ff !important; }
       `}</style>
       <div className="share-modal-wrap" style={{ display:"flex", alignItems:"flex-end", justifyContent:"center", width:"100%", position:"fixed", inset:0 }} onClick={onClose}>
         <div className="share-modal-card" onClick={e => e.stopPropagation()}>
+          {/* Drag handle (mobile) */}
+          <div className="share-modal-handle" style={{ width:36, height:4, borderRadius:2, background:"#e5e7eb", margin:"0 auto 20px" }}/>
 
-          {/* Drag handle */}
-          <div className="share-modal-handle" style={{ width:40, height:4, borderRadius:2, background:"#e5e7eb", margin:"12px auto 0" }}/>
+          {/* Close */}
+          <button onClick={onClose}
+            style={{ position:"absolute", top:16, right:16, width:28, height:28, borderRadius:8,
+                     border:`1px solid ${dark ? "rgba(255,255,255,0.12)" : C.gray200}`, background:"none", cursor:"pointer",
+                     display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <Icon name="x" size={14} color={dark ? "rgba(255,255,255,0.5)" : C.gray500}/>
+          </button>
 
-          {/* Header */}
-          <div style={{ padding:"20px 24px 0", display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-              <div style={{ width:44, height:44, borderRadius:12, background:"linear-gradient(135deg,#6490E8 0%,#4f6fd4 100%)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 15l-3.5 2.1.9-4-3-2.6 4-.35L12 6.5l1.6 3.65 4 .35-3 2.6.9 4z" fill="white"/>
-                  <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.5" fill="none"/>
-                </svg>
-              </div>
-              <div>
-                <div style={{ fontSize:17, fontWeight:800, color:"#181c32", lineHeight:1.2 }}>Share Certificate</div>
-                <div style={{ fontSize:12, color:C.gray400, marginTop:2, lineHeight:1.4, maxWidth:260, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{sessionTitle}</div>
-              </div>
-            </div>
-            <button onClick={onClose}
-              style={{ width:32, height:32, borderRadius:10, border:`1px solid ${C.gray200}`, background:"none", cursor:"pointer",
-                       display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:2 }}>
-              <Icon name="x" size={15} color={C.gray400}/>
-            </button>
-          </div>
+          <div style={{ fontSize:20, fontWeight:700, color: dark ? "#fff" : "#181c32", marginBottom:6 }}>Share this certificate</div>
+          <div style={{ fontSize:13, color: dark ? "rgba(255,255,255,0.5)" : C.gray400, marginBottom:24 }}>Show your network what you've accomplished</div>
 
-          {/* Divider */}
-          <div style={{ height:1, background:C.gray100, margin:"16px 0" }}/>
-
-          {/* Share via label */}
-          <div style={{ padding:"0 24px", fontSize:11, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:14 }}>Share via</div>
-
-          {/* Social buttons */}
-          <div style={{ display:"flex", gap:8, padding:"0 24px", marginBottom:20, overflowX:"auto", scrollbarWidth:"none" }}>
+          {/* Social icons */}
+          <div style={{ display:"flex", gap:0, justifyContent:"space-between", marginBottom:28 }}>
             {socials.map(s => (
-              <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="share-social-btn"
-                 style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:7, textDecoration:"none", flex:"0 0 auto", minWidth:64 }}>
-                <div className="share-social-icon" style={{ width:52, height:52, borderRadius:16, background:s.color,
+              <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
+                 style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:8, textDecoration:"none", flex:1 }}>
+                <div style={{ width:52, height:52, borderRadius:"50%", background:s.color,
                               display:"flex", alignItems:"center", justifyContent:"center",
-                              boxShadow:`0 4px 12px ${s.color}40`, transition:"transform .18s cubic-bezier(.32,1.2,.5,1)" }}>
+                              boxShadow:"0 2px 8px rgba(0,0,0,0.2)", transition:"transform .15s" }}
+                     onMouseEnter={e => e.currentTarget.style.transform = "scale(1.08)"}
+                     onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
                   {s.icon}
                 </div>
-                <span style={{ fontSize:11, color:C.gray500, fontWeight:600 }}>{s.label}</span>
+                <span style={{ fontSize:11, color: dark ? "rgba(255,255,255,0.5)" : C.gray500, fontWeight:500 }}>{s.label}</span>
               </a>
             ))}
           </div>
 
-          {/* Copy link section */}
-          <div style={{ padding:"0 24px" }}>
-            <div style={{ fontSize:11, fontWeight:700, color:C.gray400, letterSpacing:.8, textTransform:"uppercase", marginBottom:10 }}>Certificate link</div>
-            <div style={{ display:"flex", alignItems:"center", gap:10, background:C.gray50, border:`1.5px solid ${copied ? C.success : C.gray200}`, borderRadius:14, padding:"10px 10px 10px 14px", transition:"border-color .2s" }}>
-              <div style={{ flex:1, fontSize:13, color:C.gray600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", fontFamily:"monospace" }}>
-                {fullUrl}
-              </div>
-              <button onClick={copyLink} className="share-copy-btn"
-                style={{ flexShrink:0, display:"inline-flex", alignItems:"center", gap:6, padding:"8px 14px",
-                         background: copied ? "rgba(16,185,129,0.1)" : "#fff",
-                         border:`1.5px solid ${copied ? C.success : C.gray200}`,
-                         borderRadius:10, cursor:"pointer", transition:"all .18s",
-                         fontSize:12, fontWeight:700, color: copied ? C.success : C.primary, whiteSpace:"nowrap" }}>
-                {copied ? (
-                  <><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg> Copied!</>
-                ) : (
-                  <><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" strokeWidth="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" strokeWidth="2"/></svg> Copy link</>
-                )}
-              </button>
+          {/* Copy link row */}
+          <div style={{ display:"flex", alignItems:"center", border:`1px solid ${dark ? "rgba(255,255,255,0.1)" : C.gray200}`,
+                        borderRadius:12, overflow:"hidden", background: dark ? "rgba(255,255,255,0.06)" : C.gray50 }}>
+            <div style={{ flex:1, padding:"12px 14px", fontSize:13, color: dark ? "rgba(255,255,255,0.45)" : C.gray500,
+                          overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+              {fullUrl}
             </div>
+            <button onClick={copyLink}
+              style={{ padding:"12px 18px", background:"none", border:"none", borderLeft:`1px solid ${dark ? "rgba(255,255,255,0.1)" : C.gray200}`,
+                       color: copied ? C.success : C.primary, fontSize:13, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap" }}>
+              {copied ? "COPIED!" : "COPY"}
+            </button>
           </div>
         </div>
       </div>
