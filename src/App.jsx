@@ -5511,6 +5511,13 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user?.user_metadata?.name_changed) setNameAlreadyChanged(true);
+      if (user?.user_metadata) {
+        setForm(f => ({
+          ...f,
+          title: user.user_metadata.professional_title || "",
+          phone: user.user_metadata.phone_number || "",
+        }));
+      }
     });
   }, []);
 
@@ -5548,7 +5555,13 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
       return;
     }
     const { error } = await supabase.auth.updateUser({
-      data: { full_name: form.name, name: form.name, ...(isNameChange ? { name_changed: true } : {}) }
+      data: {
+        full_name: form.name,
+        name: form.name,
+        professional_title: form.title,
+        phone_number: form.phone,
+        ...(isNameChange ? { name_changed: true } : {})
+      }
     });
     if (error) {
       toast({ type:"error", title:"Save failed", message: error.message });
