@@ -2951,7 +2951,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
               {/* ── CONTINUE LEARNING ── */}
               {(sessionsLoading || filteredInProgress.length > 0) && <div style={{ marginBottom:32 }}>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16, gap:10 }}>
-                  <div style={{ fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3 }}>Live Sessions</div>
+                  <div style={{ fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3 }}>Live sessions</div>
                 </div>
                 {sessionsLoading ? (
                   <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
