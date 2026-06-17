@@ -7960,7 +7960,17 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", defaultMode = 
           password,
           options: { data: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: `${firstName.trim()} ${lastName.trim()}`.trim() } },
         });
-        if (error) { setAuthError(error.message); return; }
+        if (error) {
+          // If email sending fails but account was created, try signing in directly
+          if (error.message?.toLowerCase().includes("email") || error.message?.toLowerCase().includes("sending")) {
+            const { error: signInErr } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+            if (!signInErr) { onClose(); onLogin("user"); return; }
+          }
+          setAuthError(error.message); return;
+        }
+        // Try signing in immediately (works when email confirmation is disabled)
+        const { error: signInErr } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        if (!signInErr) { onClose(); onLogin("user"); return; }
         setAuthError("✓ Check your email to confirm your account, then sign in.");
         setMode("signin");
         setPassword("");
