@@ -7848,8 +7848,8 @@ function PasswordResetModal({ onClose, toast }) {
   const inp = { width:"100%", padding:"10px 14px", border:"1px solid #e2e8f0", borderRadius:8, fontSize:14, color:"#0f172a", outline:"none", boxSizing:"border-box", background:"#fff", fontFamily:"inherit" };
 
   return (
-    <div style={{ position:"fixed", inset:0, zIndex:2000, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(15,23,42,0.55)", padding:20 }}>
-      <div style={{ background:"#fff", borderRadius:16, width:"100%", maxWidth:400, padding:"32px", boxShadow:"0 20px 60px rgba(0,0,0,0.15)" }}>
+    <div style={{ background:"#fff", borderRadius:16, width:"100%", maxWidth:420, padding:"32px", boxShadow:"0 20px 60px rgba(0,0,0,0.12)" }}>
+      <div>
         <img src="/Container.png" alt="SPED Summit" style={{ height:20, display:"block", marginBottom:24 }}/>
         {done ? (
           <div style={{ textAlign:"center", padding:"16px 0" }}>
@@ -12233,12 +12233,14 @@ export default function App() {
 
   const activePage = page==="session-detail" ? "sessions" : page;
 
-  // Password reset modal takes over the whole screen regardless of landing/dashboard state
+  // Password reset modal — rendered over a branded background, not a blank screen
   if (showPasswordReset) {
     return (
       <>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-        <PasswordResetModal toast={toast} onClose={() => { setShowPasswordReset(false); setShowLanding(false); setPage("dashboard"); }}/>
+        <div style={{ minHeight:"100vh", background:"#FEF5EC", display:"flex", alignItems:"center", justifyContent:"center", padding:24, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+          <PasswordResetModal toast={toast} onClose={() => { setShowPasswordReset(false); setShowLanding(false); setPage("dashboard"); }}/>
+        </div>
       </>
     );
   }
