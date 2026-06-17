@@ -7977,7 +7977,17 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", defaultMode = 
       } else {
         sessionStorage.removeItem("loggedOut"); // clear before sign-in so SIGNED_IN event isn't blocked
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-        if (error) { setAuthError(error.message); return; }
+        if (error) {
+          const msg = error.message?.toLowerCase() || "";
+          if (msg.includes("invalid login") || msg.includes("invalid credentials")) {
+            setAuthError("Incorrect email or password. If you signed up with Google, use the 'Sign in with Google' button instead.");
+          } else if (msg.includes("email not confirmed")) {
+            setAuthError("Please confirm your email first — check your inbox for a confirmation link.");
+          } else {
+            setAuthError(error.message);
+          }
+          return;
+        }
         onClose();
         onLogin("user");
       }
