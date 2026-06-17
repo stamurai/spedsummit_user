@@ -30,8 +30,8 @@ export default async function handler(req, res) {
 
   const ogTitle = `${name} earned a certificate – ${title}`;
   const ogDesc  = `${name} successfully completed "${title}"${duration ? ` (${duration})` : ""}${date ? ` on ${date}` : ""} at SPED Summit — a professional development program for special educators.`;
-  // Use LandingPage.png (no spaces in filename, always accessible)
-  const ogImage = `${origin}/LandingPage.png`;
+  const ogImageParams = new URLSearchParams({ name, title, date, duration }).toString();
+  const ogImage = `${origin}/cert-og?${ogImageParams}`;
 
   // Escape any quotes in dynamic content to prevent HTML injection
   const safe = (s) => String(s).replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -47,12 +47,12 @@ export default async function handler(req, res) {
   <meta property="og:url"          content="${appUrl}"/>
   <meta property="og:title"        content="${safe(ogTitle)}"/>
   <meta property="og:description"  content="${safe(ogDesc)}"/>
-  <meta property="og:image"        content="${ogImage}"/>
-  <meta property="og:image:secure_url" content="${ogImage}"/>
-  <meta property="og:image:type"   content="image/png"/>
-  <meta property="og:image:width"  content="1200"/>
-  <meta property="og:image:height" content="630"/>
-  <meta property="og:site_name"    content="SPED Summit"/>
+  <meta property="og:image"             content="${ogImage}"/>
+  <meta property="og:image:secure_url"  content="${ogImage}"/>
+  <meta property="og:image:type"        content="image/png"/>
+  <meta property="og:image:width"       content="1200"/>
+  <meta property="og:image:height"      content="630"/>
+  <meta property="og:site_name"         content="SPED Summit"/>
 
   <!-- Twitter / X Card -->
   <meta name="twitter:card"        content="summary_large_image"/>
