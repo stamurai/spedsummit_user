@@ -7870,10 +7870,17 @@ function PasswordResetModal({ onClose, onSignInAfterReset, toast }) {
     if (password.length < 8) { toast({ type:"error", message:"Password must be at least 8 characters." }); return; }
     if (password !== confirm)  { toast({ type:"error", message:"Passwords do not match." }); return; }
     setLoading(true);
+    // Ensure there's an active session before attempting update
+    const { data: { session: activeSession } } = await supabase.auth.getSession();
+    if (!activeSession) {
+      setLoading(false);
+      toast({ type:"error", message:"Your reset link has expired. Please request a new password reset email." });
+      return;
+    }
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) { toast({ type:"error", message: error.message }); return; }
-    // Sign out so the user must re-authenticate with the new password
+    toast({ type:"success", message:"Password updated! Please sign in with your new password." });
     await supabase.auth.signOut();
     onSignInAfterReset ? onSignInAfterReset() : onClose();
   }
@@ -12438,7 +12445,7 @@ export default function App() {
         />
       )}
       {/* Password Reset Modal */}
-      {showPasswordReset && <PasswordResetModal onClose={()=>setShowPasswordReset(false)} toast={toast}/>}
+      {showPasswordReset && <PasswordResetModal onClose={()=>setShowPasswordReset(false)} toast={toast} onSignInAfterReset={()=>{ setShowPasswordReset(false); setIsLoggedIn(false); setShowLanding(true); setShowAuthAfterReset(true); }}/>}
 
       {/* Pricing Overlay / Page */}
       {showPricingOverlay && (
