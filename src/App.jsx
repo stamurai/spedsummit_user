@@ -11283,25 +11283,18 @@ function LandingPageV2({ onGetStarted, sessions = [] }) {
    opens: { currentQ, answers, status, score }.
 ───────────────────────────────────────────────────────────────────────────── */
 function getSessionQuestions(session) {
-  if (session?.quiz_questions?.length) {
-    // Deduplicate by question text in case old entries were not cleared
-    const seen = new Set();
-    return session.quiz_questions.filter(q => {
-      const key = (q.q || q.text || "").trim().toLowerCase();
-      if (!key || seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-  }
-  // Fall back to lesson-level questions — use only the last quiz lesson to avoid
-  // combining questions from multiple chapter quizzes
-  const quizLessons = (session?.lessons || []).filter(l =>
-    l.type === "quiz" && Array.isArray(l.questions) && l.questions.length > 0
+  // Prefer lesson-level questions (what the admin CurriculumBuilder edits).
+  // quiz_questions in the DB may be stale from older data.
+  const lessonQs = (session?.lessons || []).flatMap(l =>
+    Array.isArray(l.questions)
+      ? l.questions.filter(q => q.text && q.options?.some(o => o))
+          .map(q => ({ q: q.text, opts: q.options, a: q.correct ?? 0 }))
+      : []
   );
-  const source = quizLessons.length > 0 ? quizLessons[quizLessons.length - 1].questions : [];
-  return source
-    .filter(q => q.text && q.options?.some(o => o))
-    .map(q => ({ q: q.text, opts: q.options, a: q.correct ?? 0 }));
+  if (lessonQs.length > 0) return lessonQs;
+  // Fall back to quiz_questions only when no lesson questions exist
+  if (session?.quiz_questions?.length) return session.quiz_questions;
+  return [];
 }
 
 function SessionQuizModal({ session, quizState, onClose, onSaveProgress, onFinish, onViewCertificate }) {
