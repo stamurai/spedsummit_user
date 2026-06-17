@@ -8059,7 +8059,7 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", defaultMode = 
                   const { error: rstErr } = await supabase.auth.resetPasswordForEmail(email, {
                     redirectTo: `${window.location.origin}/`
                   });
-                  if (rstErr) { setAuthError(rstErr.message); return; }
+                  if (rstErr) { setAuthError("Unable to send reset email right now. Please contact support@spedsummit.com to reset your password."); return; }
                   setResetSent(true);
                 }}>
                   {authError && <div style={{ background:"#fef2f2", border:"1px solid #fca5a5", borderRadius:8, padding:"10px 14px", marginBottom:14, fontSize:13, color:"#991b1b" }}>{authError}</div>}
