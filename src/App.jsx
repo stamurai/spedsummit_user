@@ -11283,15 +11283,17 @@ function LandingPageV2({ onGetStarted, sessions = [] }) {
    opens: { currentQ, answers, status, score }.
 ───────────────────────────────────────────────────────────────────────────── */
 function getSessionQuestions(session) {
-  // Prefer lesson-level questions (what the admin CurriculumBuilder edits).
-  // quiz_questions in the DB may be stale from older data.
-  const lessonQs = (session?.lessons || []).flatMap(l =>
-    Array.isArray(l.questions)
-      ? l.questions.filter(q => q.text && q.options?.some(o => o))
-          .map(q => ({ q: q.text, opts: q.options, a: q.correct ?? 0 }))
-      : []
-  );
-  if (lessonQs.length > 0) return lessonQs;
+  // Use the last quiz lesson — this is what the admin CurriculumBuilder edits.
+  // Using only the last avoids inflating the count with old/stale quiz lessons
+  // still in the lessons array from previous edits.
+  const lessons = session?.lessons || [];
+  const quizLessons = lessons.filter(l => l.type === "quiz" && Array.isArray(l.questions) && l.questions.length > 0);
+  if (quizLessons.length > 0) {
+    const last = quizLessons[quizLessons.length - 1];
+    return last.questions
+      .filter(q => q.text && q.options?.some(o => o))
+      .map(q => ({ q: q.text, opts: q.options, a: q.correct ?? 0 }));
+  }
   // Fall back to quiz_questions only when no lesson questions exist
   if (session?.quiz_questions?.length) return session.quiz_questions;
   return [];
