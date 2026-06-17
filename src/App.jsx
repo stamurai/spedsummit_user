@@ -8005,10 +8005,18 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", defaultMode = 
               <>
                 <h2 style={{ margin:"0 0 6px", fontSize:18, fontWeight:800, color:"#0f172a" }}>Reset your password</h2>
                 <p style={{ margin:"0 0 20px", fontSize:13, color:"#94a3b8" }}>Enter your email and we'll send you a reset link.</p>
-                <form onSubmit={async e => { e.preventDefault(); await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin }); setResetSent(true); }}>
+                <form onSubmit={async e => {
+                  e.preventDefault();
+                  const { error: rstErr } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${window.location.origin}/`
+                  });
+                  if (rstErr) { setAuthError(rstErr.message); return; }
+                  setResetSent(true);
+                }}>
+                  {authError && <div style={{ background:"#fef2f2", border:"1px solid #fca5a5", borderRadius:8, padding:"10px 14px", marginBottom:14, fontSize:13, color:"#991b1b" }}>{authError}</div>}
                   <div style={{ marginBottom:16 }}>
                     <label style={{ display:"block", fontSize:12, fontWeight:600, color:"#2B2E33", marginBottom:5 }}>Email</label>
-                    <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Work Email" type="email" required style={{ width:"100%", padding:"10px 14px", border:"1px solid #e2e8f0", borderRadius:8, fontSize:14, color:"#0f172a", outline:"none", boxSizing:"border-box", background:"#fff", fontFamily:"inherit", transition:"border-color .15s" }}
+                    <input value={email} onChange={e=>{ setEmail(e.target.value); setAuthError(""); }} placeholder="Work Email" type="email" required style={{ width:"100%", padding:"10px 14px", border:"1px solid #e2e8f0", borderRadius:8, fontSize:14, color:"#0f172a", outline:"none", boxSizing:"border-box", background:"#fff", fontFamily:"inherit", transition:"border-color .15s" }}
                       onFocus={e=>e.target.style.borderColor="#6490E8"} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
                   </div>
                   <button type="submit"
