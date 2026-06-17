@@ -6957,8 +6957,8 @@ function PublicCertificatePage({ data, dbCertId = null }) {
 
       {/* Breadcrumb bar — shown when logged in */}
       {isLoggedIn && (
-        <div style={{ background:"#fff", borderBottom:"1px solid #f0f0f0", padding:"0 16px" }}>
-          <div className="pub-breadcrumb" style={{ maxWidth:1100, margin:"0 auto", height:44, display:"flex", alignItems:"center", gap:6, fontSize:13, color:"#6b7280", minWidth:0 }}>
+        <div className="pub-breadcrumb" style={{ background:"#fff", borderBottom:"1px solid #f0f0f0", padding:"0 24px", height:44, display:"flex", alignItems:"center", gap:6, fontSize:13, color:"#6b7280", minWidth:0 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:6, minWidth:0 }}>
             <a href="#" onClick={e=>{ e.preventDefault(); sessionStorage.setItem("page","certifications"); sessionStorage.setItem("showLanding","0"); window.location.href=window.location.origin; }}
               style={{ color:"#6b7280", textDecoration:"none", fontWeight:500, transition:"color .12s", whiteSpace:"nowrap", flexShrink:0 }}
               onMouseEnter={e=>e.currentTarget.style.color="#1a1a1a"}
