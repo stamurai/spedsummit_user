@@ -1715,7 +1715,6 @@ function Sidebar({ active, onChange }) {
 function LimelightBottomNav({ active, onChange, onNotif, notifCount = 0 }) {
   const items = [
     { id:'dashboard',      icon:'house',        label:'Home'          },
-    { id:'sessions',       icon:'play-circle',  label:'Sessions'      },
     { id:'community',      icon:'users',        label:'Community'     },
     { id:'certifications', icon:'certificate',  label:'Certificates'  },
   ];
@@ -1795,7 +1794,6 @@ function LimelightBottomNav({ active, onChange, onNotif, notifCount = 0 }) {
 function TabBar({ active, onChange, breadcrumbs }) {
   const nav = [
     { id:"dashboard",      label:"My Learnings"    },
-    { id:"sessions",       label:"All Sessions"    },
     { id:"certifications", label:"My Certificates" },
     { id:"community",      label:"My Community"    },
   ];
