@@ -3877,7 +3877,7 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress, onEnded, initialProgres
 
           // Throttle save every 10s
           if (!saveThrottle.current) {
-            saveThrottle.current = setTimeout(() => { saveThrottle.current = null; updateView(false); }, 10000);
+            saveThrottle.current = setTimeout(() => { saveThrottle.current = null; updateView(false); }, 5000);
           }
 
           if (d.data.percent != null) {
@@ -3895,9 +3895,19 @@ function VimeoPlayer({ url, onPlay, onPause, onProgress, onEnded, initialProgres
       } catch {}
     }
     window.addEventListener("message", onMsg);
+
+    // Flush on tab hide / page unload so watched_seconds is never lost
+    function flushOnHide() { if (document.visibilityState === "hidden") updateView(false); }
+    function flushOnUnload() { updateView(false); }
+    document.addEventListener("visibilitychange", flushOnHide);
+    window.addEventListener("pagehide", flushOnUnload);
+
     return () => {
       window.removeEventListener("message", onMsg);
+      document.removeEventListener("visibilitychange", flushOnHide);
+      window.removeEventListener("pagehide", flushOnUnload);
       if (saveThrottle.current) clearTimeout(saveThrottle.current);
+      updateView(false); // flush on component unmount (navigation)
     };
   }, [videoId]);
 
