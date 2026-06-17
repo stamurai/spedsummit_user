@@ -11568,6 +11568,7 @@ export default function App() {
   // ── ALL useState declarations MUST come before any useCallback/useEffect ──
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLanding, setShowLanding] = useState(() => sessionStorage.getItem("showLanding") !== "0");
+  const [showAuth, setShowAuth] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [showAuthAfterReset, setShowAuthAfterReset] = useState(false);
   const [openInstructorName, setOpenInstructorName] = useState(null);
@@ -12416,6 +12417,15 @@ export default function App() {
             onChange={nav}
           />
         </div>
+      )}
+
+      {/* Auth Modal — shown when Sign In is clicked from app shell (e.g. Contact page) */}
+      {showAuth && (
+        <AuthModal
+          onClose={() => setShowAuth(false)}
+          onLogin={() => { setShowAuth(false); setIsLoggedIn(true); setShowLanding(false); }}
+          defaultMode="signin"
+        />
       )}
 
       {/* Session Assessment Modal */}
