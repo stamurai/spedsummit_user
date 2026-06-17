@@ -5,6 +5,7 @@ export default async function handler(req, res) {
   const { cert_id } = req.query;
   const origin = `https://${req.headers.host}`;
   const appUrl = `${origin}/?cert_id=${cert_id}`;
+  const canonicalUrl = `${origin}/cert?cert_id=${cert_id}`;
 
   if (!cert_id) {
     res.writeHead(302, { Location: origin });
@@ -44,7 +45,7 @@ export default async function handler(req, res) {
 
   <!-- Open Graph (LinkedIn, Facebook, WhatsApp, Slack) -->
   <meta property="og:type"         content="website"/>
-  <meta property="og:url"          content="${appUrl}"/>
+  <meta property="og:url"          content="${canonicalUrl}"/>
   <meta property="og:title"        content="${safe(ogTitle)}"/>
   <meta property="og:description"  content="${safe(ogDesc)}"/>
   <meta property="og:image"             content="${ogImage}"/>
