@@ -4964,7 +4964,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
 function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [], refreshKey = 0, currentUserId = null }) {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filterSession, setFilterSession] = useState("all");
+  const [activeCategory, setActiveCategory] = useState("all");
   const [newBody, setNewBody] = useState("");
   const [selectedSession, setSelectedSession] = useState("");
   const [posting, setPosting] = useState(false);
@@ -5062,6 +5062,14 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
     }
   }, [refreshKey, currentUserId]);
 
+  useEffect(() => {
+    if (activeCategory !== "all" && activeCategory !== "general") {
+      setSelectedSession(activeCategory);
+    } else {
+      setSelectedSession("");
+    }
+  }, [activeCategory]);
+
   async function submitPost() {
     if (!newBody.trim()) return;
     const session = sessions.find(s => String(s.id) === selectedSession);
@@ -5091,25 +5099,20 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
     else if (error) toast({ type:"error", message:"Could not save reply." });
   }
 
-  // Build session buckets: group top-level comments by session_title (or "General" if none)
+  // Build flat top-level list and per-channel counts
   const topLevel = comments.filter(c => !c.parent_id);
+  const generalComments = topLevel.filter(c => !c.session_id);
 
-  // Separate general (no session) from session-bucketed
-  const generalComments = topLevel.filter(c => !c.session_title);
-  const sessionTopLevel = topLevel.filter(c => !!c.session_title);
+  // Filtered list for main panel
+  const activeCategoryLabel = activeCategory === "all" ? "All Posts"
+    : activeCategory === "general" ? "General"
+    : sessions.find(s => String(s.id) === activeCategory)?.title || "Session";
 
-  // Collect session buckets in order of most-recent comment
-  const bucketMap = {};
-  sessionTopLevel.forEach(c => {
-    const key = c.session_title;
-    if (!bucketMap[key]) bucketMap[key] = { title: c.session_title, comments: [], latestAt: c.created_at };
-    bucketMap[key].comments.push(c);
-    if (c.created_at > bucketMap[key].latestAt) bucketMap[key].latestAt = c.created_at;
-  });
-  const buckets = Object.values(bucketMap).sort((a,b) => b.latestAt.localeCompare(a.latestAt));
-  const filteredBuckets = filterSession === "all"
-    ? buckets
-    : buckets.filter(b => b.title === (sessions.find(s=>String(s.id)===filterSession)?.title || ""));
+  const visibleTopLevel = activeCategory === "all"
+    ? topLevel
+    : activeCategory === "general"
+      ? generalComments
+      : topLevel.filter(c => String(c.session_id) === activeCategory);
 
   function renderComment(c) {
     const replies = comments.filter(r => r.parent_id === c.id);
@@ -5242,29 +5245,79 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
   }
 
   return (
-    <div className="comm-page" style={{ padding:"28px 32px", background:C.gray50, minHeight:"100%", boxSizing:"border-box", display:"flex", gap:24, alignItems:"flex-start" }}>
+    <div className="comm-page-v2" style={{ display:"flex", minHeight:"calc(100vh - 64px)", background:C.gray50 }}>
       <style>{`
-        @media (max-width: 900px) {
-          .comm-page { flex-direction: column !important; padding: 16px !important; }
-          .comm-left  { width: 100% !important; position: static !important; }
-          .comm-right { width: 100% !important; }
+        .comm-sidebar-v2 { }
+        .comm-sb-btn { transition: background .12s; border: none; cursor: pointer; text-align: left; width: 100%; display: flex; align-items: center; gap: 10px; padding: 9px 16px; background: transparent; }
+        .comm-sb-btn:hover { background: ${C.gray50} !important; }
+        @media (max-width: 768px) {
+          .comm-sidebar-v2 { display: none !important; }
+          .comm-main-v2 { padding: 16px !important; }
         }
         @media (max-width: 500px) {
-          .comm-page { padding: 16px !important; gap: 14px !important; }
           .comm-thread-grid { grid-template-columns: 28px 1fr !important; gap: 0 8px !important; }
-          .comm-bucket-header { padding: 12px 14px !important; }
           .comm-comment-pad { padding: 12px 14px 8px !important; }
         }
       `}</style>
 
-      {/* Left — composer + general comments */}
-      <div className="comm-left" style={{ width:300, flexShrink:0, position:"sticky", top:24 }}>
-        <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"12px 16px" }}>
+      {/* ── Sidebar ── */}
+      <div className="comm-sidebar-v2" style={{ width:220, flexShrink:0, background:C.white, borderRight:`1px solid ${C.gray200}`, padding:"20px 0", overflowY:"auto", position:"sticky", top:0, alignSelf:"flex-start", height:"calc(100vh - 64px)" }}>
+        <div style={{ padding:"0 16px 10px", fontSize:11, fontWeight:800, color:C.gray400, letterSpacing:1.2, textTransform:"uppercase" }}>Channels</div>
+
+        {/* All Posts */}
+        {[
+          { key:"all",     label:"All Posts", icon:"squares-four" },
+          { key:"general", label:"General",   icon:"chats-circle" },
+        ].map(({ key, label, icon }) => {
+          const count = key === "all" ? topLevel.length : generalComments.length;
+          const active = activeCategory === key;
+          return (
+            <button key={key} className="comm-sb-btn" onClick={()=>setActiveCategory(key)}
+              style={{ background: active ? C.primaryLight : "transparent" }}>
+              <div style={{ width:28, height:28, borderRadius:8, background:active?C.primary:C.gray100, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <Icon name={icon} size={14} color={active?"#fff":C.gray500}/>
+              </div>
+              <span style={{ flex:1, fontSize:13, fontWeight:active?700:500, color:active?C.primary:C.gray700 }}>{label}</span>
+              {count > 0 && <span style={{ fontSize:11, fontWeight:700, color:active?C.primary:C.gray400, background:active?"rgba(100,144,232,0.15)":C.gray100, borderRadius:99, padding:"1px 7px", flexShrink:0 }}>{count}</span>}
+            </button>
+          );
+        })}
+
+        {/* Sessions section */}
+        <div style={{ padding:"16px 16px 6px", fontSize:11, fontWeight:800, color:C.gray400, letterSpacing:1.2, textTransform:"uppercase", marginTop:4 }}>Sessions</div>
+
+        {sessions.map(s => {
+          const count = topLevel.filter(c => String(c.session_id) === String(s.id)).length;
+          const active = activeCategory === String(s.id);
+          return (
+            <button key={s.id} className="comm-sb-btn" onClick={()=>setActiveCategory(String(s.id))}
+              style={{ background: active ? C.primaryLight : "transparent", alignItems:"flex-start" }}>
+              <div style={{ width:28, height:28, borderRadius:8, background:active?C.primary:C.gray100, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:1 }}>
+                <Icon name="play-circle" size={14} color={active?"#fff":C.gray500} weight={active?"fill":"regular"}/>
+              </div>
+              <span style={{ flex:1, fontSize:12, fontWeight:active?700:500, color:active?C.primary:C.gray700, lineHeight:1.4 }}>{s.title}</span>
+              {count > 0 && <span style={{ fontSize:11, fontWeight:700, color:active?C.primary:C.gray400, background:active?"rgba(100,144,232,0.15)":C.gray100, borderRadius:99, padding:"1px 7px", flexShrink:0, marginTop:4 }}>{count}</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── Main content ── */}
+      <div className="comm-main-v2" style={{ flex:1, minWidth:0, padding:"24px 28px", overflowY:"auto" }}>
+
+        {/* Heading */}
+        <div style={{ marginBottom:20 }}>
+          <h2 style={{ margin:"0 0 2px", fontSize:20, fontWeight:800, color:C.gray900 }}>{activeCategoryLabel}</h2>
+          {!loading && <div style={{ fontSize:13, color:C.gray500 }}>{visibleTopLevel.length} post{visibleTopLevel.length!==1?"s":""}</div>}
+        </div>
+
+        {/* Composer */}
+        <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"14px 16px", marginBottom:20 }}>
           <div style={{ display:"flex", gap:10, alignItems:"flex-start", marginBottom:12 }}>
             <Avatar name={userName||"You"} src={userAvatar} size={36}/>
             <textarea value={newBody} onChange={e=>setNewBody(e.target.value)}
               onKeyDown={e=>{ if(e.key==="Enter" && e.metaKey) submitPost(); }}
-              placeholder="Share something about this session…"
+              placeholder={activeCategory !== "all" && activeCategory !== "general" ? `Share something about ${sessions.find(s=>String(s.id)===activeCategory)?.title||"this session"}…` : "Share something with the community…"}
               rows={3}
               style={{ flex:1, padding:0, border:"none", fontSize:14, color:C.gray800, background:"transparent", outline:"none", resize:"none", lineHeight:1.6, fontFamily:"inherit" }}/>
           </div>
@@ -5274,14 +5327,21 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
               <button onClick={()=>setSessionDropOpen(o=>!o)}
                 style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"5px 12px 5px 10px", borderRadius:99, border:`1.5px solid ${selectedSession?C.primary:C.gray300}`, background:selectedSession?C.primaryLight:"transparent", color:selectedSession?C.primary:C.gray500, fontSize:12, fontWeight:700, cursor:"pointer", maxWidth:"100%", overflow:"hidden" }}>
                 <Icon name="play-circle" size={13} color={selectedSession?C.primary:C.gray400} weight={selectedSession?"fill":"regular"}/>
-                <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:140 }}>
-                  {selectedSession ? (sessions.find(s=>String(s.id)===selectedSession)?.title || "Session") : "Choose session"}
+                <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:160 }}>
+                  {selectedSession ? (sessions.find(s=>String(s.id)===selectedSession)?.title || "Session") : "Tag a session (optional)"}
                 </span>
                 <Icon name="caret-down" size={11} color={selectedSession?C.primary:C.gray400}/>
               </button>
               {sessionDropOpen && (
-                <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, boxShadow:"0 8px 32px rgba(0,0,0,0.12)", zIndex:200, width:260, maxHeight:280, overflowY:"auto" }}>
-                  <div style={{ padding:"12px 14px 6px", fontSize:13, fontWeight:800, color:C.gray900 }}>Choose session</div>
+                <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, boxShadow:"0 8px 32px rgba(0,0,0,0.12)", zIndex:200, width:280, maxHeight:280, overflowY:"auto" }}>
+                  <div style={{ padding:"12px 14px 6px", fontSize:13, fontWeight:800, color:C.gray900 }}>Tag a session</div>
+                  {selectedSession && (
+                    <button onClick={()=>{ setSelectedSession(""); setSessionDropOpen(false); }}
+                      style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"10px 14px", border:"none", background:"transparent", cursor:"pointer", textAlign:"left" }}
+                      onMouseEnter={e=>e.currentTarget.style.background=C.gray50} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                      <span style={{ fontSize:13, color:C.gray500 }}>None (General)</span>
+                    </button>
+                  )}
                   {sessions.map(s => (
                     <button key={s.id} onClick={()=>{ setSelectedSession(String(s.id)); setSessionDropOpen(false); }}
                       style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"10px 14px", border:"none", background:selectedSession===String(s.id)?C.primaryLight:"transparent", cursor:"pointer", textAlign:"left" }}
@@ -5306,43 +5366,22 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
           </div>
         </div>
 
-        {/* General comments (no session) */}
-        {!loading && generalComments.length > 0 && (
-          <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, marginTop:16, overflow:"hidden" }}>
-            <div style={{ padding:"14px 18px", borderBottom:`1px solid ${C.gray100}`, textAlign:"center" }}>
-              <div style={{ fontSize:13, fontWeight:800, color:C.gray900 }}>General</div>
-              <div style={{ fontSize:11, color:C.gray400, marginTop:2 }}>{generalComments.length} comment{generalComments.length!==1?"s":""}</div>
-            </div>
-            <div>{generalComments.map(c => renderComment(c))}</div>
-          </div>
-        )}
-      </div>
-
-      {/* Right — session buckets */}
-      <div className="comm-right" style={{ flex:1, minWidth:0 }}>
+        {/* Comments list */}
         {loading && (
           <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"40px 24px", textAlign:"center", color:C.gray400, fontSize:14 }}>Loading…</div>
         )}
-        {!loading && filteredBuckets.length === 0 && (
+        {!loading && visibleTopLevel.length === 0 && (
           <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"48px 24px", textAlign:"center", display:"flex", flexDirection:"column", alignItems:"center" }}>
             <Icon name="chat-circle-dots" size={44} color={C.gray300}/>
             <div style={{ marginTop:14, fontSize:15, fontWeight:700, color:C.gray500 }}>No posts yet</div>
             <div style={{ fontSize:13, color:C.gray400, marginTop:4 }}>Be the first to share your thoughts!</div>
           </div>
         )}
-        {!loading && filteredBuckets.map(bucket => (
-          <div key={bucket.title||"__general__"} style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, marginBottom:16, overflow:"hidden" }}>
-            {/* Bucket header */}
-            <div className="comm-bucket-header" style={{ padding:"14px 18px", borderBottom:`1px solid ${C.gray100}`, textAlign:"center" }}>
-              <div style={{ fontSize:14, fontWeight:800, color:C.gray900 }}>{bucket.title || "General"}</div>
-              <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{bucket.comments.length} comment{bucket.comments.length!==1?"s":""}</div>
-            </div>
-            {/* Comments in this bucket */}
-            <div>
-              {bucket.comments.map(c => renderComment(c))}
-            </div>
+        {!loading && visibleTopLevel.length > 0 && (
+          <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, overflow:"hidden" }}>
+            {visibleTopLevel.map(c => renderComment(c))}
           </div>
-        ))}
+        )}
       </div>
 
       {/* Report Modal */}
