@@ -7826,65 +7826,71 @@ function LegalModal({ type, onClose }) {
   );
 }
 
-function PasswordResetModal({ onClose, toast }) {
-  const [password, setPassword] = useState("");
-  const [confirm,  setConfirm]  = useState("");
-  const [loading,  setLoading]  = useState(false);
-  const [done,     setDone]     = useState(false);
+function PasswordResetModal({ onClose, onSignInAfterReset, toast }) {
+  const [password,  setPassword]  = useState("");
+  const [confirm,   setConfirm]   = useState("");
+  const [loading,   setLoading]   = useState(false);
+  const [showPw,    setShowPw]    = useState(false);
+  const [showConf,  setShowConf]  = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
     if (password.length < 8) { toast({ type:"error", message:"Password must be at least 8 characters." }); return; }
-    if (password !== confirm) { toast({ type:"error", message:"Passwords do not match." }); return; }
+    if (password !== confirm)  { toast({ type:"error", message:"Passwords do not match." }); return; }
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) { toast({ type:"error", message: error.message }); return; }
-    setDone(true);
-    toast({ type:"success", title:"Password updated!", message:"You can now sign in with your new password." });
-    setTimeout(() => onClose(), 2000);
+    // Sign out so the user must re-authenticate with the new password
+    await supabase.auth.signOut();
+    onSignInAfterReset ? onSignInAfterReset() : onClose();
   }
 
-  const inp = { width:"100%", padding:"10px 14px", border:"1px solid #e2e8f0", borderRadius:8, fontSize:14, color:"#0f172a", outline:"none", boxSizing:"border-box", background:"#fff", fontFamily:"inherit" };
+  const inp = { width:"100%", padding:"10px 40px 10px 14px", border:"1px solid #e2e8f0", borderRadius:8, fontSize:14, color:"#0f172a", outline:"none", boxSizing:"border-box", background:"#fff", fontFamily:"inherit" };
+  const EyeBtn = ({ show, onToggle }) => (
+    <button type="button" onClick={onToggle}
+      style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0, display:"flex", color:"#94a3b8" }}>
+      {show
+        ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      }
+    </button>
+  );
 
   return (
-    <div style={{ background:"#fff", borderRadius:16, width:"100%", maxWidth:420, padding:"32px", boxShadow:"0 20px 60px rgba(0,0,0,0.12)" }}>
-      <div>
-        <img src="/Container.png" alt="SPED Summit" style={{ height:20, display:"block", marginBottom:24 }}/>
-        {done ? (
-          <div style={{ textAlign:"center", padding:"16px 0" }}>
-            <div style={{ fontSize:40, marginBottom:12 }}>✓</div>
-            <div style={{ fontSize:18, fontWeight:800, color:"#0f172a" }}>Password updated!</div>
-            <div style={{ fontSize:14, color:"#64748b", marginTop:6 }}>Redirecting…</div>
+    <div style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:480, padding:"36px 36px 32px", boxShadow:"0 20px 60px rgba(0,0,0,0.15)", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
+      <img src="/Container.png" alt="SPED Summit" style={{ height:22, display:"block", marginBottom:28 }}/>
+      <h2 style={{ margin:"0 0 6px", fontSize:22, fontWeight:800, color:"#0f172a" }}>Set new password</h2>
+      <p style={{ margin:"0 0 24px", fontSize:14, color:"#64748b" }}>Choose a new password for your account.</p>
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom:16 }}>
+          <label style={{ display:"block", fontSize:13, fontWeight:600, color:"#2B2E33", marginBottom:6 }}>New Password</label>
+          <div style={{ position:"relative" }}>
+            <input type={showPw ? "text" : "password"} value={password} onChange={e=>setPassword(e.target.value)}
+              placeholder="Min. 8 characters" required style={inp}
+              onFocus={e=>e.target.style.borderColor="#6490E8"} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
+            <EyeBtn show={showPw} onToggle={()=>setShowPw(v=>!v)}/>
           </div>
-        ) : (
-          <>
-            <h2 style={{ margin:"0 0 6px", fontSize:20, fontWeight:800, color:"#0f172a" }}>Set new password</h2>
-            <p style={{ margin:"0 0 20px", fontSize:13, color:"#64748b" }}>Choose a new password for your account.</p>
-            <form onSubmit={handleSubmit}>
-              <div style={{ marginBottom:14 }}>
-                <label style={{ display:"block", fontSize:12, fontWeight:600, color:"#2B2E33", marginBottom:5 }}>New Password</label>
-                <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Min. 8 characters" required style={inp}
-                  onFocus={e=>e.target.style.borderColor="#6490E8"} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
-              </div>
-              <div style={{ marginBottom:20 }}>
-                <label style={{ display:"block", fontSize:12, fontWeight:600, color:"#2B2E33", marginBottom:5 }}>Confirm Password</label>
-                <input type="password" value={confirm} onChange={e=>setConfirm(e.target.value)} placeholder="Repeat new password" required style={inp}
-                  onFocus={e=>e.target.style.borderColor="#6490E8"} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
-              </div>
-              <button type="submit" disabled={loading}
-                style={{ width:"100%", padding:"12px", borderRadius:8, border:"none", background:"#6490E8", color:"#fff", fontSize:14, fontWeight:700, cursor: loading?"not-allowed":"pointer", opacity: loading?0.7:1 }}>
-                {loading ? "Updating…" : "Update Password"}
-              </button>
-            </form>
-          </>
-        )}
-      </div>
+        </div>
+        <div style={{ marginBottom:24 }}>
+          <label style={{ display:"block", fontSize:13, fontWeight:600, color:"#2B2E33", marginBottom:6 }}>Confirm Password</label>
+          <div style={{ position:"relative" }}>
+            <input type={showConf ? "text" : "password"} value={confirm} onChange={e=>setConfirm(e.target.value)}
+              placeholder="Repeat new password" required style={inp}
+              onFocus={e=>e.target.style.borderColor="#6490E8"} onBlur={e=>e.target.style.borderColor="#e2e8f0"}/>
+            <EyeBtn show={showConf} onToggle={()=>setShowConf(v=>!v)}/>
+          </div>
+        </div>
+        <button type="submit" disabled={loading}
+          style={{ width:"100%", padding:"13px", borderRadius:10, border:"none", background:"#6490E8", color:"#fff", fontSize:15, fontWeight:700, cursor:loading?"not-allowed":"pointer", opacity:loading?0.7:1 }}>
+          {loading ? "Updating…" : "Update Password"}
+        </button>
+      </form>
     </div>
   );
 }
 
-function AuthModal({ onClose, onLogin, defaultStep = "user-auth", defaultMode = "signup", noOverlay = false }) {
+function AuthModal({ onClose, onLogin, defaultStep = "user-auth", defaultMode = "signup", noOverlay = false, successMessage = "" }) {
   // step: "role-select" | "user-auth" | "forgot-password"
   const [step,       setStep]      = useState(defaultStep);
   const [mode,       setMode]      = useState(defaultMode);
@@ -8057,6 +8063,13 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", defaultMode = 
               <p style={{ margin:"0 0 20px", fontSize:13, color:"#94a3b8" }}>
                 {mode === "signup" ? "Join thousands of SPED educators today." : "Sign in to access your account."}
               </p>
+
+              {/* Password reset success banner */}
+              {successMessage && (
+                <div style={{ background:"#f0fdf4", border:"1px solid #bbf7d0", borderRadius:8, padding:"10px 14px", marginBottom:16, fontSize:13, color:"#166534", fontWeight:500 }}>
+                  {successMessage}
+                </div>
+              )}
 
               {/* Sign in / Sign up toggle */}
               <div style={{ display:"flex", background:"#f1f5f9", borderRadius:8, padding:3, marginBottom:20 }}>
@@ -9318,7 +9331,7 @@ function SpBentoChart({ T }) {
   );
 }
 
-function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvatar = null, onGoToDashboard, onLogout, onWatchSession, openInstructorName = null, onInstructorOpened, sessions = [], sessionsLoading = false, testimonialsData = [] }) {
+function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvatar = null, onGoToDashboard, onLogout, onWatchSession, openInstructorName = null, onInstructorOpened, sessions = [], sessionsLoading = false, testimonialsData = [], openAuthSignIn = false, onAuthSignInOpened }) {
   const v1Testimonials = testimonialsData.length > 0
     ? testimonialsData.map(t => ({ text:t.text, name:t.name, role:"SPED Educator", img:"" }))
     : V1_TESTIMONIALS;
@@ -9345,7 +9358,17 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
 
   const [showAuth, setShowAuth] = useState(false);
   const [authInitMode, setAuthInitMode] = useState("signup");
+  const [resetSuccessMsg, setResetSuccessMsg] = useState("");
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+
+  React.useEffect(() => {
+    if (openAuthSignIn) {
+      setAuthInitMode("signin");
+      setResetSuccessMsg("Your password was successfully changed, please sign in.");
+      setShowAuth(true);
+      onAuthSignInOpened?.();
+    }
+  }, [openAuthSignIn]);
   const profileMenuRef = useRef(null);
   const [selectedSession, setSelectedSession] = useState(null);
   const savedScrollY = useRef(0);
@@ -9602,7 +9625,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
             )}
           </div>
         </div>{/* end spk-detail-grid */}
-        {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={(role)=>onGetStarted(null,role)} defaultMode={authInitMode}/>}
+        {showAuth && <AuthModal onClose={()=>{ setShowAuth(false); setResetSuccessMsg(""); }} onLogin={(role)=>onGetStarted(null,role)} defaultMode={authInitMode} successMessage={resetSuccessMsg}/>}
       </div>
     );
   }
@@ -11504,6 +11527,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLanding, setShowLanding] = useState(() => sessionStorage.getItem("showLanding") !== "0");
   const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [showAuthAfterReset, setShowAuthAfterReset] = useState(false);
   const [openInstructorName, setOpenInstructorName] = useState(null);
   const [page, setPage] = useState(() => sessionStorage.getItem("page") || "dashboard");
   const navHistoryRef = useRef(["dashboard"]);
@@ -12239,7 +12263,10 @@ export default function App() {
       <>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <div style={{ minHeight:"100vh", background:"#FEF5EC", display:"flex", alignItems:"center", justifyContent:"center", padding:24, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
-          <PasswordResetModal toast={toast} onClose={() => { setShowPasswordReset(false); setShowLanding(false); setPage("dashboard"); }}/>
+          <PasswordResetModal toast={toast}
+            onClose={() => { setShowPasswordReset(false); setShowLanding(false); setPage("dashboard"); }}
+            onSignInAfterReset={() => { setShowPasswordReset(false); setShowLanding(true); setShowAuthAfterReset(true); }}
+          />
         </div>
       </>
     );
@@ -12259,7 +12286,7 @@ export default function App() {
     return (
       <>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToPage} onWatchSession={(s)=>{ setShowLanding(false); openSession(s, "landing"); }} onLogout={async ()=>{ sessionStorage.setItem("loggedOut","1"); sessionStorage.removeItem("loggedIn"); sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("page","dashboard"); await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setEnrolledIds(new Set()); setQuizStates({}); }} openInstructorName={openInstructorName} onInstructorOpened={()=>setOpenInstructorName(null)} sessions={sessions} sessionsLoading={sessionsLoading} testimonialsData={testimonialsData}/>
+        <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToPage} onWatchSession={(s)=>{ setShowLanding(false); openSession(s, "landing"); }} onLogout={async ()=>{ sessionStorage.setItem("loggedOut","1"); sessionStorage.removeItem("loggedIn"); sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("page","dashboard"); await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setEnrolledIds(new Set()); setQuizStates({}); }} openInstructorName={openInstructorName} onInstructorOpened={()=>setOpenInstructorName(null)} sessions={sessions} sessionsLoading={sessionsLoading} testimonialsData={testimonialsData} openAuthSignIn={showAuthAfterReset} onAuthSignInOpened={()=>setShowAuthAfterReset(false)}/>
       </>
     );
   }
