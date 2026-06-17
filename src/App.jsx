@@ -6912,6 +6912,7 @@ function PublicCertificatePage({ data, dbCertId = null }) {
     : `${window.location.origin}${window.location.pathname}?cert=${btoa(JSON.stringify(data))}`;
   const [copied, setCopied] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  const [authInitMode, setAuthInitMode] = useState("signup");
   const [showShare, setShowShare] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   useEffect(() => {
@@ -6946,13 +6947,13 @@ function PublicCertificatePage({ data, dbCertId = null }) {
             My Dashboard
           </button>
         ) : (
-          <button onClick={()=>setShowAuth(true)}
+          <button onClick={()=>{ setAuthInitMode("signin"); setShowAuth(true); }}
             style={{ padding:"0 18px", height:36, background:"#6490E8", color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer" }}>
             Sign in
           </button>
         )}
       </header>
-      {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={()=>{ window.location.href = window.location.origin; }}/>}
+      {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={()=>{ window.location.href = window.location.origin; }} defaultMode={authInitMode}/>}
 
       {/* Breadcrumb bar — shown when logged in */}
       {isLoggedIn && (
@@ -7883,7 +7884,7 @@ function PasswordResetModal({ onClose, toast }) {
   );
 }
 
-function AuthModal({ onClose, onLogin, defaultStep = "user-auth", defaultMode = "signin", noOverlay = false }) {
+function AuthModal({ onClose, onLogin, defaultStep = "user-auth", defaultMode = "signup", noOverlay = false }) {
   // step: "role-select" | "user-auth" | "forgot-password"
   const [step,       setStep]      = useState(defaultStep);
   const [mode,       setMode]      = useState(defaultMode);
@@ -9343,6 +9344,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
   })();
 
   const [showAuth, setShowAuth] = useState(false);
+  const [authInitMode, setAuthInitMode] = useState("signup");
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef(null);
   const [selectedSession, setSelectedSession] = useState(null);
@@ -9600,7 +9602,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
             )}
           </div>
         </div>{/* end spk-detail-grid */}
-        {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={(role)=>onGetStarted(null,role)}/>}
+        {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={(role)=>onGetStarted(null,role)} defaultMode={authInitMode}/>}
       </div>
     );
   }
@@ -10831,7 +10833,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
 
       </footer>
 
-      {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={(role)=>onGetStarted(null,role)}/>}
+      {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={(role)=>onGetStarted(null,role)} defaultMode={authInitMode}/>}
     </div>
   );
 }
@@ -10841,6 +10843,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
 ───────────────────────────────────────────────────────────────────────────── */
 function LandingPageV2({ onGetStarted, sessions = [] }) {
   const [showAuth, setShowAuth] = useState(false);
+  const [authInitMode, setAuthInitMode] = useState("signup");
 
   const T2 = {
     bg:      "#fffdf7",
@@ -10925,7 +10928,7 @@ function LandingPageV2({ onGetStarted, sessions = [] }) {
               onMouseEnter={e=>{ e.currentTarget.style.background=T2.hover; e.currentTarget.style.color=T2.text; }}
               onMouseLeave={e=>{ e.currentTarget.style.background="none"; e.currentTarget.style.color=T2.muted; }}>{l}</button>
           ))}
-          <button onClick={()=>setShowAuth(true)}
+          <button onClick={()=>{ setAuthInitMode("signin"); setShowAuth(true); }}
             style={{ marginLeft:8, padding:"0 18px", height:38, background:T2.accent, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:700, cursor:"pointer", transition:"all .15s", boxShadow:`0 2px 0 0 #5b21b6` }}
             onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 4px 0 0 #5b21b6"; }}
             onMouseLeave={e=>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="0 2px 0 0 #5b21b6"; }}>
@@ -11139,7 +11142,7 @@ function LandingPageV2({ onGetStarted, sessions = [] }) {
           <p style={{ margin:"0 0 40px", fontSize:17, color:"rgba(255,255,255,0.6)", lineHeight:1.65 }}>
             Complete all sessions, pass the quizzes, and your certificate automatically enters you into the Ablespace Pro prize draw. No extra steps.
           </p>
-          <button onClick={()=>setShowAuth(true)}
+          <button onClick={()=>{ setAuthInitMode("signin"); setShowAuth(true); }}
             style={{ padding:"0 40px", height:56, background:"#fff", color:T2.dark, border:"none", borderRadius:12, fontSize:16, fontWeight:800, cursor:"pointer", transition:"all .15s" }}
             onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.boxShadow="0 12px 32px rgba(0,0,0,0.3)"; }}
             onMouseLeave={e=>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="none"; }}>
@@ -11199,7 +11202,7 @@ function LandingPageV2({ onGetStarted, sessions = [] }) {
           </div>
           <h2 style={{ margin:"0 0 16px", fontSize:"clamp(32px,4vw,52px)", fontWeight:900, color:"#fff", letterSpacing:-1.5 }}>Your SPED journey starts here.</h2>
           <p style={{ margin:"0 0 36px", fontSize:17, color:"rgba(255,255,255,0.55)", lineHeight:1.65 }}>Join 30,000+ educators. Watch, learn, earn your certificate — and maybe win Ablespace Pro.</p>
-          <button onClick={()=>setShowAuth(true)}
+          <button onClick={()=>{ setAuthInitMode("signin"); setShowAuth(true); }}
             style={{ padding:"0 40px", height:54, background:T2.accent, color:"#fff", border:"none", borderRadius:12, fontSize:16, fontWeight:700, cursor:"pointer", transition:"all .15s", boxShadow:"0 4px 0 0 #5b21b6" }}
             onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.boxShadow="0 6px 0 0 #5b21b6"; }}
             onMouseLeave={e=>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="0 4px 0 0 #5b21b6"; }}>
@@ -11208,7 +11211,7 @@ function LandingPageV2({ onGetStarted, sessions = [] }) {
         </div>
       </section>
 
-      {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={(role)=>onGetStarted(null,role)}/>}
+      {showAuth && <AuthModal onClose={()=>setShowAuth(false)} onLogin={(role)=>onGetStarted(null,role)} defaultMode={authInitMode}/>}
     </div>
   );
 }
