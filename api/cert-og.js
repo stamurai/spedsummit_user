@@ -181,6 +181,6 @@ export default async function handler(request) {
         ],
       },
     },
-    { width: 1200, height: 630 }
+    { width: 1200, height: 630, headers: { "Cache-Control": "no-store" } }
   );
 }
