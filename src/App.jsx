@@ -11642,7 +11642,8 @@ export default function App() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY") {
-        // User clicked password reset link — show reset form, don't log them in
+        // User clicked password reset link — hide landing and show reset form
+        setShowLanding(false);
         setShowPasswordReset(true);
         return;
       }
@@ -12231,6 +12232,16 @@ export default function App() {
   }
 
   const activePage = page==="session-detail" ? "sessions" : page;
+
+  // Password reset modal takes over the whole screen regardless of landing/dashboard state
+  if (showPasswordReset) {
+    return (
+      <>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+        <PasswordResetModal toast={toast} onClose={() => { setShowPasswordReset(false); setShowLanding(false); setPage("dashboard"); }}/>
+      </>
+    );
+  }
 
   if (showLanding && page !== "contact" && page !== "privacy-policy" && page !== "terms-of-service") {
     const handleGetStarted = (sessionId) => {
