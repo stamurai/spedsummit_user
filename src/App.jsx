@@ -5687,10 +5687,6 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
               onChange={e=>setPwForm(v=>({...v,current:e.target.value}))}
               style={inputSt}
               onFocus={e=>e.target.style.borderColor=C.primary} onBlur={e=>e.target.style.borderColor=C.gray200}/>
-            <button onClick={()=>toast({type:"info",message:"Password reset email sent."})}
-              style={{ background:"none", border:"none", color:C.primary, fontSize:13, fontWeight:600, cursor:"pointer", marginTop:8, padding:0, fontFamily:"inherit" }}>
-              Forgot password?
-            </button>
           </div>
 
           {/* New password */}
