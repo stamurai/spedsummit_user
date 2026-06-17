@@ -4,10 +4,11 @@ export const config = { runtime: "edge" };
 
 export default async function handler(request) {
   const { searchParams, origin } = new URL(request.url);
-  const name     = searchParams.get("name")     || "A Special Educator";
-  const title    = searchParams.get("title")    || "SPED Summit Session";
-  const date     = searchParams.get("date")     || "";
-  const duration = searchParams.get("duration") || "60 mins";
+  const name        = searchParams.get("name")        || "A Special Educator";
+  const title       = searchParams.get("title")       || "SPED Summit Session";
+  const date        = searchParams.get("date")        || "";
+  const duration    = searchParams.get("duration")    || "60 mins";
+  const description = searchParams.get("description") || "";
 
   // Fetch background image and convert to data URL so Satori can render it
   // Use chunked approach to avoid spread-operator stack limit on large files
@@ -167,6 +168,22 @@ export default async function handler(request) {
                     ],
                   },
                 },
+                // Description
+                description ? {
+                  type: "div",
+                  props: {
+                    style: {
+                      fontSize: 10,
+                      color: "#4b5563",
+                      textAlign: "center",
+                      lineHeight: 1.5,
+                      marginBottom: 8,
+                      fontFamily: "Arial, sans-serif",
+                      maxWidth: 860,
+                    },
+                    children: description.length > 220 ? description.slice(0, 220) + "…" : description,
+                  },
+                } : { type: "span", props: { children: "" } },
                 // Verify footer
                 {
                   type: "div",

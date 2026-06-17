@@ -24,14 +24,15 @@ export default async function handler(req, res) {
     if (rows?.[0]?.cert_data) certData = rows[0].cert_data;
   } catch (_) {}
 
-  const name     = certData?.recipientName || "A Special Educator";
-  const title    = certData?.sessionTitle  || "SPED Summit Session";
-  const date     = certData?.date          || "";
-  const duration = certData?.duration      || "";
+  const name        = certData?.recipientName || "A Special Educator";
+  const title       = certData?.sessionTitle  || "SPED Summit Session";
+  const date        = certData?.date          || "";
+  const duration    = certData?.duration      || "";
+  const description = certData?.description   || "";
 
   const ogTitle = `${name} earned a certificate – ${title}`;
   const ogDesc  = `${name} successfully completed "${title}"${duration ? ` (${duration})` : ""}${date ? ` on ${date}` : ""} at SPED Summit — a professional development program for special educators.`;
-  const ogImageParams = new URLSearchParams({ name, title, date, duration, v: "5" }).toString();
+  const ogImageParams = new URLSearchParams({ name, title, date, duration, description, v: "5" }).toString();
   const ogImage = `${origin}/cert-og?${ogImageParams}`;
 
   // Escape any quotes in dynamic content to prevent HTML injection
