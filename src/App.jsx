@@ -6413,7 +6413,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
 /* ─────────────────────────────────────────────────────────────────────────────
    REVIEW MODAL
 ───────────────────────────────────────────────────────────────────────────── */
-function ReviewModal({ session, onClose, onSubmit }) {
+function ReviewModal({ session, onClose, onSubmit, onSubmitted }) {
   const [review, setReview]   = useState("");
   const [submitted, setSubmitted] = useState(false);
 
@@ -6421,7 +6421,7 @@ function ReviewModal({ session, onClose, onSubmit }) {
     if (!review.trim()) return;
     onSubmit({ sessionId: session.id, rating: 0, review: review.trim() });
     setSubmitted(true);
-    setTimeout(onClose, 1800);
+    setTimeout(() => { onSubmitted ? onSubmitted() : onClose(); }, 1800);
   }
 
   return (
@@ -12473,7 +12473,8 @@ export default function App() {
       {reviewSession && (
         <ReviewModal
           session={reviewSession.session}
-          onClose={() => { setReviewSession(null); setAssessmentTrigger(n => n + 1); }}
+          onClose={() => { setReviewSession(null); }}
+          onSubmitted={() => { setReviewSession(null); setAssessmentTrigger(n => n + 1); }}
           onSubmit={async ({ sessionId, rating, review }) => {
             // Mark session as completed only on review submit
             updateProgress(sessionId, 100, null);
