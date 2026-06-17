@@ -11666,8 +11666,8 @@ export default function App() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY") {
-        // User clicked password reset link — hide landing and show reset form
-        setShowLanding(false);
+        // User clicked password reset link — show the reset modal over the landing page
+        setShowLanding(true);
         setShowPasswordReset(true);
         return;
       }
@@ -12257,21 +12257,6 @@ export default function App() {
 
   const activePage = page==="session-detail" ? "sessions" : page;
 
-  // Password reset modal — rendered over a branded background, not a blank screen
-  if (showPasswordReset) {
-    return (
-      <>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-        <div style={{ minHeight:"100vh", background:"#FEF5EC", display:"flex", alignItems:"center", justifyContent:"center", padding:24, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
-          <PasswordResetModal toast={toast}
-            onClose={() => { setShowPasswordReset(false); setShowLanding(false); setPage("dashboard"); }}
-            onSignInAfterReset={() => { setShowPasswordReset(false); setShowLanding(true); setShowAuthAfterReset(true); }}
-          />
-        </div>
-      </>
-    );
-  }
-
   if (showLanding && page !== "contact" && page !== "privacy-policy" && page !== "terms-of-service") {
     const handleGetStarted = (sessionId) => {
       setIsLoggedIn(true);
@@ -12287,6 +12272,14 @@ export default function App() {
       <>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <LandingPage onGetStarted={handleGetStarted} isLoggedIn={isLoggedIn} userName={userName} userAvatar={userAvatar} onGoToDashboard={handleGoToPage} onWatchSession={(s)=>{ setShowLanding(false); openSession(s, "landing"); }} onLogout={async ()=>{ sessionStorage.setItem("loggedOut","1"); sessionStorage.removeItem("loggedIn"); sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("page","dashboard"); await supabase.auth.signOut(); setIsLoggedIn(false); setShowLanding(true); setPage("dashboard"); setUserName(""); setUserEmail(""); setUserAvatar(null); setEnrolledIds(new Set()); setQuizStates({}); }} openInstructorName={openInstructorName} onInstructorOpened={()=>setOpenInstructorName(null)} sessions={sessions} sessionsLoading={sessionsLoading} testimonialsData={testimonialsData} openAuthSignIn={showAuthAfterReset} onAuthSignInOpened={()=>setShowAuthAfterReset(false)}/>
+        {showPasswordReset && (
+          <div style={{ position:"fixed", inset:0, zIndex:2000, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(15,23,42,0.55)", padding:20 }}>
+            <PasswordResetModal toast={toast}
+              onClose={() => { setShowPasswordReset(false); }}
+              onSignInAfterReset={() => { setShowPasswordReset(false); setShowAuthAfterReset(true); }}
+            />
+          </div>
+        )}
       </>
     );
   }
