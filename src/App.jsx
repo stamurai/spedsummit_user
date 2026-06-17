@@ -5586,10 +5586,6 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
         <div style={{ marginBottom:24 }}>
           <h2 style={{ margin:"0 0 4px", fontSize:20, fontWeight:800, color:C.gray900 }}>Personal details</h2>
           <p style={{ margin:0, fontSize:14, color:C.gray500 }}>Manage your name, photo and contact information.</p>
-          <div style={{ display:"inline-flex", alignItems:"center", gap:6, marginTop:10, background:"#fffbeb", border:"1px solid rgba(245,158,11,0.35)", borderRadius:8, padding:"6px 12px" }}>
-            <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M10 2a8 8 0 1 0 0 16A8 8 0 0 0 10 2zm.75 11.5h-1.5v-5h1.5v5zm0-6.5h-1.5V5.5h1.5V7z" fill="#d97706"/></svg>
-            <span style={{ fontSize:12, color:"#92400e", fontWeight:500 }}>Personal details can only be changed once. Please review carefully before saving.</span>
-          </div>
         </div>
 
         {/* Photo row */}
