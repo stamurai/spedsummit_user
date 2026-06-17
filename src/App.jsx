@@ -5551,10 +5551,6 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
   async function save() {
     userProfile.name = form.name;
     const isNameChange = form.name !== userName;
-    if (isNameChange && nameAlreadyChanged) {
-      toast({ type:"error", title:"Name already changed", message:"Your name can only be changed once." });
-      return;
-    }
     const { error } = await supabase.auth.updateUser({
       data: {
         full_name: form.name,
@@ -5627,20 +5623,14 @@ function ProfilePage({ toast, userName = "", userEmail = "", userAvatar = null, 
             <div key={f.key}>
               <div style={{ fontSize:13, fontWeight:600, color:C.gray600, marginBottom:6, display:"flex", alignItems:"center", gap:6 }}>
                 {f.label}
-                {f.key==="name" && nameAlreadyChanged && (
-                  <span style={{ fontSize:11, fontWeight:500, color:"#9ca3af", background:"#f3f4f6", borderRadius:4, padding:"1px 6px" }}>locked</span>
-                )}
               </div>
               <input type={f.type}
-                style={{ ...inputSt, ...((f.key==="name" && nameAlreadyChanged) || f.key==="email" ? { background:"#f9fafb", color:C.gray400, cursor:"not-allowed" } : {}) }}
+                style={{ ...inputSt, ...(f.key==="email" ? { background:"#f9fafb", color:C.gray400, cursor:"not-allowed" } : {}) }}
                 value={form[f.key]}
-                readOnly={(f.key==="name" && nameAlreadyChanged) || f.key==="email"}
-                onChange={e => { if((f.key==="name" && nameAlreadyChanged) || f.key==="email") return; setForm(v=>({...v,[f.key]:e.target.value})); }}
-                onFocus={e=>{ if((f.key==="name" && nameAlreadyChanged) || f.key==="email") return; e.target.style.borderColor=C.primary; }}
+                readOnly={f.key==="email"}
+                onChange={e => { if(f.key==="email") return; setForm(v=>({...v,[f.key]:e.target.value})); }}
+                onFocus={e=>{ if(f.key==="email") return; e.target.style.borderColor=C.primary; }}
                 onBlur={e=>e.target.style.borderColor=C.gray200}/>
-              {f.key==="name" && nameAlreadyChanged && (
-                <p style={{ fontSize:12, color:"#9ca3af", margin:"4px 0 0" }}>Your name can only be changed once and has already been updated.</p>
-              )}
             </div>
           ))}
         </div>
