@@ -4676,7 +4676,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
           <div className="sd-tabs-bar" style={{ display:"flex", padding:"8px 20px 0", borderBottom:"1px solid rgba(0,0,0,0.07)", background:C.white, gap:4, marginTop:12, position:"sticky", top:0, zIndex:10 }}>
           {[
             { key:"overview",    label:"Overview"    },
-            { key:"instructor",  label:"Instructor"  },
+            { key:"instructor",  label:"Speaker"  },
             { key:"community",   label:"Community"   },
           ].map(tab => {
             const isActive = bottomTab === tab.key;
