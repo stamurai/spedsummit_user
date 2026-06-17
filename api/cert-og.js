@@ -90,7 +90,7 @@ export default async function handler(request) {
                   type: "div",
                   props: {
                     style: {
-                      fontSize: name.length > 24 ? 42 : 58,
+                      fontSize: name.length > 24 ? 48 : 66,
                       fontWeight: 900,
                       color: "#111827",
                       letterSpacing: -1.5,
