@@ -2,14 +2,27 @@ import { ImageResponse } from "@vercel/og";
 
 export const config = { runtime: "edge" };
 
-export default function handler(request) {
+export default async function handler(request) {
   const { searchParams, origin } = new URL(request.url);
   const name     = searchParams.get("name")     || "A Special Educator";
   const title    = searchParams.get("title")    || "SPED Summit Session";
   const date     = searchParams.get("date")     || "";
   const duration = searchParams.get("duration") || "60 mins";
 
-  const bgUrl = `${origin}/cert-bg.jpg`;
+  // Fetch background image and convert to data URL so Satori can render it
+  let bgDataUrl = null;
+  try {
+    const res = await fetch(`${origin}/cert-bg.jpg`);
+    if (res.ok) {
+      const buf = await res.arrayBuffer();
+      const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+      bgDataUrl = `data:image/jpeg;base64,${b64}`;
+    }
+  } catch (_) {}
+
+  const bgStyle = bgDataUrl
+    ? { backgroundImage: `url(${bgDataUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
+    : { background: "linear-gradient(135deg,#fdf6ec 0%,#f0fdf4 50%,#eef3fd 100%)" };
 
   return new ImageResponse(
     {
@@ -22,10 +35,10 @@ export default function handler(request) {
           alignItems: "center",
           justifyContent: "center",
           background: "#f8f6f0",
-          padding: "20px",
+          padding: "18px",
         },
         children: [
-          // Certificate card — matches the actual downloaded certificate
+          // Certificate card
           {
             type: "div",
             props: {
@@ -36,30 +49,23 @@ export default function handler(request) {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                backgroundImage: `url(${bgUrl})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                borderRadius: 16,
+                borderRadius: 14,
                 overflow: "hidden",
-                position: "relative",
-                padding: "36px 56px 28px",
+                padding: "32px 52px 24px",
+                ...bgStyle,
               },
               children: [
                 // Stars
                 {
                   type: "div",
                   props: {
-                    style: {
-                      display: "flex",
-                      gap: 8,
-                      marginBottom: 16,
-                    },
-                    children: ["★", "★", "★"].map((s, i) => ({
-                      type: "span",
+                    style: { display: "flex", gap: 10, marginBottom: 14 },
+                    children: [0, 1, 2].map(i => ({
+                      type: "div",
                       props: {
                         key: i,
-                        style: { fontSize: 28, color: "#4A90D9" },
-                        children: s,
+                        style: { fontSize: 30, color: "#4A90D9" },
+                        children: "★",
                       },
                     })),
                   },
@@ -69,12 +75,11 @@ export default function handler(request) {
                   type: "div",
                   props: {
                     style: {
-                      fontSize: 26,
+                      fontSize: 24,
                       fontWeight: 800,
                       color: "#1a1a1a",
                       textAlign: "center",
-                      letterSpacing: "-0.3px",
-                      marginBottom: 6,
+                      marginBottom: 5,
                       fontFamily: "Arial, sans-serif",
                     },
                     children: "Certificate of Professional Development Hours",
@@ -84,12 +89,7 @@ export default function handler(request) {
                 {
                   type: "div",
                   props: {
-                    style: {
-                      fontSize: 14,
-                      color: "#6b7280",
-                      marginBottom: 10,
-                      fontFamily: "Arial, sans-serif",
-                    },
+                    style: { fontSize: 13, color: "#6b7280", marginBottom: 8, fontFamily: "Arial, sans-serif" },
                     children: "is presented to",
                   },
                 },
@@ -98,40 +98,30 @@ export default function handler(request) {
                   type: "div",
                   props: {
                     style: {
-                      fontSize: name.length > 22 ? 46 : 60,
+                      fontSize: name.length > 24 ? 42 : 58,
                       fontWeight: 900,
                       color: "#111827",
-                      letterSpacing: -2,
+                      letterSpacing: -1.5,
                       lineHeight: 1,
                       textAlign: "center",
-                      marginBottom: 18,
+                      marginBottom: 16,
                       fontFamily: "Arial, sans-serif",
                     },
                     children: name,
                   },
                 },
-                // Thin divider
+                // Divider
                 {
                   type: "div",
                   props: {
-                    style: {
-                      width: 500,
-                      height: 1,
-                      background: "#d1d5db",
-                      marginBottom: 14,
-                    },
+                    style: { width: 480, height: 1, background: "#d1d5db", marginBottom: 12 },
                   },
                 },
                 // "For their participation…"
                 {
                   type: "div",
                   props: {
-                    style: {
-                      fontSize: 12,
-                      color: "#6b7280",
-                      marginBottom: 6,
-                      fontFamily: "Arial, sans-serif",
-                    },
+                    style: { fontSize: 11, color: "#6b7280", marginBottom: 5, fontFamily: "Arial, sans-serif" },
                     children: "For their participation in the session titled:",
                   },
                 },
@@ -140,19 +130,19 @@ export default function handler(request) {
                   type: "div",
                   props: {
                     style: {
-                      fontSize: title.length > 60 ? 16 : 20,
+                      fontSize: title.length > 65 ? 15 : 19,
                       fontWeight: 700,
                       color: "#1a1a1a",
                       lineHeight: 1.35,
                       textAlign: "center",
-                      marginBottom: 16,
+                      marginBottom: 14,
                       fontFamily: "Arial, sans-serif",
-                      maxWidth: 880,
+                      maxWidth: 860,
                     },
                     children: title,
                   },
                 },
-                // Duration + Date row (bordered)
+                // Duration + Date row
                 {
                   type: "div",
                   props: {
@@ -161,7 +151,7 @@ export default function handler(request) {
                       justifyContent: "space-between",
                       alignItems: "center",
                       width: "100%",
-                      padding: "10px 0",
+                      padding: "9px 0",
                       borderTop: "1px solid #e5e7eb",
                       borderBottom: "1px solid #e5e7eb",
                       marginBottom: 10,
@@ -170,7 +160,7 @@ export default function handler(request) {
                       {
                         type: "div",
                         props: {
-                          style: { fontSize: 14, fontWeight: 700, color: "#1a1a1a", fontFamily: "Arial, sans-serif" },
+                          style: { fontSize: 13, fontWeight: 700, color: "#1a1a1a", fontFamily: "Arial, sans-serif" },
                           children: `Session time: ${duration}`,
                         },
                       },
@@ -178,7 +168,7 @@ export default function handler(request) {
                         ? {
                             type: "div",
                             props: {
-                              style: { fontSize: 14, fontWeight: 700, color: "#1a1a1a", fontFamily: "Arial, sans-serif" },
+                              style: { fontSize: 13, fontWeight: 700, color: "#1a1a1a", fontFamily: "Arial, sans-serif" },
                               children: date,
                             },
                           }
@@ -186,17 +176,11 @@ export default function handler(request) {
                     ],
                   },
                 },
-                // Footer verify
+                // Verify footer
                 {
                   type: "div",
                   props: {
-                    style: {
-                      fontSize: 11,
-                      color: "#6490E8",
-                      fontWeight: 600,
-                      fontFamily: "Arial, sans-serif",
-                      marginTop: 4,
-                    },
+                    style: { fontSize: 11, color: "#6490E8", fontWeight: 600, fontFamily: "Arial, sans-serif" },
                     children: "spedsummit.com",
                   },
                 },

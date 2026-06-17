@@ -30,7 +30,7 @@ export default async function handler(req, res) {
 
   const ogTitle = `${name} earned a certificate – ${title}`;
   const ogDesc  = `${name} successfully completed "${title}"${duration ? ` (${duration})` : ""}${date ? ` on ${date}` : ""} at SPED Summit — a professional development program for special educators.`;
-  const ogImageParams = new URLSearchParams({ name, title, date, duration }).toString();
+  const ogImageParams = new URLSearchParams({ name, title, date, duration, v: "3" }).toString();
   const ogImage = `${origin}/cert-og?${ogImageParams}`;
 
   // Escape any quotes in dynamic content to prevent HTML injection
