@@ -6915,9 +6915,24 @@ function PublicCertificatePage({ data, dbCertId = null }) {
   const [authInitMode, setAuthInitMode] = useState("signup");
   const [showShare, setShowShare] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [navUser, setNavUser] = useState({ name:"", avatar:null });
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = useRef(null);
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setIsLoggedIn(!!session));
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session);
+      if (session?.user) {
+        const m = session.user.user_metadata || {};
+        setNavUser({ name: m.full_name || m.name || session.user.email || "", avatar: m.avatar_url || m.picture || null });
+      }
+    });
   }, []);
+  useEffect(() => {
+    if (!showProfileMenu) return;
+    const handler = (e) => { if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) setShowProfileMenu(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showProfileMenu]);
 
   return (
     <div style={{ minHeight:"100vh", background:"#fff", fontFamily:"'Inter',-apple-system,sans-serif" }}>
@@ -6942,14 +6957,38 @@ function PublicCertificatePage({ data, dbCertId = null }) {
         <img src="/Container.png" alt="SPED Summit" style={{ height:26, cursor:"pointer" }}
           onClick={()=>{ sessionStorage.setItem("showLanding","1"); window.location.href=window.location.origin; }}/>
         {isLoggedIn ? (
-          <button onClick={()=>{ sessionStorage.setItem("page","dashboard"); sessionStorage.setItem("showLanding","0"); window.location.href=window.location.origin; }}
-            style={{ padding:"0 18px", height:36, background:"#6490E8", color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer" }}>
-            My Dashboard
-          </button>
+          <div style={{ position:"relative" }} ref={profileMenuRef}>
+            <button onClick={()=>setShowProfileMenu(v=>!v)}
+              style={{ display:"flex", alignItems:"center", gap:8, background:"none", border:"1px solid rgba(0,0,0,0.12)", borderRadius:99, padding:"4px 10px 4px 4px", cursor:"pointer", transition:"background .12s" }}
+              onMouseEnter={e=>e.currentTarget.style.background="rgba(0,0,0,0.04)"}
+              onMouseLeave={e=>e.currentTarget.style.background="none"}>
+              {navUser.avatar
+                ? <img src={navUser.avatar} alt="" style={{ width:28, height:28, borderRadius:"50%", objectFit:"cover" }}/>
+                : <div style={{ width:28, height:28, borderRadius:"50%", background:"linear-gradient(135deg,#6490E8,#a855f7)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:"#fff" }}>{navUser.name.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase()||"U"}</div>
+              }
+              <span style={{ fontSize:14, fontWeight:600, color:"#1a1a1a" }}>{navUser.name.split(" ")[0]}</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            {showProfileMenu && (
+              <div style={{ position:"absolute", right:0, top:"calc(100% + 6px)", background:"#fff", border:"1px solid rgba(0,0,0,0.1)", borderRadius:12, boxShadow:"0 8px 24px rgba(0,0,0,0.12)", minWidth:160, zIndex:200, overflow:"hidden" }}>
+                <button onClick={()=>{ sessionStorage.setItem("page","dashboard"); sessionStorage.setItem("showLanding","0"); window.location.href=window.location.origin; }}
+                  style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"11px 16px", background:"none", border:"none", fontSize:14, color:"#1a1a1a", cursor:"pointer", textAlign:"left", fontFamily:"inherit" }}
+                  onMouseEnter={e=>e.currentTarget.style.background="#f9fafb"} onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                  My Dashboard
+                </button>
+                <div style={{ height:1, background:"#f0f0f0", margin:"0 8px" }}/>
+                <button onClick={async ()=>{ await supabase.auth.signOut(); setIsLoggedIn(false); setShowProfileMenu(false); }}
+                  style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"11px 16px", background:"none", border:"none", fontSize:14, color:"#ef4444", cursor:"pointer", textAlign:"left", fontFamily:"inherit" }}
+                  onMouseEnter={e=>e.currentTarget.style.background="#fef2f2"} onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                  Log out
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
-          <button onClick={()=>{ setAuthInitMode("signin"); setShowAuth(true); }}
-            style={{ padding:"0 18px", height:36, background:"#6490E8", color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer" }}>
-            Sign in
+          <button onClick={()=>{ setAuthInitMode("signup"); setShowAuth(true); }}
+            style={{ padding:"0 20px", height:36, background:"#6490E8", color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer" }}>
+            Get Started
           </button>
         )}
       </header>
