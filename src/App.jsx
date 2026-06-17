@@ -6022,7 +6022,7 @@ function PastSessionsTab({ onOpenSeason, sessions = [], seasons = SEASONS }) {
   );
 }
 
-function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertificateClick, userName = "", sessions = [], seasons = SEASONS, certIds = {} }) {
+function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertificateClick, userName = "", sessions = [], seasons = SEASONS, certIds = {}, lookupCertId = null }) {
   const [activeSeason,  setActiveSeason]  = useState(null);
   const [activeSession, setActiveSession] = useState(null);
   const [shareCert, setShareCert] = useState(null); // { certUrl, sessionTitle }
@@ -6314,7 +6314,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
                       {passed ? (
                         <div className="cert-row-actions" style={{ display:"flex", gap:8, flexShrink:0 }}>
                           <button
-                            onClick={() => { const dbId = certIds[s.id]; const shareUrl = dbId ? `${window.location.origin}/cert?cert_id=${dbId}` : `${window.location.origin}/?cert_id=${s.id}`; setShareCert({ certUrl: shareUrl.replace(/^https?:\/\//, ""), sessionTitle:s.title }); }}
+                            onClick={async () => { let dbId = certIds[s.id]; if (!dbId || !/^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(dbId)) { dbId = lookupCertId ? await lookupCertId(s.id) : null; } if (!dbId) { return; } const shareUrl = `${window.location.origin}/cert?cert_id=${dbId}`; setShareCert({ certUrl: shareUrl.replace(/^https?:\/\//, ""), sessionTitle:s.title }); }}
                             style={{ padding:"6px 12px", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap", fontFamily:"inherit" }}>
                             <Icon name="share-network" size={13} color={C.gray600}/> Share
                           </button>
@@ -12032,14 +12032,31 @@ export default function App() {
     const certData = { recipientName:userName, sessionTitle:session.title, sessionId:session.id, instructor:session.instructor, instructorImage:session.instructorImage||"", duration:session.duration, score, description:session.certDescription || session.description, certId, date:certDate };
     try {
       const dbId = await saveCertToSupabase(certData);
-      if (!certIds[session.id]) {
-        saveUserProgress(session.id, { cert_id: certId });
-        setCertIds(prev => ({ ...prev, [session.id]: certId }));
-      }
+      saveUserProgress(session.id, { cert_id: dbId });
+      setCertIds(prev => ({ ...prev, [session.id]: dbId }));
       window.open(`${window.location.origin}/?cert_id=${dbId}`, "_blank");
     } catch(e) {
       window.open(`${window.location.origin}/?cert=${btoa(JSON.stringify(certData))}`, "_blank");
     }
+  }
+
+  async function handleLookupCertId(sessionId) {
+    try {
+      const localId = makeCertId(sessionId, userEmail);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+      const { data } = await supabase
+        .from("certificates")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("cert_data->>certId", localId)
+        .maybeSingle();
+      if (data?.id) {
+        setCertIds(prev => ({ ...prev, [sessionId]: data.id }));
+        return data.id;
+      }
+    } catch(_) {}
+    return null;
   }
 
   function handleSaveProgress(sessionId, partial) {
@@ -12292,7 +12309,7 @@ export default function App() {
     if (page==="schedules") return <SchedulePage onOpenSession={openSession} toast={toast} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} schedule={scheduleData.length > 0 ? scheduleData : SCHEDULE}/>;
     if (page==="quizzes")   return <QuizzesPage  toast={toast}/>;
     if (page==="community") return <CommunityPage toast={toast} userName={userName} userAvatar={userAvatar} sessions={sessions} refreshKey={commentsRefreshKey} currentUserId={userId}/>;
-    if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick} userName={userName} sessions={sessions} seasons={seasons} certIds={certIds}/>;
+    if (page==="certifications") return <CertificationsPage quizStates={quizStates} enrolledIds={enrolledIds} onCertificateClick={handleCertificateClick} userName={userName} sessions={sessions} seasons={seasons} certIds={certIds} lookupCertId={handleLookupCertId}/>;
     if (page==="past-sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} seasons={seasons} sessionsLoading={sessionsLoading}/>;
     if (page==="notifications")  return <NotificationsPage />;
     if (page==="profile")   return <ProfilePage toast={toast} userName={userName} userEmail={userEmail} userAvatar={userAvatar} onNameChange={setUserName} onAvatarChange={setUserAvatar} onBack={() => nav("dashboard")} userTimezone={userTimezone} onTimezoneChange={setUserTimezone}/>;
