@@ -4476,7 +4476,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                                     {isQuiz ? "Assessment" : session.title}
                                   </div>
                                   <div style={{ fontSize:12, color: C.gray400, marginTop:2 }}>
-                                    {isQuiz ? (() => { const qc = Array.isArray(l.questions) ? l.questions.length : (l.questions||0); return `${qc} question${qc!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
+                                    {isQuiz ? (() => { const qc = getSessionQuestions(session).length || (Array.isArray(l.questions) ? l.questions.length : (l.questions||0)); return `${qc} question${qc!==1?"s":""}`; })() : <LessonDuration vimeoUrl={l.vimeoUrl || session.vimeoUrl} fallback={l.duration}/>}
                                   </div>
                                 </div>
                                 {locked && <Icon name="lock" size={13} color={C.gray300}/>}
@@ -6117,7 +6117,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
                     </div>
                     <div style={{ flex:1, minWidth:0 }}>
                       <div style={{ fontSize:13, fontWeight:600, color:C.gray800, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{l.title}</div>
-                      <div style={{ fontSize:12, color:C.gray400 }}>{Array.isArray(l.questions) ? l.questions.length : (l.questions||0)} questions</div>
+                      <div style={{ fontSize:12, color:C.gray400 }}>{getSessionQuestions(session).length || (Array.isArray(l.questions) ? l.questions.length : (l.questions||0))} questions</div>
                     </div>
                     {l.status === "completed" ? (
                       <div style={{ display:"flex", gap:6, flexShrink:0 }}>
