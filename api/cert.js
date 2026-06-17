@@ -62,8 +62,7 @@ export default async function handler(req, res) {
 
   <meta name="description" content="${safe(ogDesc)}"/>
 
-  <!-- Redirect real users to the app immediately -->
-  <meta http-equiv="refresh" content="0; url=${appUrl}"/>
+  <!-- Redirect real users to the app (JS only — meta-refresh would cause crawlers to follow and miss OG tags) -->
   <script>window.location.replace("${appUrl}");</script>
 </head>
 <body>
