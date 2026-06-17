@@ -2744,7 +2744,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
         .db-session-card-thumb { flex-shrink:0; width:200px; position:relative; }
         .db-session-card-thumb img { width:100%; height:100%; object-fit:cover; object-position:top center; display:block; }
 
-        /* ── Upcoming sessions — desktop/tablet ── */
+        /* ── Upcoming Sessions — desktop/tablet ── */
         .db-upcoming-section { width:100%; box-sizing:border-box; }
         .db-upcoming-list { display:flex; flex-direction:column; gap:12px; width:100%; box-sizing:border-box; }
         .db-upcoming-session-card { width:100%; box-sizing:border-box; }
@@ -2951,7 +2951,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
               {/* ── CONTINUE LEARNING ── */}
               {(sessionsLoading || filteredInProgress.length > 0) && <div style={{ marginBottom:32 }}>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16, gap:10 }}>
-                  <div style={{ fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3 }}>Live sessions</div>
+                  <div style={{ fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3 }}>Live Sessions</div>
                 </div>
                 {sessionsLoading ? (
                   <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
@@ -2970,7 +2970,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
               {/* ── UPCOMING SESSIONS ── */}
               {upcomingSchedule.length > 0 && (
                 <div style={{ marginBottom:0 }} className="db-upcoming-section">
-                  <div style={{ fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3, marginBottom:16 }}>Upcoming sessions</div>
+                  <div style={{ fontSize:20, fontWeight:700, color:C.gray900, fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif", letterSpacing:-0.3, marginBottom:16 }}>Upcoming Sessions</div>
                   <div className="db-upcoming-list" style={isMobile ? { display:"flex", flexDirection:"column", gap:12 } : {}}>
                     {upcomingSchedule.map((item) => {
                       const typeColor = SCHEDULE_TYPE_COLORS[item.type];
