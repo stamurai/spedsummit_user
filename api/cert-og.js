@@ -10,13 +10,19 @@ export default async function handler(request) {
   const duration = searchParams.get("duration") || "60 mins";
 
   // Fetch background image and convert to data URL so Satori can render it
+  // Use chunked approach to avoid spread-operator stack limit on large files
   let bgDataUrl = null;
   try {
     const res = await fetch(`${origin}/cert-bg.jpg`);
     if (res.ok) {
       const buf = await res.arrayBuffer();
-      const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
-      bgDataUrl = `data:image/jpeg;base64,${b64}`;
+      const bytes = new Uint8Array(buf);
+      let binary = "";
+      const chunk = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunk) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+      }
+      bgDataUrl = `data:image/jpeg;base64,${btoa(binary)}`;
     }
   } catch (_) {}
 

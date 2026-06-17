@@ -201,3 +201,10 @@ CREATE POLICY "Anyone can read reviews" ON session_reviews
 DROP POLICY IF EXISTS "Users manage own reviews" ON session_reviews;
 CREATE POLICY "Users manage own reviews" ON session_reviews
   FOR ALL USING (auth.uid() = user_id);
+
+-- ── Allow public read on certificates (needed for cert.js serverless OG function) ──
+-- The anon key must be able to look up a certificate by UUID to generate OG preview
+ALTER TABLE certificates ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public can read certificates by id" ON certificates;
+CREATE POLICY "Public can read certificates by id" ON certificates
+  FOR SELECT USING (true);
