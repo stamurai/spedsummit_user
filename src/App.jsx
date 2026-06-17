@@ -12014,11 +12014,13 @@ export default function App() {
       .maybeSingle();
 
     if (existingCert) {
-      // If the stored date looks wrong (same as today but we have a real completion date), patch it
       const storedDate = existingCert.cert_data?.date;
+      const storedName = existingCert.cert_data?.recipientName;
       const today = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
-      if (storedDate === today && bestDate && certDate !== today) {
-        const patched = { ...existingCert.cert_data, date: certDate };
+      const needsDatePatch = storedDate === today && bestDate && certDate !== today;
+      const needsNamePatch = storedName && userName && storedName !== userName;
+      if (needsDatePatch || needsNamePatch) {
+        const patched = { ...existingCert.cert_data, date: needsDatePatch ? certDate : storedDate, recipientName: userName || storedName };
         await supabase.from("certificates").update({ cert_data: patched }).eq("id", existingCert.id);
       }
       window.open(`${window.location.origin}/?cert_id=${existingCert.id}`, "_blank");
