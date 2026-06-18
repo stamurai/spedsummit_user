@@ -7979,10 +7979,19 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", defaultMode = 
         });
         if (error) {
           const msg = error.message?.toLowerCase() || "";
-          // Account already exists — switch to sign-in
+          // Account already exists — try signing in directly with same credentials
           if (msg.includes("already registered") || msg.includes("already exists") || msg.includes("user already")) {
+            const { error: signInErr } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+            if (!signInErr) { onClose(); onLogin("user"); return; }
+            const signInMsg = signInErr.message?.toLowerCase() || "";
             setMode("signin");
-            setAuthError("An account with this email already exists. Please sign in. If you signed up with Google, use the 'Continue with Google' button.");
+            if (signInMsg.includes("email not confirmed") || signInMsg.includes("not confirmed")) {
+              setAuthError("Your account exists but email is not confirmed yet. Please check your inbox for a confirmation link, or use 'Continue with Google' if you signed up with Google.");
+            } else if (signInMsg.includes("invalid") || signInMsg.includes("credentials")) {
+              setAuthError("An account with this email already exists. Please sign in with your existing password, or use 'Continue with Google' if you signed up with Google.");
+            } else {
+              setAuthError("An account with this email already exists. Please sign in below.");
+            }
             return;
           }
           // If email sending fails but account was created, try signing in directly
@@ -8005,8 +8014,8 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", defaultMode = 
           const msg = error.message?.toLowerCase() || "";
           if (msg.includes("invalid login") || msg.includes("invalid credentials")) {
             setAuthError("Incorrect email or password. If you signed up with Google, use the 'Sign in with Google' button instead.");
-          } else if (msg.includes("email not confirmed")) {
-            setAuthError("Please confirm your email first — check your inbox for a confirmation link.");
+          } else if (msg.includes("email not confirmed") || msg.includes("not confirmed")) {
+            setAuthError("Your email is not confirmed yet. Please check your inbox for a confirmation link. If you didn't receive it, contact support@spedsummit.com.");
           } else {
             setAuthError(error.message);
           }
