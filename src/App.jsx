@@ -5340,19 +5340,11 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
             <div style={{ fontSize:13, color:C.gray400, marginTop:4 }}>Be the first to share your thoughts!</div>
           </div>
         )}
-        {!loading && filteredBuckets.map(bucket => (
-          <div key={bucket.title||"__general__"} style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, marginBottom:16, overflow:"hidden" }}>
-            {/* Bucket header */}
-            <div className="comm-bucket-header" style={{ padding:"14px 18px", borderBottom:`1px solid ${C.gray100}`, textAlign:"center" }}>
-              <div style={{ fontSize:14, fontWeight:800, color:C.gray900 }}>{bucket.title || "General"}</div>
-              <div style={{ fontSize:12, color:C.gray400, marginTop:2 }}>{bucket.comments.length} comment{bucket.comments.length!==1?"s":""}</div>
-            </div>
-            {/* Comments in this bucket */}
-            <div>
-              {bucket.comments.map(c => renderComment(c))}
-            </div>
+        {!loading && filteredBuckets.length > 0 && (
+          <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, overflow:"hidden" }}>
+            {filteredBuckets.flatMap(bucket => bucket.comments).map(c => renderComment(c))}
           </div>
-        ))}
+        )}
       </div>
 
       {/* Report Modal */}
