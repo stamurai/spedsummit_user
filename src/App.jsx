@@ -5295,12 +5295,6 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
             {sessionDropOpen && (
               <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, boxShadow:"0 8px 32px rgba(0,0,0,0.12)", zIndex:200, width:280, maxHeight:280, overflowY:"auto" }}>
                 <div style={{ padding:"12px 14px 6px", fontSize:12, fontWeight:700, color:C.gray500, textTransform:"uppercase", letterSpacing:.5 }}>Tag a session</div>
-                <button onClick={()=>{ setSelectedSession(""); setSessionDropOpen(false); }}
-                  style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"9px 14px", border:"none", background:selectedSession===""?C.primaryLight:"transparent", cursor:"pointer", textAlign:"left" }}
-                  onMouseEnter={e=>{ if(selectedSession!=="") e.currentTarget.style.background=C.gray50; }} onMouseLeave={e=>{ if(selectedSession!=="") e.currentTarget.style.background="transparent"; }}>
-                  <div style={{ fontSize:13, fontWeight:600, color:C.gray700 }}>General (no session)</div>
-                  {selectedSession==="" && <Icon name="check" size={14} color={C.primary}/>}
-                </button>
                 {sessions.map(s => (
                   <button key={s.id} onClick={()=>{ setSelectedSession(String(s.id)); setSessionDropOpen(false); }}
                     style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"9px 14px", border:"none", background:selectedSession===String(s.id)?C.primaryLight:"transparent", cursor:"pointer", textAlign:"left" }}
