@@ -5104,6 +5104,16 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
     ? buckets
     : buckets.filter(b => b.title === (sessions.find(s=>String(s.id)===filterSession)?.title || ""));
 
+  function timeAgo(dateStr) {
+    if (!dateStr) return "";
+    const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+    if (diff < 60)   return `${diff}s ago`;
+    if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+    if (diff < 604800) return `${Math.floor(diff/86400)}d ago`;
+    return new Date(dateStr).toLocaleDateString("en-US",{month:"short",day:"numeric"});
+  }
+
   function renderComment(c) {
     const replies = comments.filter(r => r.parent_id === c.id);
     const rs = replyState[c.id] || {};
@@ -5124,10 +5134,11 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
 
           {/* ── Row 0 right: parent comment content ── */}
           <div style={{ paddingBottom: replies.length > 0 || rs.open ? 12 : 4, gridRow:1 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
-              <span style={{ fontWeight:700, fontSize:13, color:C.gray900 }}>{c.author_name}</span>
-              <span style={{ fontSize:11, color:C.gray400 }}>{c.created_at ? new Date(c.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : ""}</span>
-              <div style={{ marginLeft:"auto", position:"relative" }} ref={menuOpen===c.id?menuRef:null}>
+            <div style={{ marginBottom:4 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                <span style={{ fontWeight:700, fontSize:13, color:C.gray900 }}>{c.author_name}</span>
+                {c.created_at && <><span style={{ fontSize:11, color:C.gray300 }}>·</span><span style={{ fontSize:11, color:C.gray400 }}>{timeAgo(c.created_at)}</span></>}
+                <div style={{ marginLeft:"auto", position:"relative" }} ref={menuOpen===c.id?menuRef:null}>
                 <button onClick={()=>setMenuOpen(menuOpen===c.id?null:c.id)}
                   style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 6px", borderRadius:6, color:C.gray400, fontSize:16, lineHeight:1, display:"flex", alignItems:"center" }}
                   onMouseEnter={e=>e.currentTarget.style.background=C.gray100}
@@ -5155,6 +5166,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
                   </div>
                 )}
               </div>
+              {c.session_title && <div style={{ fontSize:11, color:C.gray400, marginTop:1 }}>{c.session_title}</div>}
             </div>
             {es.open ? (
               <div style={{ marginBottom:10 }}>
