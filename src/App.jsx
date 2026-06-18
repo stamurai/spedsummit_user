@@ -5200,16 +5200,12 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
                 }
                 await supabase.from("session_comments").update({likes:newLikes}).eq("id",c.id);
               }}
-                style={{ width:32, height:32, borderRadius:"50%", border:"none", background:liked[c.id]?"rgba(239,68,68,0.08)":C.gray100, color:liked[c.id]?"#ef4444":C.gray500, cursor:"pointer", display:"inline-flex", alignItems:"center", justifyContent:"center", transition:"background .12s" }}
-                onMouseEnter={e=>e.currentTarget.style.background=liked[c.id]?"rgba(239,68,68,0.15)":C.gray200}
-                onMouseLeave={e=>e.currentTarget.style.background=liked[c.id]?"rgba(239,68,68,0.08)":C.gray100}>
-                <Icon name="heart" size={15} color={liked[c.id]?"#ef4444":C.gray500} weight={liked[c.id]?"fill":"regular"}/>
+                style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${liked[c.id]?"rgba(239,68,68,0.3)":C.gray200}`, background:liked[c.id]?"rgba(239,68,68,0.08)":"transparent", color:liked[c.id]?"#ef4444":C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
+                <Icon name="heart" size={12} color={liked[c.id]?"#ef4444":C.gray400} weight={liked[c.id]?"fill":"regular"}/>{c.likes||0}
               </button>
               <button onClick={()=>setReplyState(prev=>({ ...prev, [c.id]:{ ...prev[c.id], open:!(prev[c.id]?.open), body:prev[c.id]?.body||"" } }))}
-                style={{ width:32, height:32, borderRadius:"50%", border:"none", background:rs.open?C.primaryLight:C.gray100, color:rs.open?C.primary:C.gray500, cursor:"pointer", display:"inline-flex", alignItems:"center", justifyContent:"center", transition:"background .12s" }}
-                onMouseEnter={e=>e.currentTarget.style.background=rs.open?C.primaryLight:C.gray200}
-                onMouseLeave={e=>e.currentTarget.style.background=rs.open?C.primaryLight:C.gray100}>
-                <Icon name="chat-circle" size={15} color={rs.open?C.primary:C.gray500}/>
+                style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"4px 10px", borderRadius:99, border:`1px solid ${C.gray200}`, background:rs.open?C.primaryLight:"transparent", color:rs.open?C.primary:C.gray500, cursor:"pointer", fontSize:12, fontWeight:600 }}>
+                <Icon name="chat-circle" size={12} color={rs.open?C.primary:C.gray400}/>Reply{replies.length > 0 ? ` (${replies.length})` : ""}
               </button>
             </div>
           </div>
