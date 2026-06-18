@@ -5321,14 +5321,10 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
       </div>
 
       {/* ── Filter tabs ── */}
-      <div style={{ display:"flex", gap:6, marginBottom:16, flexWrap:"wrap" }}>
-        {[
-          { id:"all",          label:"All Discussions" },
-          { id:"__general__",  label:"General" },
-          ...buckets.map(b => ({ id: sessions.find(s=>s.title===b.title)?.id ? String(sessions.find(s=>s.title===b.title).id) : b.title, label: b.title })),
-        ].map(f => (
+      <div style={{ display:"flex", gap:6, marginBottom:16 }}>
+        {[{ id:"all", label:"All Discussions" }, { id:"__general__", label:"General" }].map(f => (
           <button key={f.id} onClick={()=>setFilterSession(f.id)}
-            style={{ padding:"5px 14px", borderRadius:99, border:`1.5px solid ${feedFilter===f.id?C.primary:C.gray200}`, background:feedFilter===f.id?C.primaryLight:"transparent", color:feedFilter===f.id?C.primary:C.gray600, fontSize:12, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap", transition:"all .12s" }}>
+            style={{ padding:"5px 14px", borderRadius:99, border:`1.5px solid ${feedFilter===f.id?C.primary:C.gray200}`, background:feedFilter===f.id?C.primaryLight:"transparent", color:feedFilter===f.id?C.primary:C.gray600, fontSize:12, fontWeight:700, cursor:"pointer", transition:"all .12s" }}>
             {f.label}
           </button>
         ))}
