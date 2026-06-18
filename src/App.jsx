@@ -5172,7 +5172,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
                 )}
               </div>
               </div>
-              <div style={{ fontSize:11, color:C.gray400, marginTop:1 }}>{c.session_title || "General"}</div>
+              {c.session_title && <div style={{ fontSize:11, color:C.gray400, marginTop:1 }}>{c.session_title}</div>}
             </div>
             {es.open ? (
               <div style={{ marginBottom:10 }}>
