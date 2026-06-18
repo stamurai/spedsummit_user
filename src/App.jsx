@@ -4964,7 +4964,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
   const [loading, setLoading] = useState(true);
   const [filterSession, setFilterSession] = useState("all");
   const [newBody, setNewBody] = useState("");
-  const [selectedSession, setSelectedSession] = useState("");
+  const [selectedSession, setSelectedSession] = useState(null);
   const [posting, setPosting] = useState(false);
   const [sessionDropOpen, setSessionDropOpen] = useState(false);
   const sessionDropRef = React.useRef(null);
@@ -5291,21 +5291,21 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8 }}>
           <div ref={sessionDropRef} style={{ position:"relative" }}>
             <button onClick={()=>setSessionDropOpen(o=>!o)}
-              style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"5px 12px 5px 10px", borderRadius:99, border:`1.5px solid ${selectedSession?C.primary:C.gray300}`, background:selectedSession?C.primaryLight:"transparent", color:selectedSession?C.primary:C.gray500, fontSize:12, fontWeight:700, cursor:"pointer" }}>
-              <Icon name="play-circle" size={13} color={selectedSession?C.primary:C.gray400} weight={selectedSession?"fill":"regular"}/>
+              style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"5px 12px 5px 10px", borderRadius:99, border:`1.5px solid ${selectedSession!==null?C.primary:C.gray300}`, background:selectedSession!==null?C.primaryLight:"transparent", color:selectedSession!==null?C.primary:C.gray500, fontSize:12, fontWeight:700, cursor:"pointer" }}>
+              <Icon name="play-circle" size={13} color={selectedSession!==null?C.primary:C.gray400} weight={selectedSession!==null?"fill":"regular"}/>
               <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:200 }}>
-                {selectedSession ? (sessions.find(s=>String(s.id)===selectedSession)?.title || "Session") : "Tag a session (optional)"}
+                {selectedSession === null ? "Tag a session (optional)" : selectedSession === "" ? "General (no session)" : (sessions.find(s=>String(s.id)===selectedSession)?.title || "Session")}
               </span>
-              <Icon name="caret-down" size={11} color={selectedSession?C.primary:C.gray400}/>
+              <Icon name="caret-down" size={11} color={selectedSession!==null?C.primary:C.gray400}/>
             </button>
             {sessionDropOpen && (
               <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, boxShadow:"0 8px 32px rgba(0,0,0,0.12)", zIndex:200, width:280, maxHeight:280, overflowY:"auto" }}>
                 <div style={{ padding:"12px 14px 6px", fontSize:12, fontWeight:700, color:C.gray500, textTransform:"uppercase", letterSpacing:.5 }}>Tag a session</div>
                 <button onClick={()=>{ setSelectedSession(""); setSessionDropOpen(false); }}
-                  style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"9px 14px", border:"none", background:!selectedSession?C.primaryLight:"transparent", cursor:"pointer", textAlign:"left" }}
-                  onMouseEnter={e=>{ if(selectedSession) e.currentTarget.style.background=C.gray50; }} onMouseLeave={e=>{ if(selectedSession) e.currentTarget.style.background="transparent"; }}>
+                  style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"9px 14px", border:"none", background:selectedSession===""?C.primaryLight:"transparent", cursor:"pointer", textAlign:"left" }}
+                  onMouseEnter={e=>{ if(selectedSession!=="") e.currentTarget.style.background=C.gray50; }} onMouseLeave={e=>{ if(selectedSession!=="") e.currentTarget.style.background="transparent"; }}>
                   <div style={{ fontSize:13, fontWeight:600, color:C.gray700 }}>General (no session)</div>
-                  {!selectedSession && <Icon name="check" size={14} color={C.primary}/>}
+                  {selectedSession==="" && <Icon name="check" size={14} color={C.primary}/>}
                 </button>
                 {sessions.map(s => (
                   <button key={s.id} onClick={()=>{ setSelectedSession(String(s.id)); setSessionDropOpen(false); }}
