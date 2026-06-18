@@ -4671,12 +4671,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                 </div>
               ) : (
                 <button
-                  onClick={() => {
-                    onVideoEnd?.(session.id);
-                    if (getSessionQuestions(session).length > 0) {
-                      setTimeout(() => setPanelMode("assessment"), 400);
-                    }
-                  }}
+                  onClick={() => { onVideoEnd?.(session.id); }}
                   style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:"#fff", background:C.primary, border:"none", borderRadius:8, height:34, padding:"0 14px", flexShrink:0, whiteSpace:"nowrap", cursor:"pointer", transition:"opacity .15s", boxSizing:"border-box" }}
                   onMouseEnter={e => e.currentTarget.style.opacity=".85"}
                   onMouseLeave={e => e.currentTarget.style.opacity="1"}>
