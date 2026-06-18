@@ -5125,7 +5125,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
     const isOwn = c.user_id ? c.user_id === currentUserId : c.author_name === userName;
     const es = editState[c.id] || {};
     return (
-      <div key={c.id} className="comm-comment-pad" style={{ padding:"14px 18px 10px", borderBottom:`1px solid ${C.gray100}` }}>
+      <div key={c.id} className="comm-comment-pad" style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, marginBottom:10, padding:"16px 18px 12px" }}>
         {/* Twitter layout: shared left column for ALL avatars + lines, right column for content */}
         <div className="comm-thread-grid" style={{ display:"grid", gridTemplateColumns:"34px 1fr", gap:"0 10px" }}>
 
@@ -5319,12 +5319,8 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
 
         {/* General comments (no session) */}
         {!loading && generalComments.length > 0 && (
-          <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, marginTop:16, overflow:"hidden" }}>
-            <div style={{ padding:"14px 18px", borderBottom:`1px solid ${C.gray100}`, textAlign:"center" }}>
-              <div style={{ fontSize:13, fontWeight:800, color:C.gray900 }}>General</div>
-              <div style={{ fontSize:11, color:C.gray400, marginTop:2 }}>{generalComments.length} comment{generalComments.length!==1?"s":""}</div>
-            </div>
-            <div>{generalComments.map(c => renderComment(c))}</div>
+          <div style={{ marginTop:16 }}>
+            {generalComments.map(c => renderComment(c))}
           </div>
         )}
       </div>
@@ -5342,7 +5338,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
           </div>
         )}
         {!loading && filteredBuckets.length > 0 && (
-          <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, overflow:"hidden" }}>
+          <div>
             {filteredBuckets.flatMap(bucket => bucket.comments).map(c => renderComment(c))}
           </div>
         )}
