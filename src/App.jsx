@@ -7963,8 +7963,15 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", defaultMode = 
           options: { data: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: `${firstName.trim()} ${lastName.trim()}`.trim() } },
         });
         if (error) {
+          const msg = error.message?.toLowerCase() || "";
+          // Account already exists — switch to sign-in
+          if (msg.includes("already registered") || msg.includes("already exists") || msg.includes("user already")) {
+            setMode("signin");
+            setAuthError("An account with this email already exists. Please sign in. If you signed up with Google, use the 'Continue with Google' button.");
+            return;
+          }
           // If email sending fails but account was created, try signing in directly
-          if (error.message?.toLowerCase().includes("email") || error.message?.toLowerCase().includes("sending")) {
+          if (msg.includes("email") || msg.includes("sending")) {
             const { error: signInErr } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
             if (!signInErr) { onClose(); onLogin("user"); return; }
           }
@@ -8061,7 +8068,7 @@ function AuthModal({ onClose, onLogin, defaultStep = "user-auth", defaultMode = 
                   const { error: rstErr } = await supabase.auth.resetPasswordForEmail(email, {
                     redirectTo: `${window.location.origin}/`
                   });
-                  if (rstErr) { setAuthError("Unable to send reset email right now. Please contact support@spedsummit.com to reset your password."); return; }
+                  if (rstErr) { setAuthError("Unable to send reset email. If you signed up with Google, use 'Continue with Google' to sign in — no password is needed. Otherwise contact support@spedsummit.com."); return; }
                   setResetSent(true);
                 }}>
                   {authError && <div style={{ background:"#fef2f2", border:"1px solid #fca5a5", borderRadius:8, padding:"10px 14px", marginBottom:14, fontSize:13, color:"#991b1b" }}>{authError}</div>}
