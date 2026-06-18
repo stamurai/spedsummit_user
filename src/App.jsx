@@ -7877,6 +7877,7 @@ function PasswordResetModal({ onClose, onSignInAfterReset, toast }) {
     setLoading(false);
     if (updateErr) { setError(updateErr.message); return; }
     setSuccess("Password updated successfully!");
+    sessionStorage.removeItem("passwordRecovery");
     await supabase.auth.signOut();
     setTimeout(() => { onSignInAfterReset ? onSignInAfterReset() : onClose(); }, 1500);
   }
@@ -11754,12 +11755,15 @@ export default function App() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY") {
-        // User clicked password reset link — show the reset modal over the landing page
+        // User clicked password reset link — show reset modal, block login state
+        sessionStorage.setItem("passwordRecovery", "1");
         setShowLanding(true);
         setShowPasswordReset(true);
         return;
       }
       if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") && session) {
+        // Block login state if we're in password recovery flow
+        if (sessionStorage.getItem("passwordRecovery") === "1") return;
         // On INITIAL_SESSION (page load/refresh), clear any stale loggedOut flag so cross-tab logins are picked up
         if (event === "INITIAL_SESSION") sessionStorage.removeItem("loggedOut");
         // Block session restoration after explicit logout in this tab (only applies to SIGNED_IN/TOKEN_REFRESHED)
