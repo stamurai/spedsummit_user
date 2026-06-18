@@ -5172,7 +5172,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
                 )}
               </div>
               </div>
-              {c.session_title && <div style={{ fontSize:11, color:C.gray400, marginTop:1 }}>{c.session_title}</div>}
+              <div style={{ fontSize:11, color:C.gray400, marginTop:1 }}>{c.session_title || "General"}</div>
             </div>
             {es.open ? (
               <div style={{ marginBottom:10 }}>
@@ -5252,97 +5252,100 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
     );
   }
 
+  // Unified feed: merge general + session comments, sorted newest first
+  const allTopLevel = topLevel.slice().sort((a,b) => (b.created_at||"").localeCompare(a.created_at||""));
+  const feedFilter = filterSession; // reuse existing filterSession state
+  const feedComments = feedFilter === "all"
+    ? allTopLevel
+    : feedFilter === "__general__"
+      ? allTopLevel.filter(c => !c.session_title)
+      : allTopLevel.filter(c => c.session_title === (sessions.find(s=>String(s.id)===feedFilter)?.title || ""));
+
   return (
-    <div className="comm-page" style={{ padding:"28px 32px", background:C.gray50, minHeight:"100%", boxSizing:"border-box", display:"flex", gap:24, alignItems:"flex-start" }}>
+    <div className="comm-page" style={{ padding:"24px 32px", background:C.gray50, minHeight:"100%", boxSizing:"border-box", maxWidth:740, margin:"0 auto" }}>
       <style>{`
-        @media (max-width: 900px) {
-          .comm-page { flex-direction: column !important; padding: 16px !important; }
-          .comm-left  { width: 100% !important; position: static !important; }
-          .comm-right { width: 100% !important; }
-        }
-        @media (max-width: 500px) {
-          .comm-page { padding: 16px !important; gap: 14px !important; }
-          .comm-thread-grid { grid-template-columns: 28px 1fr !important; gap: 0 8px !important; }
-          .comm-bucket-header { padding: 12px 14px !important; }
-          .comm-comment-pad { padding: 12px 14px 8px !important; }
+        @media (max-width: 700px) {
+          .comm-page { padding: 12px 10px !important; }
+          .comm-comment-pad { padding: 14px 14px 10px !important; }
+          .comm-thread-grid { grid-template-columns: 32px 1fr !important; gap: 0 8px !important; }
         }
       `}</style>
 
-      {/* Left — composer + general comments */}
-      <div className="comm-left" style={{ width:300, flexShrink:0, position:"sticky", top:24 }}>
-        <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"12px 16px" }}>
-          <div style={{ display:"flex", gap:10, alignItems:"flex-start", marginBottom:12 }}>
-            <Avatar name={userName||"You"} src={userAvatar} size={36}/>
-            <textarea value={newBody} onChange={e=>setNewBody(e.target.value)}
-              onKeyDown={e=>{ if(e.key==="Enter" && e.metaKey) submitPost(); }}
-              placeholder="Share something about this session…"
-              rows={3}
-              style={{ flex:1, padding:0, border:"none", fontSize:14, color:C.gray800, background:"transparent", outline:"none", resize:"none", lineHeight:1.6, fontFamily:"inherit" }}/>
-          </div>
-          <div style={{ height:1, background:C.gray100, marginBottom:12 }}/>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8 }}>
-            <div ref={sessionDropRef} style={{ position:"relative", flex:1 }}>
-              <button onClick={()=>setSessionDropOpen(o=>!o)}
-                style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"5px 12px 5px 10px", borderRadius:99, border:`1.5px solid ${selectedSession?C.primary:C.gray300}`, background:selectedSession?C.primaryLight:"transparent", color:selectedSession?C.primary:C.gray500, fontSize:12, fontWeight:700, cursor:"pointer", maxWidth:"100%", overflow:"hidden" }}>
-                <Icon name="play-circle" size={13} color={selectedSession?C.primary:C.gray400} weight={selectedSession?"fill":"regular"}/>
-                <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:140 }}>
-                  {selectedSession ? (sessions.find(s=>String(s.id)===selectedSession)?.title || "Session") : "Choose session"}
-                </span>
-                <Icon name="caret-down" size={11} color={selectedSession?C.primary:C.gray400}/>
-              </button>
-              {sessionDropOpen && (
-                <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, boxShadow:"0 8px 32px rgba(0,0,0,0.12)", zIndex:200, width:260, maxHeight:280, overflowY:"auto" }}>
-                  <div style={{ padding:"12px 14px 6px", fontSize:13, fontWeight:800, color:C.gray900 }}>Choose session</div>
-                  {sessions.map(s => (
-                    <button key={s.id} onClick={()=>{ setSelectedSession(String(s.id)); setSessionDropOpen(false); }}
-                      style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"10px 14px", border:"none", background:selectedSession===String(s.id)?C.primaryLight:"transparent", cursor:"pointer", textAlign:"left" }}
-                      onMouseEnter={e=>{ if(selectedSession!==String(s.id)) e.currentTarget.style.background=C.gray50; }} onMouseLeave={e=>{ if(selectedSession!==String(s.id)) e.currentTarget.style.background="transparent"; }}>
-                      <div style={{ width:32, height:32, borderRadius:8, background:C.primaryLight, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                        <Icon name="play-circle" size={15} color={C.primary} weight="fill"/>
-                      </div>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontSize:13, fontWeight:600, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
-                      </div>
-                      {selectedSession===String(s.id) && <Icon name="check" size={14} color={C.primary}/>}
-                    </button>
-                  ))}
-                  <div style={{ height:6 }}/>
-                </div>
-              )}
-            </div>
-            <button onClick={submitPost} disabled={!newBody.trim()||posting}
-              style={{ flexShrink:0, padding:"7px 20px", borderRadius:99, border:"none", background:newBody.trim()&&!posting?C.primary:C.gray200, color:"#fff", fontSize:13, fontWeight:700, cursor:newBody.trim()&&!posting?"pointer":"default", transition:"background .15s" }}>
-              {posting ? "…" : "Post"}
-            </button>
-          </div>
+      {/* ── Composer ── */}
+      <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"14px 16px", marginBottom:16 }}>
+        <div style={{ display:"flex", gap:10, alignItems:"flex-start", marginBottom:12 }}>
+          <Avatar name={userName||"You"} src={userAvatar} size={38}/>
+          <textarea value={newBody} onChange={e=>setNewBody(e.target.value)}
+            onKeyDown={e=>{ if(e.key==="Enter" && e.metaKey) submitPost(); }}
+            placeholder="Share something with the community…"
+            rows={2}
+            style={{ flex:1, padding:"6px 0", border:"none", fontSize:14, color:C.gray800, background:"transparent", outline:"none", resize:"none", lineHeight:1.6, fontFamily:"inherit" }}/>
         </div>
-
-        {/* General comments (no session) */}
-        {!loading && generalComments.length > 0 && (
-          <div style={{ marginTop:16 }}>
-            {generalComments.map(c => renderComment(c))}
+        <div style={{ height:1, background:C.gray100, marginBottom:12 }}/>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8 }}>
+          <div ref={sessionDropRef} style={{ position:"relative" }}>
+            <button onClick={()=>setSessionDropOpen(o=>!o)}
+              style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"5px 12px 5px 10px", borderRadius:99, border:`1.5px solid ${selectedSession?C.primary:C.gray300}`, background:selectedSession?C.primaryLight:"transparent", color:selectedSession?C.primary:C.gray500, fontSize:12, fontWeight:700, cursor:"pointer" }}>
+              <Icon name="play-circle" size={13} color={selectedSession?C.primary:C.gray400} weight={selectedSession?"fill":"regular"}/>
+              <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:200 }}>
+                {selectedSession ? (sessions.find(s=>String(s.id)===selectedSession)?.title || "Session") : "Tag a session (optional)"}
+              </span>
+              <Icon name="caret-down" size={11} color={selectedSession?C.primary:C.gray400}/>
+            </button>
+            {sessionDropOpen && (
+              <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, boxShadow:"0 8px 32px rgba(0,0,0,0.12)", zIndex:200, width:280, maxHeight:280, overflowY:"auto" }}>
+                <div style={{ padding:"12px 14px 6px", fontSize:12, fontWeight:700, color:C.gray500, textTransform:"uppercase", letterSpacing:.5 }}>Tag a session</div>
+                <button onClick={()=>{ setSelectedSession(""); setSessionDropOpen(false); }}
+                  style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"9px 14px", border:"none", background:!selectedSession?C.primaryLight:"transparent", cursor:"pointer", textAlign:"left" }}
+                  onMouseEnter={e=>{ if(selectedSession) e.currentTarget.style.background=C.gray50; }} onMouseLeave={e=>{ if(selectedSession) e.currentTarget.style.background="transparent"; }}>
+                  <div style={{ fontSize:13, fontWeight:600, color:C.gray700 }}>General (no session)</div>
+                  {!selectedSession && <Icon name="check" size={14} color={C.primary}/>}
+                </button>
+                {sessions.map(s => (
+                  <button key={s.id} onClick={()=>{ setSelectedSession(String(s.id)); setSessionDropOpen(false); }}
+                    style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"9px 14px", border:"none", background:selectedSession===String(s.id)?C.primaryLight:"transparent", cursor:"pointer", textAlign:"left" }}
+                    onMouseEnter={e=>{ if(selectedSession!==String(s.id)) e.currentTarget.style.background=C.gray50; }} onMouseLeave={e=>{ if(selectedSession!==String(s.id)) e.currentTarget.style.background="transparent"; }}>
+                    <div style={{ fontSize:13, fontWeight:600, color:C.gray900, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.title}</div>
+                    {selectedSession===String(s.id) && <Icon name="check" size={14} color={C.primary} style={{ flexShrink:0 }}/>}
+                  </button>
+                ))}
+                <div style={{ height:6 }}/>
+              </div>
+            )}
           </div>
-        )}
+          <button onClick={submitPost} disabled={!newBody.trim()||posting}
+            style={{ padding:"7px 22px", borderRadius:99, border:"none", background:newBody.trim()&&!posting?C.primary:C.gray200, color:"#fff", fontSize:13, fontWeight:700, cursor:newBody.trim()&&!posting?"pointer":"default", transition:"background .15s" }}>
+            {posting ? "…" : "Post"}
+          </button>
+        </div>
       </div>
 
-      {/* Right — session buckets */}
-      <div className="comm-right" style={{ flex:1, minWidth:0 }}>
-        {loading && (
-          <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"40px 24px", textAlign:"center", color:C.gray400, fontSize:14 }}>Loading…</div>
-        )}
-        {!loading && filteredBuckets.length === 0 && (
-          <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"48px 24px", textAlign:"center", display:"flex", flexDirection:"column", alignItems:"center" }}>
-            <Icon name="chat-circle-dots" size={44} color={C.gray300}/>
-            <div style={{ marginTop:14, fontSize:15, fontWeight:700, color:C.gray500 }}>No posts yet</div>
-            <div style={{ fontSize:13, color:C.gray400, marginTop:4 }}>Be the first to share your thoughts!</div>
-          </div>
-        )}
-        {!loading && filteredBuckets.length > 0 && (
-          <div>
-            {filteredBuckets.flatMap(bucket => bucket.comments).map(c => renderComment(c))}
-          </div>
-        )}
+      {/* ── Filter tabs ── */}
+      <div style={{ display:"flex", gap:6, marginBottom:16, flexWrap:"wrap" }}>
+        {[
+          { id:"all",          label:"All Discussions" },
+          { id:"__general__",  label:"General" },
+          ...buckets.map(b => ({ id: sessions.find(s=>s.title===b.title)?.id ? String(sessions.find(s=>s.title===b.title).id) : b.title, label: b.title })),
+        ].map(f => (
+          <button key={f.id} onClick={()=>setFilterSession(f.id)}
+            style={{ padding:"5px 14px", borderRadius:99, border:`1.5px solid ${feedFilter===f.id?C.primary:C.gray200}`, background:feedFilter===f.id?C.primaryLight:"transparent", color:feedFilter===f.id?C.primary:C.gray600, fontSize:12, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap", transition:"all .12s" }}>
+            {f.label}
+          </button>
+        ))}
       </div>
+
+      {/* ── Feed ── */}
+      {loading && (
+        <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"40px 24px", textAlign:"center", color:C.gray400, fontSize:14 }}>Loading…</div>
+      )}
+      {!loading && feedComments.length === 0 && (
+        <div style={{ background:C.white, borderRadius:14, border:`1px solid ${C.gray200}`, padding:"48px 24px", textAlign:"center", display:"flex", flexDirection:"column", alignItems:"center" }}>
+          <Icon name="chat-circle-dots" size={44} color={C.gray300}/>
+          <div style={{ marginTop:14, fontSize:15, fontWeight:700, color:C.gray500 }}>No posts yet</div>
+          <div style={{ fontSize:13, color:C.gray400, marginTop:4 }}>Be the first to share your thoughts!</div>
+        </div>
+      )}
+      {!loading && feedComments.map(c => renderComment(c))}
 
       {/* Report Modal */}
       {reportModal && (
