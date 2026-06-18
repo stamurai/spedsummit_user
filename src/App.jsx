@@ -4622,10 +4622,6 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                 onEnded={() => {
                   onUpdateProgress?.(session.id, 100, activeLesson);
                   setVideoFullyWatched(true);
-                  onVideoEnd?.(session.id);
-                  if (getSessionQuestions(session).length > 0) {
-                    setTimeout(() => setPanelMode("assessment"), 800);
-                  }
                 }}/>
               ) : (
                 <>
