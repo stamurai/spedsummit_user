@@ -2811,7 +2811,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
             return (
               <div key={s.id} className="db-course-row db-session-card-row"
                 style={{ background:C.white, border:`1px solid ${C.gray200}`, borderRadius:12, ...(isMobile ? { flexDirection:"column", minHeight:"unset", minWidth:"78vw", maxWidth:"78vw", flexShrink:0, scrollSnapAlign:"start" } : {}) }}
-                onClick={() => onOpenSession(s, undefined, { toAssessment: _assessmentPending })}>
+                onClick={() => onOpenSession(s)}>
                 <div className="db-session-card-thumb" style={isMobile ? { width:"100%", height:160, flexShrink:0 } : {}}>
                   {(s.instructorImage) && <img src={s.instructorImage} alt={s.instructor}/>}
                   <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.25) 45%, transparent 75%)" }}/>
@@ -2835,7 +2835,7 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                   )}
                   <div style={{ display:"flex", alignItems:"center", gap:12, marginTop:"auto", paddingTop:16 }}>
                     <button
-                      onClick={e=>{ e.stopPropagation(); onOpenSession(s, undefined, { toAssessment: _assessmentPending }); }}
+                      onClick={e=>{ e.stopPropagation(); onOpenSession(s); }}
                       style={{ display:"inline-flex", alignItems:"center", padding:"7px 13px", background:C.primary, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", transition:"opacity 0.15s" }}
                       onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
                       onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
@@ -2850,9 +2850,13 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                           <Icon name="check-circle" size={13} color={C.success}/> Certificate earned
                         </span>
                       ) : (
-                        <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, color:C.warning }}>
-                          <Icon name="warning" size={13} color={C.warning}/> Assessment pending
-                        </span>
+                        <button
+                          onClick={e=>{ e.stopPropagation(); onOpenSession(s, undefined, { toAssessment: true }); }}
+                          style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"7px 13px", background:"transparent", color:C.warning, border:`1px solid ${C.warning}`, borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", transition:"opacity 0.15s" }}
+                          onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
+                          onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+                          <Icon name="article" size={13} color={C.warning}/> Start Assessment
+                        </button>
                       );
                     })()}
                   </div>
