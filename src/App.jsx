@@ -4145,8 +4145,9 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
       setPanelMode("assessment");
     }
   }, []);
+  const mountTriggerRef = React.useRef(assessmentTrigger);
   React.useEffect(() => {
-    if (assessmentTrigger > 0) setPanelMode("assessment");
+    if (assessmentTrigger > mountTriggerRef.current) setPanelMode("assessment");
   }, [assessmentTrigger]);
   const [collapsedSections, setCollapsedSections] = useState({});
   const [sdComments, setSdComments] = useState([]);
