@@ -5262,23 +5262,17 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
       : allTopLevel.filter(c => c.session_title === (sessions.find(s=>String(s.id)===feedFilter)?.title || ""));
 
   return (
-    <div className="comm-page" style={{ padding:"28px 32px", background:C.gray50, minHeight:"100%", boxSizing:"border-box", display:"flex", gap:24, alignItems:"flex-start" }}>
+    <div className="comm-page" style={{ padding:"24px 32px", background:C.gray50, minHeight:"100%", boxSizing:"border-box", maxWidth:680, margin:"0 auto" }}>
       <style>{`
-        @media (max-width: 900px) {
-          .comm-page { flex-direction: column !important; padding: 16px !important; }
-          .comm-left  { width: 100% !important; position: static !important; }
-          .comm-right { width: 100% !important; }
-        }
-        @media (max-width: 500px) {
-          .comm-page  { padding: 12px !important; gap: 12px !important; }
+        @media (max-width: 700px) {
+          .comm-page { padding: 12px 10px !important; }
           .comm-comment-pad { padding: 12px 14px 8px !important; }
           .comm-thread-grid { grid-template-columns: 28px 1fr !important; gap: 0 8px !important; }
         }
       `}</style>
 
-      {/* ── Left: Composer (sticky) ── */}
-      <div className="comm-left" style={{ width:300, flexShrink:0, position:"sticky", top:24 }}>
-      <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"14px 16px" }}>
+      {/* ── Composer ── */}
+      <div style={{ background:C.white, borderRadius:16, border:`1px solid ${C.gray200}`, padding:"14px 16px", marginBottom:16 }}>
         <div style={{ display:"flex", gap:10, alignItems:"flex-start", marginBottom:12 }}>
           <Avatar name={userName||"You"} src={userAvatar} size={38}/>
           <textarea value={newBody} onChange={e=>setNewBody(e.target.value)}
@@ -5325,10 +5319,6 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
           </button>
         </div>
       </div>
-      </div>{/* end comm-left */}
-
-      {/* ── Right: feed ── */}
-      <div className="comm-right" style={{ flex:1, minWidth:0 }}>
 
       {/* ── Filter tabs ── */}
       <div style={{ display:"flex", gap:6, marginBottom:16 }}>
@@ -5352,7 +5342,6 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
         </div>
       )}
       {!loading && feedComments.map(c => renderComment(c))}
-      </div>{/* end comm-right */}
 
       {reportModal && (
         <div style={{ position:"fixed", inset:0, zIndex:1200, background:"rgba(15,23,42,0.55)", display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}
