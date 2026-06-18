@@ -2164,8 +2164,10 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
   const isSessionCompleted = (s) => s.status === "completed" || (s.progress || 0) >= 100;
   const completed     = sessions.filter(isSessionCompleted).length;
   const certsEarned   = sessions.filter(s => {
-    const hasQuiz = getSessionQuestions(s).length > 0;
-    return hasQuiz ? quizStates?.[s.id]?.status === "passed" : isSessionCompleted(s);
+    const hasQuiz  = getSessionQuestions(s).length > 0;
+    const passed   = quizStates?.[s.id]?.status === "passed";
+    const reviewed = quizStates?.[s.id]?.reviewed === true;
+    return hasQuiz ? (passed && (isSessionCompleted(s) || reviewed)) : isSessionCompleted(s);
   }).length;
   const parseDurMins = (d) => { const m = String(d||"").match(/(\d+)/); return m ? parseInt(m[1]) : 0; };
   const totalMins = sessions.filter(isSessionCompleted).reduce((sum, s) => sum + parseDurMins(s.duration), 0);
