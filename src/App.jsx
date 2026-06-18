@@ -7856,25 +7856,29 @@ function PasswordResetModal({ onClose, onSignInAfterReset, toast }) {
   const [loading,   setLoading]   = useState(false);
   const [showPw,    setShowPw]    = useState(false);
   const [showConf,  setShowConf]  = useState(false);
+  const [error,     setError]     = useState("");
+  const [success,   setSuccess]   = useState("");
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (password.length < 8) { toast({ type:"error", message:"Password must be at least 8 characters." }); return; }
-    if (password !== confirm)  { toast({ type:"error", message:"Passwords do not match." }); return; }
+    setError("");
+    if (!password) { setError("Please enter a new password."); return; }
+    if (password.length < 8) { setError("Password must be at least 8 characters."); return; }
+    if (!confirm) { setError("Please confirm your new password."); return; }
+    if (password !== confirm) { setError("Passwords do not match. Please try again."); return; }
     setLoading(true);
-    // Ensure there's an active session before attempting update
     const { data: { session: activeSession } } = await supabase.auth.getSession();
     if (!activeSession) {
       setLoading(false);
-      toast({ type:"error", message:"Your reset link has expired. Please request a new password reset email." });
+      setError("Your reset link has expired. Please request a new password reset email.");
       return;
     }
-    const { error } = await supabase.auth.updateUser({ password });
+    const { error: updateErr } = await supabase.auth.updateUser({ password });
     setLoading(false);
-    if (error) { toast({ type:"error", message: error.message }); return; }
-    toast({ type:"success", message:"Password updated! Please sign in with your new password." });
+    if (updateErr) { setError(updateErr.message); return; }
+    setSuccess("Password updated successfully!");
     await supabase.auth.signOut();
-    onSignInAfterReset ? onSignInAfterReset() : onClose();
+    setTimeout(() => { onSignInAfterReset ? onSignInAfterReset() : onClose(); }, 1500);
   }
 
   const inp = { width:"100%", padding:"10px 40px 10px 14px", border:"1px solid #e2e8f0", borderRadius:8, fontSize:14, color:"#0f172a", outline:"none", boxSizing:"border-box", background:"#fff", fontFamily:"inherit" };
@@ -7912,6 +7916,16 @@ function PasswordResetModal({ onClose, onSignInAfterReset, toast }) {
             <EyeBtn show={showConf} onToggle={()=>setShowConf(v=>!v)}/>
           </div>
         </div>
+        {error && (
+          <div style={{ background:"#fef2f2", border:"1px solid #fca5a5", borderRadius:8, padding:"10px 14px", marginBottom:14, fontSize:13, color:"#991b1b" }}>
+            {error}
+          </div>
+        )}
+        {success && (
+          <div style={{ background:"#f0fdf4", border:"1px solid #86efac", borderRadius:8, padding:"10px 14px", marginBottom:14, fontSize:13, color:"#166534" }}>
+            {success}
+          </div>
+        )}
         <button type="submit" disabled={loading}
           style={{ width:"100%", padding:"13px", borderRadius:10, border:"none", background:"#6490E8", color:"#fff", fontSize:15, fontWeight:700, cursor:loading?"not-allowed":"pointer", opacity:loading?0.7:1 }}>
           {loading ? "Updating…" : "Update Password"}
