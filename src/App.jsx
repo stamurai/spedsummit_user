@@ -2997,18 +2997,25 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                             <div className="db-upcoming-desc" style={{ fontSize:13, color:C.gray600, lineHeight:1.6, marginBottom:10, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
                               {session?.description || ""}
                             </div>
-                            <div style={{ marginTop:"auto", paddingTop:8 }}>
-                              <div style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:13, fontWeight:600, color:C.gray600, background:C.gray50, border:`1px solid ${C.gray200}`, borderRadius:8, padding:"7px 13px", cursor:"default" }}>
-                                <Icon name="calendar" size={13} color={C.gray500}/>
+                            <div style={{ marginTop:"auto", paddingTop:8, display:"flex", alignItems:"center", justifyContent:"space-between", gap:12 }}>
+                              <div style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:12, color:C.gray500 }}>
+                                <Icon name="calendar" size={12} color={C.gray400}/>
                                 {(() => {
                                   const af = session?.availableFrom || session?.available_from;
                                   if (af) {
                                     const d = parseLocalDate(af);
-                                    return "Available " + d.toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZone:"America/Los_Angeles", timeZoneName:"short" }).replace("PDT","PST");
+                                    return d.toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZone:"America/Los_Angeles", timeZoneName:"short" }).replace("PDT","PST");
                                   }
-                                  return `Available ${item.date}${item.time ? ` · ${item.time}` : ""}`;
+                                  return `${item.date}${item.time ? ` · ${item.time}` : ""}`;
                                 })()}
                               </div>
+                              <button
+                                onClick={e=>{ e.stopPropagation(); }}
+                                style={{ display:"inline-flex", alignItems:"center", padding:"7px 16px", background:C.primary, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", flexShrink:0, fontFamily:"inherit", transition:"opacity .15s" }}
+                                onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
+                                onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+                                Register Now
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -10713,13 +10720,6 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
 
                       {/* ── Bottom: session details ── */}
                       <div style={{ flex:1, minWidth:0, padding:"14px 16px 16px", display:"flex", flexDirection:"column", gap:8 }}>
-                        {/* Date pill — highlighted, above title */}
-                        {(date || time) && (
-                          <div style={{ display:"inline-flex", alignItems:"center", gap:5, background:"rgba(245,158,11,0.12)", color:"#b45309", border:"1px solid rgba(245,158,11,0.25)", borderRadius:6, padding:"4px 9px", fontSize:11, fontWeight:700, marginBottom:8, alignSelf:"flex-start" }}>
-                            <Icon name="calendar" size={11} color="#b45309"/>
-                            {[date, time].filter(Boolean).join(" · ")}
-                          </div>
-                        )}
                         {/* Session title */}
                         <div style={{ fontSize:15, fontWeight:700, color:C.gray900, lineHeight:1.35, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>{s.title}</div>
                         <div style={{ fontSize:12, color:C.gray600, lineHeight:1.5, flex:1, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
@@ -10728,10 +10728,15 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                         <button
                           onClick={e=>{ e.stopPropagation(); handleCardClick(); }}
                           disabled={isLoggedIn && !isAvailable}
-                          style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", padding:"0 13px", height:36, background: isLoggedIn && !isAvailable ? "#c0c4cc" : T.blue, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor: cardClickable ? "pointer" : "default", fontFamily:"inherit", transition:"background .12s" }}
+                          style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", gap:6, padding:"0 13px", height:36, background: isLoggedIn && !isAvailable ? "#c0c4cc" : T.blue, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor: cardClickable ? "pointer" : "default", fontFamily:"inherit", transition:"background .12s" }}
                           onMouseEnter={e=>{ if(cardClickable) e.currentTarget.style.background=T.blueHov; }}
                           onMouseLeave={e=>{ if(cardClickable) e.currentTarget.style.background= isLoggedIn && !isAvailable ? "#c0c4cc" : T.blue; }}>
-                          {ctaLabel}
+                          {!isLoggedIn && (date || time)
+                            ? <><Icon name="calendar" size={13} color="#fff"/>{[date, time].filter(Boolean).join(", ")}</>
+                            : isLoggedIn && !isAvailable && (date || time)
+                              ? <><Icon name="calendar" size={13} color="#fff"/>Available {[date, time].filter(Boolean).join(", ")}</>
+                              : ctaLabel
+                          }
                         </button>
                       </div>
                     </div>
