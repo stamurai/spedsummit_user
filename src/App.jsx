@@ -10721,8 +10721,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                           {s.description}
                         </div>
                         {isLoggedIn && !isAvailable && (date || time) ? (
-                          <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6, fontSize:13, fontWeight:600, color:"#fff", background:"#c0c4cc", borderRadius:8, padding:"0 13px", height:36, cursor:"default", whiteSpace:"nowrap", width:"100%", boxSizing:"border-box" }}>
-                            <Icon name="calendar" size={13} color="#fff"/>
+                          <div style={{ display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:600, color:"#9ca3af", background:"#e5e7eb", borderRadius:8, padding:"0 13px", height:36, cursor:"default", whiteSpace:"nowrap", width:"100%", boxSizing:"border-box" }}>
                             Available {[date, time].filter(Boolean).join(", ")}
                           </div>
                         ) : (
