@@ -10628,10 +10628,21 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       <section id="sessions" className="lp-section-pad" style={{ padding:"64px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
         <div style={{ maxWidth:1200, margin:"0 auto" }}>
           {/* Header */}
-          <div style={{ marginBottom:40 }}>
-            <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Upcoming Schedule</p>
-            <h2 style={{ margin:0, fontSize:"clamp(28px,4vw,40px)", fontWeight:800, color:T.text, letterSpacing:-1, lineHeight:1.1 }}>Spring 2026 Sessions</h2>
-            <p style={{ margin:"8px 0 0", fontSize:15, color:T.muted }}>Register for these upcoming live sessions — free for all educators.</p>
+          <div style={{ marginBottom:40, display:"flex", alignItems:"flex-end", justifyContent:"space-between", gap:16, flexWrap:"wrap" }}>
+            <div>
+              <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Upcoming Schedule</p>
+              <h2 style={{ margin:0, fontSize:"clamp(28px,4vw,40px)", fontWeight:800, color:T.text, letterSpacing:-1, lineHeight:1.1 }}>Spring 2026 Sessions</h2>
+              <p style={{ margin:"8px 0 0", fontSize:15, color:T.muted }}>Register for these upcoming live sessions — free for all educators.</p>
+            </div>
+            {!isLoggedIn && (
+              <button
+                onClick={()=>setShowAuth(true)}
+                style={{ display:"inline-flex", alignItems:"center", padding:"10px 22px", background:T.blue, color:"#fff", border:"none", borderRadius:8, fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"background .12s", whiteSpace:"nowrap", flexShrink:0 }}
+                onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
+                onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
+                Register Now
+              </button>
+            )}
           </div>
 
           {/* Session cards — sourced from Supabase via sessions prop */}
@@ -10724,16 +10735,17 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                           <div style={{ display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:600, color:"#5D636F", background:"transparent", border:"1px solid #5D636F", borderRadius:8, padding:"8px 12px", minHeight:36, cursor:"default", width:"100%", boxSizing:"border-box", textAlign:"center", lineHeight:1.4, flexWrap:"wrap", gap:2 }}>
                             Available {date}{time ? `, ${time}` : ""}
                           </div>
+                        ) : !isLoggedIn && (date || time) ? (
+                          <div style={{ display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:600, color:"#5D636F", background:"transparent", border:"1px solid #5D636F", borderRadius:8, padding:"8px 12px", minHeight:36, cursor:"default", width:"100%", boxSizing:"border-box", textAlign:"center", lineHeight:1.4 }}>
+                            {date}{time ? `, ${time}` : ""}
+                          </div>
                         ) : (
                           <button
                             onClick={e=>{ e.stopPropagation(); handleCardClick(); }}
                             style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", gap:6, padding:"0 13px", height:36, width:"100%", boxSizing:"border-box", background:T.blue, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"background .12s" }}
                             onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
                             onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
-                            {!isLoggedIn && (date || time)
-                              ? <><Icon name="calendar" size={13} color="#fff"/>{[date, time].filter(Boolean).join(", ")}</>
-                              : ctaLabel
-                            }
+                            {ctaLabel}
                           </button>
                         )}
                       </div>
