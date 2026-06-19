@@ -10628,7 +10628,7 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
       <section id="sessions" className="lp-section-pad" style={{ padding:"64px 24px", borderBottom:`1px solid ${T.border}`, background:T.bg }}>
         <div style={{ maxWidth:1200, margin:"0 auto" }}>
           {/* Header */}
-          <div style={{ marginBottom:40, display:"flex", alignItems:"flex-end", justifyContent:"space-between", gap:16, flexWrap:"wrap" }}>
+          <div style={{ marginBottom:40, display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, flexWrap:"wrap" }}>
             <div>
               <p style={{ margin:"0 0 8px", fontSize:13, fontWeight:600, color:T.muted, letterSpacing:.5, textTransform:"uppercase" }}>Upcoming Schedule</p>
               <h2 style={{ margin:0, fontSize:"clamp(28px,4vw,40px)", fontWeight:800, color:T.text, letterSpacing:-1, lineHeight:1.1 }}>Spring 2026 Sessions</h2>
