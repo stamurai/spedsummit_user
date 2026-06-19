@@ -4468,7 +4468,7 @@ function SessionDetail({ session, onBack, backLabel, sessionSource, toast, onAss
                           const done = l.status === "completed" || quizDone || videoDone;
                           return (
                             <div key={String(l.id)} onClick={() => switchLesson(i)}
-                              style={{ padding:"3px 10px", cursor: locked ? "default" : "pointer" }}>
+                              style={{ padding:"7px 10px 3px", cursor: locked ? "default" : "pointer" }}>
                               <div style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 12px", background: isActive ? "#eef2ff" : "transparent", borderRadius:10, transition:"background .15s" }}
                                 onMouseEnter={e => { if (!locked && !isActive && !done) e.currentTarget.style.background = C.gray50; }}
                                 onMouseLeave={e => { if (!isActive && !done) e.currentTarget.style.background = "transparent"; }}>
@@ -5147,7 +5147,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
                 <button onClick={()=>setMenuOpen(menuOpen===c.id?null:c.id)}
                   style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 6px", borderRadius:6, color:C.gray400, fontSize:16, lineHeight:1, display:"flex", alignItems:"center" }}
                   onMouseEnter={e=>e.currentTarget.style.background=C.gray100}
-                  onMouseLeave={e=>e.currentTarget.style.background="none"}>···</button>
+                  onMouseLeave={e=>e.currentTarget.style.background="none"} style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 6px", borderRadius:6, color:C.gray500, fontSize:18, lineHeight:1, display:"flex", alignItems:"center", fontWeight:900, letterSpacing:2 }}>···</button>
                 {menuOpen===c.id && (
                   <div style={{ position:"absolute", top:"calc(100% + 4px)", right:0, background:C.white, borderRadius:10, border:`1px solid ${C.gray200}`, boxShadow:"0 8px 24px rgba(0,0,0,0.1)", zIndex:300, minWidth:140, overflow:"hidden" }}>
                     {isOwn ? (<>
@@ -5172,7 +5172,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
                 )}
               </div>
               </div>
-              {c.session_title && <div style={{ fontSize:11, color:C.gray600, marginTop:1 }}>{c.session_title}</div>}
+              {c.session_title && <div style={{ fontSize:11, color:C.gray600, marginTop:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:"100%" }}>{c.session_title}</div>}
             </div>
             {es.open ? (
               <div style={{ marginBottom:10 }}>
