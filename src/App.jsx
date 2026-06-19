@@ -2997,25 +2997,18 @@ function Dashboard({ onNavigate, onNavigateToSeason, onOpenPastSeason, onOpenSes
                             <div className="db-upcoming-desc" style={{ fontSize:13, color:C.gray600, lineHeight:1.6, marginBottom:10, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>
                               {session?.description || ""}
                             </div>
-                            <div style={{ marginTop:"auto", paddingTop:8, display:"flex", alignItems:"center", justifyContent:"space-between", gap:12 }}>
-                              <div style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:12, color:C.gray500 }}>
-                                <Icon name="calendar" size={12} color={C.gray400}/>
+                            <div style={{ marginTop:"auto", paddingTop:8 }}>
+                              <div style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:13, fontWeight:600, color:C.gray600, background:C.gray50, border:`1px solid ${C.gray200}`, borderRadius:8, padding:"7px 13px", cursor:"default" }}>
+                                <Icon name="calendar" size={13} color={C.gray500}/>
                                 {(() => {
                                   const af = session?.availableFrom || session?.available_from;
                                   if (af) {
                                     const d = parseLocalDate(af);
-                                    return d.toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZone:"America/Los_Angeles", timeZoneName:"short" }).replace("PDT","PST");
+                                    return "Available " + d.toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZone:"America/Los_Angeles", timeZoneName:"short" }).replace("PDT","PST");
                                   }
-                                  return `${item.date}${item.time ? ` · ${item.time}` : ""}`;
+                                  return `Available ${item.date}${item.time ? ` · ${item.time}` : ""}`;
                                 })()}
                               </div>
-                              <button
-                                onClick={e=>{ e.stopPropagation(); }}
-                                style={{ display:"inline-flex", alignItems:"center", padding:"7px 16px", background:C.primary, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", flexShrink:0, fontFamily:"inherit", transition:"opacity .15s" }}
-                                onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
-                                onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-                                Register Now
-                              </button>
                             </div>
                           </div>
                         </div>
