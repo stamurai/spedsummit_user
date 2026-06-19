@@ -10721,14 +10721,14 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                           {s.description}
                         </div>
                         {isLoggedIn && !isAvailable && (date || time) ? (
-                          <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, fontWeight:600, color:C.gray600, background:C.gray50, border:`1px solid ${C.gray200}`, borderRadius:8, padding:"7px 13px", cursor:"default", whiteSpace:"nowrap" }}>
-                            <Icon name="calendar" size={12} color={C.gray500}/>
+                          <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6, fontSize:13, fontWeight:600, color:"#fff", background:"#c0c4cc", borderRadius:8, padding:"0 13px", height:36, cursor:"default", whiteSpace:"nowrap", width:"100%", boxSizing:"border-box" }}>
+                            <Icon name="calendar" size={13} color="#fff"/>
                             Available {[date, time].filter(Boolean).join(", ")}
                           </div>
                         ) : (
                           <button
                             onClick={e=>{ e.stopPropagation(); handleCardClick(); }}
-                            style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", gap:6, padding:"0 13px", height:36, background:T.blue, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"background .12s" }}
+                            style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", gap:6, padding:"0 13px", height:36, width:"100%", boxSizing:"border-box", background:T.blue, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"background .12s" }}
                             onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
                             onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
                             {!isLoggedIn && (date || time)
