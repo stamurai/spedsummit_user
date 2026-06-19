@@ -10544,9 +10544,9 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
               </div>
               <a href="https://forms.gle/D46oZjruNKBbR2XHA" target="_blank" rel="noopener noreferrer"
                 className="lp-apply-banner-btn"
-                style={{ flexShrink:0, padding:"0 20px", height:40, background:"transparent", color:T.text, border:`1.5px solid ${T.border}`, borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", whiteSpace:"nowrap", transition:"border-color 150ms, background 150ms", display:"inline-flex", alignItems:"center", textDecoration:"none" }}
-                onMouseEnter={e=>{ e.currentTarget.style.borderColor=T.blue; e.currentTarget.style.color=T.blue; }}
-                onMouseLeave={e=>{ e.currentTarget.style.borderColor=T.border; e.currentTarget.style.color=T.text; }}>
+                style={{ flexShrink:0, padding:"0 20px", height:40, background:T.blue, color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", whiteSpace:"nowrap", transition:"background 150ms", display:"inline-flex", alignItems:"center", textDecoration:"none" }}
+                onMouseEnter={e=>e.currentTarget.style.background=T.blueHov}
+                onMouseLeave={e=>e.currentTarget.style.background=T.blue}>
                 Apply to Speak
               </a>
             </div>
