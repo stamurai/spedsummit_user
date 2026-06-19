@@ -5147,7 +5147,7 @@ function CommunityPage({ toast, userName = "", userAvatar = null, sessions = [],
                 <button onClick={()=>setMenuOpen(menuOpen===c.id?null:c.id)}
                   style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 6px", borderRadius:6, color:C.gray400, fontSize:16, lineHeight:1, display:"flex", alignItems:"center" }}
                   onMouseEnter={e=>e.currentTarget.style.background=C.gray100}
-                  onMouseLeave={e=>e.currentTarget.style.background="none"} style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 6px", borderRadius:6, color:C.gray500, fontSize:18, lineHeight:1, display:"flex", alignItems:"center", fontWeight:900, letterSpacing:2 }}>···</button>
+                  onMouseLeave={e=>e.currentTarget.style.background="none"} style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 6px", borderRadius:6, color:C.gray400, fontSize:16, lineHeight:1, display:"flex", alignItems:"center", fontWeight:700, letterSpacing:1 }}>···</button>
                 {menuOpen===c.id && (
                   <div style={{ position:"absolute", top:"calc(100% + 4px)", right:0, background:C.white, borderRadius:10, border:`1px solid ${C.gray200}`, boxShadow:"0 8px 24px rgba(0,0,0,0.1)", zIndex:300, minWidth:140, overflow:"hidden" }}>
                     {isOwn ? (<>
