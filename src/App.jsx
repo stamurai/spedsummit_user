@@ -10721,8 +10721,8 @@ function LandingPage({ onGetStarted, isLoggedIn = false, userName = "", userAvat
                           {s.description}
                         </div>
                         {isLoggedIn && !isAvailable && (date || time) ? (
-                          <div style={{ display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:600, color:"#5D636F", background:"transparent", border:"1px solid #5D636F", borderRadius:8, padding:"0 13px", height:36, cursor:"default", whiteSpace:"nowrap", width:"100%", boxSizing:"border-box" }}>
-                            Available {[date, time].filter(Boolean).join(", ")}
+                          <div style={{ display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:600, color:"#5D636F", background:"transparent", border:"1px solid #5D636F", borderRadius:8, padding:"8px 12px", minHeight:36, cursor:"default", width:"100%", boxSizing:"border-box", textAlign:"center", lineHeight:1.4, flexWrap:"wrap", gap:2 }}>
+                            Available {date}{time ? `, ${time}` : ""}
                           </div>
                         ) : (
                           <button
