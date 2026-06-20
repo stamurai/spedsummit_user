@@ -431,7 +431,7 @@ function makeCertId(sessionId, userEmail) {
   const str = `${userEmail}||${sessionId}`;
   let h = 0;
   for (let i = 0; i < str.length; i++) h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
-  return `SS-${String(sessionId).padStart(3,"0")}-${Math.abs(h).toString(36).toUpperCase().slice(0,6)}-2024`;
+  return `SS-${String(sessionId).padStart(3,"0")}-${Math.abs(h).toString(36).toUpperCase().slice(0,6)}-${new Date().getFullYear()}`;
 }
 
 async function saveCertToSupabase(certData) {
@@ -443,7 +443,7 @@ async function saveCertToSupabase(certData) {
 
 async function downloadCertificate({ recipientName = "", sessionTitle, instructor, duration = "", score = null, quizTitle = null, description = "", existingCertId = null, existingDate = null }) {
   const today = existingDate || new Date().toLocaleDateString("en-US", { month:"long", day:"numeric", year:"numeric" });
-  const certId = existingCertId || `${Math.random().toString(36).slice(2,8).toUpperCase()}-CE${String(Date.now()).slice(-6)}`;
+  const certId = existingCertId || makeCertId(sessionTitle, recipientName);
   const sessionTime = duration || "1 Hour";
   const instructorName = instructor ? instructor.split("|")[0].trim() : "";
   const descText = description || "";
