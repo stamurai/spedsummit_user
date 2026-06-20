@@ -436,7 +436,7 @@ function makeCertId(sessionId, userEmail) {
 
 async function saveCertToSupabase(certData) {
   const { data: { user } } = await supabase.auth.getUser();
-  const { data, error } = await supabase.from("certificates").insert({ cert_data: certData, user_id: user?.id || null }).select("id").single();
+  const { data, error } = await supabase.from("certificates").insert({ cert_data: certData, user_id: user?.id || null, session_id: String(certData.sessionId || "") }).select("id").single();
   if (error) throw error;
   return data.id;
 }
@@ -12077,12 +12077,12 @@ export default function App() {
       ? new Date(bestDate).toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" })
       : new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
 
-    // Look up existing cert by user_id + sessionId — immune to name/certId changes
+    // Look up existing cert by user_id + session_id column — immune to name/certId changes
     const { data: existingCert } = await supabase
       .from("certificates")
       .select("id, cert_data")
       .eq("user_id", user.id)
-      .eq("cert_data->>sessionId", String(session.id))
+      .eq("session_id", String(session.id))
       .maybeSingle();
 
     if (existingCert) {
@@ -12118,7 +12118,7 @@ export default function App() {
         .from("certificates")
         .select("id")
         .eq("user_id", user.id)
-        .eq("cert_data->>sessionId", String(sessionId))
+        .eq("session_id", String(sessionId))
         .maybeSingle();
       if (data?.id) {
         setCertIds(prev => ({ ...prev, [sessionId]: data.id }));
