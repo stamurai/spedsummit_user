@@ -12049,7 +12049,7 @@ export default function App() {
       .select("status, progress, quiz_state, reviewed, completed_at, updated_at")
       .eq("user_id", user.id)
       .eq("session_id", session.id)
-      .single();
+      .maybeSingle();
 
     const dbQuizState  = row?.quiz_state || {};
     const dbQuizPassed = dbQuizState.status === "passed";
