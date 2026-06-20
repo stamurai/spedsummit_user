@@ -11543,7 +11543,7 @@ function SessionQuizModal({ session, quizState, onClose, onSaveProgress, onFinis
 /* ─────────────────────────────────────────────────────────────────────────────
    CONTACT PAGE
 ───────────────────────────────────────────────────────────────────────────── */
-function ContactPage({ onNavigate }) {
+function ContactPage({ onNavigate, isLoggedIn }) {
   const cards = [
     {
       logo: "/Container.png",
@@ -11573,7 +11573,7 @@ function ContactPage({ onNavigate }) {
       {/* Breadcrumb */}
       <div className="contact-breadcrumb" style={{ background:"#fff", borderBottom:"1px solid #f0f0f0", padding:"10px 32px" }}>
         <div style={{ maxWidth:1200, margin:"0 auto", display:"flex", alignItems:"center", gap:6, fontSize:13, color:"#9ca3af" }}>
-          <button onClick={()=>onNavigate&&onNavigate("dashboard")} style={{ background:"none", border:"none", cursor:"pointer", padding:0, fontSize:13, color:"#6490E8", fontWeight:500, fontFamily:"inherit" }}>Home</button>
+          <button onClick={()=>{ if(isLoggedIn){ onNavigate&&onNavigate("dashboard"); } else { sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("page","dashboard"); window.location.href=window.location.origin; } }} style={{ background:"none", border:"none", cursor:"pointer", padding:0, fontSize:13, color:"#6490E8", fontWeight:500, fontFamily:"inherit" }}>Home</button>
           <span>/</span>
           <span style={{ color:"#374151", fontWeight:500 }}>Contact Us</span>
         </div>
@@ -12388,7 +12388,7 @@ export default function App() {
     if (page==="past-sessions")  return <SessionsPage onOpenSession={openSession} toast={toast} {...quizProps} enrolledIds={enrolledIds} onNavigate={nav} initialSeason={sessionsDeepLink} onSeasonChange={setSessionsDeepLink} scheduleRegistrations={scheduleRegistrations} setScheduleRegistrations={setScheduleRegistrationsAndSave} sessions={sessions} seasons={seasons} sessionsLoading={sessionsLoading}/>;
     if (page==="notifications")  return <NotificationsPage />;
     if (page==="profile")   return <ProfilePage toast={toast} userName={userName} userEmail={userEmail} userAvatar={userAvatar} onNameChange={setUserName} onAvatarChange={setUserAvatar} onBack={() => nav("dashboard")} userTimezone={userTimezone} onTimezoneChange={setUserTimezone}/>;
-    if (page==="contact")   return <ContactPage onNavigate={nav}/>;
+    if (page==="contact")   return <ContactPage onNavigate={nav} isLoggedIn={!!userId}/>;
     if (page==="privacy-policy") return <PrivacyPolicyPage onBack={()=>{ const from=sessionStorage.getItem("legalReturnTo")||"landing"; sessionStorage.removeItem("legalReturnTo"); if(from==="dashboard"){ sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("page","dashboard"); setShowLanding(false); setPage("dashboard"); } else { sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("page","dashboard"); setShowLanding(true); setPage("dashboard"); } }}/>;
     if (page==="terms-of-service") return <TermsOfServicePage onBack={()=>{ const from=sessionStorage.getItem("legalReturnTo")||"landing"; sessionStorage.removeItem("legalReturnTo"); if(from==="dashboard"){ sessionStorage.setItem("showLanding","0"); sessionStorage.setItem("page","dashboard"); setShowLanding(false); setPage("dashboard"); } else { sessionStorage.setItem("showLanding","1"); sessionStorage.setItem("page","dashboard"); setShowLanding(true); setPage("dashboard"); } }}/>;
     return null;
