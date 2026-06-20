@@ -11706,7 +11706,7 @@ export default function App() {
   }, []);
 
   const fetchSessions = useCallback(() => {
-    supabase.from("sessions").select("*").then(({ data, error }) => {
+    supabase.from("sessions").select("*").not("status", "in", '("draft","archived","DRAFT","ARCHIVED")').then(({ data, error }) => {
       if (error) { console.error("[Supabase] fetch error:", error.message, error.code, error.hint); return; }
 
       const toSession = s => ({
