@@ -12077,22 +12077,23 @@ export default function App() {
       ? new Date(bestDate).toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" })
       : new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
 
-    // Check if certificate already exists in Supabase
+    // Look up existing cert by user_id + sessionId — immune to name/certId changes
     const { data: existingCert } = await supabase
       .from("certificates")
       .select("id, cert_data")
       .eq("user_id", user.id)
-      .eq("cert_data->>certId", certId)
+      .eq("cert_data->>sessionId", String(session.id))
       .maybeSingle();
 
     if (existingCert) {
+      // Always update name so the cert reflects latest profile name
       const storedDate = existingCert.cert_data?.date;
-      const storedName = existingCert.cert_data?.recipientName;
+      const storedCertId = existingCert.cert_data?.certId;
       const today = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
       const needsDatePatch = storedDate === today && bestDate && certDate !== today;
-      const needsNamePatch = storedName && userName && storedName !== userName;
+      const needsNamePatch = existingCert.cert_data?.recipientName !== userName;
       if (needsDatePatch || needsNamePatch) {
-        const patched = { ...existingCert.cert_data, date: needsDatePatch ? certDate : storedDate, recipientName: userName || storedName };
+        const patched = { ...existingCert.cert_data, date: needsDatePatch ? certDate : storedDate, recipientName: userName };
         await supabase.from("certificates").update({ cert_data: patched }).eq("id", existingCert.id);
       }
       window.open(`${window.location.origin}/?cert_id=${existingCert.id}`, "_blank");
@@ -12111,14 +12112,13 @@ export default function App() {
 
   async function handleLookupCertId(sessionId) {
     try {
-      const localId = makeCertId(sessionId, userEmail);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
       const { data } = await supabase
         .from("certificates")
         .select("id")
         .eq("user_id", user.id)
-        .eq("cert_data->>certId", localId)
+        .eq("cert_data->>sessionId", String(sessionId))
         .maybeSingle();
       if (data?.id) {
         setCertIds(prev => ({ ...prev, [sessionId]: data.id }));
