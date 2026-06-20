@@ -6028,6 +6028,7 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
   const [activeSeason,  setActiveSeason]  = useState(null);
   const [activeSession, setActiveSession] = useState(null);
   const [shareCert, setShareCert] = useState(null); // { certUrl, sessionTitle }
+  const [viewingCertId, setViewingCertId] = useState(null);
   const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
 
   const allSeasonIds = new Set(seasons.flatMap(s => s.sessionIds));
@@ -6367,9 +6368,14 @@ function CertificationsPage({ quizStates = {}, enrolledIds = new Set(), onCertif
                     {qs?.score != null && <div style={{ fontSize:12, color:C.gray500, marginTop:3 }}>Score: {qs.score}%</div>}
                   </div>
                   <div style={{ display:"flex", gap:8 }}>
-                    <button onClick={()=>onCertificateClick && onCertificateClick(s)}
-                      style={{ flex:1, padding:"8px 0", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:5, fontFamily:"inherit" }}>
-                      <Icon name="eye" size={13} color={C.gray600}/> View
+                    <button
+                      disabled={viewingCertId === s.id}
+                      onClick={async ()=>{ if(!onCertificateClick) return; setViewingCertId(s.id); await onCertificateClick(s); setViewingCertId(null); }}
+                      style={{ flex:1, padding:"8px 0", borderRadius:8, border:`1px solid ${C.gray200}`, background:C.white, color:C.gray700, fontSize:12, fontWeight:700, cursor: viewingCertId===s.id ? "default" : "pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:5, fontFamily:"inherit", opacity: viewingCertId===s.id ? 0.7 : 1 }}>
+                      {viewingCertId === s.id
+                        ? <><span style={{ width:12, height:12, border:`2px solid ${C.gray300}`, borderTopColor:C.gray600, borderRadius:"50%", display:"inline-block", animation:"spin 0.7s linear infinite" }}/> Loading...</>
+                        : <><Icon name="eye" size={13} color={C.gray600}/> View</>
+                      }
                     </button>
                     <button onClick={()=>downloadCertificate({ recipientName:userName, sessionTitle:s.title, instructor:s.instructor, duration:s.duration, score:qs?.score, description:s.certDescription||"", userEmail, sessionId:s.id })}
                       style={{ flex:1, padding:"8px 0", borderRadius:8, border:"none", background:C.primary, color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:5, fontFamily:"inherit" }}>
