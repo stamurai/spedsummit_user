@@ -9301,7 +9301,7 @@ function SpAccordionFeature({ T }) {
                   </button>
                   <div className="sp-acc-content" style={{ display: isOpen ? "block" : "none", opacity: isOpen ? 1 : 0 }}>
                     <p style={{ margin:"0 0 12px", fontSize:14, color:"rgba(255,255,255,0.6)", lineHeight:1.7 }}>{f.description}</p>
-                    <a href="https://ablespace.io" target="_blank" rel="noopener noreferrer"
+                    <a href="https://go.ablespace.net/ablespace-webpage" target="_blank" rel="noopener noreferrer"
                       style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:13, fontWeight:600, color:"rgba(255,255,255,0.75)", textDecoration:"none", marginBottom:16, transition:"color .15s" }}
                       onMouseEnter={e=>e.currentTarget.style.color="#fff"}
                       onMouseLeave={e=>e.currentTarget.style.color="rgba(255,255,255,0.75)"}>
